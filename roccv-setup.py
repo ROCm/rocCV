@@ -204,7 +204,7 @@ ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall +' '+linuxSystemI
 
 # rocCV Core - Requirements
 ERROR_CHECK(os.system('sudo '+sudoValidate))
-if "Ubuntu" in platformInfo:
+if "ubuntu" in platformInfo:
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreDebianPackages)
 else:
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
