@@ -19,17 +19,20 @@ Samples will be available in the build/bin directory.
 
 An image for the samples can be found at data/samples/python/input/test_input_0.bmp
 
-#### Example for running BndBox
+### Example for running BndBox
+```bash
 ./bnd_box ../../data/samples/python/input/test_input_0.bmp bndBox_out.bmp 0
-
+```
 This will create an output image called bndBox_out.bmp with bounding boxes drawn over the input image.
 
-#### Example for running Gamma Contrast
+### Example for running Gamma Contrast
+```bash
 ./gamma_contrast ../../data/samples/python/input/test_input_0.bmp gamma_contrast_1.bmp gamma_contrast_2.bmp
-
+```
 This will create gamma_contrast_1.bmp and gamma_contrast_2.bmp which will both have different gamma correction applied to them.
 
-#### Example for running Crop and Resize
+### Example for running Crop and Resize
+```bash
 ./roccv_cropandresize_app -i ../../data/samples/python/input/test_input_0.bmp -b 1
-
+```
 This will output a cropped and resized input image.
