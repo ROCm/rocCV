@@ -44,26 +44,22 @@ TEXT_ERROR = "\033[91m\033[1m"
 TEXT_INFO = "\033[1m"
 TEXT_DEFAULT = "\033[0m"
 
-
 def info(msg):
     print(f"{TEXT_INFO}INFO:{TEXT_DEFAULT} {msg}")
-
 
 def warn(msg):
     print(f"{TEXT_WARNING}WARNING:{TEXT_DEFAULT} {msg}")
 
-
 def error(msg):
     print(f"{TEXT_ERROR}ERROR:{TEXT_DEFAULT} {msg}")
 
-
-def ERROR_CHECK(call):
-    status = call
-    if (status != 0):
-        error('ERROR_CHECK failed with status:'+str(status))
+# error check for calls
+def ERROR_CHECK(waitval):
+    if(waitval != 0): # return code and signal flags
+        error('ERROR_CHECK failed with status:'+str(waitval))
         traceback.print_stack()
+        status = ((waitval >> 8) | waitval) & 255 # combine exit code and wait flags into single non-zero byte
         exit(status)
-
 
 def install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, package_list):
     cmd_str = 'sudo ' + linuxFlag + ' ' + linuxSystemInstall + \
@@ -71,7 +67,6 @@ def install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, pa
     for i in range(len(package_list)):
         cmd_str += package_list[i] + " "
     ERROR_CHECK(os.system(cmd_str))
-
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -129,31 +124,31 @@ if "centos" in os_info_data or "redhat" in os_info_data:
     linuxSystemInstall_check = '--nogpgcheck'
     osUpdate = 'makecache'
     if "VERSION_ID=8" in os_info_data:
-        platfromInfo = platformInfo+'-centos-8-based'
+        platformInfo = platformInfo+'-centos-8-based'
     elif "VERSION_ID=9" in os_info_data:
-        platfromInfo = platformInfo+'-centos-9-based'
+        platformInfo = platformInfo+'-centos-9-based'
     else:
-        platfromInfo = platformInfo+'-centos-undefined-version'
+        platformInfo = platformInfo+'-centos-undefined-version'
 elif "Ubuntu" in os_info_data:
     linuxSystemInstall = 'apt-get -y'
     linuxSystemInstall_check = '--allow-unauthenticated'
     osUpdate = 'update'
     linuxFlag = '-S'
     if "VERSION_ID=22" in os_info_data:
-        platfromInfo = platformInfo+'-ubuntu-22'
+        platformInfo = platformInfo+'-ubuntu-22'
     elif "VERSION_ID=24" in os_info_data:
-        platfromInfo = platformInfo+'-ubuntu-24'
+        platformInfo = platformInfo+'-ubuntu-24'
     else:
-        platfromInfo = platformInfo+'-ubuntu-undefined-version'
+        platformInfo = platformInfo+'-ubuntu-undefined-version'
 elif "SLES" in os_info_data:
     linuxSystemInstall = 'zypper -n'
     linuxSystemInstall_check = '--no-gpg-checks'
     osUpdate = 'refresh'
-    platfromInfo = platformInfo+'-sles'
+    platformInfo = platformInfo+'-sles'
 elif "Mariner" in os_info_data:
     linuxSystemInstall = 'tdnf -y'
     linuxSystemInstall_check = '--nogpgcheck'
-    platfromInfo = platformInfo+'-mariner'
+    platformInfo = platformInfo+'-mariner'
     osUpdate = 'makecache'
 else:
     print("\rocCV Setup on "+platformInfo+" is unsupported\n")
@@ -194,7 +189,7 @@ rocmPackages = [
 
 pip3Packages = [
     'pybind11',
-    'wheel',
+    'wheel'
 ]
 
 info(f"{libraryName} Dependencies Installation with roccv-setup.py V-"+__version__)
@@ -208,6 +203,7 @@ if "ubuntu" in platformInfo:
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreDebianPackages)
 else:
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
+
 install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
 
 # rocCV - ROCm packages
