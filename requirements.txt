@@ -1,4 +1,2 @@
-pytest
 pybind11
-numpy
-opencv-python
+wheel

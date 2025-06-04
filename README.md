@@ -59,17 +59,29 @@ rocCV is an efficient GPU-accelerated library for image pre- and post-processing
   pip3 install wheel
   ```
 
+> [!IMPORTANT] 
+> * Compiler features required
+>   * C++20
+
 ### Samples, and tests
 
-* OpenCV:
+* Python: Pytest
+  
+  ```shell
+  sudo apt install python3-pytest
+  ```
+
+* Python: OpenCV
   
   ```shell
   sudo apt install python3-opencv
   ```
 
-> [!IMPORTANT] 
-> * Compiler features required
->   * C++20
+* Python: numpy
+  
+  ```shell
+  sudo apt install python3-numpy
+  ```
 
 >[!NOTE]
 > * All package installs are shown with the `apt` package manager. Use the appropriate package manager for your operating system.
