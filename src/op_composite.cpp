@@ -1,0 +1,109 @@
+/*
+ * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "op_composite.hpp"
+
+#include <functional>
+
+#include "common/validation_helpers.hpp"
+#include "core/wrappers/image_wrapper.hpp"
+#include "kernels/device/composite_device.hpp"
+#include "kernels/host/composite_host.hpp"
+
+namespace roccv {
+
+template <typename SrcType, typename DstType>
+void dispatch_composite_dsttype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
+                                const Tensor& mask, const Tensor& output, const eDeviceType device) {
+    using MaskType = detail::MakeType<detail::BaseType<SrcType>, 1>;
+
+    ImageWrapper<SrcType> fgWrapper(foreground);
+    ImageWrapper<SrcType> bgWrapper(background);
+    ImageWrapper<MaskType> maskWrapper(mask);
+    ImageWrapper<DstType> outputWrapper(output);
+
+    switch (device) {
+        case eDeviceType::GPU: {
+            dim3 block(64, 16);
+            dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
+                      outputWrapper.batches());
+            Kernels::Device::composite<<<grid, block, 0, stream>>>(fgWrapper, bgWrapper, maskWrapper, outputWrapper);
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            Kernels::Host::composite(fgWrapper, bgWrapper, maskWrapper, outputWrapper);
+            break;
+        }
+    }
+}
+
+template <typename SrcType>
+void dispatch_composite_srctype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
+                                const Tensor& mask, const Tensor& output, const eDeviceType device) {
+    std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>
+        funcs[5][4] = {
+            {0, 0, dispatch_composite_dsttype<SrcType, uchar3>, dispatch_composite_dsttype<SrcType, uchar4>},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0},
+            {0, 0, dispatch_composite_dsttype<SrcType, float3>, dispatch_composite_dsttype<SrcType, float4>}};
+
+    auto func = funcs[output.dtype().etype()][output.shape(output.layout().channels_index()) - 1];
+    assert(func != 0);
+    func(stream, foreground, background, mask, output, device);
+}
+
+void Composite::operator()(hipStream_t stream, const Tensor& foreground, const Tensor& background, const Tensor& mask,
+                           const Tensor& output, const eDeviceType device) const {
+    CHECK_TENSOR_DEVICE(foreground, device);
+    CHECK_TENSOR_LAYOUT(foreground, eTensorLayout::TENSOR_LAYOUT_NHWC);
+    CHECK_TENSOR_DATATYPES(foreground, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_F32);
+    CHECK_TENSOR_CHANNELS(foreground, 3);
+
+    CHECK_TENSOR_DEVICE(background, device);
+    CHECK_TENSOR_LAYOUT(background, eTensorLayout::TENSOR_LAYOUT_NHWC);
+    CHECK_TENSOR_DATATYPES(background, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_F32);
+    CHECK_TENSOR_CHANNELS(background, 3);
+    CHECK_TENSOR_COMPARISON(foreground.shape() == background.shape());
+
+    CHECK_TENSOR_DEVICE(mask, device);
+    CHECK_TENSOR_LAYOUT(mask, eTensorLayout::TENSOR_LAYOUT_NHWC);
+    CHECK_TENSOR_DATATYPES(mask, eDataType::DATA_TYPE_U8);
+    CHECK_TENSOR_CHANNELS(mask, 1);
+
+    CHECK_TENSOR_DEVICE(output, device);
+    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC);
+    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_F32);
+    CHECK_TENSOR_CHANNELS(output, 3, 4);
+
+    std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>
+        funcs[5][4] = {{0, 0, dispatch_composite_srctype<uchar3>, 0},
+                       {0, 0, 0, 0},
+                       {0, 0, 0, 0},
+                       {0, 0, 0, 0},
+                       {0, 0, dispatch_composite_srctype<float3>, 0}};
+
+    auto func = funcs[foreground.dtype().etype()][foreground.shape(output.layout().channels_index()) - 1];
+    assert(func != 0);
+    func(stream, foreground, background, mask, output, device);
+}
+};  // namespace roccv

@@ -1,0 +1,53 @@
+# Build files
+.build/
+build
+
+# Sample data files
+data/samples/python/output
+
+# Configuration files
+.devenv/
+.vscode/
+
+# vcpkg installs
+vcpkg_installed
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Clangd
+.cache
+compile_commands.json
+
+# Pycache
+__pycache__/
