@@ -29,7 +29,7 @@ THE SOFTWARE.
 using namespace roccv;
 
 /**
- * @brief Gamma correction operator example.
+ * @brief Gamma contrast operator example.
  */
 int main(int argc, char** argv) {
     if (argc != 4) {
