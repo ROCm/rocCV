@@ -168,17 +168,11 @@ sudo make package
 rocCV has a number of build options which may be set through cmake flags.
 - `-D TESTS=ON`: Builds unit and integration tests.
 - `-D SAMPLES=ON`: Builds sample applications.
-- `-D BENCHMARKS=ON`: Builds the benchmarking suite.
 - `-D BUILD_PYPACKAGE=ON:` Builds `rocpycv`, the Python wrapper for rocCV.
 
 ## Testing
 
-There are a few sets of tests that can be run using the following:
-- `make test`: Runs tests for the C++ version of the library.
-- `make test_python`: Performs tests for the Python module.
-
-> [!IMPORTANT]
-> `make install` must be run before `make test_python` to ensure that the `rocpycv` python module is installed and available to the testing scripts.
+After building, running `ctest` in the build directory will run tests for the C++ library.
 
 ## Verify installation
 
@@ -213,7 +207,3 @@ ctest -VV
 > export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
 > export PYTHONPATH=/opt/rocm/lib:$PYTHONPATH
 > ```
-
-## Benchmarking
-
-For more information on how to run the benchmarking suite, refer to the documentation in [benchmarks/README.md](./benchmarks/README.md).
