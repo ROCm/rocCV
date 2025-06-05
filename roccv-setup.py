@@ -152,7 +152,7 @@ elif "Mariner" in os_info_data:
     osUpdate = 'makecache'
 else:
     print("\rocCV Setup on "+platformInfo+" is unsupported\n")
-    print("\nrocCV Setup Supported on: Ubuntu 20/22, RedHat 8/9, & SLES 15\n")
+    print("\nrocCV Setup Supported on: Ubuntu 22/24, RedHat 8/9, & SLES 15\n")
     exit(-1)
 
 # rocCV Setup
@@ -214,9 +214,11 @@ install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCo
 
 # rocCV - ROCm packages
 install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, rocmPackages)
-
+# pip3 packages
 for i in range(len(pip3Packages)):
     ERROR_CHECK(os.system('pip3 install '+ pip3Packages[i]))
+
+# rpm specific install
 if not("ubuntu" in platformInfo):
     for i in range(len(pip3RpmPackages)):
         ERROR_CHECK(os.system('pip3 install '+ pip3RpmPackages[i]))
