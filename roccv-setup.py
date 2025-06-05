@@ -199,8 +199,6 @@ pip3RpmPackages = [
     'opencv-python~=4.10'
 ]
 
-info(f"{libraryName} Dependencies Installation with roccv-setup.py V-"+__version__)
-
 # update
 ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall +' '+linuxSystemInstall_check+' '+osUpdate))
 
