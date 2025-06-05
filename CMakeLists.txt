@@ -270,7 +270,8 @@ set(ROCCV_RUNTIME_PACKAGE_LIST  "rocm-hip-runtime")
 set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "rocm-hip-runtime-dev, python3-dev")
 set(ROCCV_RPM_DEV_PACKAGE_LIST  "rocm-hip-runtime-devel, python3-devel")
 # * Test
-set(ROCCV_TEST_PACKAGE_LIST  "python3-opencv")
+set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "python3-pytest, python3-numpy, python3-opencv")
+set(ROCCV_RPM_TEST_PACKAGE_LIST  "python3-pytest, python3-numpy")
 
 # '%{?dist}' breaks manual builds on debian systems due to empty Provides
 execute_process(
@@ -299,7 +300,7 @@ set(CPACK_DEBIAN_ASAN_PACKAGE_NAME "${PROJECT_NAME}-asan" )
 set(CPACK_DEBIAN_ASAN_PACKAGE_DEPENDS "rocm-core-asan, ${ROCCV_RUNTIME_PACKAGE_LIST}" )
 # Debian package - Test
 set(CPACK_DEBIAN_TEST_PACKAGE_NAME "${PROJECT_NAME}-test" )
-set(CPACK_DEBIAN_TEST_PACKAGE_DEPENDS "rocm-core, ${CPACK_DEBIAN_DEV_PACKAGE_NAME}, ${ROCCV_TEST_PACKAGE_LIST}" )
+set(CPACK_DEBIAN_TEST_PACKAGE_DEPENDS "rocm-core, ${CPACK_DEBIAN_DEV_PACKAGE_NAME}, ${ROCCV_DEBIAN_TEST_PACKAGE_LIST}" )
 # RPM package - COMPONENT
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 set(CPACK_RPM_RUNTIME_PACKAGE_NAME "${PROJECT_NAME}")
@@ -311,7 +312,7 @@ set(CPACK_RPM_ASAN_PACKAGE_NAME "${PROJECT_NAME}-asan" )
 set(CPACK_RPM_ASAN_PACKAGE_REQUIRES "rocm-core-asan, ${ROCCV_RUNTIME_PACKAGE_LIST}" )
 # RPM package specific variable for ASAN
 set(CPACK_RPM_TEST_PACKAGE_NAME "${PROJECT_NAME}-test" )
-set(CPACK_RPM_TEST_PACKAGE_REQUIRES "rocm-core, ${CPACK_RPM_DEV_PACKAGE_NAME}, ${ROCCV_TEST_PACKAGE_LIST}" )
+set(CPACK_RPM_TEST_PACKAGE_REQUIRES "rocm-core, ${CPACK_RPM_DEV_PACKAGE_NAME}, ${ROCCV_RPM_TEST_PACKAGE_LIST}" )
 
 if(NOT ROCM_DEP_ROCMCORE)
     string(REGEX REPLACE ",? ?rocm-core," "" CPACK_RPM_RUNTIME_PACKAGE_REQUIRES ${CPACK_RPM_RUNTIME_PACKAGE_REQUIRES})

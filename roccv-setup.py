@@ -34,7 +34,7 @@ else:
 libraryName = "rocCV"
 
 __copyright__ = f"Copyright (c) 2024, AMD ROCm {libraryName}"
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 __email__ = "mivisionx.support@amd.com"
 __status__ = "Shipping"
 
@@ -44,26 +44,22 @@ TEXT_ERROR = "\033[91m\033[1m"
 TEXT_INFO = "\033[1m"
 TEXT_DEFAULT = "\033[0m"
 
-
 def info(msg):
     print(f"{TEXT_INFO}INFO:{TEXT_DEFAULT} {msg}")
-
 
 def warn(msg):
     print(f"{TEXT_WARNING}WARNING:{TEXT_DEFAULT} {msg}")
 
-
 def error(msg):
     print(f"{TEXT_ERROR}ERROR:{TEXT_DEFAULT} {msg}")
 
-
-def ERROR_CHECK(call):
-    status = call
-    if (status != 0):
-        error('ERROR_CHECK failed with status:'+str(status))
+# error check for calls
+def ERROR_CHECK(waitval):
+    if(waitval != 0): # return code and signal flags
+        error('ERROR_CHECK failed with status:'+str(waitval))
         traceback.print_stack()
+        status = ((waitval >> 8) | waitval) & 255 # combine exit code and wait flags into single non-zero byte
         exit(status)
-
 
 def install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, package_list):
     cmd_str = 'sudo ' + linuxFlag + ' ' + linuxSystemInstall + \
@@ -71,7 +67,6 @@ def install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, pa
     for i in range(len(package_list)):
         cmd_str += package_list[i] + " "
     ERROR_CHECK(os.system(cmd_str))
-
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -117,25 +112,47 @@ if os.path.exists('/etc/os-release'):
         os_info_data = os_file.read().replace('\n', ' ')
         os_info_data = os_info_data.replace('"', '')
 
-# Linux setup
+# setup for Linux
 linuxSystemInstall = ''
 linuxCMake = 'cmake'
 linuxSystemInstall_check = ''
 linuxFlag = ''
-sudoValidateOption = '-v'
-if "Ubuntu" in os_info_data:
+sudoValidate = 'sudo -v'
+osUpdate = ''
+if "centos" in os_info_data or "redhat" in os_info_data:
+    linuxSystemInstall = 'yum -y'
+    linuxSystemInstall_check = '--nogpgcheck'
+    osUpdate = 'makecache'
+    if "VERSION_ID=8" in os_info_data:
+        platformInfo = platformInfo+'-centos-8-based'
+    elif "VERSION_ID=9" in os_info_data:
+        platformInfo = platformInfo+'-centos-9-based'
+    else:
+        platformInfo = platformInfo+'-centos-undefined-version'
+elif "Ubuntu" in os_info_data:
     linuxSystemInstall = 'apt-get -y'
     linuxSystemInstall_check = '--allow-unauthenticated'
-    linuxFlag = 'DEBIAN_FRONTEND=noninteractive -S'
+    osUpdate = 'update'
+    linuxFlag = '-S'
     if "VERSION_ID=22" in os_info_data:
-        platformInfo = platformInfo+'-Ubuntu-22'
+        platformInfo = platformInfo+'-ubuntu-22'
     elif "VERSION_ID=24" in os_info_data:
-        platformInfo = platformInfo+'-Ubuntu-24'
+        platformInfo = platformInfo+'-ubuntu-24'
     else:
-        platformInfo = platformInfo+'-Ubuntu-undefined-version'
+        platformInfo = platformInfo+'-ubuntu-undefined-version'
+elif "SLES" in os_info_data:
+    linuxSystemInstall = 'zypper -n'
+    linuxSystemInstall_check = '--no-gpg-checks'
+    osUpdate = 'refresh'
+    platformInfo = platformInfo+'-sles'
+elif "Mariner" in os_info_data:
+    linuxSystemInstall = 'tdnf -y'
+    linuxSystemInstall_check = '--nogpgcheck'
+    platformInfo = platformInfo+'-mariner'
+    osUpdate = 'makecache'
 else:
-    error(f"{libraryName} Setup on "+platformInfo+" is unsupported")
-    error(f"{libraryName} Setup Supported on: Ubuntu 22/24")
+    print("\rocCV Setup on "+platformInfo+" is unsupported\n")
+    print("\nrocCV Setup Supported on: Ubuntu 22/24, RedHat 8/9, & SLES 15\n")
     exit(-1)
 
 # rocCV Setup
@@ -143,46 +160,71 @@ info(f"{libraryName} Setup on: "+platformInfo)
 info(f"{libraryName} Dependencies Installation with roccv-setup.py V-"+__version__)
 
 if userName == 'root':
-    ERROR_CHECK(os.system(linuxSystemInstall+' update'))
+    ERROR_CHECK(os.system(linuxSystemInstall+' '+osUpdate))
     ERROR_CHECK(os.system(linuxSystemInstall+' install sudo'))
 
-# Debian packages
+# debian packages
 coreDebianPackages = [
-    'cmake',
-    'pkg-config',
-    'python3-pip',
-    'python3',
-    'nasm',
-    'libpng-dev',
-    'libjpeg-dev',
-    'lsb-core',
     'libdlpack-dev',
-    'libopencv-dev',
-    'libstdc++-12-dev'
+    'python3-dev',
+    'python3-pip',
+    'python3-opencv'
 ]
 
+# rpm packages
+coreRpmPackages = [
+    'python3-devel',
+    'git'
+]
+
+# common packages
+coreCommonPackages = [
+    'cmake',
+    'python3-pip',
+    'python3-pytest',
+    'python3-numpy'
+]
+
+# rocm dependencies
 rocmPackages = [
     'rocm-hip-runtime-dev'
 ]
 
-info(f"{libraryName} Dependencies Installation with roccv-setup.py V-"+__version__)
+# pip3 packages
+pip3Packages = [
+    'pybind11~=2.12',
+    'wheel~=0.30',
+    'numpy~=1.23'
+]
 
-# Update repositories
-ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall +
-            ' '+linuxSystemInstall_check+' update'))
+pip3RpmPackages = [
+    'opencv-python~=4.10'
+]
+
+# update
+ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall +' '+linuxSystemInstall_check+' '+osUpdate))
 
 # rocCV Core - Requirements
-ERROR_CHECK(os.system('sudo '+sudoValidateOption))
-if "Ubuntu" in platformInfo:
-    install_packages(linuxFlag, linuxSystemInstall,
-                    linuxSystemInstall_check, coreDebianPackages)
+ERROR_CHECK(os.system('sudo '+sudoValidate))
+if "ubuntu" in platformInfo:
+    install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreDebianPackages)
+else:
+    install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
+
+install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
 
 # rocCV - ROCm packages
-if "Ubuntu" in platformInfo:
-    install_packages(linuxFlag, linuxSystemInstall,
-                    linuxSystemInstall_check, rocmPackages)
+install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, rocmPackages)
+# pip3 packages
+for i in range(len(pip3Packages)):
+    ERROR_CHECK(os.system('pip3 install '+ pip3Packages[i]))
 
-# Install python packages
-ERROR_CHECK(os.system('pip3 install -r requirements.txt'))
+# rpm specific install
+if not("ubuntu" in platformInfo):
+    for i in range(len(pip3RpmPackages)):
+        ERROR_CHECK(os.system('pip3 install '+ pip3RpmPackages[i]))
+    ERROR_CHECK(os.system('mkdir -p ~/.roccv-deps'))
+    ERROR_CHECK(os.system('(cd ~/.roccv-deps; git clone -b v1.0 https://github.com/dmlc/dlpack.git)'))
+    ERROR_CHECK(os.system('(cd ~/.roccv-deps/dlpack; mkdir -p build && cd build; '+linuxCMake+' ..; make -j$(nproc); sudo make install)'))
 
 info(f"{libraryName} Dependencies Installed with roccv-setup.py V-"+__version__)
