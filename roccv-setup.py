@@ -193,7 +193,8 @@ rocmPackages = [
 # pip3 packages
 pip3Packages = [
     'pybind11~=2.12',
-    'wheel~=0.30'
+    'wheel~=0.30',
+    'numpy~=1.23'
 ]
 
 pip3RpmPackages = [

@@ -11,6 +11,7 @@ The full documentation for rocCV is available at [TBD](TBD)
 ### Known issues
 
 * Installation on CentOS/RedHat/SLES requires the manual installation of the `DLPack` and `OpenCV` packages.
+* On Ubuntu 22.04 use `pip3 install numpy~=1.23`
 
 ### Upcoming changes
 
