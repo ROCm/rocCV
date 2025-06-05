@@ -173,7 +173,8 @@ coreDebianPackages = [
 
 # rpm packages
 coreRpmPackages = [
-    'python3-devel'
+    'python3-devel',
+    'git'
 ]
 
 # common packages
@@ -219,5 +220,8 @@ for i in range(len(pip3Packages)):
 if not("ubuntu" in platformInfo):
     for i in range(len(pip3RpmPackages)):
         ERROR_CHECK(os.system('pip3 install '+ pip3RpmPackages[i]))
+    ERROR_CHECK(os.system('mkdir -p ~/.roccv-deps'))
+    ERROR_CHECK(os.system('(cd ~/.roccv-deps; git clone -b v1.0 https://github.com/dmlc/dlpack.git)'))
+    ERROR_CHECK(os.system('(cd ~/.roccv-deps/dlpack; mkdir -p build && cd build; '+linuxCMake+' ..; make -j$(nproc); sudo make install)'))
 
 info(f"{libraryName} Dependencies Installed with roccv-setup.py V-"+__version__)
