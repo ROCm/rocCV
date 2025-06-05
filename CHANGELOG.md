@@ -2,7 +2,7 @@
 
 The full documentation for rocCV is available at [TBD](TBD)
 
-##  rocCV 0.2.0
+##  rocCV 0.2.0 for ROCm 7.0.0
 
 ### Changed
 
@@ -10,7 +10,7 @@ The full documentation for rocCV is available at [TBD](TBD)
 
 ### Known issues
 
-* Installation on CentOS/RedHat/SLES requires the manual installation of the `DLPack` packa.
+* Installation on CentOS/RedHat/SLES requires the manual installation of the `DLPack` and `OpenCV` packages.
 
 ### Upcoming changes
 

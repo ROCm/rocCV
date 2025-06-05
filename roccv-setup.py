@@ -163,10 +163,12 @@ if userName == 'root':
     ERROR_CHECK(os.system(linuxSystemInstall+' '+osUpdate))
     ERROR_CHECK(os.system(linuxSystemInstall+' install sudo'))
 
-# Debian packages
+# debian packages
 coreDebianPackages = [
     'libdlpack-dev',
-    'python3-dev'
+    'python3-dev',
+    'python3-pip',
+    'python3-opencv'
 ]
 
 # rpm packages
@@ -179,17 +181,22 @@ coreCommonPackages = [
     'cmake',
     'python3-pip',
     'python3-pytest',
-    'python3-numpy',
-    'python3-opencv'
+    'python3-numpy'
 ]
 
+# rocm dependencies
 rocmPackages = [
     'rocm-hip-runtime-dev'
 ]
 
+# pip3 packages
 pip3Packages = [
-    'pybind11',
-    'wheel'
+    'pybind11~=2.12',
+    'wheel~=0.30'
+]
+
+pip3RpmPackages = [
+    'opencv-python~=4.10'
 ]
 
 info(f"{libraryName} Dependencies Installation with roccv-setup.py V-"+__version__)
@@ -211,5 +218,8 @@ install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, rocmPa
 
 for i in range(len(pip3Packages)):
     ERROR_CHECK(os.system('pip3 install '+ pip3Packages[i]))
+if not("ubuntu" in platformInfo):
+    for i in range(len(pip3RpmPackages)):
+        ERROR_CHECK(os.system('pip3 install '+ pip3RpmPackages[i]))
 
 info(f"{libraryName} Dependencies Installed with roccv-setup.py V-"+__version__)
