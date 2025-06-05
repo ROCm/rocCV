@@ -156,6 +156,7 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
 # Find dependencies
 find_package(HIP QUIET)
+find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
 if(PYTHON_VERSION_SUGGESTED)
     find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
@@ -171,6 +172,11 @@ set(BUILD_ROCCV true)
 if(NOT HIP_FOUND)
     set(BUILD_ROCCV false)
     message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires HIP, Not Found${ColourReset}")
+endif()
+# Filesystem
+if(NOT FILESYSTEM_FOUND)
+    set(BUILD_ROCCV false)
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires FileSystem, Not Found ${ColourReset}")	
 endif()
 # rocm_smi
 if (NOT rocm_smi_FOUND)
