@@ -73,6 +73,7 @@ option(BUILD_WITH_AMD_ADVANCE   "Build rocCV for advanced AMD GPU Architecture" 
 option(FULL_BUILD               "Build with all tests and samples"              OFF)
 option(SAMPLES                  "Build with samples"                            ON)
 option(TESTS                    "Build with tests"                              ON)
+option(BENCHMARKS               "Build with benchmarks"                         OFF)
 set(PYTHON_VERSION_SUGGESTED    ""          CACHE STRING "Python version to build rocCV")
 set(DEFAULT_BUILD_TYPE          "Release"   CACHE STRING "Default build type for rocCV")
 
@@ -121,6 +122,7 @@ message("-- ${Cyan}     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} [Select rocCV bu
 message("-- ${Cyan}     -D FULL_BUILD=${FULL_BUILD} [Compile with samples, and tests [options:ON/OFF](default:OFF)]${ColourReset}")
 message("-- ${Cyan}     -D SAMPLES=${SAMPLES} [Compile with samples [options:ON/OFF](default:ON)]${ColourReset}")
 message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](default:ON)]${ColourReset}")
+message("-- ${Cyan}     -D BENCHMARKS=${BENCHMARKS} [Compile with benchmarks [options:ON/OFF](default:OFF)]${ColourReset}")
 message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build for rocCV Python Package(default:ON)]${ColourReset}")
 message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColourReset}")
 
@@ -207,6 +209,10 @@ add_subdirectory(src)
 if(SAMPLES)
     add_subdirectory(samples)
 endif(SAMPLES)
+
+if(BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif(BENCHMARKS)
 
 # Enable output to stdout by default when tests fail
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
