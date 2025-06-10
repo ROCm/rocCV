@@ -10,7 +10,7 @@ rocCV is an efficient GPU-accelerated library for image pre- and post-processing
 
 * Linux distribution
   * Ubuntu - `22.04` / `24.04`
-  * RHEL - `8` / `9`
+  * RHEL - `9`
   * SLES - `15 SP5`
 
 * [ROCm-supported hardware](https://rocm.docs.amd.com/projects/install-on-linux/en/latest/reference/system-requirements.html)
