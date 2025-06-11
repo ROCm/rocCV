@@ -30,6 +30,12 @@
 #include <thread>
 
 /**
+ * @file main.cpp
+ * @brief Entrypoint program for running the rocCV benchmarking suite. Provides options to run a selection of available
+ * benchmarks. Benchmark results are then serialized to JSON.
+ */
+
+/**
  * @brief Gets the CPU name as described in /proc/cpuinfo. This is a Linux specific solution.
  *
  * @return The system's CPU name as a string.
@@ -39,8 +45,8 @@ std::string getCPUName() {
     std::ifstream cpuinfo(cpuinfo_path);
 
     if (!cpuinfo.is_open()) {
-        fprintf(stderr, "Unable to open file %s\n", cpuinfo_path.c_str());
-        return "None";
+        std::cerr << "Unable to open file: " << cpuinfo_path.c_str() << std::endl;
+        return "Unknown";
     }
 
     std::string line;
@@ -53,7 +59,7 @@ std::string getCPUName() {
     }
 
     // Unable to find CPU information.
-    return "None";
+    return "Unknown";
     cpuinfo.close();
 }
 
@@ -84,21 +90,148 @@ std::vector<roccvbench::BenchmarkConfig> loadConfig(const std::string& filepath)
     return result;
 }
 
+void printHelp(const char* programName) {
+    // clang-format off
+    std::cout << "rocCV Benchmark Suite\n";
+    std::cout << "Description:\n";
+    std::cout << "  Runs a series of benchmarks for rocCV operators and outputs performance results.\n";
+    std::cout << "Usage:\n";
+    std::cout << "  " << programName << " --config <config_filepath> --output output_dir [options]\n";
+    std::cout << "  " << programName << " --list\n";
+    std::cout << "  " << programName << " --help\n";
+    std::cout << "Required Arguments:\n";
+    std::cout << "  --output, -o:                   The output JSON filepath for benchmark results.\n";
+    std::cout << "  --config, -c:                   The JSON configuration file to run the benchmarks.\n";
+    std::cout << "Options:\n";
+    std::cout << "  --help, -h:                     Displays this help message.\n";
+    std::cout << "  --list, -l:                     Lists the available benchmark categories and exits the program.\n";
+    std::cout << "  --select, -s <cat1,cat2,...>:   Selects categories to run benchmarks on. Must be a comma separated list.\n";
+    std::cout << "                                  For example: --select Rotate,Flip\n";
+    std::cout << "  --exclude, -e <cat1,cat2,...>:  Excludes categories from the benchmark. Must be a comma separated list.\n";
+    std::cout << "                                  For example: --exclude Rotate,Flip\n";
+    std::cout << "Examples:\n";
+    std::cout << "  1. Run all benchmarks using 'config.json', save results to 'results.json'\n";
+    std::cout << "      " << programName << " --config config.json --output results.json\n";
+    std::cout << "  2. Run benchmarks for categories Rotate and Flip\n";
+    std::cout << "      " << programName << " --config config.json --output results.json --select Rotate,Flip\n";
+    std::cout << "  3. Run benchmarks on all categories except Rotate and Flip\n";
+    std::cout << "      " << programName << " --config config.json --output results.json --exclude Rotate,Flip\n";
+    std::cout << "  4. List available benchmark categories\n";
+    std::cout << "      " << programName << " --list\n";
+    // clang-format on
+}
+
+void printUsage(const char* programName) {
+    std::cout << "Usage: " << programName << " --config,-c <config_filepath> --output,-o <output_filepath> [options]\n";
+}
+
+std::vector<std::string> splitStringByComma(const std::string& input) {
+    std::vector<std::string> result;
+    std::stringstream ss(input);
+    std::string segment;
+
+    while (std::getline(ss, segment, ',')) {
+        result.push_back(segment);
+    }
+
+    return result;
+}
+
 int main(int argc, char** argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <config_path> [output_dir]\n", argv[0]);
+    std::string configFilepath;
+    std::string outputFilepath;
+    std::vector<std::string> selectedCategories;
+    std::vector<std::string> excludedCategories;
+
+    // Collect all available benchmark categories
+    std::vector<std::string> availableCategories;
+    for (const auto& [category, _] : roccvbench::BenchmarkRegistry::instance().getBenchmarks()) {
+        availableCategories.push_back(category);
+    }
+    std::sort(availableCategories.begin(), availableCategories.end());
+
+    // Parse command-line arguments
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "-h" || arg == "--help") {
+            printHelp(argv[0]);
+            return EXIT_SUCCESS;
+        }
+
+        else if (arg == "-l" || arg == "--list") {
+            // List all available categories and exit the program
+            std::cout << "Available benchmark categories:" << std::endl;
+            for (const auto& category : availableCategories) {
+                std::cout << "\t" << category << std::endl;
+            }
+            return EXIT_SUCCESS;
+        }
+
+        else if (arg == "-c" || arg == "--config") {
+            if (i + 1 < argc) {
+                configFilepath = argv[++i];
+            } else {
+                std::cerr << "Error: --config requires a value." << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (arg == "-o" || arg == "--output") {
+            if (i + 1 < argc) {
+                outputFilepath = argv[++i];
+            } else {
+                std::cerr << "Error: --output requires a value." << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (arg == "-s" || arg == "--select") {
+            if (i + 1 < argc) {
+                if (!excludedCategories.empty()) {
+                    std::cerr << "Error: --exclude and --select cannot both be used.\n";
+                    return EXIT_FAILURE;
+                }
+                selectedCategories = splitStringByComma(argv[++i]);
+            } else {
+                std::cerr << "Error: --select requires a value." << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
+        else if (arg == "-e" || arg == "--exclude") {
+            if (i + 1 < argc) {
+                if (!selectedCategories.empty()) {
+                    std::cerr << "Error: --exclude and --select cannot both be used.\n";
+                    return EXIT_FAILURE;
+                }
+                excludedCategories = splitStringByComma(argv[++i]);
+            } else {
+                std::cerr << "Error: --exclude requires a value." << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
+        else {
+            std::cerr << "Error: Unrecognized argument: " << arg << std::endl;
+            return EXIT_FAILURE;
+        }
+    }
+
+    // Validate command line arguments
+    if (configFilepath.empty()) {
+        std::cerr << "Error: A configuration file must be provided.\n";
+        printUsage(argv[0]);
         return EXIT_FAILURE;
     }
 
-    // Default result directory if one isn't specified
-    std::filesystem::path output_dir("bench_results");
-    if (argc >= 3) {
-        // User has provided a directory
-        output_dir = std::filesystem::path(argv[2]);
+    if (outputFilepath.empty()) {
+        std::cerr << "Error: An output filepath must be provided.\n";
+        printUsage(argv[0]);
+        return EXIT_FAILURE;
     }
 
     // Load benchmark configuration file
-    std::vector<roccvbench::BenchmarkConfig> configs = loadConfig(argv[1]);
+    std::vector<roccvbench::BenchmarkConfig> configs = loadConfig(configFilepath);
 
     // Get device information
     int device_id;
@@ -113,42 +246,88 @@ int main(int argc, char** argv) {
     resultsJson["device_info"]["cpu"]["name"] = getCPUName();
     resultsJson["device_info"]["cpu"]["threads"] = std::thread::hardware_concurrency();
 
+    // Determine the final list of categories to run and store it in selectedCategories.
+    // availableCategories is already sorted as it's populated from std::map keys.
+
+    if (!selectedCategories.empty()) {
+        // --select was used. selectedCategories currently holds the user's raw selection.
+        // Filter user's selection: keep only categories that are also in availableCategories (intersection).
+        std::vector<std::string> userRawSelection = selectedCategories;
+        std::sort(userRawSelection.begin(), userRawSelection.end());  // Sort for set_intersection
+
+        selectedCategories.clear();  // Clear to store the result of the intersection
+        std::set_intersection(userRawSelection.begin(), userRawSelection.end(), availableCategories.begin(),
+                              availableCategories.end(), std::back_inserter(selectedCategories));
+    } else if (!excludedCategories.empty()) {
+        // --exclude used, determine the
+        // Result should be availableCategories - excludedCategories.
+        std::vector<std::string> userRawExclusions = excludedCategories;
+        std::sort(userRawExclusions.begin(), userRawExclusions.end());  // Sort for set_difference
+
+        // No need to clear selectedCategories as it's already empty.
+        std::set_difference(availableCategories.begin(), availableCategories.end(), userRawExclusions.begin(),
+                            userRawExclusions.end(), std::back_inserter(selectedCategories));
+    } else {
+        // Neither --select nor --exclude was used.
+        // Run all available categories.
+        selectedCategories = availableCategories;  // availableCategories is already sorted.
+    }
+
+    // It is possible for the user to exclude all categories or select only categories which do not exist.
+    // In that case, warn the user that no benchmarks are to be run and quit the program without writing anything.
+    if (selectedCategories.empty()) {
+        std::cout << "Warning: Selected/Excluded categories resulted in no benchmarks being selected. Quitting.\n";
+        return EXIT_SUCCESS;
+    }
+
+    // Print which categories will be run for the benchmark, based on the user's selections.
+    std::cout << "Running benchmarks for the following categories:\n";
+    for (const auto& selectedCategory : selectedCategories) {
+        std::cout << "\t" << selectedCategory << std::endl;
+    }
+
     // Iterate through all collected benchmarks.
     try {
-        for (auto benchmark : roccvbench::BenchmarkRegistry::instance().getBenchmarks()) {
-            printf("Running benchmark %s::%s:\n", benchmark.category.c_str(), benchmark.name.c_str());
+        // Iterate through each selected category
+        for (const auto& selectedCategory : selectedCategories) {
+            // Iterate through each benchmark in the category
+            for (const auto& benchmark :
+                 roccvbench::BenchmarkRegistry::instance().getBenchmarks().at(selectedCategory)) {
+                std::cout << "Running benchmark " << benchmark.category << "::" << benchmark.name << std::endl;
 
-            nlohmann::json runResultsJson;
-            runResultsJson["name"] = benchmark.name;
+                nlohmann::json runResultsJson;
+                runResultsJson["name"] = benchmark.name;
 
-            for (auto config : configs) {
-                printf("\tConfig: [batches=%li, height=%li, width=%li, runs=%li]\n", config.batches, config.height,
-                       config.width, config.runs);
-                auto result = benchmark.func(config);
+                // Iterate through each benchmark configuration
+                for (auto config : configs) {
+                    std::cout << "\tConfig [batches=" << config.batches << ", height=" << config.height
+                              << ", width=" << config.width << ", runs=" << config.runs << "]" << std::endl;
+                    auto result = benchmark.func(config);
 
-                // Write run results to output JSON
-                runResultsJson["width"].push_back(config.width);
-                runResultsJson["height"].push_back(config.height);
-                runResultsJson["runs"].push_back(config.runs);
-                runResultsJson["execution_time"].push_back(result.execution_time);
-                runResultsJson["batches"].push_back(config.batches);
+                    // Write run results to output JSON
+                    runResultsJson["width"].push_back(config.width);
+                    runResultsJson["height"].push_back(config.height);
+                    runResultsJson["runs"].push_back(config.runs);
+                    runResultsJson["execution_time"].push_back(result.execution_time);
+                    runResultsJson["batches"].push_back(config.batches);
+                }
+                std::cout << std::endl;
+
+                resultsJson["results"][benchmark.category].push_back(runResultsJson);
             }
-            std::cout << std::endl;
-
-            resultsJson["results"][benchmark.category].push_back(runResultsJson);
         }
     } catch (roccv::Exception e) {
-        fprintf(stderr, "Exception during benchmarking: %s\n", e.what());
+        std::cerr << "Exception during benchmarking: " << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
 
     // Write benchmark results to disk
-    std::filesystem::create_directory(output_dir);
-    std::filesystem::path resultPath(output_dir / "benchmarks.json");
+    std::filesystem::path resultPath(outputFilepath);
     std::ofstream resultFile(resultPath);
 
     if (!resultFile.is_open()) {
         std::cerr << "Unable to open " << resultPath << " for writing results" << std::endl;
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     resultFile << std::setw(4) << resultsJson << std::endl;

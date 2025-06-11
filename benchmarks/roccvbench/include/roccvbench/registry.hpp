@@ -42,13 +42,17 @@ class BenchmarkRegistry {
 
     void registerBenchmark(const std::string& category, const std::string& name,
                            std::function<BenchmarkResults(const BenchmarkConfig&)> func) {
-        m_benchmarks.emplace_back(Benchmark{category, name, func});
+        if (m_benchmarks.count(category) == 0) {
+            m_benchmarks.emplace(category, std::vector<Benchmark>());
+        }
+        m_benchmarks.at(category).emplace_back(Benchmark{category, name, func});
     }
 
-    std::vector<Benchmark>& getBenchmarks() { return m_benchmarks; }
+    std::unordered_map<std::string, std::vector<Benchmark>>& getBenchmarks() { return m_benchmarks; }
 
    private:
-    std::vector<Benchmark> m_benchmarks;
+    // Store benchmarks in a map with the category as a key, and a list of benchmarks for that category as the value.
+    std::unordered_map<std::string, std::vector<Benchmark>> m_benchmarks;
 };
 
 #define REGISTER_BENCHMARK(func, name, category)                                             \
