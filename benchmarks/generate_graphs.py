@@ -117,7 +117,7 @@ def generate_graphs():
         fig.text(0.5, 0.02, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
         ax.legend()
 
-        output_filename = f"bench_{category}_comparison.png"
+        output_filename = f"bench_{category}.png"
         fig.savefig(output_filename)
         print(f"Saved graph to {output_filename}")
 
