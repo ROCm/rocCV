@@ -43,6 +43,40 @@ BAR_COLORS = [
 GRAPH_STYLE = "dark_background"
 
 
+def plot_annotated_bars(ax, x, y, labels):
+    num_benchmarks_in_group = len(y)
+    x_indices = np.arange(len(x))  # Positions for the groups of bars
+
+    total_width_for_group = 0.8  # Total width that bars for one batch size will occupy
+    bar_width = total_width_for_group / num_benchmarks_in_group
+
+    all_bar_containers_for_category = []  # To store bar containers for annotation
+
+    for idx, data in enumerate(y):
+        # Calculate offset for each bar within the group
+        offset = (idx - num_benchmarks_in_group / 2.0 + 0.5) * bar_width
+        current_bar_positions = x_indices + offset
+        selected_bar_color = BAR_COLORS[idx % len(y)]
+        bar_container = ax.bar(current_bar_positions, data,
+                               width=bar_width, label=labels[idx], color=selected_bar_color)
+        all_bar_containers_for_category.append(bar_container)
+
+    # Annotate bar values
+    for bar_container in all_bar_containers_for_category:
+        for bar_patch in bar_container.patches:
+            bar_height = bar_patch.get_height()
+            # Get the center x-coordinate of the bar
+            text_x = bar_patch.get_x() + bar_patch.get_width() / 2.0
+            # Position text slightly above the bar
+            text_y = bar_height
+
+            ax.text(text_x, text_y, f'{bar_height:.2f}',  # Format to 2 decimal places
+                    ha='center', va='bottom', fontsize=6, color='lightgray', zorder=10)
+
+    ax.set_xticks(x_indices)
+    ax.set_xticklabels(x)
+
+
 def generate_graphs():
     plt.style.use(GRAPH_STYLE)
 
@@ -59,65 +93,49 @@ def generate_graphs():
     for category in data["results"]:
         benchmarks_in_category = data["results"][category]
 
-        if not benchmarks_in_category:
-            print(f"No benchmarks found for category: {category}. Skipping.")
-            continue
+        fig, ax = plt.subplots(1, 2, dpi=150, figsize=(10, 6))
 
-        # Assume all benchmarks in a category share the same "batches" array for the x-axis
-        # and that "batches" is not empty.
-        try:
-            x_labels_text = benchmarks_in_category[0]["batches"]
-            if not x_labels_text:
-                print(f"No batch sizes found for benchmarks in category: {category}. Skipping.")
-                continue
-        except (KeyError, IndexError):
-            print(f"Could not retrieve batch sizes for category: {category}. Skipping.")
-            continue
+        # Setup execution time axis
+        ex_time_ax = ax[0]
+        ex_time_ax.set_xlabel("Batch Size")
+        ex_time_ax.set_ylabel("Execution Time (ms) [Log Scale]")
+        ex_time_ax.set_title("Execution Time")
+        ex_time_ax.set_yscale('log')
 
-        fig, ax = plt.subplots(dpi=150)
-        ax.set_xlabel("Batch Size")
-        ax.set_ylabel("Execution Time (ms) [Log Scale]")
-        ax.set_title(f"{category} Performance Comparison")
-        ax.set_yscale('log')
+        # Setup FPS axis
+        fps_ax = ax[1]
+        fps_ax.set_ylabel("Frames per Second [Log Scale]")
+        fps_ax.set_xlabel("Batch Size")
+        fps_ax.set_title("Frames per Second")
+        fps_ax.set_yscale('log')
 
-        num_benchmarks_in_group = len(benchmarks_in_category)
-        x_indices = np.arange(len(x_labels_text))  # Positions for the groups of bars
+        # Gather data and plot results
+        benchmark_names = []
+        execution_time_data = []
+        batches = data["results"][category][0]["batches"]
+        image_height = data["results"][category][0]["height"][0]
+        image_width = data["results"][category][0]["width"][0]
+        fps_data = []
 
-        total_width_for_group = 0.8  # Total width that bars for one batch size will occupy
-        bar_width = total_width_for_group / num_benchmarks_in_group
+        for benchmark in benchmarks_in_category:
+            benchmark_names.append(benchmark["name"])
+            execution_time_data.append(benchmark["execution_time"])
+            fps_data.append([1000 / (benchmark["execution_time"][i] / batches[i])
+                            for i in range(len(benchmark["execution_time"]))])
 
-        all_bar_containers_for_category = []  # To store bar containers for annotation
+        plot_annotated_bars(ex_time_ax, batches, execution_time_data, benchmark_names)
+        plot_annotated_bars(fps_ax, batches, fps_data, benchmark_names)
 
-        for idx, benchmark_data in enumerate(benchmarks_in_category):
-            execution_times = benchmark_data["execution_time"]
-            # Calculate offset for each bar within the group
-            offset = (idx - num_benchmarks_in_group / 2.0 + 0.5) * bar_width
-            current_bar_positions = x_indices + offset
-            selected_bar_color = BAR_COLORS[idx % len(benchmarks_in_category)]
-            bar_container = ax.bar(current_bar_positions, execution_times,
-                                   width=bar_width, label=benchmark_data["name"], color=selected_bar_color)
-            all_bar_containers_for_category.append(bar_container)
+        ex_time_ax.legend()
+        fps_ax.legend()
 
-        # Annotate bar values
-        for bar_container in all_bar_containers_for_category:
-            for bar_patch in bar_container.patches:
-                bar_height = bar_patch.get_height()
-                # Get the center x-coordinate of the bar
-                text_x = bar_patch.get_x() + bar_patch.get_width() / 2.0
-                # Position text slightly above the bar
-                text_y = bar_height
-
-                ax.text(text_x, text_y, f'{bar_height:.2f}',  # Format to 2 decimal places
-                        ha='center', va='bottom', fontsize=6, color='lightgray', zorder=10)
-
-        ax.set_xticks(x_indices)
-        ax.set_xticklabels(x_labels_text)
-
+        # Set bottom text for entire figure
         fig.subplots_adjust(bottom=0.2)  # Adjust bottom to make space for footnote
         fig.text(0.5, 0.02, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
-        ax.legend()
+        fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit RGB Images)")
 
         output_filename = f"bench_{category}.png"
+
         fig.savefig(output_filename)
         print(f"Saved graph to {output_filename}")
 
