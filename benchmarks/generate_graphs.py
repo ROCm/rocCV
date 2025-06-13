@@ -23,6 +23,8 @@ import json
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
+import os
 
 
 # Graph style definitions
@@ -77,10 +79,18 @@ def plot_annotated_bars(ax, x, y, labels):
     ax.set_xticklabels(x)
 
 
-def generate_graphs():
-    plt.style.use(GRAPH_STYLE)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate graphs from benchmark results.")
+    parser.add_argument("benchmark_results", help="Path to the benchmark results JSON file.")
+    parser.add_argument("-o", "--output-dir", help="Directory to save the generated graphs.", default=".")
+    args = parser.parse_args()
 
-    with open(sys.argv[1], "r") as file:
+    # Ensure output directory exists
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+
+    plt.style.use(GRAPH_STYLE)
+    with open(args.benchmark_results, "r") as file:
         data = json.load(file)
 
     # Get device information from results file
@@ -134,15 +144,7 @@ def generate_graphs():
         fig.text(0.5, 0.04, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
         fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit RGB Images)")
 
-        output_filename = f"bench_{category}.png"
+        output_filename = os.path.join(args.output_dir, f"bench_{category}.png")
 
         fig.savefig(output_filename)
         print(f"Saved graph to {output_filename}")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} <benchmark_results>")
-        quit()
-
-    generate_graphs()

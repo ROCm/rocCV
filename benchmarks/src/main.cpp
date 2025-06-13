@@ -100,8 +100,10 @@ void printHelp(const char* programName) {
     std::cout << "  " << programName << " --list\n";
     std::cout << "  " << programName << " --help\n";
     std::cout << "Required Arguments:\n";
-    std::cout << "  --output, -o:                   The output JSON filepath for benchmark results.\n";
     std::cout << "  --config, -c:                   The JSON configuration file to run the benchmarks.\n";
+    std::cout << "Optional Arguments:\n";
+    std::cout << "  --output, -o:                   The output JSON filepath for benchmark results. Defaults to\n";
+    std::cout << "                                  roccv_bench_results.json.\n";
     std::cout << "Options:\n";
     std::cout << "  --help, -h:                     Displays this help message.\n";
     std::cout << "  --list, -l:                     Lists the available benchmark categories and exits the program.\n";
@@ -122,7 +124,8 @@ void printHelp(const char* programName) {
 }
 
 void printUsage(const char* programName) {
-    std::cout << "Usage: " << programName << " --config,-c <config_filepath> --output,-o <output_filepath> [options]\n";
+    std::cout << "Usage: " << programName
+              << " --config,-c <config_filepath> [--output,-o <output_filepath>] [options]\n";
 }
 
 std::vector<std::string> splitStringByComma(const std::string& input) {
@@ -139,7 +142,7 @@ std::vector<std::string> splitStringByComma(const std::string& input) {
 
 int main(int argc, char** argv) {
     std::string configFilepath;
-    std::string outputFilepath;
+    std::string outputFilepath = "roccv_bench_results.json";
     std::vector<std::string> selectedCategories;
     std::vector<std::string> excludedCategories;
 
@@ -220,12 +223,6 @@ int main(int argc, char** argv) {
     // Validate command line arguments
     if (configFilepath.empty()) {
         std::cerr << "Error: A configuration file must be provided.\n";
-        printUsage(argv[0]);
-        return EXIT_FAILURE;
-    }
-
-    if (outputFilepath.empty()) {
-        std::cerr << "Error: An output filepath must be provided.\n";
         printUsage(argv[0]);
         return EXIT_FAILURE;
     }
