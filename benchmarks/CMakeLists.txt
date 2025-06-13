@@ -25,7 +25,7 @@ project(roccv_bench)
 
 add_subdirectory("roccvbench")
 
-file(GLOB BENCHMARK_SOURCES "*.cpp")
+file(GLOB BENCHMARK_SOURCES "src/*.cpp")
 add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE roccv_bench_utils)
 target_include_directories(${PROJECT_NAME} PRIVATE "vendor")

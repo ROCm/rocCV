@@ -38,7 +38,7 @@ struct BenchmarkResults {
  *
  */
 struct BenchmarkConfig {
-    int64_t batches, width, height, runs;
+    int batches, width, height, runs;
 };
 
 /**

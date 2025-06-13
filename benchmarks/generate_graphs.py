@@ -88,12 +88,12 @@ def generate_graphs():
     cpu_threads = data["device_info"]["cpu"]["threads"]
     gpu_name = data["device_info"]["gpu"]["name"]
 
-    graph_footnote = f"Benchmarks performed with {gpu_name} (GPU) and {cpu_name} (CPU) with {cpu_threads} threads."
+    graph_footnote = f"Benchmarks performed with {gpu_name} (GPU) and {cpu_name} (CPU) with {cpu_threads} threads. Execution time does not include data transfer latency from CPU to GPU and vice-versa."
 
     for category in data["results"]:
         benchmarks_in_category = data["results"][category]
 
-        fig, ax = plt.subplots(1, 2, dpi=150, figsize=(10, 6))
+        fig, ax = plt.subplots(1, 2, dpi=200, figsize=(10, 6))
 
         # Setup execution time axis
         ex_time_ax = ax[0]
@@ -131,7 +131,7 @@ def generate_graphs():
 
         # Set bottom text for entire figure
         fig.subplots_adjust(bottom=0.2)  # Adjust bottom to make space for footnote
-        fig.text(0.5, 0.02, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
+        fig.text(0.5, 0.04, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
         fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit RGB Images)")
 
         output_filename = f"bench_{category}.png"
