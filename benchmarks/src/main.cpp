@@ -244,30 +244,26 @@ int main(int argc, char** argv) {
     resultsJson["device_info"]["cpu"]["threads"] = std::thread::hardware_concurrency();
 
     // Determine the final list of categories to run and store it in selectedCategories.
-    // availableCategories is already sorted as it's populated from std::map keys.
 
     if (!selectedCategories.empty()) {
         // --select was used. selectedCategories currently holds the user's raw selection.
-        // Filter user's selection: keep only categories that are also in availableCategories (intersection).
+        // Intersect the selected and available categories
         std::vector<std::string> userRawSelection = selectedCategories;
-        std::sort(userRawSelection.begin(), userRawSelection.end());  // Sort for set_intersection
+        std::sort(userRawSelection.begin(), userRawSelection.end());
 
-        selectedCategories.clear();  // Clear to store the result of the intersection
+        selectedCategories.clear();
         std::set_intersection(userRawSelection.begin(), userRawSelection.end(), availableCategories.begin(),
                               availableCategories.end(), std::back_inserter(selectedCategories));
     } else if (!excludedCategories.empty()) {
-        // --exclude used, determine the
-        // Result should be availableCategories - excludedCategories.
+        // --exclude used. Exclude categories from available categories
         std::vector<std::string> userRawExclusions = excludedCategories;
-        std::sort(userRawExclusions.begin(), userRawExclusions.end());  // Sort for set_difference
+        std::sort(userRawExclusions.begin(), userRawExclusions.end());
 
-        // No need to clear selectedCategories as it's already empty.
         std::set_difference(availableCategories.begin(), availableCategories.end(), userRawExclusions.begin(),
                             userRawExclusions.end(), std::back_inserter(selectedCategories));
     } else {
         // Neither --select nor --exclude was used.
-        // Run all available categories.
-        selectedCategories = availableCategories;  // availableCategories is already sorted.
+        selectedCategories = availableCategories;
     }
 
     // It is possible for the user to exclude all categories or select only categories which do not exist.
