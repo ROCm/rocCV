@@ -54,3 +54,22 @@ You can also specify command-line arguments to control the output directory of t
 ```bash
 python3 generate_graphs.py --help
 ```
+
+## Configuring Benchmarks
+Benchmarks can be configured through a `.json` configuration file. A default one is already provided in `benchmarks/config.json`.
+
+The benchmark configuration file typically looks something like this:
+```json
+"params": [
+    // Defines a benchmark run configuration, 
+    {
+        "width": 1920,  // Image width 1920 pixels
+        "height": 1080, // Image height 1080 pixels
+        "batches": 16,  // Number of images in the batch
+        "runs": 5       // Number of runs for this particular configuration to determine an average
+    },
+    // ... Add more benchmark configurations here
+]
+```
+
+When benchmarks are run, each selected benchmark category will be executed using every configuration specified in the `"params"` array.
