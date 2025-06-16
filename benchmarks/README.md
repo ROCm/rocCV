@@ -1,7 +1,7 @@
 # rocCV Benchmarking Suite
 
 ## Description
-The rocCV benchmark tools compare rocCV operator performance against libraries with similar capabilities (such as OpenCV). Currently, the benchmarks compare rocCV CPU operator implementations against GPU implementations.
+The rocCV benchmark tools are used to analyze rocCV operator performance. Currently, the benchmarks compare rocCV CPU operator implementations against their GPU implementations.
 
 ## Building and Running Benchmarks
 
@@ -61,7 +61,8 @@ Benchmarks can be configured through a `.json` configuration file. A default one
 The benchmark configuration file typically looks something like this:
 ```json
 "params": [
-    // Defines a benchmark run configuration, 
+    // Defines a benchmark run configuration with a batch of 16,
+    // 1920x1080 images and 5 runs to determine an average.
     {
         "width": 1920,  // Image width 1920 pixels
         "height": 1080, // Image height 1080 pixels
