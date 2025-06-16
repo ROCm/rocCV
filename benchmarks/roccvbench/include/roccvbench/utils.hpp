@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <core/hip_assert.h>
+
 namespace roccv {
 class Tensor;
 }
@@ -33,4 +35,29 @@ namespace roccvbench {
  * @param tensor The tensor to fill with random values.
  */
 extern void FillTensor(const roccv::Tensor& tensor);
+
+/**
+ * @brief Records execution time of a function, ensuring synchronization using HIP events.
+ */
+#define ROCCV_BENCH_RECORD_EXECUTION_TIME(func, executionTime, numRuns)               \
+    {                                                                                 \
+        for (int i = 0; i < numRuns; i++) {                                           \
+            hipEvent_t begin, end;                                                    \
+            HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));                           \
+            HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));                             \
+                                                                                      \
+            HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));                            \
+            func;                                                                     \
+            HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));                              \
+            HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));                         \
+                                                                                      \
+            float execution_time;                                                     \
+            HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end)); \
+            HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));                           \
+            HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));                             \
+                                                                                      \
+            executionTime += execution_time / numRuns;                                \
+        }                                                                             \
+    }
+
 }  // namespace roccvbench

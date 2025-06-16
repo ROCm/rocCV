@@ -48,24 +48,9 @@ BENCHMARK(Composite, GPU) {
     roccvbench::FillTensor(foreground);
     roccvbench::FillTensor(mask);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Composite op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, foreground, background, mask, output);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Composite op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, foreground, background, mask, output), results.execution_time,
+                                      config.runs);
 
     return results;
 }
@@ -90,24 +75,9 @@ BENCHMARK(Composite, CPU) {
     roccvbench::FillTensor(foreground);
     roccvbench::FillTensor(mask);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Composite op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, foreground, background, mask, output, eDeviceType::CPU);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Composite op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, foreground, background, mask, output, eDeviceType::CPU),
+                                      results.execution_time, config.runs);
 
     return results;
 }

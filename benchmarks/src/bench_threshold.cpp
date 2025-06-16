@@ -47,24 +47,8 @@ BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::FillTensor(maxVal);
     roccvbench::FillTensor(thresh);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Threshold op(eThresholdType::THRESH_BINARY, config.batches);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, input, output, thresh, maxVal);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Threshold op(eThresholdType::THRESH_BINARY, config.batches);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, thresh, maxVal), results.execution_time, config.runs);
 
     return results;
 }
@@ -88,24 +72,9 @@ BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::FillTensor(maxVal);
     roccvbench::FillTensor(thresh);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Threshold op(eThresholdType::THRESH_BINARY, config.batches);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Threshold op(eThresholdType::THRESH_BINARY, config.batches);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU),
+                                      results.execution_time, config.runs);
 
     return results;
 }

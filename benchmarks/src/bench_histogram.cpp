@@ -33,8 +33,7 @@ BENCHMARK(Histogram, GPU) {
     roccvbench::BenchmarkResults results;
     results.execution_time = 0.0f;
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_U8);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.batches, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
 
@@ -43,24 +42,8 @@ BENCHMARK(Histogram, GPU) {
 
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Histogram op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, input, nullptr, output);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Histogram op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, nullptr, output), results.execution_time, config.runs);
 
     return results;
 }
@@ -69,9 +52,8 @@ BENCHMARK(Histogram, CPU) {
     roccvbench::BenchmarkResults results;
     results.execution_time = 0.0f;
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8,
-        eDeviceType::CPU);
+    Tensor::Requirements inReqs =
+        Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
     Tensor::Requirements outReqs =
         Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.batches, 256, 1}),
                                  DataType(eDataType::DATA_TYPE_S32), eDeviceType::CPU);
@@ -81,24 +63,9 @@ BENCHMARK(Histogram, CPU) {
 
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Histogram op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, input, nullptr, output, eDeviceType::CPU);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Histogram op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, nullptr, output, eDeviceType::CPU), results.execution_time,
+                                      config.runs);
 
     return results;
 }

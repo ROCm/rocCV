@@ -44,27 +44,8 @@ BENCHMARK(CustomCrop, GPU) {
 
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipStream_t stream;
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-        CustomCrop op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin, stream));
-        op(nullptr, input, output, cropRect);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end, stream));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    CustomCrop op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, cropRect), results.execution_time, config.runs);
 
     return results;
 }
@@ -85,27 +66,9 @@ BENCHMARK(CustomCrop, CPU) {
 
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipStream_t stream;
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-        CustomCrop op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin, stream));
-        op(nullptr, input, output, cropRect, eDeviceType::CPU);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end, stream));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    CustomCrop op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, cropRect, eDeviceType::CPU), results.execution_time,
+                                      config.runs);
 
     return results;
 }

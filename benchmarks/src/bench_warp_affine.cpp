@@ -42,25 +42,11 @@ BENCHMARK(WarpAffine, GPU) {
 
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        WarpAffine op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
+    WarpAffine op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(
         op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-           eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+           eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f)),
+        results.execution_time, config.runs);
 
     return results;
 }
@@ -79,25 +65,11 @@ BENCHMARK(WarpAffine, CPU) {
 
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        WarpAffine op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
+    WarpAffine op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(
         op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-           eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+           eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU),
+        results.execution_time, config.runs);
 
     return results;
 }

@@ -39,27 +39,10 @@ BENCHMARK(Rotate, GPU) {
     Tensor output(reqs);
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipStream_t stream;
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-        Rotate op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin, stream));
-        op(stream, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end, stream));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Rotate op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+        op(nullptr, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR),
+        results.execution_time, config.runs);
 
     return results;
 }
@@ -75,24 +58,10 @@ BENCHMARK(Rotate, CPU) {
     Tensor output(reqs);
     roccvbench::FillTensor(input);
 
-    for (int i = 0; i < config.runs; i++) {
-        hipEvent_t begin, end;
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
-
-        Rotate op;
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));
-        op(nullptr, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU);
-        HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
-
-        float execution_time;
-        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
-        HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
-
-        results.execution_time += execution_time / config.runs;
-    }
+    Rotate op;
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+        op(nullptr, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU),
+        results.execution_time, config.runs);
 
     return results;
 }
