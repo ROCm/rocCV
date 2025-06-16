@@ -142,7 +142,7 @@ if __name__ == "__main__":
         # Set bottom text for entire figure
         fig.subplots_adjust(bottom=0.2)  # Adjust bottom to make space for footnote
         fig.text(0.5, 0.04, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
-        fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit RGB Images)")
+        fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit Images)")
 
         output_filename = os.path.join(args.output_dir, f"bench_{category}.png")
 
