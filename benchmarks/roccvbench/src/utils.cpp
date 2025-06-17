@@ -37,12 +37,12 @@ std::vector<T> RandVector(size_t size) {
 
     if constexpr (std::is_floating_point_v<T>) {
         std::uniform_real_distribution<T> dist(0.0f, 1.0f);
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             result[i] = dist(gen);
         }
     } else if constexpr (std::is_integral_v<T>) {
         std::uniform_int_distribution<int64_t> dist(std::numeric_limits<T>().min(), std::numeric_limits<T>().max());
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             result[i] = static_cast<T>(dist(gen));
         }
     } else {
