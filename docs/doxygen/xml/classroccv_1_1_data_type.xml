@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_data_type" kind="class" language="C++" prot="public">
+    <compoundname>roccv::DataType</compoundname>
+    <includes refid="data__type_8hpp" local="no">data_type.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_data_type_1a6568d5cc24da12f019b25eb5f6d5a50d" prot="private" static="no" mutable="no">
+        <type><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref></type>
+        <definition>eDataType roccv::DataType::etype_</definition>
+        <argsstring></argsstring>
+        <name>etype_</name>
+        <qualifiedname>roccv::DataType::etype_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="67" column="15" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" bodystart="67" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_data_type_1a07ceec6e99ac8f2fe1f83834b9d5ae6e" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::DataType::DataType</definition>
+        <argsstring>(eDataType etype)</argsstring>
+        <name>DataType</name>
+        <qualifiedname>roccv::DataType::DataType</qualifiedname>
+        <param>
+          <type><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref></type>
+          <declname>etype</declname>
+        </param>
+        <briefdescription>
+<para>Constructs a new Data Type object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">etype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Desired data type (e.g., DATA_TYPE_U8) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="40" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_data_type_1aeec580a98f1a029a26b202587494fd13" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref></type>
+        <definition>eDataType roccv::DataType::etype</definition>
+        <argsstring>() const</argsstring>
+        <name>etype</name>
+        <qualifiedname>roccv::DataType::etype</qualifiedname>
+        <briefdescription>
+<para>Returns the eDataType enum of the <ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>eDataType </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="47" column="15"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_data_type_1a7640528ecb1bc2c6ab8bdc2fc1c0f363" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::DataType::operator!=</definition>
+        <argsstring>(const DataType &amp;rhs) const</argsstring>
+        <name>operator!=</name>
+        <qualifiedname>roccv::DataType::operator!=</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="64" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" bodystart="64" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_data_type_1a1ff1da0ec89ab060be2543ed23ebc6cd" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::DataType::operator!=</definition>
+        <argsstring>(const eDataType &amp;rhs) const</argsstring>
+        <name>operator!=</name>
+        <qualifiedname>roccv::DataType::operator!=</qualifiedname>
+        <param>
+          <type>const <ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="58" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" bodystart="58" bodyend="58"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_data_type_1ab2410411d7c153b29c206d8f18ddcdd9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::DataType::operator==</definition>
+        <argsstring>(const DataType &amp;rhs) const</argsstring>
+        <name>operator==</name>
+        <qualifiedname>roccv::DataType::operator==</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="60" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" bodystart="60" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_data_type_1a41b828905fcc2f4549184add1465631c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::DataType::operator==</definition>
+        <argsstring>(const eDataType &amp;rhs) const</argsstring>
+        <name>operator==</name>
+        <qualifiedname>roccv::DataType::operator==</qualifiedname>
+        <param>
+          <type>const <ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="56" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" bodystart="56" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_data_type_1a4f1ab008f8baa88035d04646c288acea" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>size_t</type>
+        <definition>size_t roccv::DataType::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>roccv::DataType::size</qualifiedname>
+        <briefdescription>
+<para>Returns the size of the data type in bytes. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>size_t </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="54" column="12"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Supported data types for use with the <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> utilities. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" line="33" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp" bodystart="33" bodyend="68"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_data_type_1a07ceec6e99ac8f2fe1f83834b9d5ae6e" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>DataType</name></member>
+      <member refid="classroccv_1_1_data_type_1aeec580a98f1a029a26b202587494fd13" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>etype</name></member>
+      <member refid="classroccv_1_1_data_type_1a6568d5cc24da12f019b25eb5f6d5a50d" prot="private" virt="non-virtual"><scope>roccv::DataType</scope><name>etype_</name></member>
+      <member refid="classroccv_1_1_data_type_1a1ff1da0ec89ab060be2543ed23ebc6cd" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>operator!=</name></member>
+      <member refid="classroccv_1_1_data_type_1a7640528ecb1bc2c6ab8bdc2fc1c0f363" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>operator!=</name></member>
+      <member refid="classroccv_1_1_data_type_1a41b828905fcc2f4549184add1465631c" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>operator==</name></member>
+      <member refid="classroccv_1_1_data_type_1ab2410411d7c153b29c206d8f18ddcdd9" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>operator==</name></member>
+      <member refid="classroccv_1_1_data_type_1a4f1ab008f8baa88035d04646c288acea" prot="public" virt="non-virtual"><scope>roccv::DataType</scope><name>size</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

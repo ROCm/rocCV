@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_threshold" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::Threshold</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__thresholding_8hpp" local="no">op_thresholding.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_threshold_1a07f9d9f3317f831ce00183d904ea1b9b" prot="private" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::Threshold::m_maxBatchSize</definition>
+        <argsstring></argsstring>
+        <name>m_maxBatchSize</name>
+        <qualifiedname>roccv::Threshold::m_maxBatchSize</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" line="112" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" bodystart="112" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_threshold_1a8202bf8ced2b697a3f563cd14ba3aad6" prot="private" static="no" mutable="no">
+        <type><ref refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5" kindref="member">eThresholdType</ref></type>
+        <definition>eThresholdType roccv::Threshold::m_threshType</definition>
+        <argsstring></argsstring>
+        <name>m_threshType</name>
+        <qualifiedname>roccv::Threshold::m_threshType</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" line="111" column="20" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" bodystart="111" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_threshold_1ab9d35218f30dd6b7ef6866a4b3f48033" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::Threshold::operator()</definition>
+        <argsstring>(hipStream_t stream, const roccv::Tensor &amp;input, const roccv::Tensor &amp;output, const roccv::Tensor &amp;thresh, const roccv::Tensor &amp;maxVal, eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::Threshold::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>thresh</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>maxVal</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Construct a new <ref refid="classroccv_1_1_threshold" kindref="compound">Threshold</ref> object. The object can be used to choose a global threshold value that is the same for all pixels across the image. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [HWC, NHWC] Channels: [1, 3, 4] Supported DataType(s): [U8]</para>
+<para>Output: Supported TensorLayout(s): [HWC, NHWC] Channels: [1, 3, 4] Supported DataType(s): [U8]</para>
+<para>Input/Output dependency <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  Data Layout   | Yes
+  Data Type     | Yes
+  Number        | Yes
+  Channels      | Yes
+  Width         | Yes
+  Height        | Yes
+</verbatim> threshold <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> <verbatim> Must be of layout type &apos;NW&apos; (dim = 2) with N = maxBatchSize
+ and W = 1 Data Type must be an 8bit unsigned integer (DATA_TYPE_U8).
+</verbatim> maxval <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> <verbatim> Must be of layout type &apos;NW&apos; (dim = 2) with N = maxBatchSize and
+ W = 1 Data Type must be 8bit unsigned integer (DATA_TYPE_U8).
+</verbatim> thresh and maxVal are expected to be contiguous in memory.</para>
+<para>Current Supported <ref refid="classroccv_1_1_threshold" kindref="compound">Threshold</ref> Types (threshType)<itemizedlist>
+<listitem><para>THRESH_BINARY</para>
+</listitem><listitem><para>THRESH_BINARY_INV</para>
+</listitem><listitem><para>THRESH_TRUNC</para>
+</listitem><listitem><para>THRESH_TOZERO</para>
+</listitem><listitem><para>THRESH_TOZERO_INV</para>
+</listitem></itemizedlist>
+</para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operation on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input tensor with image batch data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor for storing modified image batch data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">thresh</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>thresh an array of size maxBatch that gives the threshold value of each image. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">maxVal</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>maxval an array of size maxBatch that gives the maxval value of each image, used with the THRESH_BINARY and THRESH_BINARY_INV thresholding types. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device which this operation should run on. (Default: <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref>) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" line="107" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_threshold_1a3d421cf09c437a52a53e5a7b36f51acb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Threshold::Threshold</definition>
+        <argsstring>(eThresholdType threshType, int32_t maxBatchSize)</argsstring>
+        <name>Threshold</name>
+        <qualifiedname>roccv::Threshold::Threshold</qualifiedname>
+        <param>
+          <type><ref refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5" kindref="member">eThresholdType</ref></type>
+          <declname>threshType</declname>
+        </param>
+        <param>
+          <type>int32_t</type>
+          <declname>maxBatchSize</declname>
+        </param>
+        <briefdescription>
+<para>Constructs a <ref refid="classroccv_1_1_threshold" kindref="compound">Threshold</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" line="42" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_threshold_1ad19310b609458bfdd08b59784084c6bf" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Threshold::~Threshold</definition>
+        <argsstring>()</argsstring>
+        <name>~Threshold</name>
+        <qualifiedname>roccv::Threshold::~Threshold</qualifiedname>
+        <briefdescription>
+<para>Destroy the <ref refid="classroccv_1_1_threshold" kindref="compound">Threshold</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" line="48" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::Threshold</label>
+        <link refid="classroccv_1_1_threshold"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::Threshold</label>
+        <link refid="classroccv_1_1_threshold"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" line="35" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp" bodystart="35" bodyend="113"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_threshold_1a07f9d9f3317f831ce00183d904ea1b9b" prot="private" virt="non-virtual"><scope>roccv::Threshold</scope><name>m_maxBatchSize</name></member>
+      <member refid="classroccv_1_1_threshold_1a8202bf8ced2b697a3f563cd14ba3aad6" prot="private" virt="non-virtual"><scope>roccv::Threshold</scope><name>m_threshType</name></member>
+      <member refid="classroccv_1_1_threshold_1ab9d35218f30dd6b7ef6866a4b3f48033" prot="public" virt="non-virtual"><scope>roccv::Threshold</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_threshold_1a3d421cf09c437a52a53e5a7b36f51acb" prot="public" virt="non-virtual"><scope>roccv::Threshold</scope><name>Threshold</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::Threshold</scope><name>~IOperator</name></member>
+      <member refid="classroccv_1_1_threshold_1ad19310b609458bfdd08b59784084c6bf" prot="public" virt="non-virtual"><scope>roccv::Threshold</scope><name>~Threshold</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

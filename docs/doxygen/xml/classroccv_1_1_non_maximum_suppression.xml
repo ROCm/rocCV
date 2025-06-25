@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_non_maximum_suppression" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::NonMaximumSuppression</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__non__max__suppression_8hpp" local="no">op_non_max_suppression.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_non_maximum_suppression_1a573d8dc9363f1947ed80baf87eb7e185" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::NonMaximumSuppression::NonMaximumSuppression</definition>
+        <argsstring>()</argsstring>
+        <name>NonMaximumSuppression</name>
+        <qualifiedname>roccv::NonMaximumSuppression::NonMaximumSuppression</qualifiedname>
+        <briefdescription>
+<para>Construct a new Op Non Max Suppression object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" line="41" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" bodystart="41" bodyend="41"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_non_maximum_suppression_1ab29f0f5e501ed977daa1a6fe7ab05064" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::NonMaximumSuppression::operator()</definition>
+        <argsstring>(hipStream_t stream, const Tensor &amp;input, const Tensor &amp;output, const Tensor &amp;scores, float scoreThreshold, float iouThreshold, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::NonMaximumSuppression::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>scores</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>scoreThreshold</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>iouThreshold</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Executes the Non-Maximum Suppression operation. This object performs Non-Maximum Suppression on bounding boxes based on scores a score threshold, and an IoU threshold. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [NW, NWC] Supported DataType(s): [4S16, S16]</para>
+<para>Scores: Supported TensorLayout(s): [NW, NWC] Supported DataType(s): [F32]</para>
+<para>Output: Supported TensorLayout(s): [NW, NWC] Supported DataType(s): [U8]</para>
+<para>IoU <ref refid="classroccv_1_1_threshold" kindref="compound">Threshold</ref>: Range: (0.0, 1.0)</para>
+<para>Input/Output Dependency: <verbatim>  Property      |  Input == Output == Scores
+ -------------- | -------------
+  TensorLayout  | No
+  DataType      | No
+  Channels      | No
+  Width         | Yes
+  Height        | No
+  Batch         | Yes
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operator on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Batches of input boxes in the shape NW where N is the number of batches and W is the number of boxes per batch. If using layout NW, datatype must be 4S16. Boxes are structured in memory as a short4 with (x=x, y=y, z=width, w=height). If using layout NWC, datatype must be S16 with the final shape dimension being 4. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor is the output boolean mask which marks boxes as either kept (1) or suppressed (0). If using NWC layout, the final shape dimension must be 1. The number of batches N and boxes per batch W must match with the given input tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">scores</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> containing the confidence scores for each box. If using layout NWC, the final shape dimension must be 1. The number of batches N and boxes per batch W must match with the given input tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">scoreThreshold</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The minimum score a box must have in order to be kept. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">iouThreshold</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>IoU threshold to filter overlapping boxes. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to run this operator on. (Default: GPU) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" line="95" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_non_maximum_suppression_1abd39ce2aff71c1a3cc9165113678c3d3" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::NonMaximumSuppression::~NonMaximumSuppression</definition>
+        <argsstring>()</argsstring>
+        <name>~NonMaximumSuppression</name>
+        <qualifiedname>roccv::NonMaximumSuppression::~NonMaximumSuppression</qualifiedname>
+        <briefdescription>
+<para>Destroy the Op Non Max Suppression object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" line="47" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" bodystart="47" bodyend="47"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Class for managing the NMS operator. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::NonMaximumSuppression</label>
+        <link refid="classroccv_1_1_non_maximum_suppression"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::NonMaximumSuppression</label>
+        <link refid="classroccv_1_1_non_maximum_suppression"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" line="35" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp" bodystart="35" bodyend="97"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_non_maximum_suppression_1a573d8dc9363f1947ed80baf87eb7e185" prot="public" virt="non-virtual"><scope>roccv::NonMaximumSuppression</scope><name>NonMaximumSuppression</name></member>
+      <member refid="classroccv_1_1_non_maximum_suppression_1ab29f0f5e501ed977daa1a6fe7ab05064" prot="public" virt="non-virtual"><scope>roccv::NonMaximumSuppression</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::NonMaximumSuppression</scope><name>~IOperator</name></member>
+      <member refid="classroccv_1_1_non_maximum_suppression_1abd39ce2aff71c1a3cc9165113678c3d3" prot="public" virt="non-virtual"><scope>roccv::NonMaximumSuppression</scope><name>~NonMaximumSuppression</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,202 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_copy_make_border" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::CopyMakeBorder</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__copy__make__border_8hpp" local="no">op_copy_make_border.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_copy_make_border_1a8c6182b8cd494e251e3d20f90c9dd740" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::CopyMakeBorder::CopyMakeBorder</definition>
+        <argsstring>()</argsstring>
+        <name>CopyMakeBorder</name>
+        <qualifiedname>roccv::CopyMakeBorder::CopyMakeBorder</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" line="32" column="14" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" bodystart="32" bodyend="32"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_copy_make_border_1a93ffbef2b87a73a0d94a12d860249bf1" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::CopyMakeBorder::operator()</definition>
+        <argsstring>(hipStream_t stream, const Tensor &amp;input, const Tensor &amp;output, int32_t top, int32_t left, eBorderType border_mode, float4 border_value, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::CopyMakeBorder::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int32_t</type>
+          <declname>top</declname>
+        </param>
+        <param>
+          <type>int32_t</type>
+          <declname>left</declname>
+        </param>
+        <param>
+          <type><ref refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0" kindref="member">eBorderType</ref></type>
+          <declname>border_mode</declname>
+        </param>
+        <param>
+          <type>float4</type>
+          <declname>border_value</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Executes the <ref refid="classroccv_1_1_copy_make_border" kindref="compound">CopyMakeBorder</ref> operation on the given HIP stream and device. This operation will create a border around the images based on the given border mode. The output tensor&apos;s height must be of size (input.height. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><itemizedlist>
+<listitem><para>top * 2), the width must be of size (input.width + left * 2) to create a uniform border around the input images.</para>
+</listitem></itemizedlist>
+</para>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [NHWC] Channels: [1, 2, 3, 4] Supported DataType(s): [U8, S8, U32, S32, F32]</para>
+<para>Output: Supported TensorLayout(s): [NHWC] Channels: [1, 2, 3, 4] Supported DataType(s): [U8, S8, U32, S32, F32]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | Yes
+  Width         | No
+  Height        | No
+  Batch         | Yes
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to execute this operation on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> representing the input images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> representing the output images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>top</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The top-most pixel of the output images where the border should end. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>left</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The left-most pixel of the output images where the border should end. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>border_mode</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The border mode used for creating the image border. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>border_value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The color of the border is a constant border type is used. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to execute this operation on. Defaults to GPU. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" line="73" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_copy_make_border_1a6822b8cc0a3dc7540aeabcff43a0021e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::CopyMakeBorder::~CopyMakeBorder</definition>
+        <argsstring>()</argsstring>
+        <name>~CopyMakeBorder</name>
+        <qualifiedname>roccv::CopyMakeBorder::~CopyMakeBorder</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" line="33" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" bodystart="33" bodyend="33"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>roccv::CopyMakeBorder</label>
+        <link refid="classroccv_1_1_copy_make_border"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>roccv::CopyMakeBorder</label>
+        <link refid="classroccv_1_1_copy_make_border"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" line="30" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp" bodystart="30" bodyend="75"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_copy_make_border_1a8c6182b8cd494e251e3d20f90c9dd740" prot="public" virt="non-virtual"><scope>roccv::CopyMakeBorder</scope><name>CopyMakeBorder</name></member>
+      <member refid="classroccv_1_1_copy_make_border_1a93ffbef2b87a73a0d94a12d860249bf1" prot="public" virt="non-virtual"><scope>roccv::CopyMakeBorder</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_copy_make_border_1a6822b8cc0a3dc7540aeabcff43a0021e" prot="public" virt="non-virtual"><scope>roccv::CopyMakeBorder</scope><name>~CopyMakeBorder</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::CopyMakeBorder</scope><name>~IOperator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

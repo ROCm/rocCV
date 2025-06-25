@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_79070895df18adc0730f951256a16d0d" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host</compoundname>
+    <innerfile refid="bilateral__filter__host_8hpp">bilateral_filter_host.hpp</innerfile>
+    <innerfile refid="bnd__box__host_8hpp">bnd_box_host.hpp</innerfile>
+    <innerfile refid="composite__host_8hpp">composite_host.hpp</innerfile>
+    <innerfile refid="copy__make__border__host_8hpp">copy_make_border_host.hpp</innerfile>
+    <innerfile refid="custom__crop__host_8hpp">custom_crop_host.hpp</innerfile>
+    <innerfile refid="cvt__color__host_8hpp">cvt_color_host.hpp</innerfile>
+    <innerfile refid="flip__host_8hpp">flip_host.hpp</innerfile>
+    <innerfile refid="gamma__contrast__host_8hpp">gamma_contrast_host.hpp</innerfile>
+    <innerfile refid="histogram__host_8hpp">histogram_host.hpp</innerfile>
+    <innerfile refid="non__max__suppression__host_8hpp">non_max_suppression_host.hpp</innerfile>
+    <innerfile refid="normalize__host_8hpp">normalize_host.hpp</innerfile>
+    <innerfile refid="remap__host_8hpp">remap_host.hpp</innerfile>
+    <innerfile refid="resize__host_8hpp">resize_host.hpp</innerfile>
+    <innerfile refid="thresholding__host_8hpp">thresholding_host.hpp</innerfile>
+    <innerfile refid="warp__perspective__host_8hpp">warp_perspective_host.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/"/>
+  </compounddef>
+</doxygen>

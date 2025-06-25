@@ -1,0 +1,14 @@
+.. meta::754e0a1ca98c384b75fd990a501b5ea25d440dca7b1a4d5c40eddebec14fd69565607fbf93bb61b7c85182d231a8de30fba804b5b26cbd9409693f46ca990e12
+
+:orphan:
+
+.. title:: rocCV: /mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers Directory Reference
+
+/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers Directory Reference
+===============================================================================
+
+.. container:: doxygen-content
+
+   
+   .. raw:: html
+     :file: dir_089e5f06d0db0b3903d244781a066f3d.html

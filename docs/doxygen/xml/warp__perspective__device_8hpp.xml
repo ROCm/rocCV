@@ -1,0 +1,261 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="warp__perspective__device_8hpp" kind="file" language="C++">
+    <compoundname>warp_perspective_device.hpp</compoundname>
+    <includes local="no">hip/hip_runtime.h</includes>
+    <includes refid="interpolation__wrapper_8hpp" local="yes">core/wrappers/interpolation_wrapper.hpp</includes>
+    <incdepgraph>
+      <node id="17">
+        <label>data_type.hpp</label>
+        <link refid="data__type_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>core/detail/casting.hpp</label>
+        <link refid="casting_8hpp"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>core/detail/math/vectorized_type_math.hpp</label>
+        <link refid="vectorized__type__math_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>core/detail/type_traits.hpp</label>
+        <link refid="type__traits_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>exception.hpp</label>
+        <link refid="exception_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>status_type.h</label>
+        <link refid="status__type_8h"/>
+      </node>
+      <node id="11">
+        <label>core/tensor.hpp</label>
+        <link refid="tensor_8hpp"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>tensor_buffer.hpp</label>
+        <link refid="tensor__buffer_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>tensor_data.hpp</label>
+        <link refid="tensor__data_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>tensor_layout.hpp</label>
+        <link refid="tensor__layout_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>tensor_requirements.hpp</label>
+        <link refid="tensor__requirements_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>tensor_shape.hpp</label>
+        <link refid="tensor__shape_8hpp"/>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>tensor_storage.hpp</label>
+        <link refid="tensor__storage_8hpp"/>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+      </node>
+      <node id="21">
+        <label>util_enums.h</label>
+        <link refid="util__enums_8h"/>
+      </node>
+      <node id="9">
+        <label>core/wrappers/border_wrapper.hpp</label>
+        <link refid="border__wrapper_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>core/wrappers/image_wrapper.hpp</label>
+        <link refid="image__wrapper_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>core/wrappers/interpolation_wrapper.hpp</label>
+        <link refid="interpolation__wrapper_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp</label>
+        <link refid="warp__perspective__device_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="31">
+        <label>operator_types.h</label>
+        <link refid="operator__types_8h"/>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>algorithm</label>
+      </node>
+      <node id="23">
+        <label>array</label>
+      </node>
+      <node id="19">
+        <label>exception</label>
+      </node>
+      <node id="2">
+        <label>hip/hip_runtime.h</label>
+      </node>
+      <node id="32">
+        <label>hip/hip_vector_types.h</label>
+      </node>
+      <node id="15">
+        <label>iostream</label>
+      </node>
+      <node id="12">
+        <label>memory</label>
+      </node>
+      <node id="16">
+        <label>optional</label>
+      </node>
+      <node id="27">
+        <label>span</label>
+      </node>
+      <node id="14">
+        <label>stdint.h</label>
+      </node>
+      <node id="30">
+        <label>stdlib.h</label>
+      </node>
+      <node id="8">
+        <label>type_traits</label>
+      </node>
+      <node id="25">
+        <label>unordered_map</label>
+      </node>
+      <node id="33">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
+    <innernamespace refid="namespace_kernels">Kernels</innernamespace>
+    <innernamespace refid="namespace_kernels_1_1_device">Kernels::Device</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;hip/hip_runtime.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="interpolation__wrapper_8hpp" kindref="compound">core/wrappers/interpolation_wrapper.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespace_kernels" kindref="compound">Kernels</ref><sp/>{</highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">Device<sp/>{</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>SrcWrapper,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>DstWrapper,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Mat&gt;</highlight></codeline>
+<codeline lineno="33" refid="namespace_kernels_1_1_device_1a79ddd8c361d020d8ed496b5ee9d571bc" refkind="member"><highlight class="normal">__global__<sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="namespace_kernels_1_1_device_1a79ddd8c361d020d8ed496b5ee9d571bc" kindref="member">warp_perspective</ref>(SrcWrapper<sp/>input,<sp/>DstWrapper<sp/>output,<sp/>Mat<sp/>mat)<sp/>{</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x<sp/>=<sp/>blockDim.x<sp/>*<sp/>blockIdx.x<sp/>+<sp/>threadIdx.x;</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y<sp/>=<sp/>blockDim.y<sp/>*<sp/>blockIdx.y<sp/>+<sp/>threadIdx.y;</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>b<sp/>=<sp/>blockIdx.z;</highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(x<sp/>&gt;=<sp/>output.width()<sp/>||<sp/>y<sp/>&gt;=<sp/>output.height())<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>coeff<sp/>=<sp/>1.0f<sp/>/<sp/>(mat[6]<sp/>*<sp/>x<sp/>+<sp/>mat[7]<sp/>*<sp/>y<sp/>+<sp/>mat[8]);</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>ox<sp/>=<sp/>(mat[0]<sp/>*<sp/>x<sp/>+<sp/>mat[1]<sp/>*<sp/>y<sp/>+<sp/>mat[2])<sp/>*<sp/>coeff;</highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>oy<sp/>=<sp/>(mat[3]<sp/>*<sp/>x<sp/>+<sp/>mat[4]<sp/>*<sp/>y<sp/>+<sp/>mat[5])<sp/>*<sp/>coeff;</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"></highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/>output.at(b,<sp/>y,<sp/>x,<sp/>0)<sp/>=<sp/>input.at(b,<sp/>oy,<sp/>ox,<sp/>0);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="46"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>Device</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="47"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>Kernels</highlight></codeline>
+    </programlisting>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp"/>
+  </compounddef>
+</doxygen>

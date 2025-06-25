@@ -1,0 +1,592 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="class_math_vector" kind="class" language="C++" prot="public">
+    <compoundname>MathVector</compoundname>
+    <includes refid="math__vector_8hpp" local="no">math_vector.hpp</includes>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==1), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; U, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; U, rank &gt; MathVector::convert_base</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>convert_base</name>
+        <qualifiedname>MathVector::convert_base</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="68" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="68" bodyend="73"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==2), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; U, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; U, rank &gt; MathVector::convert_base</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>convert_base</name>
+        <qualifiedname>MathVector::convert_base</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="76" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="76" bodyend="82"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==3), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; U, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; U, rank &gt; MathVector::convert_base</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>convert_base</name>
+        <qualifiedname>MathVector::convert_base</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="85" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="85" bodyend="92"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==4), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; U, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; U, rank &gt; MathVector::convert_base</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>convert_base</name>
+        <qualifiedname>MathVector::convert_base</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="95" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="95" bodyend="103"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==1), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt; MathVector::fill</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>fill</name>
+        <qualifiedname>MathVector::fill</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="107" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="107" bodyend="111"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==2), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt; MathVector::fill</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>fill</name>
+        <qualifiedname>MathVector::fill</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="114" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="114" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==3), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt; MathVector::fill</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>fill</name>
+        <qualifiedname>MathVector::fill</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="121" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="121" bodyend="125"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==4), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, 4 &gt; MathVector::fill</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec)</argsstring>
+        <name>fill</name>
+        <qualifiedname>MathVector::fill</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="128" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="128" bodyend="132"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==1), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, rank &gt; MathVector::pow</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec, double p)</argsstring>
+        <name>pow</name>
+        <qualifiedname>MathVector::pow</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="33" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="33" bodyend="37"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==2), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, rank &gt; MathVector::pow</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec, double p)</argsstring>
+        <name>pow</name>
+        <qualifiedname>MathVector::pow</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="40" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="40" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==3), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, rank &gt; MathVector::pow</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec, double p)</argsstring>
+        <name>pow</name>
+        <qualifiedname>MathVector::pow</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="48" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="48" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==4), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ HIP_vector_type&lt; T, rank &gt;</type>
+        <definition>__host__ static __device__ HIP_vector_type&lt; T, rank &gt; MathVector::pow</definition>
+        <argsstring>(HIP_vector_type&lt; T, rank &gt; vec, double p)</argsstring>
+        <name>pow</name>
+        <qualifiedname>MathVector::pow</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>double</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="57" column="48" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="57" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==1), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ void</type>
+        <definition>__host__ static __device__ void MathVector::trunc</definition>
+        <argsstring>(HIP_vector_type&lt; T, 4 &gt; vec, HIP_vector_type&lt; T, rank &gt; *dst)</argsstring>
+        <name>trunc</name>
+        <qualifiedname>MathVector::trunc</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, 4 &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt; *</type>
+          <declname>dst</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="136" column="37" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="136" bodyend="140"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==2), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ void</type>
+        <definition>__host__ static __device__ void MathVector::trunc</definition>
+        <argsstring>(HIP_vector_type&lt; T, 4 &gt; vec, HIP_vector_type&lt; T, rank &gt; *dst)</argsstring>
+        <name>trunc</name>
+        <qualifiedname>MathVector::trunc</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, 4 &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt; *</type>
+          <declname>dst</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="143" column="37" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="143" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==3), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ void</type>
+        <definition>__host__ static __device__ void MathVector::trunc</definition>
+        <argsstring>(HIP_vector_type&lt; T, 4 &gt; vec, HIP_vector_type&lt; T, rank &gt; *dst)</argsstring>
+        <name>trunc</name>
+        <qualifiedname>MathVector::trunc</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, 4 &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt; *</type>
+          <declname>dst</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="150" column="37" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="150" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>unsigned int</type>
+            <declname>rank</declname>
+            <defname>rank</defname>
+          </param>
+          <param>
+            <type>typename std::enable_if&lt;(rank==4), bool &gt;::type</type>
+            <defval>0</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ static __device__ void</type>
+        <definition>__host__ static __device__ void MathVector::trunc</definition>
+        <argsstring>(HIP_vector_type&lt; T, 4 &gt; vec, HIP_vector_type&lt; T, rank &gt; *dst)</argsstring>
+        <name>trunc</name>
+        <qualifiedname>MathVector::trunc</qualifiedname>
+        <param>
+          <type>HIP_vector_type&lt; T, 4 &gt;</type>
+          <declname>vec</declname>
+        </param>
+        <param>
+          <type>HIP_vector_type&lt; T, rank &gt; *</type>
+          <declname>dst</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="157" column="37" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="157" bodyend="161"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.</para>
+<para>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</para>
+<para>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</para>
+<para>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" line="29" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/math_vector.hpp" bodystart="29" bodyend="162"/>
+    <listofallmembers>
+      <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" virt="non-virtual"><scope>MathVector</scope><name>convert_base</name></member>
+      <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" virt="non-virtual"><scope>MathVector</scope><name>convert_base</name></member>
+      <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" virt="non-virtual"><scope>MathVector</scope><name>convert_base</name></member>
+      <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" prot="public" virt="non-virtual"><scope>MathVector</scope><name>convert_base</name></member>
+      <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" virt="non-virtual"><scope>MathVector</scope><name>fill</name></member>
+      <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" virt="non-virtual"><scope>MathVector</scope><name>fill</name></member>
+      <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" virt="non-virtual"><scope>MathVector</scope><name>fill</name></member>
+      <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" prot="public" virt="non-virtual"><scope>MathVector</scope><name>fill</name></member>
+      <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" virt="non-virtual"><scope>MathVector</scope><name>pow</name></member>
+      <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" virt="non-virtual"><scope>MathVector</scope><name>pow</name></member>
+      <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" virt="non-virtual"><scope>MathVector</scope><name>pow</name></member>
+      <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" prot="public" virt="non-virtual"><scope>MathVector</scope><name>pow</name></member>
+      <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" virt="non-virtual"><scope>MathVector</scope><name>trunc</name></member>
+      <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" virt="non-virtual"><scope>MathVector</scope><name>trunc</name></member>
+      <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" virt="non-virtual"><scope>MathVector</scope><name>trunc</name></member>
+      <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" prot="public" virt="non-virtual"><scope>MathVector</scope><name>trunc</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

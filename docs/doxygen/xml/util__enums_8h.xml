@@ -1,0 +1,591 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="util__enums_8h" kind="file" language="C++">
+    <compoundname>util_enums.h</compoundname>
+    <includedby refid="data__type_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp</includedby>
+    <includedby refid="tensor__layout_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp</includedby>
+    <includedby refid="tensor__storage_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp</includedby>
+    <includedby refid="op__copy__make__border_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp</includedby>
+    <invincdepgraph>
+      <node id="5">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp</label>
+        <link refid="strided__data__wrap_8hpp"/>
+      </node>
+      <node id="7">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/common/validation_helpers.hpp</label>
+        <link refid="validation__helpers_8hpp"/>
+      </node>
+      <node id="2">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp</label>
+        <link refid="data__type_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp</label>
+        <link refid="image__format_8hpp"/>
+      </node>
+      <node id="6">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp</label>
+        <link refid="tensor_8hpp"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+      </node>
+      <node id="36">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp</label>
+        <link refid="tensor__buffer_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp</label>
+        <link refid="tensor__data_8hpp"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="35">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp</label>
+        <link refid="tensor__layout_8hpp"/>
+        <childnode refid="36" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+        <childnode refid="37" relation="include">
+        </childnode>
+      </node>
+      <node id="34">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp</label>
+        <link refid="tensor__requirements_8hpp"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="37">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp</label>
+        <link refid="tensor__shape_8hpp"/>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="38">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp</label>
+        <link refid="tensor__storage_8hpp"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h</label>
+        <link refid="util__enums_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+        <childnode refid="38" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp</label>
+        <link refid="border__wrapper_8hpp"/>
+        <childnode refid="13" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp</label>
+        <link refid="generic__tensor__wrapper_8hpp"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/image_wrapper.hpp</label>
+        <link refid="image__wrapper_8hpp"/>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp</label>
+        <link refid="interpolation__wrapper_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp</label>
+        <link refid="bilateral__filter__device_8hpp"/>
+      </node>
+      <node id="9">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/non_max_suppression_device.hpp</label>
+        <link refid="non__max__suppression__device_8hpp"/>
+      </node>
+      <node id="15">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp</label>
+        <link refid="warp__perspective__device_8hpp"/>
+      </node>
+      <node id="10">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/non_max_suppression_host.hpp</label>
+        <link refid="non__max__suppression__host_8hpp"/>
+      </node>
+      <node id="16">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bilateral_filter.hpp</label>
+        <link refid="op__bilateral__filter_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bnd_box.hpp</label>
+        <link refid="op__bnd__box_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp</label>
+        <link refid="op__composite_8hpp"/>
+      </node>
+      <node id="20">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp</label>
+        <link refid="op__copy__make__border_8hpp"/>
+      </node>
+      <node id="21">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp</label>
+        <link refid="op__custom__crop_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_cvt_color.hpp</label>
+        <link refid="op__cvt__color_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="23">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_flip.hpp</label>
+        <link refid="op__flip_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp</label>
+        <link refid="op__gamma__contrast_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_histogram.hpp</label>
+        <link refid="op__histogram_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp</label>
+        <link refid="op__non__max__suppression_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_normalize.hpp</label>
+        <link refid="op__normalize_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_remap.hpp</label>
+        <link refid="op__remap_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_resize.hpp</label>
+        <link refid="op__resize_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="30">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp</label>
+        <link refid="op__rotate_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="31">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp</label>
+        <link refid="op__thresholding_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp</label>
+        <link refid="op__warp__affine_8hpp"/>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="33">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp</label>
+        <link refid="op__warp__perspective_8hpp"/>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/roccv_operators.hpp</label>
+        <link refid="roccv__operators_8hpp"/>
+      </node>
+    </invincdepgraph>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="util__enums_8h_1ade439766996cde7c27ee01e826ccef14" prot="public" static="no" strong="no">
+        <type></type>
+        <name>eChannelType</name>
+        <enumvalue id="util__enums_8h_1ade439766996cde7c27ee01e826ccef14aa6b9a78ac8d0402486f96d8ad7923d93" prot="public">
+          <name>F_RGB</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a4a19a93c929964c201e01c8352dc8b9c" prot="public">
+          <name>BGR</name>
+          <initializer>= 2</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1ade439766996cde7c27ee01e826ccef14af726371acfea68d8e6506b9ab7d817f1" prot="public">
+          <name>YUV</name>
+          <initializer>= 4</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a68e71c1f55a3675b47ce615d0bc4bbbb" prot="public">
+          <name>YVU</name>
+          <initializer>= 8</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1ade439766996cde7c27ee01e826ccef14ad393599abdc2ec6a93956b1b782b4698" prot="public">
+          <name>Grayscale</name>
+          <initializer>= 16</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" line="52" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" bodystart="52" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="enum" id="util__enums_8h_1acc461328b82c34604e8b428326a52183" prot="public" static="no" strong="no">
+        <type></type>
+        <name>eDataType</name>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183aa067375620db4d6336d68f82da3b44d6" prot="public">
+          <name>DATA_TYPE_U8</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183a0509f26dc04cac0287e23a840ee5f031" prot="public">
+          <name>DATA_TYPE_S8</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183a2060a89ce8797207f5c077782e68b264" prot="public">
+          <name>DATA_TYPE_U32</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183ad83c4722cff50ad085c991d67b16d84b" prot="public">
+          <name>DATA_TYPE_S32</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183a599bcb2b78d69aa8b96f9ffdfae37ddc" prot="public">
+          <name>DATA_TYPE_F32</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183a21cc36f43ee581f01f301b417081991d" prot="public">
+          <name>DATA_TYPE_4S16</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1acc461328b82c34604e8b428326a52183ac94be1d38bb99a6e6c5d6a0a4f46c62f" prot="public">
+          <name>DATA_TYPE_S16</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.</para>
+<para>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</para>
+<para>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</para>
+<para>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" line="25" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" bodystart="25" bodyend="33"/>
+      </memberdef>
+      <memberdef kind="enum" id="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>eDeviceType</name>
+        <enumvalue id="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" prot="public">
+          <name>GPU</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a2b55387dd066c5bac646ac61543d152d" prot="public">
+          <name>CPU</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Describes the device type. Used to determine where Tensor data should be allocated and whether operations should run on the host or device (GPU or CPU). </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" line="67" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" bodystart="67" bodyend="67"/>
+      </memberdef>
+      <memberdef kind="enum" id="util__enums_8h_1a2011abb365728e66a0131adc93454018" prot="public" static="no" strong="yes">
+        <type></type>
+        <name>eOwnership</name>
+        <enumvalue id="util__enums_8h_1a2011abb365728e66a0131adc93454018a258c405bc128bfac9493e8d9cf46f975" prot="public">
+          <name>OWNING</name>
+          <initializer>= 0</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a2011abb365728e66a0131adc93454018a5824b315fdbb0f42abfe1bb03f78c270" prot="public">
+          <name>VIEW</name>
+          <initializer>= 1</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+<para>Describes whether a container should own a resource or only be a view for a resource. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" line="73" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" bodystart="73" bodyend="73"/>
+      </memberdef>
+      <memberdef kind="enum" id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" prot="public" static="no" strong="no">
+        <type></type>
+        <name>eTensorLayout</name>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eacc21f7993097e2cd90dd8feeaca53d6d" prot="public">
+          <name>TENSOR_LAYOUT_NHWC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea5fcd457837a3f757a34cdea86fa61965" prot="public">
+          <name>TENSOR_LAYOUT_HWC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea7b543ea47c200c290b7fbb6252093c35" prot="public">
+          <name>TENSOR_LAYOUT_NC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea1ce6952c71ae83a143e051705384a5b4" prot="public">
+          <name>TENSOR_LAYOUT_NW</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea25a7983178dc77a9f4e056ae15c79779" prot="public">
+          <name>TENSOR_LAYOUT_N</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea3a77ffeccac79ab009ebab69e4994718" prot="public">
+          <name>TENSOR_LAYOUT_NMC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eac79e1bc71e0333d4aa522731045ce486" prot="public">
+          <name>TENSOR_LAYOUT_NMD</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea924a3153e74d861677e1cc9124eb419f" prot="public">
+          <name>TENSOR_LAYOUT_LNHWC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eaa54d643f7f5d0768a94bd5c859c1595e" prot="public">
+          <name>TENSOR_LAYOUT_NCHW</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea28e2d244756df493f5dc65bd573f1f05" prot="public">
+          <name>TENSOR_LAYOUT_NWC</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" line="36" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h" bodystart="36" bodyend="50"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="comment">/*<sp/>Supported<sp/>Data<sp/>Types<sp/>for<sp/>use<sp/>with<sp/>utilities<sp/>such<sp/>as<sp/>Tensor<sp/>inputs.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref><sp/>{</highlight></codeline>
+<codeline lineno="26" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183aa067375620db4d6336d68f82da3b44d6" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183aa067375620db4d6336d68f82da3b44d6" kindref="member">DATA_TYPE_U8</ref><sp/>=<sp/>0,<sp/></highlight><highlight class="comment">/*<sp/>8<sp/>bit<sp/>unsigned<sp/>integer.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a0509f26dc04cac0287e23a840ee5f031" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a0509f26dc04cac0287e23a840ee5f031" kindref="member">DATA_TYPE_S8</ref>,<sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>8<sp/>bit<sp/>signed<sp/>integer.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a2060a89ce8797207f5c077782e68b264" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a2060a89ce8797207f5c077782e68b264" kindref="member">DATA_TYPE_U32</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>32<sp/>bit<sp/>unsigned<sp/>integer.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183ad83c4722cff50ad085c991d67b16d84b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183ad83c4722cff50ad085c991d67b16d84b" kindref="member">DATA_TYPE_S32</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>32<sp/>bit<sp/>signed<sp/>integer.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="30" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a599bcb2b78d69aa8b96f9ffdfae37ddc" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a599bcb2b78d69aa8b96f9ffdfae37ddc" kindref="member">DATA_TYPE_F32</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>32<sp/>bit<sp/>single<sp/>precision<sp/>float<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a21cc36f43ee581f01f301b417081991d" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a21cc36f43ee581f01f301b417081991d" kindref="member">DATA_TYPE_4S16</ref>,<sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>4-channel<sp/>16-bit<sp/>signed<sp/>integer*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183ac94be1d38bb99a6e6c5d6a0a4f46c62f" kindref="member">DATA_TYPE_S16</ref><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>16<sp/>bit<sp/>signed<sp/>integer<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="33" refid="util__enums_8h_1acc461328b82c34604e8b428326a52183ac94be1d38bb99a6e6c5d6a0a4f46c62f" refkind="member"><highlight class="normal">}<sp/><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref>;</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="comment">/*<sp/>Supported<sp/>Tensor<sp/>Layout<sp/>Types.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref><sp/>{</highlight></codeline>
+<codeline lineno="37" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eacc21f7993097e2cd90dd8feeaca53d6d" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eacc21f7993097e2cd90dd8feeaca53d6d" kindref="member">TENSOR_LAYOUT_NHWC</ref>,<sp/><sp/></highlight><highlight class="comment">/*<sp/>Number<sp/>of<sp/>Samples,<sp/>Height,<sp/>Width,<sp/>Channels.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="38" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea5fcd457837a3f757a34cdea86fa61965" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea5fcd457837a3f757a34cdea86fa61965" kindref="member">TENSOR_LAYOUT_HWC</ref>,<sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>Height,<sp/>Width,<sp/>Channels.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="39" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea7b543ea47c200c290b7fbb6252093c35" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea7b543ea47c200c290b7fbb6252093c35" kindref="member">TENSOR_LAYOUT_NC</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>Number<sp/>of<sp/>Samples,<sp/>Channels<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="40" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea1ce6952c71ae83a143e051705384a5b4" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea1ce6952c71ae83a143e051705384a5b4" kindref="member">TENSOR_LAYOUT_NW</ref>,<sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>Number<sp/>of<sp/>Samples,<sp/>Width<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="41" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea25a7983178dc77a9f4e056ae15c79779" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea25a7983178dc77a9f4e056ae15c79779" kindref="member">TENSOR_LAYOUT_N</ref>,<sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>Number<sp/>of<sp/>Samples<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="42" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea3a77ffeccac79ab009ebab69e4994718" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea3a77ffeccac79ab009ebab69e4994718" kindref="member">TENSOR_LAYOUT_NMC</ref>,<sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>(SIFT)<sp/>Number<sp/>of<sp/>Samples,<sp/>maximum<sp/>number<sp/>of<sp/>features,</highlight></codeline>
+<codeline lineno="43"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>number<sp/>of<sp/>feature<sp/>coordinates/metadata<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="44" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eac79e1bc71e0333d4aa522731045ce486" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eac79e1bc71e0333d4aa522731045ce486" kindref="member">TENSOR_LAYOUT_NMD</ref>,<sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>(SIFT)<sp/>Number<sp/>of<sp/>Samples,<sp/>maximum<sp/>number<sp/>of<sp/>features,</highlight></codeline>
+<codeline lineno="45"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Depth<sp/>of<sp/>each<sp/>feature<sp/>descriptor*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="46" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea924a3153e74d861677e1cc9124eb419f" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea924a3153e74d861677e1cc9124eb419f" kindref="member">TENSOR_LAYOUT_LNHWC</ref>,<sp/></highlight><highlight class="comment">/*<sp/>(SIFT)<sp/>Octave<sp/>layer,<sp/>Number<sp/>of<sp/>samples,<sp/>Height,</highlight></codeline>
+<codeline lineno="47"><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Width,<sp/>Channels<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="48" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eaa54d643f7f5d0768a94bd5c859c1595e" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eaa54d643f7f5d0768a94bd5c859c1595e" kindref="member">TENSOR_LAYOUT_NCHW</ref>,<sp/><sp/></highlight><highlight class="comment">/*<sp/>Number<sp/>of<sp/>Samples,<sp/>Channels,<sp/>Height,<sp/>Width<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="49" refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea28e2d244756df493f5dc65bd573f1f05" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea28e2d244756df493f5dc65bd573f1f05" kindref="member">TENSOR_LAYOUT_NWC</ref>,<sp/><sp/><sp/></highlight><highlight class="comment">/*<sp/>Number<sp/>of<sp/>Samples,<sp/>Width,<sp/>Channels<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal">}<sp/><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref>;</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight></codeline>
+<codeline lineno="52" refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14" kindref="member">eChannelType</ref><sp/>{</highlight></codeline>
+<codeline lineno="53" refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14aa6b9a78ac8d0402486f96d8ad7923d93" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14aa6b9a78ac8d0402486f96d8ad7923d93" kindref="member">F_RGB</ref><sp/>=<sp/>1,</highlight></codeline>
+<codeline lineno="54" refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a4a19a93c929964c201e01c8352dc8b9c" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a4a19a93c929964c201e01c8352dc8b9c" kindref="member">BGR</ref><sp/>=<sp/>2,</highlight></codeline>
+<codeline lineno="55" refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14af726371acfea68d8e6506b9ab7d817f1" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14af726371acfea68d8e6506b9ab7d817f1" kindref="member">YUV</ref><sp/>=<sp/>4,<sp/></highlight><highlight class="comment">/*Treated<sp/>as<sp/>NV12<sp/>for<sp/>Semi-Planar<sp/>images*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="56" refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a68e71c1f55a3675b47ce615d0bc4bbbb" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a68e71c1f55a3675b47ce615d0bc4bbbb" kindref="member">YVU</ref><sp/>=<sp/>8,<sp/></highlight><highlight class="comment">/*Treated<sp/>as<sp/>NV21<sp/>for<sp/>Semi-Planar<sp/>images*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="57" refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14ad393599abdc2ec6a93956b1b782b4698" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14ad393599abdc2ec6a93956b1b782b4698" kindref="member">Grayscale</ref><sp/>=<sp/>16,</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight></codeline>
+<codeline lineno="59"><highlight class="normal">}<sp/><ref refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14" kindref="member">eChannelType</ref>;</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"></highlight></codeline>
+<codeline lineno="67" refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref><sp/>{<sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">GPU</ref><sp/>=<sp/>0,<sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a2b55387dd066c5bac646ac61543d152d" kindref="member">CPU</ref><sp/>=<sp/>1<sp/>};</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"></highlight></codeline>
+<codeline lineno="73" refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" kindref="member">eOwnership</ref><sp/>{<sp/><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a258c405bc128bfac9493e8d9cf46f975" kindref="member">OWNING</ref><sp/>=<sp/>0,<sp/><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a5824b315fdbb0f42abfe1bb03f78c270" kindref="member">VIEW</ref><sp/>=<sp/>1<sp/>};</highlight></codeline>
+    </programlisting>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/util_enums.h"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structroccv_1_1_tensor_layout_desc" kind="struct" language="C++" prot="public">
+    <compoundname>roccv::TensorLayoutDesc</compoundname>
+    <includes refid="tensor__layout_8hpp" local="no">tensor_layout.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1a5d5f29e1ed2b6beefccd13dbd21cb35d" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::batch_index</definition>
+        <argsstring></argsstring>
+        <name>batch_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::batch_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="44" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="44" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1ab37eaa11d1cf0e89ce7ca5bf109b0238" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::channel_index</definition>
+        <argsstring></argsstring>
+        <name>channel_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::channel_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="47" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1a70ac6fa97285ebd5be308751145a7ea8" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::height_index</definition>
+        <argsstring></argsstring>
+        <name>height_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::height_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="46" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="46" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1a24291095a83313389ddb51812399c563" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::max_features_index</definition>
+        <argsstring></argsstring>
+        <name>max_features_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::max_features_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="48" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="48" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1aa3a0d7c0d2a895fe434dc4ad87282e12" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::rank</definition>
+        <argsstring></argsstring>
+        <name>rank</name>
+        <qualifiedname>roccv::TensorLayoutDesc::rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="43" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1ae06174d017059232d1af892225f17529" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::sift_features_index</definition>
+        <argsstring></argsstring>
+        <name>sift_features_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::sift_features_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="49" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="49" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1a8c1fe8ad979b40e62c0801400587a64e" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::sift_octave_layer_index</definition>
+        <argsstring></argsstring>
+        <name>sift_octave_layer_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::sift_octave_layer_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="50" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_layout_desc_1a05166512786d331bea8e15561a409ec0" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayoutDesc::width_index</definition>
+        <argsstring></argsstring>
+        <name>width_index</name>
+        <qualifiedname>roccv::TensorLayoutDesc::width_index</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="45" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="45" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Descriptors used to specify features of a specific tensor layout type. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="42" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="42" bodyend="51"/>
+    <listofallmembers>
+      <member refid="structroccv_1_1_tensor_layout_desc_1a5d5f29e1ed2b6beefccd13dbd21cb35d" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>batch_index</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1ab37eaa11d1cf0e89ce7ca5bf109b0238" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>channel_index</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1a70ac6fa97285ebd5be308751145a7ea8" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>height_index</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1a24291095a83313389ddb51812399c563" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>max_features_index</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1aa3a0d7c0d2a895fe434dc4ad87282e12" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>rank</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1ae06174d017059232d1af892225f17529" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>sift_features_index</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1a8c1fe8ad979b40e62c0801400587a64e" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>sift_octave_layer_index</name></member>
+      <member refid="structroccv_1_1_tensor_layout_desc_1a05166512786d331bea8e15561a409ec0" prot="public" virt="non-virtual"><scope>roccv::TensorLayoutDesc</scope><name>width_index</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

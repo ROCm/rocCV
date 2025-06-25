@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1detail_1_1math_1_1_vector" kind="class" language="C++" prot="public">
+    <compoundname>roccv::detail::math::Vector</compoundname>
+    <includes refid="math_8hpp" local="no">math.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>class T</type>
+      </param>
+      <param>
+        <type>int</type>
+        <declname>N</declname>
+        <defname>N</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classroccv_1_1detail_1_1math_1_1_vector_1aa29f4a322254521e7510a6863e15f796" prot="public" static="no">
+        <type>T</type>
+        <definition>using roccv::detail::math::Vector&lt; T, N &gt;::Type =  T</definition>
+        <argsstring></argsstring>
+        <name>Type</name>
+        <qualifiedname>roccv::detail::math::Vector::Type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="39" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classroccv_1_1detail_1_1math_1_1_vector_1a408aacb6c0fd8d94f127d0406a317a43" prot="public" static="no" mutable="no">
+        <type>T</type>
+        <definition>T roccv::detail::math::Vector&lt; T, N &gt;::data_[N]</definition>
+        <argsstring>[N]</argsstring>
+        <name>data_</name>
+        <qualifiedname>roccv::detail::math::Vector::data_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="62" column="7" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_vector_1a307382f7687f05b14eca00ef373a1847" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__</type>
+        <definition>__host__ __device__ roccv::detail::math::Vector&lt; T, N &gt;::operator const T *</definition>
+        <argsstring>() const</argsstring>
+        <name>operator const T *</name>
+        <qualifiedname>roccv::detail::math::Vector::operator const T *</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="58" column="25" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="58" bodyend="58"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_vector_1a7c544eee5880025221cc053fbd6d05c4" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__</type>
+        <definition>__host__ __device__ roccv::detail::math::Vector&lt; T, N &gt;::operator T*</definition>
+        <argsstring>()</argsstring>
+        <name>operator T*</name>
+        <qualifiedname>roccv::detail::math::Vector::operator T*</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="60" column="25" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="60" bodyend="60"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_vector_1ab205d71b45e79127fba9959a196521fd" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ T &amp;</type>
+        <definition>__host__ __device__ T &amp; roccv::detail::math::Vector&lt; T, N &gt;::operator[]</definition>
+        <argsstring>(int i)</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::detail::math::Vector::operator[]</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="53" column="27" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="53" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_vector_1abf513c99a7524592f68118812aafbc75" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const __host__ __device__ T &amp;</type>
+        <definition>const __host__ __device__ T &amp; roccv::detail::math::Vector&lt; T, N &gt;::operator[]</definition>
+        <argsstring>(int i) const</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::detail::math::Vector::operator[]</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="48" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="48" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_vector_1a239a9912fb8b47a87c9de884ac89ba94" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ int</type>
+        <definition>__host__ __device__ int roccv::detail::math::Vector&lt; T, N &gt;::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>roccv::detail::math::Vector::size</qualifiedname>
+        <briefdescription>
+<para>Returns the size of the vector. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The size of the vector. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="46" column="29" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="46" bodyend="46"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Defines a <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref> object. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The underlying data type of the vector. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>N</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The size of the vector. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="37" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="37" bodyend="63"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a408aacb6c0fd8d94f127d0406a317a43" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>data_</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a307382f7687f05b14eca00ef373a1847" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>operator const T *</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a7c544eee5880025221cc053fbd6d05c4" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>operator T*</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1abf513c99a7524592f68118812aafbc75" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1ab205d71b45e79127fba9959a196521fd" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a239a9912fb8b47a87c9de884ac89ba94" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>size</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_vector_1aa29f4a322254521e7510a6863e15f796" prot="public" virt="non-virtual"><scope>roccv::detail::math::Vector</scope><name>Type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

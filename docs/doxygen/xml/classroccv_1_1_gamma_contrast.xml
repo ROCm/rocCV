@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_gamma_contrast" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::GammaContrast</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__gamma__contrast_8hpp" local="no">op_gamma_contrast.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_gamma_contrast_1ab3398ec4aa041cf8d4a150d82e2f02ca" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::GammaContrast::GammaContrast</definition>
+        <argsstring>()</argsstring>
+        <name>GammaContrast</name>
+        <qualifiedname>roccv::GammaContrast::GammaContrast</qualifiedname>
+        <briefdescription>
+<para>Default constructor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp" line="39" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_gamma_contrast_1a492a03e04bac34f865788a0eb240924d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::GammaContrast::operator()</definition>
+        <argsstring>(hipStream_t stream, const roccv::Tensor &amp;input, const roccv::Tensor &amp;output, const roccv::Tensor &amp;gamma, eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::GammaContrast::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>gamma</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Executes the Gamma Contrast operation. The operation adjusts the gamma contrast on the images in a tensor. A gamma tensor is given as input to apply a different gamma value on each image in the input tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [NHWC, HWC] Channels: [3] Supported DataType(s): [U8]</para>
+<para>Output: Supported TensorLayout(s): [NHWC, HWC] Channels: [3] Supported DataType(s): [U8]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | Yes
+  Width         | Yes
+  Height        | Yes
+  Batch         | Yes
+</verbatim></para>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operation on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The input tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The output tensor with gamma correction applied. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">gamma</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>One dimensional tensor with shape N, containing the gamma values for each image in the batch </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device type to execute on (CPU/GPU). </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp" line="80" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_gamma_contrast_1aeb6e3b85b63a82e77271a42b83ac6f8a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::GammaContrast::~GammaContrast</definition>
+        <argsstring>()</argsstring>
+        <name>~GammaContrast</name>
+        <qualifiedname>roccv::GammaContrast::~GammaContrast</qualifiedname>
+        <briefdescription>
+<para>Destructor. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp" line="44" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>roccv::GammaContrast</label>
+        <link refid="classroccv_1_1_gamma_contrast"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>roccv::GammaContrast</label>
+        <link refid="classroccv_1_1_gamma_contrast"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp" line="34" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp" bodystart="34" bodyend="82"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_gamma_contrast_1ab3398ec4aa041cf8d4a150d82e2f02ca" prot="public" virt="non-virtual"><scope>roccv::GammaContrast</scope><name>GammaContrast</name></member>
+      <member refid="classroccv_1_1_gamma_contrast_1a492a03e04bac34f865788a0eb240924d" prot="public" virt="non-virtual"><scope>roccv::GammaContrast</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_gamma_contrast_1aeb6e3b85b63a82e77271a42b83ac6f8a" prot="public" virt="non-virtual"><scope>roccv::GammaContrast</scope><name>~GammaContrast</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::GammaContrast</scope><name>~IOperator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_generic_tensor_wrapper" kind="class" language="C++" prot="public">
+    <compoundname>roccv::GenericTensorWrapper</compoundname>
+    <includes refid="generic__tensor__wrapper_8hpp" local="no">generic_tensor_wrapper.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_generic_tensor_wrapper_1afe9738fa4998a8228fed46647af6b26d" prot="public" static="no" mutable="no">
+        <type>unsigned char *</type>
+        <definition>unsigned char* roccv::GenericTensorWrapper&lt; T &gt;::data</definition>
+        <argsstring></argsstring>
+        <name>data</name>
+        <qualifiedname>roccv::GenericTensorWrapper::data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="62" column="19" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="62" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_generic_tensor_wrapper_1a07d9e6cda500be6e0a7e325c8625c3dd" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int roccv::GenericTensorWrapper&lt; T &gt;::rank</definition>
+        <argsstring></argsstring>
+        <name>rank</name>
+        <qualifiedname>roccv::GenericTensorWrapper::rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="61" column="9" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="61" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_generic_tensor_wrapper_1a23306e72bc72b0be09718bd1c9292bab" prot="public" static="no" mutable="no">
+        <type>std::array&lt; int64_t, <ref refid="tensor__layout_8hpp_1a5fc9cd7db841eb7a72c1f9fe727fcc04" kindref="member">ROCCV_TENSOR_MAX_RANK</ref> &gt;</type>
+        <definition>std::array&lt;int64_t, ROCCV_TENSOR_MAX_RANK&gt; roccv::GenericTensorWrapper&lt; T &gt;::shape</definition>
+        <argsstring></argsstring>
+        <name>shape</name>
+        <qualifiedname>roccv::GenericTensorWrapper::shape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="59" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_generic_tensor_wrapper_1a035a2e6c84f259918fdf1fb5b5516814" prot="public" static="no" mutable="no">
+        <type>std::array&lt; int64_t, <ref refid="tensor__layout_8hpp_1a5fc9cd7db841eb7a72c1f9fe727fcc04" kindref="member">ROCCV_TENSOR_MAX_RANK</ref> &gt;</type>
+        <definition>std::array&lt;int64_t, ROCCV_TENSOR_MAX_RANK&gt; roccv::GenericTensorWrapper&lt; T &gt;::strides</definition>
+        <argsstring></argsstring>
+        <name>strides</name>
+        <qualifiedname>roccv::GenericTensorWrapper::strides</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="60" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="60" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_generic_tensor_wrapper_1a0160d0a4746534a4ddca0892ae2b3079" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>ARGS</declname>
+            <defname>ARGS</defname>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ T &amp;</type>
+        <definition>__device__ __host__ T &amp; roccv::GenericTensorWrapper&lt; T &gt;::at</definition>
+        <argsstring>(ARGS... idx)</argsstring>
+        <name>at</name>
+        <qualifiedname>roccv::GenericTensorWrapper::at</qualifiedname>
+        <param>
+          <type>ARGS...</type>
+          <declname>idx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="48" column="27" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="48" bodyend="57"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_generic_tensor_wrapper_1afbbeb61df8dfbd0a5ebb46760f3352a1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::GenericTensorWrapper&lt; T &gt;::GenericTensorWrapper</definition>
+        <argsstring>(const Tensor &amp;tensor)</argsstring>
+        <name>GenericTensorWrapper</name>
+        <qualifiedname>roccv::GenericTensorWrapper::GenericTensorWrapper</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+<para>Constructs a generic tensor descriptor from a <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref>. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>tensor</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> to wrap. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="35" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="35" bodyend="45"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>std::array&lt; int64_t, ROCCV_TENSOR_MAX_RANK &gt;</label>
+      </node>
+      <node id="1">
+        <label>roccv::GenericTensorWrapper&lt; T &gt;</label>
+        <link refid="classroccv_1_1_generic_tensor_wrapper"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>shape</edgelabel>
+          <edgelabel>strides</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" line="28" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp" bodystart="28" bodyend="63"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_generic_tensor_wrapper_1a0160d0a4746534a4ddca0892ae2b3079" prot="public" virt="non-virtual"><scope>roccv::GenericTensorWrapper</scope><name>at</name></member>
+      <member refid="classroccv_1_1_generic_tensor_wrapper_1afe9738fa4998a8228fed46647af6b26d" prot="public" virt="non-virtual"><scope>roccv::GenericTensorWrapper</scope><name>data</name></member>
+      <member refid="classroccv_1_1_generic_tensor_wrapper_1afbbeb61df8dfbd0a5ebb46760f3352a1" prot="public" virt="non-virtual"><scope>roccv::GenericTensorWrapper</scope><name>GenericTensorWrapper</name></member>
+      <member refid="classroccv_1_1_generic_tensor_wrapper_1a07d9e6cda500be6e0a7e325c8625c3dd" prot="public" virt="non-virtual"><scope>roccv::GenericTensorWrapper</scope><name>rank</name></member>
+      <member refid="classroccv_1_1_generic_tensor_wrapper_1a23306e72bc72b0be09718bd1c9292bab" prot="public" virt="non-virtual"><scope>roccv::GenericTensorWrapper</scope><name>shape</name></member>
+      <member refid="classroccv_1_1_generic_tensor_wrapper_1a035a2e6c84f259918fdf1fb5b5516814" prot="public" virt="non-virtual"><scope>roccv::GenericTensorWrapper</scope><name>strides</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

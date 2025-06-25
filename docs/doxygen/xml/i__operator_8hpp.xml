@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="i__operator_8hpp" kind="file" language="C++">
+    <compoundname>i_operator.hpp</compoundname>
+    <includes refid="hip__assert_8h" local="yes">core/hip_assert.h</includes>
+    <includedby refid="op__bilateral__filter_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_bilateral_filter.hpp</includedby>
+    <includedby refid="op__bnd__box_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_bnd_box.hpp</includedby>
+    <includedby refid="op__composite_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp</includedby>
+    <includedby refid="op__copy__make__border_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp</includedby>
+    <includedby refid="op__custom__crop_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp</includedby>
+    <includedby refid="op__cvt__color_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_cvt_color.hpp</includedby>
+    <includedby refid="op__flip_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_flip.hpp</includedby>
+    <includedby refid="op__gamma__contrast_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp</includedby>
+    <includedby refid="op__histogram_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_histogram.hpp</includedby>
+    <includedby refid="op__non__max__suppression_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp</includedby>
+    <includedby refid="op__normalize_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_normalize.hpp</includedby>
+    <includedby refid="op__remap_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_remap.hpp</includedby>
+    <includedby refid="op__resize_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_resize.hpp</includedby>
+    <includedby refid="op__rotate_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp</includedby>
+    <includedby refid="op__thresholding_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp</includedby>
+    <includedby refid="op__warp__affine_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp</includedby>
+    <includedby refid="op__warp__perspective_8hpp" local="no">/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp</includedby>
+    <incdepgraph>
+      <node id="4">
+        <label>core/exception.hpp</label>
+        <link refid="exception_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>core/hip_assert.h</label>
+        <link refid="hip__assert_8h"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>status_type.h</label>
+        <link refid="status__type_8h"/>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp</label>
+        <link refid="i__operator_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>exception</label>
+      </node>
+      <node id="3">
+        <label>hip/hip_runtime.h</label>
+      </node>
+      <node id="6">
+        <label>iostream</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp</label>
+        <link refid="i__operator_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bilateral_filter.hpp</label>
+        <link refid="op__bilateral__filter_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bnd_box.hpp</label>
+        <link refid="op__bnd__box_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp</label>
+        <link refid="op__composite_8hpp"/>
+      </node>
+      <node id="6">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp</label>
+        <link refid="op__copy__make__border_8hpp"/>
+      </node>
+      <node id="7">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp</label>
+        <link refid="op__custom__crop_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_cvt_color.hpp</label>
+        <link refid="op__cvt__color_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_flip.hpp</label>
+        <link refid="op__flip_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp</label>
+        <link refid="op__gamma__contrast_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_histogram.hpp</label>
+        <link refid="op__histogram_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp</label>
+        <link refid="op__non__max__suppression_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_normalize.hpp</label>
+        <link refid="op__normalize_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_remap.hpp</label>
+        <link refid="op__remap_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_resize.hpp</label>
+        <link refid="op__resize_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp</label>
+        <link refid="op__rotate_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp</label>
+        <link refid="op__thresholding_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp</label>
+        <link refid="op__warp__affine_8hpp"/>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp</label>
+        <link refid="op__warp__perspective_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/roccv_operators.hpp</label>
+        <link refid="roccv__operators_8hpp"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classroccv_1_1_i_operator" prot="public">roccv::IOperator</innerclass>
+    <innernamespace refid="namespaceroccv">roccv</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="hip__assert_8h" kindref="compound">core/hip_assert.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceroccv" kindref="compound">roccv</ref><sp/>{</highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="31" refid="classroccv_1_1_i_operator" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classroccv_1_1_i_operator" kindref="compound">IOperator</ref><sp/>{</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="33" refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/><ref refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" kindref="member">~IOperator</ref>()<sp/>{}</highlight></codeline>
+<codeline lineno="34"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="35"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>roccv</highlight><highlight class="normal"></highlight></codeline>
+    </programlisting>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespace_kernels" kind="namespace" language="C++">
+    <compoundname>Kernels</compoundname>
+    <innernamespace refid="namespace_kernels_1_1_device">Kernels::Device</innernamespace>
+    <innernamespace refid="namespace_kernels_1_1_host">Kernels::Host</innernamespace>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespace_kernels_1a0d4e759d1f8e95c11e273bd6a3e41f98" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>__host__ __device__ void</type>
+        <definition>static __host__ __device__ void Kernels::blend_single_color</definition>
+        <argsstring>(uchar4 &amp;color, const uchar4 &amp;color_in)</argsstring>
+        <name>blend_single_color</name>
+        <qualifiedname>Kernels::blend_single_color</qualifiedname>
+        <param>
+          <type>uchar4 &amp;</type>
+          <declname>color</declname>
+        </param>
+        <param>
+          <type>const uchar4 &amp;</type>
+          <declname>color_in</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="42" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="42" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1a84c5d512f761c0ac62d90566bda87b58" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ float</type>
+        <definition>__device__ __host__ float Kernels::ComputeArea</definition>
+        <argsstring>(const short4 &amp;box)</argsstring>
+        <name>ComputeArea</name>
+        <qualifiedname>Kernels::ComputeArea</qualifiedname>
+        <param>
+          <type>const short4 &amp;</type>
+          <declname>box</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common/non_max_suppression_helpers.hpp" line="27" column="34" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common/non_max_suppression_helpers.hpp" bodystart="27" bodyend="27"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1ae5b1607e6860489ee2548b4c6056eecb" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ float</type>
+        <definition>__device__ __host__ float Kernels::ComputeIoU</definition>
+        <argsstring>(const short4 &amp;boxA, const short4 &amp;boxB)</argsstring>
+        <name>ComputeIoU</name>
+        <qualifiedname>Kernels::ComputeIoU</qualifiedname>
+        <param>
+          <type>const short4 &amp;</type>
+          <declname>boxA</declname>
+        </param>
+        <param>
+          <type>const short4 &amp;</type>
+          <declname>boxB</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common/non_max_suppression_helpers.hpp" line="29" column="34" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common/non_max_suppression_helpers.hpp" bodystart="29" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1a7c175ff81421b0ab88d2740aaabf1868" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>__host__ __device__ __forceinline__ bool</type>
+        <definition>static __host__ __device__ __forceinline__ bool Kernels::pixel_in_box</definition>
+        <argsstring>(float ix, float iy, float left, float right, float top, float bottom)</argsstring>
+        <name>pixel_in_box</name>
+        <qualifiedname>Kernels::pixel_in_box</qualifiedname>
+        <param>
+          <type>float</type>
+          <declname>ix</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>iy</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>left</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>right</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>top</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>bottom</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="37" column="49" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="37" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1adc986f4212fe01a3b7da4b0c4f0404a7" prot="public" static="yes" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ void</type>
+        <definition>static __host__ __device__ void Kernels::shade_rectangle</definition>
+        <argsstring>(const Rect_t &amp;rect, int ix, int iy, uchar4 *out_color)</argsstring>
+        <name>shade_rectangle</name>
+        <qualifiedname>Kernels::shade_rectangle</qualifiedname>
+        <param>
+          <type>const <ref refid="struct_rect__t" kindref="compound">Rect_t</ref> &amp;</type>
+          <declname>rect</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>ix</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>iy</declname>
+        </param>
+        <param>
+          <type>uchar4 *</type>
+          <declname>out_color</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="58" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="58" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1a0d0fdd5b5fff775cdc4ca1bcebce6e49" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename _T</type>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ uint8_t</type>
+        <definition>static __host__ __device__ uint8_t Kernels::u8cast</definition>
+        <argsstring>(_T value)</argsstring>
+        <name>u8cast</name>
+        <qualifiedname>Kernels::u8cast</qualifiedname>
+        <param>
+          <type>_T</type>
+          <declname>value</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="33" column="36" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="33" bodyend="35"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.</para>
+<para>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</para>
+<para>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</para>
+<para>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common/non_max_suppression_helpers.hpp" line="26" column="1"/>
+  </compounddef>
+</doxygen>

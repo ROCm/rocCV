@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_i_operator" kind="class" language="C++" prot="public">
+    <compoundname>roccv::IOperator</compoundname>
+    <derivedcompoundref refid="classroccv_1_1_bilateral_filter" prot="public" virt="non-virtual">roccv::BilateralFilter</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_bnd_box" prot="public" virt="non-virtual">roccv::BndBox</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_composite" prot="public" virt="non-virtual">roccv::Composite</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_copy_make_border" prot="public" virt="non-virtual">roccv::CopyMakeBorder</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_custom_crop" prot="public" virt="non-virtual">roccv::CustomCrop</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_cvt_color" prot="public" virt="non-virtual">roccv::CvtColor</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_flip" prot="public" virt="non-virtual">roccv::Flip</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_gamma_contrast" prot="public" virt="non-virtual">roccv::GammaContrast</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_histogram" prot="public" virt="non-virtual">roccv::Histogram</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_non_maximum_suppression" prot="public" virt="non-virtual">roccv::NonMaximumSuppression</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_normalize" prot="public" virt="non-virtual">roccv::Normalize</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_remap" prot="public" virt="non-virtual">roccv::Remap</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_resize" prot="public" virt="non-virtual">roccv::Resize</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_rotate" prot="public" virt="non-virtual">roccv::Rotate</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_threshold" prot="public" virt="non-virtual">roccv::Threshold</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_warp_affine" prot="public" virt="non-virtual">roccv::WarpAffine</derivedcompoundref>
+    <derivedcompoundref refid="classroccv_1_1_warp_perspective" prot="public" virt="non-virtual">roccv::WarpPerspective</derivedcompoundref>
+    <includes refid="i__operator_8hpp" local="no">i_operator.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" static="no" const="no" explicit="no" inline="yes" virt="virtual">
+        <type></type>
+        <definition>virtual roccv::IOperator::~IOperator</definition>
+        <argsstring>()</argsstring>
+        <name>~IOperator</name>
+        <qualifiedname>roccv::IOperator::~IOperator</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp" line="33" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp" bodystart="33" bodyend="33"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Interface class for all roccv operators. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::BilateralFilter</label>
+        <link refid="classroccv_1_1_bilateral_filter"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>roccv::BndBox</label>
+        <link refid="classroccv_1_1_bnd_box"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>roccv::Composite</label>
+        <link refid="classroccv_1_1_composite"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>roccv::CopyMakeBorder</label>
+        <link refid="classroccv_1_1_copy_make_border"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>roccv::CustomCrop</label>
+        <link refid="classroccv_1_1_custom_crop"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>roccv::CvtColor</label>
+        <link refid="classroccv_1_1_cvt_color"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>roccv::Flip</label>
+        <link refid="classroccv_1_1_flip"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>roccv::GammaContrast</label>
+        <link refid="classroccv_1_1_gamma_contrast"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>roccv::Histogram</label>
+        <link refid="classroccv_1_1_histogram"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="11">
+        <label>roccv::NonMaximumSuppression</label>
+        <link refid="classroccv_1_1_non_maximum_suppression"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>roccv::Normalize</label>
+        <link refid="classroccv_1_1_normalize"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>roccv::Remap</label>
+        <link refid="classroccv_1_1_remap"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>roccv::Resize</label>
+        <link refid="classroccv_1_1_resize"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>roccv::Rotate</label>
+        <link refid="classroccv_1_1_rotate"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>roccv::Threshold</label>
+        <link refid="classroccv_1_1_threshold"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="17">
+        <label>roccv::WarpAffine</label>
+        <link refid="classroccv_1_1_warp_affine"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>roccv::WarpPerspective</label>
+        <link refid="classroccv_1_1_warp_perspective"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp" line="31" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp" bodystart="31" bodyend="34"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::IOperator</scope><name>~IOperator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

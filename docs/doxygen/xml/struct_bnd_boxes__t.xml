@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="struct_bnd_boxes__t" kind="struct" language="C++" prot="public">
+    <compoundname>BndBoxes_t</compoundname>
+    <includes refid="operator__types_8h" local="no">operator_types.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_bnd_boxes__t_1aeafcccf942ade59ccb7b6e91eba36091" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t BndBoxes_t::batch</definition>
+        <argsstring></argsstring>
+        <name>batch</name>
+        <qualifiedname>BndBoxes_t::batch</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="105" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_bnd_boxes__t_1a042a130d3e11514ae20464e99cf2d76d" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; <ref refid="struct_bnd_box__t" kindref="compound">BndBox_t</ref> &gt;</type>
+        <definition>std::vector&lt;BndBox_t&gt; BndBoxes_t::boxes</definition>
+        <argsstring></argsstring>
+        <name>boxes</name>
+        <qualifiedname>BndBoxes_t::boxes</qualifiedname>
+        <briefdescription>
+<para>Vector of number of boxes in each image, must have atleast <ref refid="struct_bnd_boxes__t_1aeafcccf942ade59ccb7b6e91eba36091" kindref="member">batch</ref> elements. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="108" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_bnd_boxes__t_1ae2dad8d449f4de68d3c276f6a0f14654" prot="public" static="no" mutable="no">
+        <type>std::vector&lt; int32_t &gt;</type>
+        <definition>std::vector&lt;int32_t&gt; BndBoxes_t::numBoxes</definition>
+        <argsstring></argsstring>
+        <name>numBoxes</name>
+        <qualifiedname>BndBoxes_t::numBoxes</qualifiedname>
+        <briefdescription>
+<para>Batch size. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="106" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="106" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="4">
+        <label>BndBox_t</label>
+        <link refid="struct_bnd_box__t"/>
+        <childnode refid="5" relation="usage">
+          <edgelabel>box</edgelabel>
+        </childnode>
+        <childnode refid="6" relation="usage">
+          <edgelabel>borderColor</edgelabel>
+          <edgelabel>fillColor</edgelabel>
+        </childnode>
+      </node>
+      <node id="1">
+        <label>BndBoxes_t</label>
+        <link refid="struct_bnd_boxes__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>numBoxes</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>boxes</edgelabel>
+        </childnode>
+      </node>
+      <node id="5">
+        <label>Box_t</label>
+        <link refid="struct_box__t"/>
+      </node>
+      <node id="6">
+        <label>Color4_t</label>
+        <link refid="struct_color4__t"/>
+      </node>
+      <node id="3">
+        <label>std::vector&lt; BndBox_t &gt;</label>
+        <childnode refid="4" relation="usage">
+          <edgelabel>elements</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>std::vector&lt; int32_t &gt;</label>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="104" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="104" bodyend="110"/>
+    <listofallmembers>
+      <member refid="struct_bnd_boxes__t_1aeafcccf942ade59ccb7b6e91eba36091" prot="public" virt="non-virtual"><scope>BndBoxes_t</scope><name>batch</name></member>
+      <member refid="struct_bnd_boxes__t_1a042a130d3e11514ae20464e99cf2d76d" prot="public" virt="non-virtual"><scope>BndBoxes_t</scope><name>boxes</name></member>
+      <member refid="struct_bnd_boxes__t_1ae2dad8d449f4de68d3c276f6a0f14654" prot="public" virt="non-virtual"><scope>BndBoxes_t</scope><name>numBoxes</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

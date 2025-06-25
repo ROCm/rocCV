@@ -1,0 +1,1196 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespace_kernels_1_1_device" kind="namespace" language="C++">
+    <compoundname>Kernels::Device</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a8184bd06e23c452825e705e57c4d4696" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::bilateral_filter</definition>
+        <argsstring>(SrcWrapper input, DstWrapper output, int radius, float sigmaColor, float sigmaSpace, float spaceCoeff, float colorCoeff)</argsstring>
+        <name>bilateral_filter</name>
+        <qualifiedname>Kernels::Device::bilateral_filter</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>radius</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>sigmaColor</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>sigmaSpace</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>spaceCoeff</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>colorCoeff</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp" line="38" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp" bodystart="38" bodyend="143"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a5c4cb1bb3a705b356e051c280f76be9a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::binary_generic_kernel</definition>
+        <argsstring>(SRC input, DST output, int64_t height, int64_t width, int64_t channels, const uint8_t *thresh, const uint8_t *maxVal, const int64_t batch_size)</argsstring>
+        <name>binary_generic_kernel</name>
+        <qualifiedname>Kernels::Device::binary_generic_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>channels</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>thresh</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>maxVal</declname>
+        </param>
+        <param>
+          <type>const int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" bodystart="32" bodyend="49"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1aae5a71372537b1c6a1ad158a2cdf4444" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::binary_inv_generic_kernel</definition>
+        <argsstring>(SRC input, DST output, int64_t height, int64_t width, int64_t channels, const uint8_t *thresh, const uint8_t *maxVal, const int64_t batch_size)</argsstring>
+        <name>binary_inv_generic_kernel</name>
+        <qualifiedname>Kernels::Device::binary_inv_generic_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>channels</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>thresh</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>maxVal</declname>
+        </param>
+        <param>
+          <type>const int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" line="52" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" bodystart="52" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a84f6581d0548f008a46ab848c71b9707" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>bool</type>
+            <declname>has_alpha</declname>
+            <defname>has_alpha</defname>
+          </param>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::bndbox_kernel</definition>
+        <argsstring>(SRC input, DST output, Rect_t *rects, size_t n_rects, int64_t batch, int64_t height, int64_t width)</argsstring>
+        <name>bndbox_kernel</name>
+        <qualifiedname>Kernels::Device::bndbox_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type><ref refid="struct_rect__t" kindref="compound">Rect_t</ref> *</type>
+          <declname>rects</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>n_rects</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bnd_box_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bnd_box_device.hpp" bodystart="32" bodyend="59"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1afbb54f81c7f4b878295095b7f379e010" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename MaskWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::composite</definition>
+        <argsstring>(SrcWrapper foreground, SrcWrapper background, MaskWrapper mask, DstWrapper output)</argsstring>
+        <name>composite</name>
+        <qualifiedname>Kernels::Device::composite</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>foreground</declname>
+        </param>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>background</declname>
+        </param>
+        <param>
+          <type>MaskWrapper</type>
+          <declname>mask</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/composite_device.hpp" line="31" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/composite_device.hpp" bodystart="31" bodyend="56"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a083594e7fb82f3b5e5adc68cb6d204c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename SrcDesc</type>
+          </param>
+          <param>
+            <type>typename DstDesc</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::copy_make_border</definition>
+        <argsstring>(SrcDesc src, DstDesc dst, int32_t top, int32_t left)</argsstring>
+        <name>copy_make_border</name>
+        <qualifiedname>Kernels::Device::copy_make_border</qualifiedname>
+        <param>
+          <type>SrcDesc</type>
+          <declname>src</declname>
+        </param>
+        <param>
+          <type>DstDesc</type>
+          <declname>dst</declname>
+        </param>
+        <param>
+          <type>int32_t</type>
+          <declname>top</declname>
+        </param>
+        <param>
+          <type>int32_t</type>
+          <declname>left</declname>
+        </param>
+        <briefdescription>
+<para>GPU kernel for CopyMakeBorder operator. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>SrcDesc</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Must be a BorderWrapper. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>DstDesc</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Must be a ImageWrapper. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>src</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A BorderWrapper containing information for the input tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>dst</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A ImageWrapper containing information for the output tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>top</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The top pixel coordinate on the y-axis where the border should start. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>left</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The left-most pixel coordinate on the x-axis where the border should start. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><bold>global</bold> </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/copy_make_border_device.hpp" line="40" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/copy_make_border_device.hpp" bodystart="40" bodyend="48"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a56f0d65da12060de30824bed421e3bfc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SourceWrapper</type>
+          </param>
+          <param>
+            <type>typename DestWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::custom_crop</definition>
+        <argsstring>(SourceWrapper input, DestWrapper output, Box_t cropRect, size_t channels, size_t batches)</argsstring>
+        <name>custom_crop</name>
+        <qualifiedname>Kernels::Device::custom_crop</qualifiedname>
+        <param>
+          <type>SourceWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DestWrapper</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type><ref refid="struct_box__t" kindref="compound">Box_t</ref></type>
+          <declname>cropRect</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>channels</declname>
+        </param>
+        <param>
+          <type>size_t</type>
+          <declname>batches</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/custom_crop_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/custom_crop_device.hpp" bodystart="32" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1adfee01c9714be85813abf86fb1c1eb1f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="operator__types_8h_1ac8a8fd6e707e92c323faa53468caab01" kindref="member">eAxis</ref></type>
+            <declname>FlipType</declname>
+            <defname>FlipType</defname>
+          </param>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::flip</definition>
+        <argsstring>(SrcWrapper input, DstWrapper output)</argsstring>
+        <name>flip</name>
+        <qualifiedname>Kernels::Device::flip</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/flip_device.hpp" line="30" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/flip_device.hpp" bodystart="30" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a7761f744f094e76d5e301c458113c546" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::gamma_contrast_wrapped_u8</definition>
+        <argsstring>(SRC input, DST output, int batch, int width, int height, float *gamma)</argsstring>
+        <name>gamma_contrast_wrapped_u8</name>
+        <qualifiedname>Kernels::Device::gamma_contrast_wrapped_u8</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>batch</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>float *</type>
+          <declname>gamma</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/gamma_contrast_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/gamma_contrast_device.hpp" bodystart="32" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a72069020fca91b66511281956cc1fc46" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename OUT</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::histogram_kernel</definition>
+        <argsstring>(SRC input, DST output, int64_t batch, int64_t height, int64_t width)</argsstring>
+        <name>histogram_kernel</name>
+        <qualifiedname>Kernels::Device::histogram_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/histogram_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/histogram_device.hpp" bodystart="32" bodyend="62"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1ad39f30b6d4034b32cdf0e53c8d3f91b9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename OUT</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+          <param>
+            <type>typename MASK</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::histogram_kernel</definition>
+        <argsstring>(SRC input, DST output, MASK mask, int64_t batch, int64_t height, int64_t width)</argsstring>
+        <name>histogram_kernel</name>
+        <qualifiedname>Kernels::Device::histogram_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>MASK</type>
+          <declname>mask</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/histogram_device.hpp" line="65" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/histogram_device.hpp" bodystart="65" bodyend="98"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a8a834d169a33c11b37e1ae0fd4daea7f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::non_maximum_suppression</definition>
+        <argsstring>(roccv::GenericTensorWrapper&lt; short4 &gt; input, roccv::GenericTensorWrapper&lt; uint8_t &gt; output, roccv::GenericTensorWrapper&lt; float &gt; scores, int numBoxes, float scoresThreshold, float iouThreshold)</argsstring>
+        <name>non_maximum_suppression</name>
+        <qualifiedname>Kernels::Device::non_maximum_suppression</qualifiedname>
+        <param>
+          <type><ref refid="classroccv_1_1_generic_tensor_wrapper" kindref="compound">roccv::GenericTensorWrapper</ref>&lt; short4 &gt;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1_generic_tensor_wrapper" kindref="compound">roccv::GenericTensorWrapper</ref>&lt; uint8_t &gt;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1_generic_tensor_wrapper" kindref="compound">roccv::GenericTensorWrapper</ref>&lt; float &gt;</type>
+          <declname>scores</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>numBoxes</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>scoresThreshold</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>iouThreshold</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/non_max_suppression_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/non_max_suppression_device.hpp" bodystart="32" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a79d844bd262c698f3bac1b2a15f3edd5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>bool</type>
+            <declname>ScaleStddev</declname>
+            <defname>ScaleStddev</defname>
+          </param>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+          <param>
+            <type>typename ScaleWrapper</type>
+          </param>
+          <param>
+            <type>typename BaseWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::normalize</definition>
+        <argsstring>(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrapper output, float globalScale, float shift, float epsilon)</argsstring>
+        <name>normalize</name>
+        <qualifiedname>Kernels::Device::normalize</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>BaseWrapper</type>
+          <declname>base</declname>
+        </param>
+        <param>
+          <type>ScaleWrapper</type>
+          <declname>scale</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>globalScale</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>shift</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>epsilon</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/normalize_device.hpp" line="38" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/normalize_device.hpp" bodystart="38" bodyend="74"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1aa93c0ba896cb1088e6dfd74a85b015b2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+          <param>
+            <type>typename MapWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::remap</definition>
+        <argsstring>(SrcWrapper input, DstWrapper output, MapWrapper map)</argsstring>
+        <name>remap</name>
+        <qualifiedname>Kernels::Device::remap</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>MapWrapper</type>
+          <declname>map</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/remap_device.hpp" line="31" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/remap_device.hpp" bodystart="31" bodyend="40"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a9d6682f1f2d84f7e13d34ee96ebd1b46" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::resize</definition>
+        <argsstring>(SrcWrapper input, DstWrapper output, float scaleX, float scaleY)</argsstring>
+        <name>resize</name>
+        <qualifiedname>Kernels::Device::resize</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>scaleX</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>scaleY</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/resize_device.hpp" line="28" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/resize_device.hpp" bodystart="28" bodyend="38"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a604d5eeb0e1c327f7b46f815ee4336f0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::rgb_or_bgr_to_bgr_or_rgb</definition>
+        <argsstring>(SRC input, DST output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput, int orderIdxOutput)</argsstring>
+        <name>rgb_or_bgr_to_bgr_or_rgb</name>
+        <qualifiedname>Kernels::Device::rgb_or_bgr_to_bgr_or_rgb</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>orderIdxInput</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>orderIdxOutput</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" line="83" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" bodystart="83" bodyend="99"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1aabf4659c457a40e279534a940a93b3a8" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::rgb_or_bgr_to_grayscale</definition>
+        <argsstring>(SRC input, DST output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput)</argsstring>
+        <name>rgb_or_bgr_to_grayscale</name>
+        <qualifiedname>Kernels::Device::rgb_or_bgr_to_grayscale</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>orderIdxInput</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" line="102" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" bodystart="102" bodyend="116"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1ab09b26a18bf6a9f13844b84632b92565" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::rgb_or_bgr_to_yuv</definition>
+        <argsstring>(SRC input, DST output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta)</argsstring>
+        <name>rgb_or_bgr_to_yuv</name>
+        <qualifiedname>Kernels::Device::rgb_or_bgr_to_yuv</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>orderIdx</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>delta</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" line="32" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" bodystart="32" bodyend="54"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a8d25b7dcfb524c4d17cb8d95bb6e57e6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::tozero_generic_kernel</definition>
+        <argsstring>(SRC input, DST output, int64_t height, int64_t width, int64_t channels, const uint8_t *thresh, const uint8_t *maxVal, const int64_t batch_size)</argsstring>
+        <name>tozero_generic_kernel</name>
+        <qualifiedname>Kernels::Device::tozero_generic_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>channels</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>thresh</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>maxVal</declname>
+        </param>
+        <param>
+          <type>const int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" line="91" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" bodystart="91" bodyend="107"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a0155f06ed16567ba998e829b349724b2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::tozeroinv_generic_kernel</definition>
+        <argsstring>(SRC input, DST output, int64_t height, int64_t width, int64_t channels, const uint8_t *thresh, const uint8_t *maxVal, const int64_t batch_size)</argsstring>
+        <name>tozeroinv_generic_kernel</name>
+        <qualifiedname>Kernels::Device::tozeroinv_generic_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>channels</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>thresh</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>maxVal</declname>
+        </param>
+        <param>
+          <type>const int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" line="110" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" bodystart="110" bodyend="126"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a1b64184f6beda938ef29ed258d2dca3e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::trunc_generic_kernel</definition>
+        <argsstring>(SRC input, DST output, int64_t height, int64_t width, int64_t channels, const uint8_t *thresh, const uint8_t *maxVal, const int64_t batch_size)</argsstring>
+        <name>trunc_generic_kernel</name>
+        <qualifiedname>Kernels::Device::trunc_generic_kernel</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>channels</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>thresh</declname>
+        </param>
+        <param>
+          <type>const uint8_t *</type>
+          <declname>maxVal</declname>
+        </param>
+        <param>
+          <type>const int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" line="72" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/thresholding_device.hpp" bodystart="72" bodyend="88"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1a79ddd8c361d020d8ed496b5ee9d571bc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename SrcWrapper</type>
+          </param>
+          <param>
+            <type>typename DstWrapper</type>
+          </param>
+          <param>
+            <type>typename Mat</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::warp_perspective</definition>
+        <argsstring>(SrcWrapper input, DstWrapper output, Mat mat)</argsstring>
+        <name>warp_perspective</name>
+        <qualifiedname>Kernels::Device::warp_perspective</qualifiedname>
+        <param>
+          <type>SrcWrapper</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DstWrapper</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>Mat</type>
+          <declname>mat</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp" line="33" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp" bodystart="33" bodyend="45"/>
+      </memberdef>
+      <memberdef kind="function" id="namespace_kernels_1_1_device_1ad53cdee68182d48609f08ac561ec83c7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename SRC</type>
+          </param>
+          <param>
+            <type>typename DST</type>
+          </param>
+        </templateparamlist>
+        <type>__global__ void</type>
+        <definition>__global__ void Kernels::Device::yuv_to_rgb_or_bgr</definition>
+        <argsstring>(SRC input, DST output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta)</argsstring>
+        <name>yuv_to_rgb_or_bgr</name>
+        <qualifiedname>Kernels::Device::yuv_to_rgb_or_bgr</qualifiedname>
+        <param>
+          <type>SRC</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>DST</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>width</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>height</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>batch_size</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>orderIdx</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>delta</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" line="57" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/cvt_color_device.hpp" bodystart="57" bodyend="80"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp" line="35" column="1"/>
+  </compounddef>
+</doxygen>

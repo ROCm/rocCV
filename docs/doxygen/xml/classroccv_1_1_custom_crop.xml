@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_custom_crop" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::CustomCrop</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__custom__crop_8hpp" local="no">op_custom_crop.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_custom_crop_1acc462cafe3b9af630ec0cc2b53e73c75" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::CustomCrop::operator()</definition>
+        <argsstring>(hipStream_t stream, const Tensor &amp;input, const Tensor &amp;output, const Box_t cropRect, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::CustomCrop::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="struct_box__t" kindref="compound">Box_t</ref></type>
+          <declname>cropRect</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Construct a new Op Custom Crop object. The object can be used to crop a region of interest from an image. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC] Channels: &gt; 0 &amp;&amp; &lt;= 4 Supported DataType(s): [DATA_TYPE_U8]</para>
+<para>Output: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC] Channels: &gt; 0 &amp;&amp; &lt;= 4 Supported TensorLayout(s) [DATA_TYPE_U8]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | Yes
+  Width         | No
+  Height        | No
+  Batch         | Yes
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operator on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input tensor with image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor for storing modified image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">croppingBox</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A box representing how the input image should be cropped to the output image. Its dimensions should match that of the output tensor&apos;s images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to run this operator on. (Default: GPU) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp" line="71" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>roccv::CustomCrop</label>
+        <link refid="classroccv_1_1_custom_crop"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>roccv::CustomCrop</label>
+        <link refid="classroccv_1_1_custom_crop"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp" line="34" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp" bodystart="34" bodyend="73"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_custom_crop_1acc462cafe3b9af630ec0cc2b53e73c75" prot="public" virt="non-virtual"><scope>roccv::CustomCrop</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::CustomCrop</scope><name>~IOperator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

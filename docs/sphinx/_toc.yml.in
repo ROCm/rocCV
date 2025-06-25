@@ -1,0 +1,37 @@
+defaults:
+  numbered: False
+  maxdepth: 6
+root: index
+subtrees:
+- entries:
+  - file: what-is-component.rst
+    title: What is component?
+
+- caption: Install
+  entries:
+  - file: install/FILENAME
+    title: TITLE
+
+- caption: Conceptual
+  entries:
+  - file: conceptual/FILENAME
+    title: TITLE
+
+- caption: How to
+  entries:
+  - file: how-to/FILENAME
+    title: Use SOMETHING
+
+- caption: Tutorials|Samples|Examples
+  entries:
+  - file: tutorials/FILENAME 
+    title: TITLE
+
+- caption: Reference
+  entries:
+  - file: reference/FILENAME
+    title: TITLE
+    
+- caption: About
+  entries:
+  - file: license.md

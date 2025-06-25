@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structroccv_1_1_tensor_buffer" kind="struct" language="C++" prot="public">
+    <compoundname>roccv::TensorBuffer</compoundname>
+    <derivedcompoundref refid="structroccv_1_1_tensor_buffer_strided" prot="public" virt="non-virtual">roccv::TensorBufferStrided</derivedcompoundref>
+    <includes refid="tensor__buffer_8hpp" local="no">tensor_buffer.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structroccv_1_1_tensor_buffer_1af5d43ac0466df5c95895a7bc8e6b0555" prot="public" static="no" mutable="no">
+        <type>void *</type>
+        <definition>void* roccv::TensorBuffer::basePtr</definition>
+        <argsstring></argsstring>
+        <name>basePtr</name>
+        <qualifiedname>roccv::TensorBuffer::basePtr</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" line="39" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>A tensor buffer. Stores the raw data associated with a tensor. Data should be allocated by the user and set to the basePtr of the buffer. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>roccv::TensorBuffer</label>
+        <link refid="structroccv_1_1_tensor_buffer"/>
+      </node>
+      <node id="2">
+        <label>roccv::TensorBufferStrided</label>
+        <link refid="structroccv_1_1_tensor_buffer_strided"/>
+        <childnode refid="1" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" line="38" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" bodystart="38" bodyend="40"/>
+    <listofallmembers>
+      <member refid="structroccv_1_1_tensor_buffer_1af5d43ac0466df5c95895a7bc8e6b0555" prot="public" virt="non-virtual"><scope>roccv::TensorBuffer</scope><name>basePtr</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

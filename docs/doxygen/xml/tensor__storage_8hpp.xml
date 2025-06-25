@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="tensor__storage_8hpp" kind="file" language="C++">
+    <compoundname>tensor_storage.hpp</compoundname>
+    <includes local="no">stdlib.h</includes>
+    <includes refid="util__enums_8h" local="yes">core/util_enums.h</includes>
+    <includedby refid="tensor_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp</includedby>
+    <incdepgraph>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp</label>
+        <link refid="tensor__storage_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>core/util_enums.h</label>
+        <link refid="util__enums_8h"/>
+      </node>
+      <node id="2">
+        <label>stdlib.h</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="3">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp</label>
+        <link refid="strided__data__wrap_8hpp"/>
+      </node>
+      <node id="4">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/common/validation_helpers.hpp</label>
+        <link refid="validation__helpers_8hpp"/>
+      </node>
+      <node id="2">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp</label>
+        <link refid="tensor_8hpp"/>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="13" relation="include">
+        </childnode>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp</label>
+        <link refid="tensor__storage_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp</label>
+        <link refid="border__wrapper_8hpp"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp</label>
+        <link refid="generic__tensor__wrapper_8hpp"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="8">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/image_wrapper.hpp</label>
+        <link refid="image__wrapper_8hpp"/>
+        <childnode refid="9" relation="include">
+        </childnode>
+      </node>
+      <node id="10">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp</label>
+        <link refid="interpolation__wrapper_8hpp"/>
+        <childnode refid="11" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+      </node>
+      <node id="11">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp</label>
+        <link refid="bilateral__filter__device_8hpp"/>
+      </node>
+      <node id="6">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/non_max_suppression_device.hpp</label>
+        <link refid="non__max__suppression__device_8hpp"/>
+      </node>
+      <node id="12">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp</label>
+        <link refid="warp__perspective__device_8hpp"/>
+      </node>
+      <node id="7">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/non_max_suppression_host.hpp</label>
+        <link refid="non__max__suppression__host_8hpp"/>
+      </node>
+      <node id="13">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bilateral_filter.hpp</label>
+        <link refid="op__bilateral__filter_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bnd_box.hpp</label>
+        <link refid="op__bnd__box_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="16">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp</label>
+        <link refid="op__composite_8hpp"/>
+      </node>
+      <node id="17">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp</label>
+        <link refid="op__copy__make__border_8hpp"/>
+      </node>
+      <node id="18">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp</label>
+        <link refid="op__custom__crop_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_cvt_color.hpp</label>
+        <link refid="op__cvt__color_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_flip.hpp</label>
+        <link refid="op__flip_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="21">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp</label>
+        <link refid="op__gamma__contrast_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="22">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_histogram.hpp</label>
+        <link refid="op__histogram_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="23">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp</label>
+        <link refid="op__non__max__suppression_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_normalize.hpp</label>
+        <link refid="op__normalize_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_remap.hpp</label>
+        <link refid="op__remap_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_resize.hpp</label>
+        <link refid="op__resize_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp</label>
+        <link refid="op__rotate_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp</label>
+        <link refid="op__thresholding_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp</label>
+        <link refid="op__warp__affine_8hpp"/>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="30">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp</label>
+        <link refid="op__warp__perspective_8hpp"/>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/roccv_operators.hpp</label>
+        <link refid="roccv__operators_8hpp"/>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="classroccv_1_1_tensor_storage" prot="public">roccv::TensorStorage</innerclass>
+    <innernamespace refid="namespaceroccv">roccv</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*</highlight></codeline>
+<codeline lineno="2"><highlight class="comment"><sp/>*<sp/>Copyright<sp/>(c)<sp/>2025<sp/>Advanced<sp/>Micro<sp/>Devices,<sp/>Inc.<sp/>All<sp/>rights<sp/>reserved.</highlight></codeline>
+<codeline lineno="3"><highlight class="comment"><sp/>*<sp/>Permission<sp/>is<sp/>hereby<sp/>granted,<sp/>free<sp/>of<sp/>charge,<sp/>to<sp/>any<sp/>person<sp/>obtaining<sp/>a<sp/>copy</highlight></codeline>
+<codeline lineno="4"><highlight class="comment"><sp/>*<sp/>of<sp/>this<sp/>software<sp/>and<sp/>associated<sp/>documentation<sp/>files<sp/>(the<sp/>&quot;Software&quot;),<sp/>to<sp/>deal</highlight></codeline>
+<codeline lineno="5"><highlight class="comment"><sp/>*<sp/>in<sp/>the<sp/>Software<sp/>without<sp/>restriction,<sp/>including<sp/>without<sp/>limitation<sp/>the<sp/>rights</highlight></codeline>
+<codeline lineno="6"><highlight class="comment"><sp/>*<sp/>to<sp/>use,<sp/>copy,<sp/>modify,<sp/>merge,<sp/>publish,<sp/>distribute,<sp/>sublicense,<sp/>and/or<sp/>sell</highlight></codeline>
+<codeline lineno="7"><highlight class="comment"><sp/>*<sp/>copies<sp/>of<sp/>the<sp/>Software,<sp/>and<sp/>to<sp/>permit<sp/>persons<sp/>to<sp/>whom<sp/>the<sp/>Software<sp/>is</highlight></codeline>
+<codeline lineno="8"><highlight class="comment"><sp/>*<sp/>furnished<sp/>to<sp/>do<sp/>so,<sp/>subject<sp/>to<sp/>the<sp/>following<sp/>conditions:</highlight></codeline>
+<codeline lineno="9"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="10"><highlight class="comment"><sp/>*<sp/>The<sp/>above<sp/>copyright<sp/>notice<sp/>and<sp/>this<sp/>permission<sp/>notice<sp/>shall<sp/>be<sp/>included<sp/>in</highlight></codeline>
+<codeline lineno="11"><highlight class="comment"><sp/>*<sp/>all<sp/>copies<sp/>or<sp/>substantial<sp/>portions<sp/>of<sp/>the<sp/>Software.</highlight></codeline>
+<codeline lineno="12"><highlight class="comment"><sp/>*</highlight></codeline>
+<codeline lineno="13"><highlight class="comment"><sp/>*<sp/>THE<sp/>SOFTWARE<sp/>IS<sp/>PROVIDED<sp/>&quot;AS<sp/>IS&quot;,<sp/>WITHOUT<sp/>WARRANTY<sp/>OF<sp/>ANY<sp/>KIND,<sp/>EXPRESS<sp/>OR</highlight></codeline>
+<codeline lineno="14"><highlight class="comment"><sp/>*<sp/>IMPLIED,<sp/>INCLUDING<sp/>BUT<sp/>NOT<sp/>LIMITED<sp/>TO<sp/>THE<sp/>WARRANTIES<sp/>OF<sp/>MERCHANTABILITY,</highlight></codeline>
+<codeline lineno="15"><highlight class="comment"><sp/>*<sp/>FITNESS<sp/>FOR<sp/>A<sp/>PARTICULAR<sp/>PURPOSE<sp/>AND<sp/>NONINFRINGEMENT.<sp/><sp/>IN<sp/>NO<sp/>EVENT<sp/>SHALL<sp/>THE</highlight></codeline>
+<codeline lineno="16"><highlight class="comment"><sp/>*<sp/>AUTHORS<sp/>OR<sp/>COPYRIGHT<sp/>HOLDERS<sp/>BE<sp/>LIABLE<sp/>FOR<sp/>ANY<sp/>CLAIM,<sp/>DAMAGES<sp/>OR<sp/>OTHER</highlight></codeline>
+<codeline lineno="17"><highlight class="comment"><sp/>*<sp/>LIABILITY,<sp/>WHETHER<sp/>IN<sp/>AN<sp/>ACTION<sp/>OF<sp/>CONTRACT,<sp/>TORT<sp/>OR<sp/>OTHERWISE,<sp/>ARISING<sp/>FROM,</highlight></codeline>
+<codeline lineno="18"><highlight class="comment"><sp/>*<sp/>OUT<sp/>OF<sp/>OR<sp/>IN<sp/>CONNECTION<sp/>WITH<sp/>THE<sp/>SOFTWARE<sp/>OR<sp/>THE<sp/>USE<sp/>OR<sp/>OTHER<sp/>DEALINGS<sp/>IN</highlight></codeline>
+<codeline lineno="19"><highlight class="comment"><sp/>*<sp/>THE<sp/>SOFTWARE.</highlight></codeline>
+<codeline lineno="20"><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;stdlib.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="util__enums_8h" kindref="compound">core/util_enums.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceroccv" kindref="compound">roccv</ref><sp/>{</highlight></codeline>
+<codeline lineno="34" refid="classroccv_1_1_tensor_storage" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref><sp/>{</highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="44" refid="classroccv_1_1_tensor_storage_1a19bdae2554e699791ec2f60ffb6a556d" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="classroccv_1_1_tensor_storage_1a19bdae2554e699791ec2f60ffb6a556d" kindref="member">TensorStorage</ref>(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">*<sp/><ref refid="classroccv_1_1_tensor_storage_1a6bfc5dd58063ec172be8127157af508c" kindref="member">data</ref>,<sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref><sp/><ref refid="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" kindref="member">device</ref>,<sp/><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" kindref="member">eOwnership</ref><sp/>ownership<sp/>=<sp/><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a258c405bc128bfac9493e8d9cf46f975" kindref="member">eOwnership::OWNING</ref>);</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"></highlight></codeline>
+<codeline lineno="52" refid="classroccv_1_1_tensor_storage_1a3aab68162d71b4dc2ee0ab6416e8d2a3" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/><ref refid="classroccv_1_1_tensor_storage_1a3aab68162d71b4dc2ee0ab6416e8d2a3" kindref="member">TensorStorage</ref>(</highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>bytes,<sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref><sp/><ref refid="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" kindref="member">device</ref>);</highlight></codeline>
+<codeline lineno="53" refid="classroccv_1_1_tensor_storage_1a742c36f38ad0fe4329d62436666b9615" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classroccv_1_1_tensor_storage_1a742c36f38ad0fe4329d62436666b9615" kindref="member">~TensorStorage</ref>();</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60" refid="classroccv_1_1_tensor_storage_1a6bfc5dd58063ec172be8127157af508c" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal">*<sp/><ref refid="classroccv_1_1_tensor_storage_1a6bfc5dd58063ec172be8127157af508c" kindref="member">data</ref>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight></codeline>
+<codeline lineno="67" refid="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref><sp/><ref refid="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" kindref="member">device</ref>()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref><sp/>m_device;</highlight></codeline>
+<codeline lineno="71"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" kindref="member">eOwnership</ref><sp/>m_ownership;</highlight></codeline>
+<codeline lineno="72"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal">*<sp/>m_data;</highlight></codeline>
+<codeline lineno="73"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="74"><highlight class="normal"></highlight></codeline>
+<codeline lineno="75"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>roccv</highlight></codeline>
+    </programlisting>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp"/>
+  </compounddef>
+</doxygen>

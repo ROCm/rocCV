@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_f2fd8bd6424c93166d6dd5f2b70706e7" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels</compoundname>
+    <innerdir refid="dir_17295cadafa37a2ed20f273eb5e86f36">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common</innerdir>
+    <innerdir refid="dir_31d5ca9bc968e4605eea27d457e1be16">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device</innerdir>
+    <innerdir refid="dir_79070895df18adc0730f951256a16d0d">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host</innerdir>
+    <innerfile refid="kernel__helpers_8hpp">kernel_helpers.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/"/>
+  </compounddef>
+</doxygen>

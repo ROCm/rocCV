@@ -1,0 +1,214 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_tensor_storage" kind="class" language="C++" prot="public">
+    <compoundname>roccv::TensorStorage</compoundname>
+    <includes refid="tensor__storage_8hpp" local="no">tensor_storage.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_tensor_storage_1a5252b3a6a0c1bf35ed1acf7433f51288" prot="private" static="no" mutable="no">
+        <type>void *</type>
+        <definition>void* roccv::TensorStorage::m_data</definition>
+        <argsstring></argsstring>
+        <name>m_data</name>
+        <qualifiedname>roccv::TensorStorage::m_data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="72" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" bodystart="72" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_tensor_storage_1aedf7a1be5d36b02d13b7a102e2d94242" prot="private" static="no" mutable="no">
+        <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+        <definition>eDeviceType roccv::TensorStorage::m_device</definition>
+        <argsstring></argsstring>
+        <name>m_device</name>
+        <qualifiedname>roccv::TensorStorage::m_device</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="70" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" bodystart="70" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_tensor_storage_1a942aaeeb678326a6d4ba58a71ec349e6" prot="private" static="no" mutable="no">
+        <type><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" kindref="member">eOwnership</ref></type>
+        <definition>eOwnership roccv::TensorStorage::m_ownership</definition>
+        <argsstring></argsstring>
+        <name>m_ownership</name>
+        <qualifiedname>roccv::TensorStorage::m_ownership</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="71" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" bodystart="71" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_tensor_storage_1a6bfc5dd58063ec172be8127157af508c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void *</type>
+        <definition>void * roccv::TensorStorage::data</definition>
+        <argsstring>() const</argsstring>
+        <name>data</name>
+        <qualifiedname>roccv::TensorStorage::data</qualifiedname>
+        <briefdescription>
+<para>Retrieves a raw pointer to the underlying tensor data. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>void* </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="60" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+        <definition>const eDeviceType roccv::TensorStorage::device</definition>
+        <argsstring>() const</argsstring>
+        <name>device</name>
+        <qualifiedname>roccv::TensorStorage::device</qualifiedname>
+        <briefdescription>
+<para>Retrieves the device that the tensor data is allocated on. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>const eDeviceType </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="67" column="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_storage_1a3aab68162d71b4dc2ee0ab6416e8d2a3" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorStorage::TensorStorage</definition>
+        <argsstring>(size_t bytes, eDeviceType device)</argsstring>
+        <name>TensorStorage</name>
+        <qualifiedname>roccv::TensorStorage::TensorStorage</qualifiedname>
+        <param>
+          <type>size_t</type>
+          <declname>bytes</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+        </param>
+        <briefdescription>
+<para>Creates a new <ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref> object and allocates the requested number of bytes. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>bytes</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of bytes to allocate. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to allocate the memory on. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="52" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_storage_1a19bdae2554e699791ec2f60ffb6a556d" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorStorage::TensorStorage</definition>
+        <argsstring>(void *data, eDeviceType device, eOwnership ownership=eOwnership::OWNING)</argsstring>
+        <name>TensorStorage</name>
+        <qualifiedname>roccv::TensorStorage::TensorStorage</qualifiedname>
+        <param>
+          <type>void *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" kindref="member">eOwnership</ref></type>
+          <declname>ownership</declname>
+          <defval><ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a258c405bc128bfac9493e8d9cf46f975" kindref="member">eOwnership::OWNING</ref></defval>
+        </param>
+        <briefdescription>
+<para>Creates a new <ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref> object and takes ownership of the data pointer. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A pointer to allocated memory. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device which the allocated memory is on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>ownership</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Whether this object should own &lt;data&gt; (responsible for freeing it once it goes out of scope). Default is <ref refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a258c405bc128bfac9493e8d9cf46f975" kindref="member">eOwnership::OWNING</ref>. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="44" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_storage_1a742c36f38ad0fe4329d62436666b9615" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorStorage::~TensorStorage</definition>
+        <argsstring>()</argsstring>
+        <name>~TensorStorage</name>
+        <qualifiedname>roccv::TensorStorage::~TensorStorage</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="53" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Stores the underlying data of a tensor and is responsible for allocation/freeing of tensor memory. Agnostic to the tensor&apos;s metadata (shape, datatype, etc.) </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" line="34" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_storage.hpp" bodystart="34" bodyend="73"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_tensor_storage_1a6bfc5dd58063ec172be8127157af508c" prot="public" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>data</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" prot="public" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>device</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1a5252b3a6a0c1bf35ed1acf7433f51288" prot="private" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>m_data</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1aedf7a1be5d36b02d13b7a102e2d94242" prot="private" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>m_device</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1a942aaeeb678326a6d4ba58a71ec349e6" prot="private" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>m_ownership</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1a19bdae2554e699791ec2f60ffb6a556d" prot="public" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>TensorStorage</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1a3aab68162d71b4dc2ee0ab6416e8d2a3" prot="public" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>TensorStorage</name></member>
+      <member refid="classroccv_1_1_tensor_storage_1a742c36f38ad0fe4329d62436666b9615" prot="public" virt="non-virtual"><scope>roccv::TensorStorage</scope><name>~TensorStorage</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

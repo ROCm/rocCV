@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_089e5f06d0db0b3903d244781a066f3d" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers</compoundname>
+    <innerfile refid="border__wrapper_8hpp">border_wrapper.hpp</innerfile>
+    <innerfile refid="generic__tensor__wrapper_8hpp">generic_tensor_wrapper.hpp</innerfile>
+    <innerfile refid="image__wrapper_8hpp">image_wrapper.hpp</innerfile>
+    <innerfile refid="interpolation__wrapper_8hpp">interpolation_wrapper.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/"/>
+  </compounddef>
+</doxygen>

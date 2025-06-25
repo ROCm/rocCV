@@ -1,0 +1,176 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_composite" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::Composite</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__composite_8hpp" local="no">op_composite.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_composite_1a98f0c08236f6c145fa94e4428e5ead5f" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Composite::Composite</definition>
+        <argsstring>()</argsstring>
+        <name>Composite</name>
+        <qualifiedname>roccv::Composite::Composite</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" line="30" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" bodystart="30" bodyend="30"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_composite_1aba3d61afd6354e2f1601dfebc3cfa5fc" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::Composite::operator()</definition>
+        <argsstring>(hipStream_t stream, const Tensor &amp;foreground, const Tensor &amp;background, const Tensor &amp;mask, const Tensor &amp;output, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::Composite::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>foreground</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>background</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>mask</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Executes the <ref refid="classroccv_1_1_composite" kindref="compound">Composite</ref> operation on the given HIP stream. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Foreground: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC] Channels: [3] Supported DataType(s): [U8, F32]</para>
+<para>Background: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC] Channels: [3] Supported DataTypes(s): [U8, F32]</para>
+<para>Mask: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC] Channels: [1] Supported DataTypes(s): [U8, F32]</para>
+<para>Output: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC] Channels: [3, 4] Supported DataTypes(s): [U8, F32]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | No
+  Width         | Yes
+  Height        | Yes
+  Batch         | Yes
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operation on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">foreground</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Foreground images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">background</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Background images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">mask</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Greyscale mask image for the foreground. Must be a 1-channel grayscale image matching the datatype of the foreground and background images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor. If 4-channel, the alpha channel will be set to the max value, resulting in a RGBA/BGRA image (depending on the layout of the input images). </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to run this operation on. Default is GPU. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" line="78" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_composite_1a951de383b7fe1c27c294106419bc4e9e" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Composite::~Composite</definition>
+        <argsstring>()</argsstring>
+        <name>~Composite</name>
+        <qualifiedname>roccv::Composite::~Composite</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" line="31" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" bodystart="31" bodyend="31"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>roccv::Composite</label>
+        <link refid="classroccv_1_1_composite"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>roccv::Composite</label>
+        <link refid="classroccv_1_1_composite"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" line="28" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp" bodystart="28" bodyend="80"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_composite_1a98f0c08236f6c145fa94e4428e5ead5f" prot="public" virt="non-virtual"><scope>roccv::Composite</scope><name>Composite</name></member>
+      <member refid="classroccv_1_1_composite_1aba3d61afd6354e2f1601dfebc3cfa5fc" prot="public" virt="non-virtual"><scope>roccv::Composite</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_composite_1a951de383b7fe1c27c294106419bc4e9e" prot="public" virt="non-virtual"><scope>roccv::Composite</scope><name>~Composite</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::Composite</scope><name>~IOperator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

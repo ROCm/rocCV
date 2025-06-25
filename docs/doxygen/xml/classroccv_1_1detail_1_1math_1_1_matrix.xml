@@ -1,0 +1,332 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1detail_1_1math_1_1_matrix" kind="class" language="C++" prot="public">
+    <compoundname>roccv::detail::math::Matrix</compoundname>
+    <includes refid="math_8hpp" local="no">math.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>class T</type>
+      </param>
+      <param>
+        <type>int</type>
+        <declname>M</declname>
+        <defname>M</defname>
+      </param>
+      <param>
+        <type>int</type>
+        <declname>N</declname>
+        <defname>N</defname>
+        <defval>M</defval>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classroccv_1_1detail_1_1math_1_1_matrix_1a6445a993563a5ac5817d5c585e0570fe" prot="public" static="no">
+        <type>T</type>
+        <definition>using roccv::detail::math::Matrix&lt; T, M, N &gt;::Type =  T</definition>
+        <argsstring></argsstring>
+        <name>Type</name>
+        <qualifiedname>roccv::detail::math::Matrix::Type</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="84" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classroccv_1_1detail_1_1math_1_1_matrix_1af186749cb7b2cb063cc7ae063f62e2c5" prot="public" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt;</type>
+        <definition>Vector&lt;T, N&gt; roccv::detail::math::Matrix&lt; T, M, N &gt;::data_[M]</definition>
+        <argsstring>[M]</argsstring>
+        <name>data_</name>
+        <qualifiedname>roccv::detail::math::Matrix::data_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="176" column="12" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="176" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1a9c40caccc1f967cddbd1a45d0a0a76a8" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ int</type>
+        <definition>__host__ __device__ int roccv::detail::math::Matrix&lt; T, M, N &gt;::cols</definition>
+        <argsstring>() const</argsstring>
+        <name>cols</name>
+        <qualifiedname>roccv::detail::math::Matrix::cols</qualifiedname>
+        <briefdescription>
+<para>Returns the number of columns in the matrix. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The number of columns in the matrix. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="98" column="29" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="98" bodyend="98"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1ae3113ede2f6ed5882d0c0be1b9616203" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ void</type>
+        <definition>__host__ __device__ void roccv::detail::math::Matrix&lt; T, M, N &gt;::load</definition>
+        <argsstring>(const T *data)</argsstring>
+        <name>load</name>
+        <qualifiedname>roccv::detail::math::Matrix::load</qualifiedname>
+        <param>
+          <type>const T *</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+<para>Loads a row-major array into the matrix. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>An array of type T. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="151" column="30" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="151" bodyend="159"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1a0ae600893b2f2b193e4ff5e8dbf951d8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+        <definition>__host__ __device__ Vector&lt; T, N &gt; &amp; roccv::detail::math::Matrix&lt; T, M, N &gt;::operator[]</definition>
+        <argsstring>(int i)</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::detail::math::Matrix::operator[]</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+<para>Returns a row of a matrix as a vector reference. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>i</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The row of the matrix to return. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A reference to a vector representing a row of the matrix. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="117" column="32" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="117" bodyend="120"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1aefddcf119d7d98fe6cf5e37e217cc6a5" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const __host__ __device__ <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+        <definition>const __host__ __device__ Vector&lt; T, N &gt; &amp; roccv::detail::math::Matrix&lt; T, M, N &gt;::operator[]</definition>
+        <argsstring>(int i) const</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::detail::math::Matrix::operator[]</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+<para>Returns a row of a matrix as a constant vector reference. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>i</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The row to return. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A row of the matrix represented as a vector. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="106" column="38" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="106" bodyend="109"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1ad083f9e291e1ac00a2622b203db2c310" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ T &amp;</type>
+        <definition>__host__ __device__ T &amp; roccv::detail::math::Matrix&lt; T, M, N &gt;::operator[]</definition>
+        <argsstring>(int2 c)</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::detail::math::Matrix::operator[]</qualifiedname>
+        <param>
+          <type>int2</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Returns a data reference from the matrix. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>c</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>An int2 coordinate in the form {col, row} </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A data reference from the matrix. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="140" column="27" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="140" bodyend="144"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1a633a4195efe82ae225c0bcd3c7e3431d" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>const __host__ __device__ T &amp;</type>
+        <definition>const __host__ __device__ T &amp; roccv::detail::math::Matrix&lt; T, M, N &gt;::operator[]</definition>
+        <argsstring>(int2 c) const</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::detail::math::Matrix::operator[]</qualifiedname>
+        <param>
+          <type>int2</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Returns a constant data reference from the matrix. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>c</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>An int2 coordinate in the form {col, row} </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A constant data reference from the matrix. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="128" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="128" bodyend="132"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1ae9bc207c3f41a9a30b7158e76943e5ed" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ int</type>
+        <definition>__host__ __device__ int roccv::detail::math::Matrix&lt; T, M, N &gt;::rows</definition>
+        <argsstring>() const</argsstring>
+        <name>rows</name>
+        <qualifiedname>roccv::detail::math::Matrix::rows</qualifiedname>
+        <briefdescription>
+<para>Returns the number of rows in a matrix. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The number of rows in the matrix. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="91" column="29" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="91" bodyend="91"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1math_1_1_matrix_1a1ed56088df46f457704e2b3ad6991281" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type>__host__ __device__ void</type>
+        <definition>__host__ __device__ void roccv::detail::math::Matrix&lt; T, M, N &gt;::store</definition>
+        <argsstring>(T *data)</argsstring>
+        <name>store</name>
+        <qualifiedname>roccv::detail::math::Matrix::store</qualifiedname>
+        <param>
+          <type>T *</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+<para>Stores data from the matrix into a 1D array in row-major order. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The array to store matrix data in. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="166" column="30" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="166" bodyend="174"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Defines a matrix object. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The type of the matrix. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>M</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of rows in the matrix. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>N</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of columns in the matrix. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="2">
+        <label>roccv::detail::math::Vector&lt; T, M &gt;</label>
+        <link refid="classroccv_1_1detail_1_1math_1_1_vector"/>
+      </node>
+      <node id="1">
+        <label>roccv::detail::math::Matrix&lt; T, M, N &gt;</label>
+        <link refid="classroccv_1_1detail_1_1math_1_1_matrix"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>data_</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="82" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="82" bodyend="177"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a9c40caccc1f967cddbd1a45d0a0a76a8" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>cols</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1af186749cb7b2cb063cc7ae063f62e2c5" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>data_</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1ae3113ede2f6ed5882d0c0be1b9616203" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>load</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1aefddcf119d7d98fe6cf5e37e217cc6a5" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a0ae600893b2f2b193e4ff5e8dbf951d8" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a633a4195efe82ae225c0bcd3c7e3431d" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1ad083f9e291e1ac00a2622b203db2c310" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1ae9bc207c3f41a9a30b7158e76943e5ed" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>rows</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a1ed56088df46f457704e2b3ad6991281" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>store</name></member>
+      <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a6445a993563a5ac5817d5c585e0570fe" prot="public" virt="non-virtual"><scope>roccv::detail::math::Matrix</scope><name>Type</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

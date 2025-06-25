@@ -1,0 +1,258 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_tensor_shape" kind="class" language="C++" prot="public">
+    <compoundname>roccv::TensorShape</compoundname>
+    <includes refid="tensor__shape_8hpp" local="no">tensor_shape.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_tensor_shape_1a7e9ebdd1edc8fc0f76e8dd6d8d23e9ab" prot="private" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref></type>
+        <definition>TensorLayout roccv::TensorShape::m_layout</definition>
+        <argsstring></argsstring>
+        <name>m_layout</name>
+        <qualifiedname>roccv::TensorShape::m_layout</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="76" column="18" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_tensor_shape_1a324c07503d801582acd4c3dc3c16053e" prot="private" static="no" mutable="no">
+        <type>std::array&lt; int64_t, <ref refid="tensor__layout_8hpp_1a5fc9cd7db841eb7a72c1f9fe727fcc04" kindref="member">ROCCV_TENSOR_MAX_RANK</ref> &gt;</type>
+        <definition>std::array&lt;int64_t, ROCCV_TENSOR_MAX_RANK&gt; roccv::TensorShape::m_shape</definition>
+        <argsstring></argsstring>
+        <name>m_shape</name>
+        <qualifiedname>roccv::TensorShape::m_shape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="75" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_tensor_shape_1af7245844c45e79098708292ca1174ec1" prot="private" static="no" mutable="no">
+        <type>size_t</type>
+        <definition>size_t roccv::TensorShape::m_size</definition>
+        <argsstring></argsstring>
+        <name>m_size</name>
+        <qualifiedname>roccv::TensorShape::m_size</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="77" column="12" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" bodystart="77" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1a405e320b2c264e3d4e6598e8e0095e4c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> &amp;</type>
+        <definition>const TensorLayout &amp; roccv::TensorShape::layout</definition>
+        <argsstring>() const</argsstring>
+        <name>layout</name>
+        <qualifiedname>roccv::TensorShape::layout</qualifiedname>
+        <briefdescription>
+<para>Retrieves the layout of the tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Layout of the tensor. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="59" column="24"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1af5a3c02521d3a8691ac33b99c96614ff" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::TensorShape::operator!=</definition>
+        <argsstring>(const TensorShape &amp;rhs) const</argsstring>
+        <name>operator!=</name>
+        <qualifiedname>roccv::TensorShape::operator!=</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="72" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1a42a41b0763380cb8b355d611a333905b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+        <definition>TensorShape &amp; roccv::TensorShape::operator=</definition>
+        <argsstring>(const TensorShape &amp;other)</argsstring>
+        <name>operator=</name>
+        <qualifiedname>roccv::TensorShape::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="70" column="17"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1a335e519e4ce097c5972ef470c382e5ea" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::TensorShape::operator==</definition>
+        <argsstring>(const TensorShape &amp;rhs) const</argsstring>
+        <name>operator==</name>
+        <qualifiedname>roccv::TensorShape::operator==</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="71" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1a01c9274820e8ad55bb8c774484bad3d4" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int64_t</type>
+        <definition>int64_t roccv::TensorShape::operator[]</definition>
+        <argsstring>(int32_t i) const</argsstring>
+        <name>operator[]</name>
+        <qualifiedname>roccv::TensorShape::operator[]</qualifiedname>
+        <param>
+          <type>int32_t</type>
+          <declname>i</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="69" column="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1a57b643c89a7fa3c92bdd48d47ec7a6a7" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int roccv::TensorShape::size</definition>
+        <argsstring>() const</argsstring>
+        <name>size</name>
+        <qualifiedname>roccv::TensorShape::size</qualifiedname>
+        <briefdescription>
+<para>Returns the size (total number of elements) of the tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The size of the tensor. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="66" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1af56152abbf3529aaea694e9318999dc3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorShape::TensorShape</definition>
+        <argsstring>()=delete</argsstring>
+        <name>TensorShape</name>
+        <qualifiedname>roccv::TensorShape::TensorShape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="36" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1acd63d7281f2d2a586ac50eab04dbea08" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorShape::TensorShape</definition>
+        <argsstring>(const TensorLayout &amp;layout, const std::initializer_list&lt; const int64_t &gt; shape)</argsstring>
+        <name>TensorShape</name>
+        <qualifiedname>roccv::TensorShape::TensorShape</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> &amp;</type>
+          <declname>layout</declname>
+        </param>
+        <param>
+          <type>const std::initializer_list&lt; const int64_t &gt;</type>
+          <declname>shape</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="51" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_shape_1abc6786c83a4f67d3f96a49a089f93a75" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorShape::TensorShape</definition>
+        <argsstring>(const TensorLayout &amp;layout, const std::span&lt; const int64_t &gt; shape)</argsstring>
+        <name>TensorShape</name>
+        <qualifiedname>roccv::TensorShape::TensorShape</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> &amp;</type>
+          <declname>layout</declname>
+        </param>
+        <param>
+          <type>const std::span&lt; const int64_t &gt;</type>
+          <declname>shape</declname>
+        </param>
+        <briefdescription>
+<para>Construct a new <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> Shape object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">layout</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The desired layout of the <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> object. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">shape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>An int64_t array which stores information about the <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref>&apos;s shape. For example: given <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> NHWC, an example of an acceptable shape array would be: [1, image.height, image.width, image.channels]. The size of the shape array must reflect the <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref>; for example, TENSOR_LAYOUT_HWC would have a shape array of size 3. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="49" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para><ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" line="34" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp" bodystart="34" bodyend="78"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_tensor_shape_1a405e320b2c264e3d4e6598e8e0095e4c" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>layout</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1a7e9ebdd1edc8fc0f76e8dd6d8d23e9ab" prot="private" virt="non-virtual"><scope>roccv::TensorShape</scope><name>m_layout</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1a324c07503d801582acd4c3dc3c16053e" prot="private" virt="non-virtual"><scope>roccv::TensorShape</scope><name>m_shape</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1af7245844c45e79098708292ca1174ec1" prot="private" virt="non-virtual"><scope>roccv::TensorShape</scope><name>m_size</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1af5a3c02521d3a8691ac33b99c96614ff" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>operator!=</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1a42a41b0763380cb8b355d611a333905b" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>operator=</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1a335e519e4ce097c5972ef470c382e5ea" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>operator==</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1a01c9274820e8ad55bb8c774484bad3d4" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>operator[]</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1a57b643c89a7fa3c92bdd48d47ec7a6a7" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>size</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1af56152abbf3529aaea694e9318999dc3" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>TensorShape</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1abc6786c83a4f67d3f96a49a089f93a75" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>TensorShape</name></member>
+      <member refid="classroccv_1_1_tensor_shape_1acd63d7281f2d2a586ac50eab04dbea08" prot="public" virt="non-virtual"><scope>roccv::TensorShape</scope><name>TensorShape</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

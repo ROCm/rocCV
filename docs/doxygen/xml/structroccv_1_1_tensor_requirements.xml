@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structroccv_1_1_tensor_requirements" kind="struct" language="C++" prot="public">
+    <compoundname>roccv::TensorRequirements</compoundname>
+    <includes refid="tensor__requirements_8hpp" local="no">tensor_requirements.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structroccv_1_1_tensor_requirements_1a98b6309fdbc88bfa7ec5b07fd8ffc307" prot="public" static="no" mutable="no">
+        <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+        <definition>eDeviceType roccv::TensorRequirements::device</definition>
+        <argsstring></argsstring>
+        <name>device</name>
+        <qualifiedname>roccv::TensorRequirements::device</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" line="34" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" bodystart="34" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_requirements_1a95c7da28ba5a70e5fea0d6138407911f" prot="public" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref></type>
+        <definition>DataType roccv::TensorRequirements::dtype</definition>
+        <argsstring></argsstring>
+        <name>dtype</name>
+        <qualifiedname>roccv::TensorRequirements::dtype</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" line="31" column="14" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" bodystart="31" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_requirements_1a81e90f3f15afecc02807cea1eda7afb6" prot="public" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref></type>
+        <definition>TensorShape roccv::TensorRequirements::shape</definition>
+        <argsstring></argsstring>
+        <name>shape</name>
+        <qualifiedname>roccv::TensorRequirements::shape</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" line="37" column="17" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" bodystart="37" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="structroccv_1_1_tensor_requirements_1ad399e834171383efa84e387b5d1cc5ee" prot="public" static="no" mutable="no">
+        <type>std::array&lt; int64_t, <ref refid="tensor__layout_8hpp_1a5fc9cd7db841eb7a72c1f9fe727fcc04" kindref="member">ROCCV_TENSOR_MAX_RANK</ref> &gt;</type>
+        <definition>std::array&lt;int64_t, ROCCV_TENSOR_MAX_RANK&gt; roccv::TensorRequirements::strides</definition>
+        <argsstring></argsstring>
+        <name>strides</name>
+        <qualifiedname>roccv::TensorRequirements::strides</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" line="40" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" bodystart="40" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="4">
+        <label>std::array&lt; int64_t, ROCCV_TENSOR_MAX_RANK &gt;</label>
+      </node>
+      <node id="2">
+        <label>roccv::DataType</label>
+        <link refid="classroccv_1_1_data_type"/>
+      </node>
+      <node id="1">
+        <label>roccv::TensorRequirements</label>
+        <link refid="structroccv_1_1_tensor_requirements"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>dtype</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>shape</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>strides</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>roccv::TensorShape</label>
+        <link refid="classroccv_1_1_tensor_shape"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" line="29" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp" bodystart="29" bodyend="41"/>
+    <listofallmembers>
+      <member refid="structroccv_1_1_tensor_requirements_1a98b6309fdbc88bfa7ec5b07fd8ffc307" prot="public" virt="non-virtual"><scope>roccv::TensorRequirements</scope><name>device</name></member>
+      <member refid="structroccv_1_1_tensor_requirements_1a95c7da28ba5a70e5fea0d6138407911f" prot="public" virt="non-virtual"><scope>roccv::TensorRequirements</scope><name>dtype</name></member>
+      <member refid="structroccv_1_1_tensor_requirements_1a81e90f3f15afecc02807cea1eda7afb6" prot="public" virt="non-virtual"><scope>roccv::TensorRequirements</scope><name>shape</name></member>
+      <member refid="structroccv_1_1_tensor_requirements_1ad399e834171383efa84e387b5d1cc5ee" prot="public" virt="non-virtual"><scope>roccv::TensorRequirements</scope><name>strides</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

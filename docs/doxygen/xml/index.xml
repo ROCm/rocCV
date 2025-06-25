@@ -1,0 +1,805 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.9.8" xml:lang="en-US">
+  <compound refid="class_array_wrapper" kind="class"><name>ArrayWrapper</name>
+    <member refid="class_array_wrapper_1ae28cb562b9391df1d634f0fcc9cde926" kind="variable"><name>data_</name></member>
+    <member refid="class_array_wrapper_1ad9cdb5c85d257680a3079b905ec2d300" kind="function"><name>ArrayWrapper</name></member>
+    <member refid="class_array_wrapper_1a13dd39be1997e473179d421ec3cd655c" kind="function"><name>operator[]</name></member>
+    <member refid="class_array_wrapper_1aed3d6bb0602a3c4560e10e5a7ff0740f" kind="function"><name>operator[]</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_bilateral_filter" kind="class"><name>roccv::BilateralFilter</name>
+    <member refid="classroccv_1_1_bilateral_filter_1ae9cae69f582111f5b9aba549d767d0de" kind="function"><name>BilateralFilter</name></member>
+    <member refid="classroccv_1_1_bilateral_filter_1aaa74a2f76a0ced8f47ba7e48a440a2a2" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_bilateral_filter_1a0e60f108feb630dfe36d792503c791dd" kind="function"><name>~BilateralFilter</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_bnd_box" kind="class"><name>roccv::BndBox</name>
+    <member refid="classroccv_1_1_bnd_box_1ad423fdaecbca1d20d037b87bcbe1ca7e" kind="function"><name>BndBox</name></member>
+    <member refid="classroccv_1_1_bnd_box_1ac913ba386b7e69ac7aa45c9e775e802f" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_bnd_box_1a0dd1e6899620790642c020ac9621030d" kind="function"><name>~BndBox</name></member>
+    <member refid="classroccv_1_1_bnd_box_1af433b123e035a1c300fcfe78fd58b04d" kind="function"><name>generateRects</name></member>
+  </compound>
+  <compound refid="struct_bnd_box__t" kind="struct"><name>BndBox_t</name>
+    <member refid="struct_bnd_box__t_1a04cf5ee590aa36f4cfac2999a45f5c35" kind="variable"><name>borderColor</name></member>
+    <member refid="struct_bnd_box__t_1aae3a901957f8ee644d1c91fa7f755a38" kind="variable"><name>box</name></member>
+    <member refid="struct_bnd_box__t_1a8f15c8e36e5f0cb09d66de41425173cc" kind="variable"><name>fillColor</name></member>
+    <member refid="struct_bnd_box__t_1a23bc003dc941d8d65f2f554e3d691910" kind="variable"><name>thickness</name></member>
+  </compound>
+  <compound refid="struct_bnd_boxes__t" kind="struct"><name>BndBoxes_t</name>
+    <member refid="struct_bnd_boxes__t_1aeafcccf942ade59ccb7b6e91eba36091" kind="variable"><name>batch</name></member>
+    <member refid="struct_bnd_boxes__t_1a042a130d3e11514ae20464e99cf2d76d" kind="variable"><name>boxes</name></member>
+    <member refid="struct_bnd_boxes__t_1ae2dad8d449f4de68d3c276f6a0f14654" kind="variable"><name>numBoxes</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_border_wrapper" kind="class"><name>roccv::BorderWrapper</name>
+    <member refid="classroccv_1_1_border_wrapper_1a6663eb8ab835f7a6bc1a0c97fdeeffbf" kind="variable"><name>m_border_value</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1a40410d54ffca8556730b6b41cc537015" kind="variable"><name>m_desc</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1aff2ca88ac7a30cc2a3689ffd278df334" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1a15e785cbaf3b329f50a602ed1a7354d7" kind="function"><name>batches</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1af800c27f69f2f7d2a210de0cdaf24b35" kind="function"><name>BorderWrapper</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1a7fdef41e7de65c6b92326884aeeebf3f" kind="function"><name>channels</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1a3c77b0626372d6a54f1392f9c4346f24" kind="function"><name>height</name></member>
+    <member refid="classroccv_1_1_border_wrapper_1a18ea8bf63eafad7640766d9f9b0fc35c" kind="function"><name>width</name></member>
+  </compound>
+  <compound refid="struct_box__t" kind="struct"><name>Box_t</name>
+    <member refid="struct_box__t_1a657e2a4948150afc7d92d71756e82910" kind="variable"><name>height</name></member>
+    <member refid="struct_box__t_1a6ea74453e0761c9a2fbfc715aabe33f1" kind="variable"><name>width</name></member>
+    <member refid="struct_box__t_1aea12efbc9c1e966b4d3efcf5bbec2dd6" kind="variable"><name>x</name></member>
+    <member refid="struct_box__t_1ae7621b44fdca8f5831425f171b0d40e8" kind="variable"><name>y</name></member>
+  </compound>
+  <compound refid="struct_color4__t" kind="struct"><name>Color4_t</name>
+    <member refid="struct_color4__t_1adb81b2f745c9741d3e41fe187341b9f1" kind="variable"><name>c0</name></member>
+    <member refid="struct_color4__t_1ae797afdda4b78747bc20e54e894c50ae" kind="variable"><name>c1</name></member>
+    <member refid="struct_color4__t_1a1fd1dd7ea784d34f2176a11609426e31" kind="variable"><name>c2</name></member>
+    <member refid="struct_color4__t_1a2d4018f0da8b53ff96dce0a178411dbf" kind="variable"><name>c3</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_composite" kind="class"><name>roccv::Composite</name>
+    <member refid="classroccv_1_1_composite_1a98f0c08236f6c145fa94e4428e5ead5f" kind="function"><name>Composite</name></member>
+    <member refid="classroccv_1_1_composite_1aba3d61afd6354e2f1601dfebc3cfa5fc" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_composite_1a951de383b7fe1c27c294106419bc4e9e" kind="function"><name>~Composite</name></member>
+  </compound>
+  <compound refid="struct_conversion_factors" kind="struct"><name>ConversionFactors</name>
+    <member refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kind="variable"><name>a</name></member>
+    <member refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kind="variable"><name>b</name></member>
+    <member refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kind="variable"><name>c</name></member>
+    <member refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kind="variable"><name>d</name></member>
+    <member refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kind="variable"><name>e</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_copy_make_border" kind="class"><name>roccv::CopyMakeBorder</name>
+    <member refid="classroccv_1_1_copy_make_border_1a8c6182b8cd494e251e3d20f90c9dd740" kind="function"><name>CopyMakeBorder</name></member>
+    <member refid="classroccv_1_1_copy_make_border_1a93ffbef2b87a73a0d94a12d860249bf1" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_copy_make_border_1a6822b8cc0a3dc7540aeabcff43a0021e" kind="function"><name>~CopyMakeBorder</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_custom_crop" kind="class"><name>roccv::CustomCrop</name>
+    <member refid="classroccv_1_1_custom_crop_1acc462cafe3b9af630ec0cc2b53e73c75" kind="function"><name>operator()</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_cvt_color" kind="class"><name>roccv::CvtColor</name>
+    <member refid="classroccv_1_1_cvt_color_1a24cc4d7d8a75a64f516154f61d53448a" kind="function"><name>CvtColor</name></member>
+    <member refid="classroccv_1_1_cvt_color_1a5ee042499c5c3bb4c1994d9649071fd5" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_cvt_color_1aa04c5543532c6ca8764d44f346c51fc8" kind="function"><name>~CvtColor</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_data_type" kind="class"><name>roccv::DataType</name>
+    <member refid="classroccv_1_1_data_type_1a6568d5cc24da12f019b25eb5f6d5a50d" kind="variable"><name>etype_</name></member>
+    <member refid="classroccv_1_1_data_type_1a07ceec6e99ac8f2fe1f83834b9d5ae6e" kind="function"><name>DataType</name></member>
+    <member refid="classroccv_1_1_data_type_1aeec580a98f1a029a26b202587494fd13" kind="function"><name>etype</name></member>
+    <member refid="classroccv_1_1_data_type_1a7640528ecb1bc2c6ab8bdc2fc1c0f363" kind="function"><name>operator!=</name></member>
+    <member refid="classroccv_1_1_data_type_1a1ff1da0ec89ab060be2543ed23ebc6cd" kind="function"><name>operator!=</name></member>
+    <member refid="classroccv_1_1_data_type_1ab2410411d7c153b29c206d8f18ddcdd9" kind="function"><name>operator==</name></member>
+    <member refid="classroccv_1_1_data_type_1a41b828905fcc2f4549184add1465631c" kind="function"><name>operator==</name></member>
+    <member refid="classroccv_1_1_data_type_1a4f1ab008f8baa88035d04646c288acea" kind="function"><name>size</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_exception" kind="class"><name>roccv::Exception</name>
+    <member refid="classroccv_1_1_exception_1ae72dd95c8a7bfd61ecb97c46e5921a3c" kind="variable"><name>customStatus_</name></member>
+    <member refid="classroccv_1_1_exception_1a1216e95f8e32da61372ee9a79246b68e" kind="variable"><name>errorMessage_</name></member>
+    <member refid="classroccv_1_1_exception_1ac5597ca423e503635fb956447e68d918" kind="function"><name>Exception</name></member>
+    <member refid="classroccv_1_1_exception_1a608391351b2687ac95e4f7a907e6d2c1" kind="function"><name>Exception</name></member>
+    <member refid="classroccv_1_1_exception_1a39dc32befc9d53534c8599e2e20bb5b0" kind="function"><name>getStatusEnum</name></member>
+    <member refid="classroccv_1_1_exception_1afc8cafeed68feab6d43ed64d944fc150" kind="function"><name>what</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_flip" kind="class"><name>roccv::Flip</name>
+    <member refid="classroccv_1_1_flip_1aecbdbc69ba9ce7c5eb4b7f9446402e31" kind="function"><name>Flip</name></member>
+    <member refid="classroccv_1_1_flip_1a8b60a823b0243c1d510a84fe0f64b6d7" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_flip_1aed0670dc1c167d578e1bf3b81af33608" kind="function"><name>~Flip</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_gamma_contrast" kind="class"><name>roccv::GammaContrast</name>
+    <member refid="classroccv_1_1_gamma_contrast_1ab3398ec4aa041cf8d4a150d82e2f02ca" kind="function"><name>GammaContrast</name></member>
+    <member refid="classroccv_1_1_gamma_contrast_1a492a03e04bac34f865788a0eb240924d" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_gamma_contrast_1aeb6e3b85b63a82e77271a42b83ac6f8a" kind="function"><name>~GammaContrast</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_generic_tensor_wrapper" kind="class"><name>roccv::GenericTensorWrapper</name>
+    <member refid="classroccv_1_1_generic_tensor_wrapper_1afe9738fa4998a8228fed46647af6b26d" kind="variable"><name>data</name></member>
+    <member refid="classroccv_1_1_generic_tensor_wrapper_1a07d9e6cda500be6e0a7e325c8625c3dd" kind="variable"><name>rank</name></member>
+    <member refid="classroccv_1_1_generic_tensor_wrapper_1a23306e72bc72b0be09718bd1c9292bab" kind="variable"><name>shape</name></member>
+    <member refid="classroccv_1_1_generic_tensor_wrapper_1a035a2e6c84f259918fdf1fb5b5516814" kind="variable"><name>strides</name></member>
+    <member refid="classroccv_1_1_generic_tensor_wrapper_1a0160d0a4746534a4ddca0892ae2b3079" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1_generic_tensor_wrapper_1afbbeb61df8dfbd0a5ebb46760f3352a1" kind="function"><name>GenericTensorWrapper</name></member>
+  </compound>
+  <compound refid="structroccv_1_1detail_1_1_has_type_traits__t" kind="struct"><name>roccv::detail::HasTypeTraits_t</name>
+    <member refid="structroccv_1_1detail_1_1_has_type_traits__t_1a13a4ca0a3c52b86472c50d10d5160286" kind="variable"><name>value</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_histogram" kind="class"><name>roccv::Histogram</name>
+    <member refid="classroccv_1_1_histogram_1a55f6635498f5fe62e6e70f3632029480" kind="function"><name>Histogram</name></member>
+    <member refid="classroccv_1_1_histogram_1a0c1968f6e5bef256d3ce21dfa49d1943" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_histogram_1abff43c5d321739ef85dc37e5e82b52b8" kind="function"><name>~Histogram</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_image_format" kind="class"><name>roccv::ImageFormat</name>
+    <member refid="classroccv_1_1_image_format_1a3efe00062f2f495ce943026b83ccd7b3" kind="variable"><name>m_dtype</name></member>
+    <member refid="classroccv_1_1_image_format_1aea154610b0e5b05f5e3d06d2bb043218" kind="variable"><name>m_num_channels</name></member>
+    <member refid="classroccv_1_1_image_format_1a36cf32c3f5fa2872a987054c354f116a" kind="function"><name>channels</name></member>
+    <member refid="classroccv_1_1_image_format_1ac44154ffe559054c91478829bb62e731" kind="function"><name>dtype</name></member>
+    <member refid="classroccv_1_1_image_format_1ae67c3cf2eafa76e5c9b34efc3ba4666a" kind="function"><name>ImageFormat</name></member>
+    <member refid="classroccv_1_1_image_format_1a7fe4b77e60b88074e9671b77a709b2b8" kind="function"><name>ImageFormat</name></member>
+  </compound>
+  <compound refid="structroccv_1_1_image_wrapper_1_1_image_shape" kind="struct"><name>roccv::ImageWrapper::ImageShape</name>
+    <member refid="structroccv_1_1_image_wrapper_1_1_image_shape_1a7d96129dda92cc84feb7f21f05e4c974" kind="variable"><name>c</name></member>
+    <member refid="structroccv_1_1_image_wrapper_1_1_image_shape_1a59d0313f53a634442dddf9dccbebdf1d" kind="variable"><name>h</name></member>
+    <member refid="structroccv_1_1_image_wrapper_1_1_image_shape_1abf8928752a18f5bc416abbf0ed2e7bd7" kind="variable"><name>n</name></member>
+    <member refid="structroccv_1_1_image_wrapper_1_1_image_shape_1acdcec0bc3a6241980da9ed528aa65679" kind="variable"><name>w</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_image_wrapper" kind="class"><name>roccv::ImageWrapper</name>
+    <member refid="classroccv_1_1_image_wrapper_1a29913043cf67bb87667b0185a9ed0420" kind="typedef"><name>ValueType</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1af670f7a9841bc8f857c6b224b101c1aa" kind="variable"><name>data</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1a8d7aef5d7b6d0fc6e8e3788866c7dcbf" kind="variable"><name>shape</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1aadbce9b9cc74d4922e2212765d55454c" kind="variable"><name>stride</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1af3af5f5d292e285f9e45fe05aed0cf4c" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1ac025ae3d8098faa7d556a83476016238" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1a3f36d78b1eee518c607ee811e2c1d749" kind="function"><name>batches</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1aaa99c9965d16617fdfa914ef6839f571" kind="function"><name>channels</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1a30c34268ffd54fe2267449954cdfb22d" kind="function"><name>height</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1acac72332d26afe4c7e13becd3d92267b" kind="function"><name>ImageWrapper</name></member>
+    <member refid="classroccv_1_1_image_wrapper_1aa73a8c9847738c64c70853345cceed3e" kind="function"><name>width</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_interpolation_wrapper" kind="class"><name>roccv::InterpolationWrapper</name>
+    <member refid="classroccv_1_1_interpolation_wrapper_1a3779a841e961d8c1b145cb00a3ec9d5c" kind="variable"><name>m_desc</name></member>
+    <member refid="classroccv_1_1_interpolation_wrapper_1a07471ce19a8c87ced5c4d394256a544b" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1_interpolation_wrapper_1ac4f32f78f3ddbd09e0c98ee80f979380" kind="function"><name>batches</name></member>
+    <member refid="classroccv_1_1_interpolation_wrapper_1a133fafbefab9cbb16f784eff8eaf610b" kind="function"><name>channels</name></member>
+    <member refid="classroccv_1_1_interpolation_wrapper_1ad11866e6b8c69e11e1b313feceb52404" kind="function"><name>height</name></member>
+    <member refid="classroccv_1_1_interpolation_wrapper_1a073746eadafd7f83d41675fcd61dd0b2" kind="function"><name>InterpolationWrapper</name></member>
+    <member refid="classroccv_1_1_interpolation_wrapper_1a08589d23d5352a6cded11f88df4b5fc9" kind="function"><name>width</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_i_operator" kind="class"><name>roccv::IOperator</name>
+    <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" kind="function"><name>~IOperator</name></member>
+  </compound>
+  <compound refid="structroccv_1_1detail_1_1_make_type__t" kind="struct"><name>roccv::detail::MakeType_t</name>
+  </compound>
+  <compound refid="class_math_vector" kind="class"><name>MathVector</name>
+    <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" kind="function"><name>convert_base</name></member>
+    <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" kind="function"><name>convert_base</name></member>
+    <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" kind="function"><name>convert_base</name></member>
+    <member refid="class_math_vector_1a98b20caae9c74edca60f22f716d80795" kind="function"><name>convert_base</name></member>
+    <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" kind="function"><name>fill</name></member>
+    <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" kind="function"><name>fill</name></member>
+    <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" kind="function"><name>fill</name></member>
+    <member refid="class_math_vector_1acafae0fe071edf790ffc9731c09167d9" kind="function"><name>fill</name></member>
+    <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" kind="function"><name>pow</name></member>
+    <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" kind="function"><name>pow</name></member>
+    <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" kind="function"><name>pow</name></member>
+    <member refid="class_math_vector_1aac25a83a92d1f37e6242b89e4deaee4a" kind="function"><name>pow</name></member>
+    <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" kind="function"><name>trunc</name></member>
+    <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" kind="function"><name>trunc</name></member>
+    <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" kind="function"><name>trunc</name></member>
+    <member refid="class_math_vector_1a92b5aaa4438f31f310cef4a623ed1a47" kind="function"><name>trunc</name></member>
+  </compound>
+  <compound refid="classroccv_1_1detail_1_1math_1_1_matrix" kind="class"><name>roccv::detail::math::Matrix</name>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a6445a993563a5ac5817d5c585e0570fe" kind="typedef"><name>Type</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1af186749cb7b2cb063cc7ae063f62e2c5" kind="variable"><name>data_</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a9c40caccc1f967cddbd1a45d0a0a76a8" kind="function"><name>cols</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1ae3113ede2f6ed5882d0c0be1b9616203" kind="function"><name>load</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a0ae600893b2f2b193e4ff5e8dbf951d8" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1aefddcf119d7d98fe6cf5e37e217cc6a5" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1ad083f9e291e1ac00a2622b203db2c310" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a633a4195efe82ae225c0bcd3c7e3431d" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1ae9bc207c3f41a9a30b7158e76943e5ed" kind="function"><name>rows</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_matrix_1a1ed56088df46f457704e2b3ad6991281" kind="function"><name>store</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_non_maximum_suppression" kind="class"><name>roccv::NonMaximumSuppression</name>
+    <member refid="classroccv_1_1_non_maximum_suppression_1a573d8dc9363f1947ed80baf87eb7e185" kind="function"><name>NonMaximumSuppression</name></member>
+    <member refid="classroccv_1_1_non_maximum_suppression_1ab29f0f5e501ed977daa1a6fe7ab05064" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_non_maximum_suppression_1abd39ce2aff71c1a3cc9165113678c3d3" kind="function"><name>~NonMaximumSuppression</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_normalize" kind="class"><name>roccv::Normalize</name>
+    <member refid="classroccv_1_1_normalize_1ad48784a1a73afa24786a328ffb79f4dd" kind="function"><name>Normalize</name></member>
+    <member refid="classroccv_1_1_normalize_1a381b969d9634fc1cfb48a8d1648c0ffa" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_normalize_1a503917cd5f8939025db5ecea6018e62f" kind="function"><name>~Normalize</name></member>
+  </compound>
+  <compound refid="struct_rect__t" kind="struct"><name>Rect_t</name>
+    <member refid="struct_rect__t_1ab33c37ed8f211edbbd95a43f56415418" kind="variable"><name>batch</name></member>
+    <member refid="struct_rect__t_1a9bcf6a396fb7d3ef8f55992bf2e8eee0" kind="variable"><name>bordered</name></member>
+    <member refid="struct_rect__t_1af7e551dae2cb1c6cfe6aba9bcc888b3e" kind="variable"><name>color</name></member>
+    <member refid="struct_rect__t_1acee7acc2ed5badab5c4334df2faef5a8" kind="variable"><name>i_bottom</name></member>
+    <member refid="struct_rect__t_1a4a6db6c96600c0d92e4d9ea10ca73897" kind="variable"><name>i_left</name></member>
+    <member refid="struct_rect__t_1a0e5cb99520b99035a6ff84d23f05cca8" kind="variable"><name>i_right</name></member>
+    <member refid="struct_rect__t_1a9ddddeb6d4e237e3a3e16c9653b5ad3d" kind="variable"><name>i_top</name></member>
+    <member refid="struct_rect__t_1a9d20255bb7bfdeaa684e8d9e66be0a76" kind="variable"><name>o_bottom</name></member>
+    <member refid="struct_rect__t_1a2476781352aa571972948fb46af83cc3" kind="variable"><name>o_left</name></member>
+    <member refid="struct_rect__t_1ab434bfdb2d16214538dc8a493937b531" kind="variable"><name>o_right</name></member>
+    <member refid="struct_rect__t_1ae977d8eb52895102fdf27cfec9dc1ab7" kind="variable"><name>o_top</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_remap" kind="class"><name>roccv::Remap</name>
+    <member refid="classroccv_1_1_remap_1aae2ad5cef5167edc4e62cb2ec04a40e0" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_remap_1aaacb2656ec885039004e7da6dfc791b6" kind="function"><name>Remap</name></member>
+    <member refid="classroccv_1_1_remap_1ae01186b014dd423d2bec6a2c64a6fb6a" kind="function"><name>~Remap</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_resize" kind="class"><name>roccv::Resize</name>
+    <member refid="classroccv_1_1_resize_1a8878ceeb963ef591bc95fe891c8e2435" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_resize_1acde0cf328bd3a86fe4a84e89d750e690" kind="function"><name>Resize</name></member>
+    <member refid="classroccv_1_1_resize_1a302787ecf5cdd5a1c9a68603b5696b09" kind="function"><name>~Resize</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_rotate" kind="class"><name>roccv::Rotate</name>
+    <member refid="classroccv_1_1_rotate_1ae6b4645d613564d001621e81faf32072" kind="variable"><name>m_op</name></member>
+    <member refid="classroccv_1_1_rotate_1a6b87db9dca0abb4713fa54ce0064556c" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_rotate_1a7831b127e9c5f78c6e141e5dc2be6529" kind="function"><name>Rotate</name></member>
+    <member refid="classroccv_1_1_rotate_1ae7e5698d7b0fe8b8499a6f14010e76f7" kind="function"><name>~Rotate</name></member>
+  </compound>
+  <compound refid="structroccv_1_1_size2_d" kind="struct"><name>roccv::Size2D</name>
+    <member refid="structroccv_1_1_size2_d_1a97da41834f6cdebe5d40a2c53cd0930b" kind="variable"><name>h</name></member>
+    <member refid="structroccv_1_1_size2_d_1aba113984298d812f1e6aa8ea9ff2a12f" kind="variable"><name>w</name></member>
+  </compound>
+  <compound refid="classroccv_1_1detail_1_1_strided_data_wrap" kind="class"><name>roccv::detail::StridedDataWrap</name>
+    <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1ab238060cc5b083ce87abd0b7e5e872bb" kind="variable"><name>data_</name></member>
+    <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1a64d4b069d0a79169fbe381b83ed6be08" kind="variable"><name>strides_</name></member>
+    <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1aa03c678ea7aba2e96b08b93ca0ced0b1" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1aa29ecd083d02270956838919c946c9c0" kind="function"><name>at</name></member>
+    <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1a01811bf4d86295a8d1ac4362ce94eb80" kind="function"><name>StridedDataWrap</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_tensor" kind="class"><name>roccv::Tensor</name>
+    <member refid="classroccv_1_1_tensor_1a3ccb39b2ccfe61473e80ff8b38b4cf5a" kind="typedef"><name>Requirements</name></member>
+    <member refid="classroccv_1_1_tensor_1aa89913d951fb2fd3d77ac32c52a696bc" kind="variable"><name>m_data</name></member>
+    <member refid="classroccv_1_1_tensor_1a372cb0ec7ef6ab96ee6418ea1ad3c654" kind="variable"><name>m_requirements</name></member>
+    <member refid="classroccv_1_1_tensor_1a2fc816736648718078a5171cd66be26f" kind="function"><name>device</name></member>
+    <member refid="classroccv_1_1_tensor_1ab9140fe5b338b25481a9cb480d674ce2" kind="function"><name>dtype</name></member>
+    <member refid="classroccv_1_1_tensor_1a03f7426f087e59be21db8db926ce155c" kind="function"><name>exportData</name></member>
+    <member refid="classroccv_1_1_tensor_1a8e2af2c90152ae59def6e83217f92fa0" kind="function"><name>exportData</name></member>
+    <member refid="classroccv_1_1_tensor_1acdc3ebc42408ba774893d9088dbdbe1f" kind="function"><name>layout</name></member>
+    <member refid="classroccv_1_1_tensor_1ad93e09fe6b6c922a75906a2f1a7cea6d" kind="function"><name>operator=</name></member>
+    <member refid="classroccv_1_1_tensor_1a3f92b9a4b84f4adc953dee2e11065c03" kind="function"><name>rank</name></member>
+    <member refid="classroccv_1_1_tensor_1ac5388527a12c5287f271524583ad3d84" kind="function"><name>reshape</name></member>
+    <member refid="classroccv_1_1_tensor_1acad2d265df28b9d3485ea448172a369a" kind="function"><name>reshape</name></member>
+    <member refid="classroccv_1_1_tensor_1ae244478b3a78a6e4492d0340901b2c7c" kind="function"><name>shape</name></member>
+    <member refid="classroccv_1_1_tensor_1a66efd261db75c569ddef6514b634e02d" kind="function"><name>shape</name></member>
+    <member refid="classroccv_1_1_tensor_1a15df579e1ebf8e775c42ca11f8b5df8f" kind="function"><name>Tensor</name></member>
+    <member refid="classroccv_1_1_tensor_1a91ace02407a6e4bc5cb7920479dba2df" kind="function"><name>Tensor</name></member>
+    <member refid="classroccv_1_1_tensor_1af075e7d048c14967986a695038afc23d" kind="function"><name>Tensor</name></member>
+    <member refid="classroccv_1_1_tensor_1a2638c0c8cdc31e6ae0aaf7b6749e08fd" kind="function"><name>Tensor</name></member>
+    <member refid="classroccv_1_1_tensor_1ad1fc14225901f692f4e69f0d9ccefe79" kind="function"><name>Tensor</name></member>
+    <member refid="classroccv_1_1_tensor_1a69618f599091e6d268e426d599d1a7c3" kind="function"><name>Tensor</name></member>
+    <member refid="classroccv_1_1_tensor_1a1f14a8478e9caeb17bfa61a278a45115" kind="function"><name>CalcRequirements</name></member>
+    <member refid="classroccv_1_1_tensor_1ad115f847503fc70a1413f44dfda2ced6" kind="function"><name>CalcRequirements</name></member>
+  </compound>
+  <compound refid="structroccv_1_1_tensor_buffer" kind="struct"><name>roccv::TensorBuffer</name>
+    <member refid="structroccv_1_1_tensor_buffer_1af5d43ac0466df5c95895a7bc8e6b0555" kind="variable"><name>basePtr</name></member>
+  </compound>
+  <compound refid="structroccv_1_1_tensor_buffer_strided" kind="struct"><name>roccv::TensorBufferStrided</name>
+    <member refid="structroccv_1_1_tensor_buffer_strided_1a13af060693d98bdb5de022b2f2b9d8a3" kind="variable"><name>strides</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_tensor_data" kind="class"><name>roccv::TensorData</name>
+    <member refid="classroccv_1_1_tensor_data_1addf1ffe6a2ed2840720d181d06be4059" kind="variable"><name>m_buffer</name></member>
+    <member refid="classroccv_1_1_tensor_data_1afb4de4d439577b8650324ca8e0d6920c" kind="variable"><name>m_deviceType</name></member>
+    <member refid="classroccv_1_1_tensor_data_1ae4cf6c5f7926ac56014643bd1fea8e45" kind="variable"><name>m_dtype</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a1ad5276d1071f9b55c7bdcb96798c8b9" kind="variable"><name>m_shape</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a27edf41eea6476faae79de874bf88e06" kind="function"><name>basePtr</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a66a4f32b7fad1ec4fb33cc73a7b6e16e" kind="function"><name>cast</name></member>
+    <member refid="classroccv_1_1_tensor_data_1acd77c8217801032347610909c9379b35" kind="function"><name>device</name></member>
+    <member refid="classroccv_1_1_tensor_data_1ac4f872e1728b9d0ee2a43561992b39ec" kind="function"><name>dtype</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a21b09151a2531e2733481b9cc8298df0" kind="function"><name>rank</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a36cb5e9305487e186a061d0e8832618c" kind="function"><name>shape</name></member>
+    <member refid="classroccv_1_1_tensor_data_1af7d93be188a24bb8f905bd8692290b63" kind="function"><name>shape</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a735c1b6246a513646513bfb8fd1a8105" kind="function"><name>TensorData</name></member>
+    <member refid="classroccv_1_1_tensor_data_1af3d53941cc189cc36a0625244b6ae849" kind="function"><name>~TensorData</name></member>
+    <member refid="classroccv_1_1_tensor_data_1a8df315a795bd3d3f9ebb8a704d1fee3c" kind="function"><name>TensorData</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_tensor_data_strided" kind="class"><name>roccv::TensorDataStrided</name>
+    <member refid="classroccv_1_1_tensor_data_strided_1a6203aa1ca4223e8b99725ce367125da8" kind="typedef"><name>Buffer</name></member>
+    <member refid="classroccv_1_1_tensor_data_strided_1a26e3fefe8fc9cc4bbb453b16cd2896fa" kind="function"><name>stride</name></member>
+    <member refid="classroccv_1_1_tensor_data_strided_1a271f03c0f05dc4340f2c37c8392115a3" kind="function"><name>TensorDataStrided</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_tensor_layout" kind="class"><name>roccv::TensorLayout</name>
+    <member refid="classroccv_1_1_tensor_layout_1ac13cff6fd1de3fd293667938e8d447f1" kind="variable"><name>layoutDescriptorTable</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a876ae7d361beb856727199a52b1fdf97" kind="variable"><name>layout_</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a66a2517fd92d3af7c4ea2b7d75dd08e8" kind="variable"><name>layout_desc_</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a2563337fbe7838f25be7592f7de4965c" kind="function"><name>batch_index</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1ab52ebb83e9334fb6d7922b62ec8795e4" kind="function"><name>channels_index</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a338c9e7b2e36886708779b577eaa8af5" kind="function"><name>elayout</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a8ee7f04cff3be015aca23922ce894055" kind="function"><name>height_index</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a878da82c6dcc1e8c432b7fa05634d7e4" kind="function"><name>max_features_index</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a10cac6e5e03f4af1056c4ceaea6465c3" kind="function"><name>operator!=</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a6ff3e9ce75e769bd1313ee610386d465" kind="function"><name>operator!=</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a4699fef6f06bc2c9bafe40c1113a014c" kind="function"><name>operator==</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a23bd10ebf2105ec4fbdf95122aacd5b6" kind="function"><name>operator==</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1aa46891d79035718e12e72a0314bd6336" kind="function"><name>rank</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a038535a04e4d6e6ea3ab155fa21e6850" kind="function"><name>sift_features_index</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a24f18684bf8944a2e8c10983e9ba7437" kind="function"><name>sift_octave_layer_index</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a032d3fab1d5f835e72db9d7e9623e9ee" kind="function"><name>TensorLayout</name></member>
+    <member refid="classroccv_1_1_tensor_layout_1a5c27028f96112587131270b9fafd48ac" kind="function"><name>width_index</name></member>
+  </compound>
+  <compound refid="structroccv_1_1_tensor_layout_desc" kind="struct"><name>roccv::TensorLayoutDesc</name>
+    <member refid="structroccv_1_1_tensor_layout_desc_1a5d5f29e1ed2b6beefccd13dbd21cb35d" kind="variable"><name>batch_index</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1ab37eaa11d1cf0e89ce7ca5bf109b0238" kind="variable"><name>channel_index</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1a70ac6fa97285ebd5be308751145a7ea8" kind="variable"><name>height_index</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1a24291095a83313389ddb51812399c563" kind="variable"><name>max_features_index</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1aa3a0d7c0d2a895fe434dc4ad87282e12" kind="variable"><name>rank</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1ae06174d017059232d1af892225f17529" kind="variable"><name>sift_features_index</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1a8c1fe8ad979b40e62c0801400587a64e" kind="variable"><name>sift_octave_layer_index</name></member>
+    <member refid="structroccv_1_1_tensor_layout_desc_1a05166512786d331bea8e15561a409ec0" kind="variable"><name>width_index</name></member>
+  </compound>
+  <compound refid="structroccv_1_1_tensor_requirements" kind="struct"><name>roccv::TensorRequirements</name>
+    <member refid="structroccv_1_1_tensor_requirements_1a98b6309fdbc88bfa7ec5b07fd8ffc307" kind="variable"><name>device</name></member>
+    <member refid="structroccv_1_1_tensor_requirements_1a95c7da28ba5a70e5fea0d6138407911f" kind="variable"><name>dtype</name></member>
+    <member refid="structroccv_1_1_tensor_requirements_1a81e90f3f15afecc02807cea1eda7afb6" kind="variable"><name>shape</name></member>
+    <member refid="structroccv_1_1_tensor_requirements_1ad399e834171383efa84e387b5d1cc5ee" kind="variable"><name>strides</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_tensor_shape" kind="class"><name>roccv::TensorShape</name>
+    <member refid="classroccv_1_1_tensor_shape_1a7e9ebdd1edc8fc0f76e8dd6d8d23e9ab" kind="variable"><name>m_layout</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1a324c07503d801582acd4c3dc3c16053e" kind="variable"><name>m_shape</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1af7245844c45e79098708292ca1174ec1" kind="variable"><name>m_size</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1a405e320b2c264e3d4e6598e8e0095e4c" kind="function"><name>layout</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1af5a3c02521d3a8691ac33b99c96614ff" kind="function"><name>operator!=</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1a42a41b0763380cb8b355d611a333905b" kind="function"><name>operator=</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1a335e519e4ce097c5972ef470c382e5ea" kind="function"><name>operator==</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1a01c9274820e8ad55bb8c774484bad3d4" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1a57b643c89a7fa3c92bdd48d47ec7a6a7" kind="function"><name>size</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1af56152abbf3529aaea694e9318999dc3" kind="function"><name>TensorShape</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1acd63d7281f2d2a586ac50eab04dbea08" kind="function"><name>TensorShape</name></member>
+    <member refid="classroccv_1_1_tensor_shape_1abc6786c83a4f67d3f96a49a089f93a75" kind="function"><name>TensorShape</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_tensor_storage" kind="class"><name>roccv::TensorStorage</name>
+    <member refid="classroccv_1_1_tensor_storage_1a5252b3a6a0c1bf35ed1acf7433f51288" kind="variable"><name>m_data</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1aedf7a1be5d36b02d13b7a102e2d94242" kind="variable"><name>m_device</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1a942aaeeb678326a6d4ba58a71ec349e6" kind="variable"><name>m_ownership</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1a6bfc5dd58063ec172be8127157af508c" kind="function"><name>data</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1ad1177ffe12de36b7c7affe8137403814" kind="function"><name>device</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1a3aab68162d71b4dc2ee0ab6416e8d2a3" kind="function"><name>TensorStorage</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1a19bdae2554e699791ec2f60ffb6a556d" kind="function"><name>TensorStorage</name></member>
+    <member refid="classroccv_1_1_tensor_storage_1a742c36f38ad0fe4329d62436666b9615" kind="function"><name>~TensorStorage</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_threshold" kind="class"><name>roccv::Threshold</name>
+    <member refid="classroccv_1_1_threshold_1a07f9d9f3317f831ce00183d904ea1b9b" kind="variable"><name>m_maxBatchSize</name></member>
+    <member refid="classroccv_1_1_threshold_1a8202bf8ced2b697a3f563cd14ba3aad6" kind="variable"><name>m_threshType</name></member>
+    <member refid="classroccv_1_1_threshold_1ab9d35218f30dd6b7ef6866a4b3f48033" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_threshold_1a3d421cf09c437a52a53e5a7b36f51acb" kind="function"><name>Threshold</name></member>
+    <member refid="classroccv_1_1_threshold_1ad19310b609458bfdd08b59784084c6bf" kind="function"><name>~Threshold</name></member>
+  </compound>
+  <compound refid="structroccv_1_1detail_1_1_type_traits" kind="struct"><name>roccv::detail::TypeTraits</name>
+  </compound>
+  <compound refid="classroccv_1_1detail_1_1math_1_1_vector" kind="class"><name>roccv::detail::math::Vector</name>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1aa29f4a322254521e7510a6863e15f796" kind="typedef"><name>Type</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a408aacb6c0fd8d94f127d0406a317a43" kind="variable"><name>data_</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a307382f7687f05b14eca00ef373a1847" kind="function"><name>operator const T *</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a7c544eee5880025221cc053fbd6d05c4" kind="function"><name>operator T*</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1ab205d71b45e79127fba9959a196521fd" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1abf513c99a7524592f68118812aafbc75" kind="function"><name>operator[]</name></member>
+    <member refid="classroccv_1_1detail_1_1math_1_1_vector_1a239a9912fb8b47a87c9de884ac89ba94" kind="function"><name>size</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_warp_affine" kind="class"><name>roccv::WarpAffine</name>
+    <member refid="classroccv_1_1_warp_affine_1abb6c0df45737ca9e7fb2a999fa334fe7" kind="variable"><name>m_op</name></member>
+    <member refid="classroccv_1_1_warp_affine_1a21fd9f8dcf07fc4118bab92e6b1d3c3f" kind="function"><name>operator()</name></member>
+    <member refid="classroccv_1_1_warp_affine_1aa0ceaa314c66003783f099797f408d4c" kind="function"><name>WarpAffine</name></member>
+    <member refid="classroccv_1_1_warp_affine_1a579f8948f8e2ffbe62ceb888a6853873" kind="function"><name>~WarpAffine</name></member>
+  </compound>
+  <compound refid="classroccv_1_1_warp_perspective" kind="class"><name>roccv::WarpPerspective</name>
+    <member refid="classroccv_1_1_warp_perspective_1a2b0528202b880d3e374a32c5c859d060" kind="function"><name>operator()</name></member>
+  </compound>
+  <compound refid="namespace_0d59" kind="namespace"><name>@59</name>
+  </compound>
+  <compound refid="namespace_kernels" kind="namespace"><name>Kernels</name>
+    <member refid="namespace_kernels_1a0d4e759d1f8e95c11e273bd6a3e41f98" kind="function"><name>blend_single_color</name></member>
+    <member refid="namespace_kernels_1a84c5d512f761c0ac62d90566bda87b58" kind="function"><name>ComputeArea</name></member>
+    <member refid="namespace_kernels_1ae5b1607e6860489ee2548b4c6056eecb" kind="function"><name>ComputeIoU</name></member>
+    <member refid="namespace_kernels_1a7c175ff81421b0ab88d2740aaabf1868" kind="function"><name>pixel_in_box</name></member>
+    <member refid="namespace_kernels_1adc986f4212fe01a3b7da4b0c4f0404a7" kind="function"><name>shade_rectangle</name></member>
+    <member refid="namespace_kernels_1a0d0fdd5b5fff775cdc4ca1bcebce6e49" kind="function"><name>u8cast</name></member>
+  </compound>
+  <compound refid="namespace_kernels_1_1_device" kind="namespace"><name>Kernels::Device</name>
+    <member refid="namespace_kernels_1_1_device_1a8184bd06e23c452825e705e57c4d4696" kind="function"><name>bilateral_filter</name></member>
+    <member refid="namespace_kernels_1_1_device_1a5c4cb1bb3a705b356e051c280f76be9a" kind="function"><name>binary_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1aae5a71372537b1c6a1ad158a2cdf4444" kind="function"><name>binary_inv_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1a84f6581d0548f008a46ab848c71b9707" kind="function"><name>bndbox_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1afbb54f81c7f4b878295095b7f379e010" kind="function"><name>composite</name></member>
+    <member refid="namespace_kernels_1_1_device_1a083594e7fb82f3b5e5adc68cb6d204c3" kind="function"><name>copy_make_border</name></member>
+    <member refid="namespace_kernels_1_1_device_1a56f0d65da12060de30824bed421e3bfc" kind="function"><name>custom_crop</name></member>
+    <member refid="namespace_kernels_1_1_device_1adfee01c9714be85813abf86fb1c1eb1f" kind="function"><name>flip</name></member>
+    <member refid="namespace_kernels_1_1_device_1a7761f744f094e76d5e301c458113c546" kind="function"><name>gamma_contrast_wrapped_u8</name></member>
+    <member refid="namespace_kernels_1_1_device_1a72069020fca91b66511281956cc1fc46" kind="function"><name>histogram_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1ad39f30b6d4034b32cdf0e53c8d3f91b9" kind="function"><name>histogram_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1a8a834d169a33c11b37e1ae0fd4daea7f" kind="function"><name>non_maximum_suppression</name></member>
+    <member refid="namespace_kernels_1_1_device_1a79d844bd262c698f3bac1b2a15f3edd5" kind="function"><name>normalize</name></member>
+    <member refid="namespace_kernels_1_1_device_1aa93c0ba896cb1088e6dfd74a85b015b2" kind="function"><name>remap</name></member>
+    <member refid="namespace_kernels_1_1_device_1a9d6682f1f2d84f7e13d34ee96ebd1b46" kind="function"><name>resize</name></member>
+    <member refid="namespace_kernels_1_1_device_1a604d5eeb0e1c327f7b46f815ee4336f0" kind="function"><name>rgb_or_bgr_to_bgr_or_rgb</name></member>
+    <member refid="namespace_kernels_1_1_device_1aabf4659c457a40e279534a940a93b3a8" kind="function"><name>rgb_or_bgr_to_grayscale</name></member>
+    <member refid="namespace_kernels_1_1_device_1ab09b26a18bf6a9f13844b84632b92565" kind="function"><name>rgb_or_bgr_to_yuv</name></member>
+    <member refid="namespace_kernels_1_1_device_1a8d25b7dcfb524c4d17cb8d95bb6e57e6" kind="function"><name>tozero_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1a0155f06ed16567ba998e829b349724b2" kind="function"><name>tozeroinv_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1a1b64184f6beda938ef29ed258d2dca3e" kind="function"><name>trunc_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_device_1a79ddd8c361d020d8ed496b5ee9d571bc" kind="function"><name>warp_perspective</name></member>
+    <member refid="namespace_kernels_1_1_device_1ad53cdee68182d48609f08ac561ec83c7" kind="function"><name>yuv_to_rgb_or_bgr</name></member>
+  </compound>
+  <compound refid="namespace_kernels_1_1_host" kind="namespace"><name>Kernels::Host</name>
+    <member refid="namespace_kernels_1_1_host_1ab08197fc696e587ea1d67c0354f24079" kind="function"><name>bilateral_filter</name></member>
+    <member refid="namespace_kernels_1_1_host_1a289f00771fb1a1d8f6b4bceeae300150" kind="function"><name>binary_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1aeb9723182f23e215e9e33dd202fb76c9" kind="function"><name>binary_inv_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1a62502f9f0debb2baea5c15bba3212295" kind="function"><name>bndbox_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1a90046feeec8c95dc9eb3224805bc2f11" kind="function"><name>composite</name></member>
+    <member refid="namespace_kernels_1_1_host_1a945c2fde76001853969c6d46adac4d7d" kind="function"><name>copy_make_border</name></member>
+    <member refid="namespace_kernels_1_1_host_1ace0b60e3c6f5d12d0f17ee10486f3640" kind="function"><name>custom_crop</name></member>
+    <member refid="namespace_kernels_1_1_host_1a84da802a09808b8c3b2a307219967165" kind="function"><name>flip</name></member>
+    <member refid="namespace_kernels_1_1_host_1a57372d085376c7cd66ed59610e9d8542" kind="function"><name>gamma_contrast_wrapped_u8</name></member>
+    <member refid="namespace_kernels_1_1_host_1aebf718f6a6a5a283ccc729e67022a09f" kind="function"><name>histogram_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1acbd5b6e3bf84acd3392b7fff1e282023" kind="function"><name>histogram_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1a58224aa2a248cdf0efacc2a4968533cb" kind="function"><name>non_maximum_suppression</name></member>
+    <member refid="namespace_kernels_1_1_host_1a498827bf305de33337cd8deabe9f5e82" kind="function"><name>normalize</name></member>
+    <member refid="namespace_kernels_1_1_host_1aa35b770ba457b566678290ce50fa3139" kind="function"><name>remap</name></member>
+    <member refid="namespace_kernels_1_1_host_1a08b2c78f0034a3eefca7e3bcb524185f" kind="function"><name>resize</name></member>
+    <member refid="namespace_kernels_1_1_host_1af2244f42fba5c62c6f7de47024230740" kind="function"><name>rgb_or_bgr_to_bgr_or_rgb</name></member>
+    <member refid="namespace_kernels_1_1_host_1a2c29efc0c64f318f1d25aa1a44d37e80" kind="function"><name>rgb_or_bgr_to_grayscale</name></member>
+    <member refid="namespace_kernels_1_1_host_1ad01605284d3559b51e14c7116a8783e2" kind="function"><name>rgb_or_bgr_to_yuv</name></member>
+    <member refid="namespace_kernels_1_1_host_1a825cd015a4b7bf059ee3bbbe39b2e7fa" kind="function"><name>tozero_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1ae922dbfe36a7f9c26e8b39fd411ab7c6" kind="function"><name>tozeroinv_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1a846cf09471fac27f1a7e76eab872ffd6" kind="function"><name>trunc_generic_kernel</name></member>
+    <member refid="namespace_kernels_1_1_host_1a313c98405077d2c9c91144f38e4056eb" kind="function"><name>warp_perspective</name></member>
+    <member refid="namespace_kernels_1_1_host_1a5aeecac0a6ca603f3489f973fa11e2c9" kind="function"><name>yuv_to_rgb_or_bgr</name></member>
+  </compound>
+  <compound refid="namespaceroccv" kind="namespace"><name>roccv</name>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0ca" kind="enum"><name>eStatusType</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caad0749aaba8b833466dfcbb0428e4f89c" kind="enumvalue"><name>SUCCESS</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa91bf81a15031ab01510ec064d6004db5" kind="enumvalue"><name>INVALID_HANDLE</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa01855c3c395dbe002f142dafcf953715" kind="enumvalue"><name>INVALID_POINTER</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caad8f24f388e990b9ccf8905b7993b99ae" kind="enumvalue"><name>INVALID_VALUE</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa71e5e8b8caeedea08ea1f0e75143e047" kind="enumvalue"><name>OUT_OF_BOUNDS</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caac56ddb8056b120c9d5fee05981f219c6" kind="enumvalue"><name>OUT_OF_MEMORY</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caade918d7abaea4c856c3c64720f3cbb7c" kind="enumvalue"><name>INVALID_OPERATION</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caae8c0c70879b5895c615677261d64a1ee" kind="enumvalue"><name>INTERNAL_ERROR</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa53270059a6bb240d4099226e2d9edab4" kind="enumvalue"><name>INVALID_COMBINATION</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa3e860a081575fc82cc7b6ed2ca602947" kind="enumvalue"><name>NOT_IMPLEMENTED</name></member>
+    <member refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa02de9649e258d1dd94056e676061e969" kind="enumvalue"><name>NOT_INITIALIZED</name></member>
+    <member refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998a" kind="enum"><name>eTestStatusType</name></member>
+    <member refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998aa6d04ea4ab60daf85a03396a190bc356c" kind="enumvalue"><name>TEST_SUCCESS</name></member>
+    <member refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998aac8f51132d8b61759783e5751b89a1f71" kind="enumvalue"><name>TEST_FAILURE</name></member>
+    <member refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998aaded53093f15fd3aacd7601dbd7a80968" kind="enumvalue"><name>UNEXPECTED_VALUE</name></member>
+    <member refid="namespaceroccv_1a15f4a1cf09cde8d730d28b8ca3ca7d13" kind="typedef"><name>AffineTransform</name></member>
+    <member refid="namespaceroccv_1a5a74014ec72e3fd31695205c719c6152" kind="function"><name>FMT_F32</name></member>
+    <member refid="namespaceroccv_1a1d0a30cc0d7573278e90baf2e40a777c" kind="function"><name>FMT_RGB8</name></member>
+    <member refid="namespaceroccv_1af5f4f67e3e9df349c916f31d5f14462e" kind="function"><name>FMT_RGBA8</name></member>
+    <member refid="namespaceroccv_1a9845578416d024f8ea82e355dc720ac0" kind="function"><name>FMT_S32</name></member>
+    <member refid="namespaceroccv_1a9aa4ac714abe323263166066bfb11b64" kind="function"><name>FMT_S8</name></member>
+    <member refid="namespaceroccv_1a1bcbc48418ffa3006c72c62996e0fe6a" kind="function"><name>FMT_U32</name></member>
+    <member refid="namespaceroccv_1a97ffc8abe10d0deb92cd1147f99e79cc" kind="function"><name>FMT_U8</name></member>
+    <member refid="namespaceroccv_1afea8f60b486e8c055ab9392f2c134d15" kind="function"><name>TensorWrapData</name></member>
+  </compound>
+  <compound refid="namespaceroccv_1_1detail" kind="namespace"><name>roccv::detail</name>
+    <member refid="namespaceroccv_1_1detail_1a12a16ca87f8c52e6ad35a806a9426b6d" kind="typedef"><name>BaseType</name></member>
+    <member refid="namespaceroccv_1_1detail_1a22f7e1ff390f63a7bd92ac5b41a6c410" kind="typedef"><name>MakeType</name></member>
+    <member refid="namespaceroccv_1_1detail_1affc422303d386fa7c2a00f52beaa52f4" kind="variable"><name>HasTypeTraits</name></member>
+    <member refid="namespaceroccv_1_1detail_1a09c8d6e84ec939040ab8e05c757472fa" kind="variable"><name>IsCompound</name></member>
+    <member refid="namespaceroccv_1_1detail_1a874cf5548e2f68e2859b5f63ebc19761" kind="variable"><name>NumComponents</name></member>
+    <member refid="namespaceroccv_1_1detail_1ad1c6ebf43f0f21a5f6f707cf25c9baee" kind="variable"><name>NumElements</name></member>
+    <member refid="namespaceroccv_1_1detail_1a76634f084d520e0acfda6109a5a7042e" kind="function"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+    <member refid="namespaceroccv_1_1detail_1a7c0991d1dbf07e50e1fbbe63f5a59fe1" kind="function"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+    <member refid="namespaceroccv_1_1detail_1a9fed805a779127ab7a0a15e017e1863f" kind="function"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+    <member refid="namespaceroccv_1_1detail_1ae3477906818acf35b7130aa03b4316e7" kind="function"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+    <member refid="namespaceroccv_1_1detail_1a4726720f0005d24f901a579f27126634" kind="function"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+    <member refid="namespaceroccv_1_1detail_1a481f3bb72bbfc51488a62e86e7512434" kind="function"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+    <member refid="namespaceroccv_1_1detail_1a8be5b7a499ba4ad561cb8dbdd4b96d97" kind="function"><name>get_sdwrapper</name></member>
+    <member refid="namespaceroccv_1_1detail_1af9da179f8c2b46d46bcc8c0ee1293c88" kind="function"><name>get_sdwrapper</name></member>
+    <member refid="namespaceroccv_1_1detail_1a3b3ed8654e1856dcbdb0e9baf1018d95" kind="function"><name>get_sdwrapper&lt; TENSOR_LAYOUT_LNHWC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1a5d708328dac8841d63721a38eae662f8" kind="function"><name>get_sdwrapper&lt; TENSOR_LAYOUT_NHWC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1ab7d7beff847ba2875d613c76d7023988" kind="function"><name>get_sdwrapper&lt; TENSOR_LAYOUT_NMC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1a2c0d50ae162facd793768ca5dcbbe5d0" kind="function"><name>get_sdwrapper&lt; TENSOR_LAYOUT_NMD &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1adda0c1378cee5d0c6a24c6d78fc0f0da" kind="function"><name>GetElement</name></member>
+    <member refid="namespaceroccv_1_1detail_1a5e4907e5587c52455694921044e8f16d" kind="function"><name>layout_get_rank</name></member>
+    <member refid="namespaceroccv_1_1detail_1a08eba02e28ffd4db4db94548b2092fcd" kind="function"><name>layout_get_rank&lt; TENSOR_LAYOUT_HWC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1a2e19f4a7f29005449e20587ddf29cee5" kind="function"><name>layout_get_rank&lt; TENSOR_LAYOUT_LNHWC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1ae9926f7edb19443e8147c14301dae408" kind="function"><name>layout_get_rank&lt; TENSOR_LAYOUT_NHWC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1a403fb5b9dab75008529b375a52f58f9f" kind="function"><name>layout_get_rank&lt; TENSOR_LAYOUT_NMC &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1a00667125fb7df22488f77b5d9297895f" kind="function"><name>layout_get_rank&lt; TENSOR_LAYOUT_NMD &gt;</name></member>
+    <member refid="namespaceroccv_1_1detail_1a05175914f40cf839a197f5e6921a2d0b" kind="function"><name>SaturateCast</name></member>
+    <member refid="namespaceroccv_1_1detail_1ac50c951f995414d6feda198154de209b" kind="function"><name>ScalarRangeCast</name></member>
+    <member refid="namespaceroccv_1_1detail_1a2624260944ce343286d9dd0ed2fe3cef" kind="function"><name>ScalarSaturateCast</name></member>
+    <member refid="namespaceroccv_1_1detail_1ad283c9b3810c9a892eb9192187170a06" kind="function"><name>SetAll</name></member>
+  </compound>
+  <compound refid="namespaceroccv_1_1detail_1_1math" kind="namespace"><name>roccv::detail::math</name>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a78327ac5675d99bd2419ce9bff06ba0b" kind="variable"><name>mul</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a60fbe2dfbeaa39c566c320664e766cc1" kind="function"><name>DEFINE_VECTOR_BINARY_FUNC</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1aaf92b34bb9ecc9aabc11c97ab74b1688" kind="function"><name>DEFINE_VECTOR_BINARY_OP</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a6d9925b6287b87b2530102e680ca23d9" kind="function"><name>DEFINE_VECTOR_BINARY_OP</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a886f49df1607c4a8655bf60ea65885dc" kind="function"><name>DEFINE_VECTOR_BINARY_OP</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a8afd1172f7fbf167f279af571041cd1c" kind="function"><name>DEFINE_VECTOR_UNARY_FUNC</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a71f9c592d39e70eef049f16be712257b" kind="function"><name>DEFINE_VECTOR_UNARY_FUNC</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1af6987d5f8a6905aa718bbd648c9e9b84" kind="function"><name>det</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1af49416f5909e2a592b0057d0d86fa837" kind="function"><name>det</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1aece01af9649fc8b2939fb4e752e3153e" kind="function"><name>det</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a675b59e111ea867d61e6a1a722538b99" kind="function"><name>det</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1ad78812a7a62903013d35baae4e4fa90b" kind="function"><name>dot</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a695bd4b9c094c4a6ddc93765c4110b0a" kind="function"><name>inv</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1abdbc13e627b5d441e49b6ea2d19aa49a" kind="function"><name>inv_inplace</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a6fb72794f34678297fc6179710fa7dae" kind="function"><name>inv_inplace</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a7cc404fb9711bb1c6224a4fb38f0cb8d" kind="function"><name>lu_inplace</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a8576710ce367c7fec7cf3cdd268df94b" kind="function"><name>operator-</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a36478450f28d484ae7eb6ef9c48aaae6" kind="function"><name>solve_inplace</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1aa89ff4f7eb3295ac12358eb460185e39" kind="function"><name>solve_inplace</name></member>
+    <member refid="namespaceroccv_1_1detail_1_1math_1a8d4fc5c84e002375bd47c78c7a0757f0" kind="function"><name>swap</name></member>
+  </compound>
+  <compound refid="namespaceroccv_1_1_exception_message" kind="namespace"><name>roccv::ExceptionMessage</name>
+    <member refid="namespaceroccv_1_1_exception_message_1a66bd687ed2b9633ed9a9e12abd4e2126" kind="function"><name>getMessageByEnum</name></member>
+    <member refid="namespaceroccv_1_1_exception_message_1a3eeaf3d3e3abc9e47518727276b7275d" kind="function"><name>getMessageByEnum</name></member>
+  </compound>
+  <compound refid="namespacestd" kind="namespace"><name>std</name>
+  </compound>
+  <compound refid="array__wrapper_8hpp" kind="file"><name>array_wrapper.hpp</name>
+  </compound>
+  <compound refid="conversion__helpers_8hpp" kind="file"><name>conversion_helpers.hpp</name>
+    <member refid="conversion__helpers_8hpp_1aeff9cb787dc69c0b01d6a6c7410e475b" kind="function"><name>Clamp</name></member>
+    <member refid="conversion__helpers_8hpp_1a2875c95407d4870e84f7d59b41063e2a" kind="function"><name>RoundImplementationsFromYUV</name></member>
+    <member refid="conversion__helpers_8hpp_1a96bf17b8a5f3b0e211a89067308feee9" kind="function"><name>RoundImplementationsToYUV</name></member>
+  </compound>
+  <compound refid="math__vector_8hpp" kind="file"><name>math_vector.hpp</name>
+  </compound>
+  <compound refid="strided__data__wrap_8hpp" kind="file"><name>strided_data_wrap.hpp</name>
+  </compound>
+  <compound refid="validation__helpers_8hpp" kind="file"><name>validation_helpers.hpp</name>
+    <member refid="validation__helpers_8hpp_1a38de531635834c62ed3d4f0cdac8c73d" kind="define"><name>CHECK_TENSOR_CHANNELS</name></member>
+    <member refid="validation__helpers_8hpp_1a7ed9e5f641f39588f12866d42fdd95b4" kind="define"><name>CHECK_TENSOR_COMPARISON</name></member>
+    <member refid="validation__helpers_8hpp_1a951a0461c90bedab02f4689dd93b09ca" kind="define"><name>CHECK_TENSOR_DATATYPES</name></member>
+    <member refid="validation__helpers_8hpp_1a901b90083bd6bc230fd8894cdd0f5dbe" kind="define"><name>CHECK_TENSOR_DEVICE</name></member>
+    <member refid="validation__helpers_8hpp_1ad3193134cccd3d863cc969e01467058b" kind="define"><name>CHECK_TENSOR_LAYOUT</name></member>
+  </compound>
+  <compound refid="data__type_8hpp" kind="file"><name>data_type.hpp</name>
+  </compound>
+  <compound refid="casting_8hpp" kind="file"><name>casting.hpp</name>
+  </compound>
+  <compound refid="math_8hpp" kind="file"><name>math.hpp</name>
+  </compound>
+  <compound refid="vectorized__type__math_8hpp" kind="file"><name>vectorized_type_math.hpp</name>
+    <member refid="vectorized__type__math_8hpp_1a51b8bf4dda5729c1ee38c57a18ce954c" kind="define"><name>DEFINE_VECTOR_BINARY_FUNC</name></member>
+    <member refid="vectorized__type__math_8hpp_1aea4b5264836ffd8a4191fcfccbdbee0b" kind="define"><name>DEFINE_VECTOR_BINARY_OP</name></member>
+    <member refid="vectorized__type__math_8hpp_1a80041b333296b630ec6253c1fd50d121" kind="define"><name>DEFINE_VECTOR_UNARY_FUNC</name></member>
+  </compound>
+  <compound refid="type__traits_8hpp" kind="file"><name>type_traits.hpp</name>
+    <member refid="type__traits_8hpp_1a09686c83e02294531cfedad7b8564850" kind="define"><name>DEFINE_TYPE_TRAITS</name></member>
+    <member refid="type__traits_8hpp_1a5ce2cd9463b6058ede760b18cda39343" kind="define"><name>DEFINE_TYPE_TRAITS_0_TO_4</name></member>
+  </compound>
+  <compound refid="vector__utils_8hpp" kind="file"><name>vector_utils.hpp</name>
+  </compound>
+  <compound refid="exception_8hpp" kind="file"><name>exception.hpp</name>
+  </compound>
+  <compound refid="hip__assert_8h" kind="file"><name>hip_assert.h</name>
+    <member refid="hip__assert_8h_1a1c958a8be4772ba46d5d61cd111c4a7b" kind="define"><name>assertm</name></member>
+    <member refid="hip__assert_8h_1a682ce98767bf61df191c639de000fc30" kind="define"><name>HIP_ASSERT</name></member>
+    <member refid="hip__assert_8h_1a3d7d620dc527870e346cf6f3a93244c4" kind="define"><name>HIP_VALIDATE_NO_ERRORS</name></member>
+  </compound>
+  <compound refid="image__format_8hpp" kind="file"><name>image_format.hpp</name>
+  </compound>
+  <compound refid="status__type_8h" kind="file"><name>status_type.h</name>
+  </compound>
+  <compound refid="tensor_8hpp" kind="file"><name>tensor.hpp</name>
+  </compound>
+  <compound refid="tensor__buffer_8hpp" kind="file"><name>tensor_buffer.hpp</name>
+  </compound>
+  <compound refid="tensor__data_8hpp" kind="file"><name>tensor_data.hpp</name>
+  </compound>
+  <compound refid="tensor__layout_8hpp" kind="file"><name>tensor_layout.hpp</name>
+    <member refid="tensor__layout_8hpp_1a5fc9cd7db841eb7a72c1f9fe727fcc04" kind="define"><name>ROCCV_TENSOR_MAX_RANK</name></member>
+  </compound>
+  <compound refid="tensor__requirements_8hpp" kind="file"><name>tensor_requirements.hpp</name>
+  </compound>
+  <compound refid="tensor__shape_8hpp" kind="file"><name>tensor_shape.hpp</name>
+  </compound>
+  <compound refid="tensor__storage_8hpp" kind="file"><name>tensor_storage.hpp</name>
+  </compound>
+  <compound refid="util__enums_8h" kind="file"><name>util_enums.h</name>
+    <member refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14" kind="enum"><name>eChannelType</name></member>
+    <member refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14aa6b9a78ac8d0402486f96d8ad7923d93" kind="enumvalue"><name>F_RGB</name></member>
+    <member refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a4a19a93c929964c201e01c8352dc8b9c" kind="enumvalue"><name>BGR</name></member>
+    <member refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14af726371acfea68d8e6506b9ab7d817f1" kind="enumvalue"><name>YUV</name></member>
+    <member refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14a68e71c1f55a3675b47ce615d0bc4bbbb" kind="enumvalue"><name>YVU</name></member>
+    <member refid="util__enums_8h_1ade439766996cde7c27ee01e826ccef14ad393599abdc2ec6a93956b1b782b4698" kind="enumvalue"><name>Grayscale</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kind="enum"><name>eDataType</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183aa067375620db4d6336d68f82da3b44d6" kind="enumvalue"><name>DATA_TYPE_U8</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a0509f26dc04cac0287e23a840ee5f031" kind="enumvalue"><name>DATA_TYPE_S8</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a2060a89ce8797207f5c077782e68b264" kind="enumvalue"><name>DATA_TYPE_U32</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183ad83c4722cff50ad085c991d67b16d84b" kind="enumvalue"><name>DATA_TYPE_S32</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a599bcb2b78d69aa8b96f9ffdfae37ddc" kind="enumvalue"><name>DATA_TYPE_F32</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183a21cc36f43ee581f01f301b417081991d" kind="enumvalue"><name>DATA_TYPE_4S16</name></member>
+    <member refid="util__enums_8h_1acc461328b82c34604e8b428326a52183ac94be1d38bb99a6e6c5d6a0a4f46c62f" kind="enumvalue"><name>DATA_TYPE_S16</name></member>
+    <member refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kind="enum"><name>eDeviceType</name></member>
+    <member refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kind="enumvalue"><name>GPU</name></member>
+    <member refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a2b55387dd066c5bac646ac61543d152d" kind="enumvalue"><name>CPU</name></member>
+    <member refid="util__enums_8h_1a2011abb365728e66a0131adc93454018" kind="enum"><name>eOwnership</name></member>
+    <member refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a258c405bc128bfac9493e8d9cf46f975" kind="enumvalue"><name>OWNING</name></member>
+    <member refid="util__enums_8h_1a2011abb365728e66a0131adc93454018a5824b315fdbb0f42abfe1bb03f78c270" kind="enumvalue"><name>VIEW</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kind="enum"><name>eTensorLayout</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eacc21f7993097e2cd90dd8feeaca53d6d" kind="enumvalue"><name>TENSOR_LAYOUT_NHWC</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea5fcd457837a3f757a34cdea86fa61965" kind="enumvalue"><name>TENSOR_LAYOUT_HWC</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea7b543ea47c200c290b7fbb6252093c35" kind="enumvalue"><name>TENSOR_LAYOUT_NC</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea1ce6952c71ae83a143e051705384a5b4" kind="enumvalue"><name>TENSOR_LAYOUT_NW</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea25a7983178dc77a9f4e056ae15c79779" kind="enumvalue"><name>TENSOR_LAYOUT_N</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea3a77ffeccac79ab009ebab69e4994718" kind="enumvalue"><name>TENSOR_LAYOUT_NMC</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eac79e1bc71e0333d4aa522731045ce486" kind="enumvalue"><name>TENSOR_LAYOUT_NMD</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea924a3153e74d861677e1cc9124eb419f" kind="enumvalue"><name>TENSOR_LAYOUT_LNHWC</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eaa54d643f7f5d0768a94bd5c859c1595e" kind="enumvalue"><name>TENSOR_LAYOUT_NCHW</name></member>
+    <member refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea28e2d244756df493f5dc65bd573f1f05" kind="enumvalue"><name>TENSOR_LAYOUT_NWC</name></member>
+  </compound>
+  <compound refid="border__wrapper_8hpp" kind="file"><name>border_wrapper.hpp</name>
+  </compound>
+  <compound refid="generic__tensor__wrapper_8hpp" kind="file"><name>generic_tensor_wrapper.hpp</name>
+  </compound>
+  <compound refid="image__wrapper_8hpp" kind="file"><name>image_wrapper.hpp</name>
+  </compound>
+  <compound refid="interpolation__wrapper_8hpp" kind="file"><name>interpolation_wrapper.hpp</name>
+  </compound>
+  <compound refid="i__operator_8hpp" kind="file"><name>i_operator.hpp</name>
+  </compound>
+  <compound refid="non__max__suppression__helpers_8hpp" kind="file"><name>non_max_suppression_helpers.hpp</name>
+  </compound>
+  <compound refid="bilateral__filter__device_8hpp" kind="file"><name>bilateral_filter_device.hpp</name>
+  </compound>
+  <compound refid="bnd__box__device_8hpp" kind="file"><name>bnd_box_device.hpp</name>
+  </compound>
+  <compound refid="composite__device_8hpp" kind="file"><name>composite_device.hpp</name>
+  </compound>
+  <compound refid="copy__make__border__device_8hpp" kind="file"><name>copy_make_border_device.hpp</name>
+  </compound>
+  <compound refid="custom__crop__device_8hpp" kind="file"><name>custom_crop_device.hpp</name>
+  </compound>
+  <compound refid="cvt__color__device_8hpp" kind="file"><name>cvt_color_device.hpp</name>
+  </compound>
+  <compound refid="flip__device_8hpp" kind="file"><name>flip_device.hpp</name>
+  </compound>
+  <compound refid="gamma__contrast__device_8hpp" kind="file"><name>gamma_contrast_device.hpp</name>
+  </compound>
+  <compound refid="histogram__device_8hpp" kind="file"><name>histogram_device.hpp</name>
+  </compound>
+  <compound refid="non__max__suppression__device_8hpp" kind="file"><name>non_max_suppression_device.hpp</name>
+  </compound>
+  <compound refid="normalize__device_8hpp" kind="file"><name>normalize_device.hpp</name>
+  </compound>
+  <compound refid="remap__device_8hpp" kind="file"><name>remap_device.hpp</name>
+  </compound>
+  <compound refid="resize__device_8hpp" kind="file"><name>resize_device.hpp</name>
+  </compound>
+  <compound refid="thresholding__device_8hpp" kind="file"><name>thresholding_device.hpp</name>
+  </compound>
+  <compound refid="warp__perspective__device_8hpp" kind="file"><name>warp_perspective_device.hpp</name>
+  </compound>
+  <compound refid="bilateral__filter__host_8hpp" kind="file"><name>bilateral_filter_host.hpp</name>
+  </compound>
+  <compound refid="bnd__box__host_8hpp" kind="file"><name>bnd_box_host.hpp</name>
+  </compound>
+  <compound refid="composite__host_8hpp" kind="file"><name>composite_host.hpp</name>
+  </compound>
+  <compound refid="copy__make__border__host_8hpp" kind="file"><name>copy_make_border_host.hpp</name>
+  </compound>
+  <compound refid="custom__crop__host_8hpp" kind="file"><name>custom_crop_host.hpp</name>
+  </compound>
+  <compound refid="cvt__color__host_8hpp" kind="file"><name>cvt_color_host.hpp</name>
+  </compound>
+  <compound refid="flip__host_8hpp" kind="file"><name>flip_host.hpp</name>
+  </compound>
+  <compound refid="gamma__contrast__host_8hpp" kind="file"><name>gamma_contrast_host.hpp</name>
+  </compound>
+  <compound refid="histogram__host_8hpp" kind="file"><name>histogram_host.hpp</name>
+  </compound>
+  <compound refid="non__max__suppression__host_8hpp" kind="file"><name>non_max_suppression_host.hpp</name>
+  </compound>
+  <compound refid="normalize__host_8hpp" kind="file"><name>normalize_host.hpp</name>
+  </compound>
+  <compound refid="remap__host_8hpp" kind="file"><name>remap_host.hpp</name>
+  </compound>
+  <compound refid="resize__host_8hpp" kind="file"><name>resize_host.hpp</name>
+  </compound>
+  <compound refid="thresholding__host_8hpp" kind="file"><name>thresholding_host.hpp</name>
+  </compound>
+  <compound refid="warp__perspective__host_8hpp" kind="file"><name>warp_perspective_host.hpp</name>
+  </compound>
+  <compound refid="kernel__helpers_8hpp" kind="file"><name>kernel_helpers.hpp</name>
+    <member refid="kernel__helpers_8hpp_1a1c70d5feed640dc31baecbfcd23aa504" kind="variable"><name>BT2020A</name></member>
+    <member refid="kernel__helpers_8hpp_1a292e4be7d60497959445a5de47c139f1" kind="variable"><name>BT2020B</name></member>
+    <member refid="kernel__helpers_8hpp_1a27cca037c4fe728d653ef4ebbb56ae45" kind="variable"><name>BT2020C</name></member>
+    <member refid="kernel__helpers_8hpp_1a95024012a0561d9ca29d22754363c7a4" kind="variable"><name>BT2020D</name></member>
+    <member refid="kernel__helpers_8hpp_1abe63b2421a6055c4e6bf96490dfc952f" kind="variable"><name>BT2020E</name></member>
+    <member refid="kernel__helpers_8hpp_1aec1a20c2320536f3a4fcd602f47df68c" kind="variable"><name>BT601A</name></member>
+    <member refid="kernel__helpers_8hpp_1aac1d6f5f27359fe45f8a0c554137f4d0" kind="variable"><name>BT601B</name></member>
+    <member refid="kernel__helpers_8hpp_1a766e355c6955d71b556ef3ae071764c8" kind="variable"><name>BT601C</name></member>
+    <member refid="kernel__helpers_8hpp_1a3845ba86e49dd94c36fc3047fed407c9" kind="variable"><name>BT601D</name></member>
+    <member refid="kernel__helpers_8hpp_1a103c55da543c41af45fac157e2d312e0" kind="variable"><name>BT601E</name></member>
+    <member refid="kernel__helpers_8hpp_1a29942a262ef598bd0813a9538e0310c6" kind="variable"><name>BT709A</name></member>
+    <member refid="kernel__helpers_8hpp_1ae70a70a314d2db7945405a7ea5eed790" kind="variable"><name>BT709B</name></member>
+    <member refid="kernel__helpers_8hpp_1a6c7961f194a98dbc81b4861866ae6431" kind="variable"><name>BT709C</name></member>
+    <member refid="kernel__helpers_8hpp_1a99f16a312558b45bec7f739817af58f1" kind="variable"><name>BT709D</name></member>
+    <member refid="kernel__helpers_8hpp_1a210656ae669ffddd62fa3e5f1f68ed25" kind="variable"><name>BT709E</name></member>
+  </compound>
+  <compound refid="op__bilateral__filter_8hpp" kind="file"><name>op_bilateral_filter.hpp</name>
+  </compound>
+  <compound refid="op__bnd__box_8hpp" kind="file"><name>op_bnd_box.hpp</name>
+  </compound>
+  <compound refid="op__composite_8hpp" kind="file"><name>op_composite.hpp</name>
+  </compound>
+  <compound refid="op__copy__make__border_8hpp" kind="file"><name>op_copy_make_border.hpp</name>
+  </compound>
+  <compound refid="op__custom__crop_8hpp" kind="file"><name>op_custom_crop.hpp</name>
+  </compound>
+  <compound refid="op__cvt__color_8hpp" kind="file"><name>op_cvt_color.hpp</name>
+  </compound>
+  <compound refid="op__flip_8hpp" kind="file"><name>op_flip.hpp</name>
+  </compound>
+  <compound refid="op__gamma__contrast_8hpp" kind="file"><name>op_gamma_contrast.hpp</name>
+  </compound>
+  <compound refid="op__histogram_8hpp" kind="file"><name>op_histogram.hpp</name>
+  </compound>
+  <compound refid="op__non__max__suppression_8hpp" kind="file"><name>op_non_max_suppression.hpp</name>
+  </compound>
+  <compound refid="op__normalize_8hpp" kind="file"><name>op_normalize.hpp</name>
+    <member refid="op__normalize_8hpp_1aa69633d1ad9436a3938195f428911270" kind="define"><name>ROCCV_NORMALIZE_SCALE_IS_STDDEV</name></member>
+  </compound>
+  <compound refid="op__remap_8hpp" kind="file"><name>op_remap.hpp</name>
+  </compound>
+  <compound refid="op__resize_8hpp" kind="file"><name>op_resize.hpp</name>
+  </compound>
+  <compound refid="op__rotate_8hpp" kind="file"><name>op_rotate.hpp</name>
+  </compound>
+  <compound refid="op__thresholding_8hpp" kind="file"><name>op_thresholding.hpp</name>
+  </compound>
+  <compound refid="op__warp__affine_8hpp" kind="file"><name>op_warp_affine.hpp</name>
+  </compound>
+  <compound refid="op__warp__perspective_8hpp" kind="file"><name>op_warp_perspective.hpp</name>
+  </compound>
+  <compound refid="operator__types_8h" kind="file"><name>operator_types.h</name>
+    <member refid="operator__types_8h_1ac8a8fd6e707e92c323faa53468caab01" kind="enum"><name>eAxis</name></member>
+    <member refid="operator__types_8h_1ac8a8fd6e707e92c323faa53468caab01a627abe5a430420baf29ebe1940a7f2fb" kind="enumvalue"><name>BOTH</name></member>
+    <member refid="operator__types_8h_1ac8a8fd6e707e92c323faa53468caab01a58833a3110c570fb05130d40c365d1e4" kind="enumvalue"><name>X</name></member>
+    <member refid="operator__types_8h_1ac8a8fd6e707e92c323faa53468caab01a5596231eabd6cf29050967d5ac83ad84" kind="enumvalue"><name>Y</name></member>
+    <member refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0" kind="enum"><name>eBorderType</name></member>
+    <member refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0a8f0b712b430755027ee4b24d9ed07484" kind="enumvalue"><name>BORDER_TYPE_CONSTANT</name></member>
+    <member refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0a0f191bca1a489b62e100025d6cb87182" kind="enumvalue"><name>BORDER_TYPE_REPLICATE</name></member>
+    <member refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0abd373139d042f70c37b9112d41cacfa5" kind="enumvalue"><name>BORDER_TYPE_REFLECT</name></member>
+    <member refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0a530ffe5b87dd5df95e3badd23f827f69" kind="enumvalue"><name>BORDER_TYPE_WRAP</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3" kind="enum"><name>eColorConversionCode</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3a7b0ce88b636e49c75fa8d2567dc6d5f1" kind="enumvalue"><name>COLOR_RGB2YUV</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3a95c8016e83ea3e4b13c849338723c1a1" kind="enumvalue"><name>COLOR_BGR2YUV</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3a600bac076de8715a4dcc5aad2764c1fa" kind="enumvalue"><name>COLOR_YUV2RGB</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3afb93a49b08e9629bc192b5369bed1190" kind="enumvalue"><name>COLOR_YUV2BGR</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3a2286a9dc9b750c433261606e25e4e820" kind="enumvalue"><name>COLOR_RGB2BGR</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3a0aabe99eba783f669ee1efe40ab2ff70" kind="enumvalue"><name>COLOR_BGR2RGB</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3a703be91982f5cf3c6faa1ae51488c2b4" kind="enumvalue"><name>COLOR_RGB2GRAY</name></member>
+    <member refid="operator__types_8h_1ad88c472cb54bd15d131a69bc7dac1ff3aa6915edf07674bb6f929adcff60a1b03" kind="enumvalue"><name>COLOR_BGR2GRAY</name></member>
+    <member refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52" kind="enum"><name>eColorSpec</name></member>
+    <member refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52a2bffd5fdd8cc879f171301e319182a59" kind="enumvalue"><name>BT601</name></member>
+    <member refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52ad3f14835a92a5d3be6a8dceb52f65fb0" kind="enumvalue"><name>BT709</name></member>
+    <member refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52a132c581a7019cc5499a29fbefcfd6f17" kind="enumvalue"><name>BT2020</name></member>
+    <member refid="operator__types_8h_1a09a270009d7de1076424a0201917c528" kind="enum"><name>eInterpolationType</name></member>
+    <member refid="operator__types_8h_1a09a270009d7de1076424a0201917c528a800e315ed9a1a49be4a5589b9fbf1450" kind="enumvalue"><name>INTERP_TYPE_NEAREST</name></member>
+    <member refid="operator__types_8h_1a09a270009d7de1076424a0201917c528a5865c328a98832cbe1d53db3db6d6aba" kind="enumvalue"><name>INTERP_TYPE_LINEAR</name></member>
+    <member refid="operator__types_8h_1a09a270009d7de1076424a0201917c528a25b6ba9b303f51105a632804b9ac643e" kind="enumvalue"><name>INTERP_TYPE_CUBIC</name></member>
+    <member refid="operator__types_8h_1adb0c14783c37c072b2263247e84398ff" kind="enum"><name>eRemapType</name></member>
+    <member refid="operator__types_8h_1adb0c14783c37c072b2263247e84398ffa99b41a71a669af6c6b42a251e7737055" kind="enumvalue"><name>REMAP_ABSOLUTE</name></member>
+    <member refid="operator__types_8h_1adb0c14783c37c072b2263247e84398ffabdff720f1619f436d9df1930bbd2dcad" kind="enumvalue"><name>REMAP_ABSOLUTE_NORMALIZED</name></member>
+    <member refid="operator__types_8h_1adb0c14783c37c072b2263247e84398ffa74659ddc8c47ce6ec82cba11afc4876e" kind="enumvalue"><name>REMAP_RELATIVE_NORMALIZED</name></member>
+    <member refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5" kind="enum"><name>eThresholdType</name></member>
+    <member refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5afed35ac7de4cb4bf91d53c83b9e6070c" kind="enumvalue"><name>THRESH_BINARY</name></member>
+    <member refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5a6d4fd6cb727fc388dba2c4a6b09b5d1c" kind="enumvalue"><name>THRESH_BINARY_INV</name></member>
+    <member refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5a56b40f673adffeb4115e164a4d1c6b22" kind="enumvalue"><name>THRESH_TRUNC</name></member>
+    <member refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5afe2d957f2c924cea96ec3281a5a07614" kind="enumvalue"><name>THRESH_TOZERO</name></member>
+    <member refid="operator__types_8h_1a44174ca95d2566db80c7404242bf81a5a24bf1e1143307a00ca27484b434a3bf5" kind="enumvalue"><name>THRESH_TOZERO_INV</name></member>
+    <member refid="operator__types_8h_1a58e7332810cdbd5af8382d23016d47f5" kind="typedef"><name>PerspectiveTransform</name></member>
+  </compound>
+  <compound refid="roccv__operators_8hpp" kind="file"><name>roccv_operators.hpp</name>
+  </compound>
+  <compound refid="dir_0966d06610f72609fd9aa4979c2b5a92" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/common</name>
+  </compound>
+  <compound refid="dir_17295cadafa37a2ed20f273eb5e86f36" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/common</name>
+  </compound>
+  <compound refid="dir_3d69f64eaf81436fe2b22361382717e5" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/core</name>
+  </compound>
+  <compound refid="dir_94f8cbda2f909ce34e390ec0afaf72c7" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail</name>
+  </compound>
+  <compound refid="dir_31d5ca9bc968e4605eea27d457e1be16" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device</name>
+  </compound>
+  <compound refid="dir_79070895df18adc0730f951256a16d0d" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host</name>
+  </compound>
+  <compound refid="dir_d44c64559bbebec7f509842c48db8b23" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include</name>
+  </compound>
+  <compound refid="dir_f2fd8bd6424c93166d6dd5f2b70706e7" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels</name>
+  </compound>
+  <compound refid="dir_e821ca3a68a411aea41e0fe0788a0b0d" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math</name>
+  </compound>
+  <compound refid="dir_089e5f06d0db0b3903d244781a066f3d" kind="dir"><name>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers</name>
+  </compound>
+</doxygenindex>

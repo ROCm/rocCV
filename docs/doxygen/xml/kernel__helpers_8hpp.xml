@@ -1,0 +1,445 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="kernel__helpers_8hpp" kind="file" language="C++">
+    <compoundname>kernel_helpers.hpp</compoundname>
+    <includes local="no">hip/hip_runtime.h</includes>
+    <includes refid="type__traits_8hpp" local="yes">core/detail/type_traits.hpp</includes>
+    <includes refid="operator__types_8h" local="yes">operator_types.h</includes>
+    <includedby refid="bilateral__filter__device_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp</includedby>
+    <includedby refid="bnd__box__device_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bnd_box_device.hpp</includedby>
+    <includedby refid="bilateral__filter__host_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/bilateral_filter_host.hpp</includedby>
+    <includedby refid="bnd__box__host_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/bnd_box_host.hpp</includedby>
+    <incdepgraph>
+      <node id="3">
+        <label>core/detail/type_traits.hpp</label>
+        <link refid="type__traits_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp</label>
+        <link refid="kernel__helpers_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+      </node>
+      <node id="4">
+        <label>operator_types.h</label>
+        <link refid="operator__types_8h"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>hip/hip_runtime.h</label>
+      </node>
+      <node id="5">
+        <label>hip/hip_vector_types.h</label>
+      </node>
+      <node id="6">
+        <label>stdint.h</label>
+      </node>
+      <node id="7">
+        <label>vector</label>
+      </node>
+    </incdepgraph>
+    <invincdepgraph>
+      <node id="2">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp</label>
+        <link refid="bilateral__filter__device_8hpp"/>
+      </node>
+      <node id="3">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bnd_box_device.hpp</label>
+        <link refid="bnd__box__device_8hpp"/>
+      </node>
+      <node id="4">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/bilateral_filter_host.hpp</label>
+        <link refid="bilateral__filter__host_8hpp"/>
+      </node>
+      <node id="5">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/bnd_box_host.hpp</label>
+        <link refid="bnd__box__host_8hpp"/>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp</label>
+        <link refid="kernel__helpers_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="5" relation="include">
+        </childnode>
+      </node>
+    </invincdepgraph>
+    <innerclass refid="struct_conversion_factors" prot="public">ConversionFactors</innerclass>
+    <innernamespace refid="namespace_kernels">Kernels</innernamespace>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a1c70d5feed640dc31baecbfcd23aa504" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT2020A</definition>
+        <argsstring></argsstring>
+        <name>BT2020A</name>
+        <initializer>= 0.2627F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="87" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="87" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a292e4be7d60497959445a5de47c139f1" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT2020B</definition>
+        <argsstring></argsstring>
+        <name>BT2020B</name>
+        <initializer>= 0.6780F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="88" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="88" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a27cca037c4fe728d653ef4ebbb56ae45" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT2020C</definition>
+        <argsstring></argsstring>
+        <name>BT2020C</name>
+        <initializer>= 0.0593F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="89" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="89" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a95024012a0561d9ca29d22754363c7a4" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT2020D</definition>
+        <argsstring></argsstring>
+        <name>BT2020D</name>
+        <initializer>= 1.8814F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="90" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="90" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1abe63b2421a6055c4e6bf96490dfc952f" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT2020E</definition>
+        <argsstring></argsstring>
+        <name>BT2020E</name>
+        <initializer>= 1.4746F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="91" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="91" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1aec1a20c2320536f3a4fcd602f47df68c" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT601A</definition>
+        <argsstring></argsstring>
+        <name>BT601A</name>
+        <initializer>= 0.299F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="73" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="73" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1aac1d6f5f27359fe45f8a0c554137f4d0" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT601B</definition>
+        <argsstring></argsstring>
+        <name>BT601B</name>
+        <initializer>= 0.587F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="74" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a766e355c6955d71b556ef3ae071764c8" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT601C</definition>
+        <argsstring></argsstring>
+        <name>BT601C</name>
+        <initializer>= 0.114F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="75" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="75" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a3845ba86e49dd94c36fc3047fed407c9" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT601D</definition>
+        <argsstring></argsstring>
+        <name>BT601D</name>
+        <initializer>= 1.772F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="76" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="76" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a103c55da543c41af45fac157e2d312e0" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT601E</definition>
+        <argsstring></argsstring>
+        <name>BT601E</name>
+        <initializer>= 1.402F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="77" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="77" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a29942a262ef598bd0813a9538e0310c6" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT709A</definition>
+        <argsstring></argsstring>
+        <name>BT709A</name>
+        <initializer>= 0.2126F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="80" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="80" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1ae70a70a314d2db7945405a7ea5eed790" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT709B</definition>
+        <argsstring></argsstring>
+        <name>BT709B</name>
+        <initializer>= 0.7152F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="81" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="81" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a6c7961f194a98dbc81b4861866ae6431" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT709C</definition>
+        <argsstring></argsstring>
+        <name>BT709C</name>
+        <initializer>= 0.0722F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="82" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="82" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a99f16a312558b45bec7f739817af58f1" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT709D</definition>
+        <argsstring></argsstring>
+        <name>BT709D</name>
+        <initializer>= 1.8556F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="83" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="83" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="kernel__helpers_8hpp_1a210656ae669ffddd62fa3e5f1f68ed25" prot="public" static="no" mutable="no">
+        <type>const float</type>
+        <definition>const float BT709E</definition>
+        <argsstring></argsstring>
+        <name>BT709E</name>
+        <initializer>= 1.5748F</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="84" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="84" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;hip/hip_runtime.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="type__traits_8hpp" kindref="compound">core/detail/type_traits.hpp</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;<ref refid="operator__types_8h" kindref="compound">operator_types.h</ref>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="29"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespace_kernels" kindref="compound">Kernels</ref><sp/>{</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight></codeline>
+<codeline lineno="32"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>_T&gt;</highlight></codeline>
+<codeline lineno="33"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>__host__<sp/>__device__<sp/>uint8_t<sp/>u8cast(_T<sp/>value)<sp/>{</highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>value<sp/>&lt;<sp/>0<sp/>?<sp/>0<sp/>:<sp/>(value<sp/>&gt;<sp/>255<sp/>?<sp/>255<sp/>:<sp/>value);</highlight></codeline>
+<codeline lineno="35"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>__host__<sp/>__device__<sp/>__forceinline__<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>pixel_in_box(</highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>ix,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>iy,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>left,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>right,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>top,</highlight></codeline>
+<codeline lineno="38"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>bottom)<sp/>{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(ix<sp/>&gt;<sp/>left)<sp/>&amp;&amp;<sp/>(ix<sp/>&lt;<sp/>right)<sp/>&amp;&amp;<sp/>(iy<sp/>&gt;<sp/>top)<sp/>&amp;&amp;<sp/>(iy<sp/>&lt;<sp/>bottom);</highlight></codeline>
+<codeline lineno="40"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>__host__<sp/>__device__<sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>blend_single_color(uchar4<sp/>&amp;color,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>uchar4<sp/>&amp;color_in)<sp/>{</highlight></codeline>
+<codeline lineno="43"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>foreground_alpha<sp/>=<sp/>color_in.w;</highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>background_alpha<sp/>=<sp/>color.w;</highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>blend_alpha<sp/>=<sp/>((background_alpha<sp/>*<sp/>(255<sp/>-<sp/>foreground_alpha))<sp/>&gt;&gt;<sp/>8)<sp/>+<sp/>foreground_alpha;</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"><sp/><sp/><sp/><sp/>color.x<sp/>=</highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>u8cast((((color.x<sp/>*<sp/>background_alpha<sp/>*<sp/>(255<sp/>-<sp/>foreground_alpha))<sp/>&gt;&gt;<sp/>8)<sp/>+<sp/>(color_in.x<sp/>*<sp/>foreground_alpha))<sp/>/</highlight></codeline>
+<codeline lineno="48"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>blend_alpha);</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"><sp/><sp/><sp/><sp/>color.y<sp/>=</highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>u8cast((((color.y<sp/>*<sp/>background_alpha<sp/>*<sp/>(255<sp/>-<sp/>foreground_alpha))<sp/>&gt;&gt;<sp/>8)<sp/>+<sp/>(color_in.y<sp/>*<sp/>foreground_alpha))<sp/>/</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>blend_alpha);</highlight></codeline>
+<codeline lineno="52"><highlight class="normal"><sp/><sp/><sp/><sp/>color.z<sp/>=</highlight></codeline>
+<codeline lineno="53"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>u8cast((((color.z<sp/>*<sp/>background_alpha<sp/>*<sp/>(255<sp/>-<sp/>foreground_alpha))<sp/>&gt;&gt;<sp/>8)<sp/>+<sp/>(color_in.z<sp/>*<sp/>foreground_alpha))<sp/>/</highlight></codeline>
+<codeline lineno="54"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>blend_alpha);</highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/><sp/><sp/>color.w<sp/>=<sp/>blend_alpha;</highlight></codeline>
+<codeline lineno="56"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"></highlight></codeline>
+<codeline lineno="58"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>__host__<sp/>__device__<sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>shade_rectangle(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="struct_rect__t" kindref="compound">Rect_t</ref><sp/>&amp;rect,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ix,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>iy,<sp/>uchar4<sp/>*out_color)<sp/>{</highlight></codeline>
+<codeline lineno="59"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(rect.<ref refid="struct_rect__t_1a9bcf6a396fb7d3ef8f55992bf2e8eee0" kindref="member">bordered</ref>)<sp/>{</highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!pixel_in_box(ix,<sp/>iy,<sp/>rect.<ref refid="struct_rect__t_1a4a6db6c96600c0d92e4d9ea10ca73897" kindref="member">i_left</ref>,<sp/>rect.<ref refid="struct_rect__t_1a0e5cb99520b99035a6ff84d23f05cca8" kindref="member">i_right</ref>,<sp/>rect.<ref refid="struct_rect__t_1a9ddddeb6d4e237e3a3e16c9653b5ad3d" kindref="member">i_top</ref>,<sp/>rect.<ref refid="struct_rect__t_1acee7acc2ed5badab5c4334df2faef5a8" kindref="member">i_bottom</ref>)<sp/>&amp;&amp;</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pixel_in_box(ix,<sp/>iy,<sp/>rect.<ref refid="struct_rect__t_1a2476781352aa571972948fb46af83cc3" kindref="member">o_left</ref>,<sp/>rect.<ref refid="struct_rect__t_1ab434bfdb2d16214538dc8a493937b531" kindref="member">o_right</ref>,<sp/>rect.<ref refid="struct_rect__t_1ae977d8eb52895102fdf27cfec9dc1ab7" kindref="member">o_top</ref>,<sp/>rect.<ref refid="struct_rect__t_1a9d20255bb7bfdeaa684e8d9e66be0a76" kindref="member">o_bottom</ref>))<sp/>{</highlight></codeline>
+<codeline lineno="62"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>blend_single_color(out_color[0],<sp/>rect.<ref refid="struct_rect__t_1af7e551dae2cb1c6cfe6aba9bcc888b3e" kindref="member">color</ref>);</highlight></codeline>
+<codeline lineno="63"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="64"><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline lineno="65"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(pixel_in_box(ix,<sp/>iy,<sp/>rect.<ref refid="struct_rect__t_1a2476781352aa571972948fb46af83cc3" kindref="member">o_left</ref>,<sp/>rect.<ref refid="struct_rect__t_1ab434bfdb2d16214538dc8a493937b531" kindref="member">o_right</ref>,<sp/>rect.<ref refid="struct_rect__t_1ae977d8eb52895102fdf27cfec9dc1ab7" kindref="member">o_top</ref>,<sp/>rect.<ref refid="struct_rect__t_1a9d20255bb7bfdeaa684e8d9e66be0a76" kindref="member">o_bottom</ref>))<sp/>{</highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>blend_single_color(out_color[0],<sp/>rect.<ref refid="struct_rect__t_1af7e551dae2cb1c6cfe6aba9bcc888b3e" kindref="member">color</ref>);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="68"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="69"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="70"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>Kernels</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="71"><highlight class="normal"></highlight></codeline>
+<codeline lineno="72"><highlight class="normal"></highlight><highlight class="comment">//<sp/>BT.601<sp/>Spec<sp/>conversion<sp/>factors</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="73" refid="kernel__helpers_8hpp_1aec1a20c2320536f3a4fcd602f47df68c" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1aec1a20c2320536f3a4fcd602f47df68c" kindref="member">BT601A</ref><sp/>=<sp/>0.299F;</highlight></codeline>
+<codeline lineno="74" refid="kernel__helpers_8hpp_1aac1d6f5f27359fe45f8a0c554137f4d0" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1aac1d6f5f27359fe45f8a0c554137f4d0" kindref="member">BT601B</ref><sp/>=<sp/>0.587F;</highlight></codeline>
+<codeline lineno="75" refid="kernel__helpers_8hpp_1a766e355c6955d71b556ef3ae071764c8" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a766e355c6955d71b556ef3ae071764c8" kindref="member">BT601C</ref><sp/>=<sp/>0.114F;</highlight></codeline>
+<codeline lineno="76" refid="kernel__helpers_8hpp_1a3845ba86e49dd94c36fc3047fed407c9" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a3845ba86e49dd94c36fc3047fed407c9" kindref="member">BT601D</ref><sp/>=<sp/>1.772F;</highlight></codeline>
+<codeline lineno="77" refid="kernel__helpers_8hpp_1a103c55da543c41af45fac157e2d312e0" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a103c55da543c41af45fac157e2d312e0" kindref="member">BT601E</ref><sp/>=<sp/>1.402F;</highlight></codeline>
+<codeline lineno="78"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"></highlight><highlight class="comment">//<sp/>BT.709<sp/>Spec<sp/>conversion<sp/>factors</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="80" refid="kernel__helpers_8hpp_1a29942a262ef598bd0813a9538e0310c6" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a29942a262ef598bd0813a9538e0310c6" kindref="member">BT709A</ref><sp/>=<sp/>0.2126F;</highlight></codeline>
+<codeline lineno="81" refid="kernel__helpers_8hpp_1ae70a70a314d2db7945405a7ea5eed790" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1ae70a70a314d2db7945405a7ea5eed790" kindref="member">BT709B</ref><sp/>=<sp/>0.7152F;</highlight></codeline>
+<codeline lineno="82" refid="kernel__helpers_8hpp_1a6c7961f194a98dbc81b4861866ae6431" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a6c7961f194a98dbc81b4861866ae6431" kindref="member">BT709C</ref><sp/>=<sp/>0.0722F;</highlight></codeline>
+<codeline lineno="83" refid="kernel__helpers_8hpp_1a99f16a312558b45bec7f739817af58f1" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a99f16a312558b45bec7f739817af58f1" kindref="member">BT709D</ref><sp/>=<sp/>1.8556F;</highlight></codeline>
+<codeline lineno="84" refid="kernel__helpers_8hpp_1a210656ae669ffddd62fa3e5f1f68ed25" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a210656ae669ffddd62fa3e5f1f68ed25" kindref="member">BT709E</ref><sp/>=<sp/>1.5748F;</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight></codeline>
+<codeline lineno="86"><highlight class="normal"></highlight><highlight class="comment">//<sp/>BT.2020<sp/>Spec<sp/>conversion<sp/>factors</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="87" refid="kernel__helpers_8hpp_1a1c70d5feed640dc31baecbfcd23aa504" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a1c70d5feed640dc31baecbfcd23aa504" kindref="member">BT2020A</ref><sp/>=<sp/>0.2627F;</highlight></codeline>
+<codeline lineno="88" refid="kernel__helpers_8hpp_1a292e4be7d60497959445a5de47c139f1" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a292e4be7d60497959445a5de47c139f1" kindref="member">BT2020B</ref><sp/>=<sp/>0.6780F;</highlight></codeline>
+<codeline lineno="89" refid="kernel__helpers_8hpp_1a27cca037c4fe728d653ef4ebbb56ae45" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a27cca037c4fe728d653ef4ebbb56ae45" kindref="member">BT2020C</ref><sp/>=<sp/>0.0593F;</highlight></codeline>
+<codeline lineno="90" refid="kernel__helpers_8hpp_1a95024012a0561d9ca29d22754363c7a4" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1a95024012a0561d9ca29d22754363c7a4" kindref="member">BT2020D</ref><sp/>=<sp/>1.8814F;</highlight></codeline>
+<codeline lineno="91" refid="kernel__helpers_8hpp_1abe63b2421a6055c4e6bf96490dfc952f" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="kernel__helpers_8hpp_1abe63b2421a6055c4e6bf96490dfc952f" kindref="member">BT2020E</ref><sp/>=<sp/>1.4746F;</highlight></codeline>
+<codeline lineno="92"><highlight class="normal"></highlight></codeline>
+<codeline lineno="93" refid="struct_conversion_factors" refkind="compound"><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal"><ref refid="struct_conversion_factors" kindref="compound">ConversionFactors</ref><sp/>{</highlight></codeline>
+<codeline lineno="94" refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kindref="member">a</ref>;</highlight></codeline>
+<codeline lineno="95" refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref>;</highlight></codeline>
+<codeline lineno="96" refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kindref="member">c</ref>;</highlight></codeline>
+<codeline lineno="97" refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kindref="member">d</ref>;</highlight></codeline>
+<codeline lineno="98" refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" refkind="member"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref>;</highlight></codeline>
+<codeline lineno="99"><highlight class="normal">}<sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors" kindref="compound">ConversionFactors</ref>;</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight></codeline>
+<codeline lineno="101"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline lineno="102"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="103"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>__device__<sp/>__host__<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>norm1(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;a)<sp/>{</highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceroccv_1_1detail" kindref="compound">roccv::detail</ref>;</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>(NumElements&lt;T&gt;<sp/>==<sp/>1)</highlight></codeline>
+<codeline lineno="106"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>abs(a.x);</highlight></codeline>
+<codeline lineno="107"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>(NumElements&lt;T&gt;<sp/>==<sp/>2)</highlight></codeline>
+<codeline lineno="108"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>abs(a.x)<sp/>+<sp/>abs(a.y);</highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>(NumElements&lt;T&gt;<sp/>==<sp/>3)</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>abs(a.x)<sp/>+<sp/>abs(a.y)<sp/>+<sp/>abs(a.z);</highlight></codeline>
+<codeline lineno="111"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">constexpr</highlight><highlight class="normal"><sp/>(NumElements&lt;T&gt;<sp/>==<sp/>4)</highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>abs(a.x)<sp/>+<sp/>abs(a.y)<sp/>+<sp/>abs(a.z)<sp/>+<sp/>abs(a.w);</highlight></codeline>
+<codeline lineno="113"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="114"><highlight class="normal"></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Advanced<sp/>Color<sp/>Conversion</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="116"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors" kindref="compound">ConversionFactors</ref><sp/>GetConversionFactorsForSpec(<ref refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52" kindref="member">eColorSpec</ref><sp/>spec)<sp/>{</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="struct_conversion_factors" kindref="compound">ConversionFactors</ref><sp/>factors;</highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">switch</highlight><highlight class="normal"><sp/>(spec)<sp/>{</highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/><ref refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52a2bffd5fdd8cc879f171301e319182a59" kindref="member">BT601</ref>:</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kindref="member">a</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1aec1a20c2320536f3a4fcd602f47df68c" kindref="member">BT601A</ref>;</highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1aac1d6f5f27359fe45f8a0c554137f4d0" kindref="member">BT601B</ref>;</highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kindref="member">c</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a766e355c6955d71b556ef3ae071764c8" kindref="member">BT601C</ref>;</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kindref="member">d</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a3845ba86e49dd94c36fc3047fed407c9" kindref="member">BT601D</ref>;</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a103c55da543c41af45fac157e2d312e0" kindref="member">BT601E</ref>;</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/><ref refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52ad3f14835a92a5d3be6a8dceb52f65fb0" kindref="member">BT709</ref>:</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kindref="member">a</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a29942a262ef598bd0813a9538e0310c6" kindref="member">BT709A</ref>;</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1ae70a70a314d2db7945405a7ea5eed790" kindref="member">BT709B</ref>;</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kindref="member">c</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a6c7961f194a98dbc81b4861866ae6431" kindref="member">BT709C</ref>;</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kindref="member">d</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a99f16a312558b45bec7f739817af58f1" kindref="member">BT709D</ref>;</highlight></codeline>
+<codeline lineno="131"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a210656ae669ffddd62fa3e5f1f68ed25" kindref="member">BT709E</ref>;</highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/><ref refid="operator__types_8h_1a06bbfea44fc42f265190da643f3b3f52a132c581a7019cc5499a29fbefcfd6f17" kindref="member">BT2020</ref>:</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kindref="member">a</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a1c70d5feed640dc31baecbfcd23aa504" kindref="member">BT2020A</ref>;</highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a292e4be7d60497959445a5de47c139f1" kindref="member">BT2020B</ref>;</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kindref="member">c</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a27cca037c4fe728d653ef4ebbb56ae45" kindref="member">BT2020C</ref>;</highlight></codeline>
+<codeline lineno="137"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kindref="member">d</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1a95024012a0561d9ca29d22754363c7a4" kindref="member">BT2020D</ref>;</highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>factors.<ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref><sp/>=<sp/><ref refid="kernel__helpers_8hpp_1abe63b2421a6055c4e6bf96490dfc952f" kindref="member">BT2020E</ref>;</highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">throw</highlight><highlight class="normal"><sp/><ref refid="classroccv_1_1_exception" kindref="compound">roccv::Exception</ref>(</highlight><highlight class="stringliteral">&quot;Unexpected<sp/>Color<sp/>Specification&quot;</highlight><highlight class="normal">,<sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa3e860a081575fc82cc7b6ed2ca602947" kindref="member">roccv::eStatusType::NOT_IMPLEMENTED</ref>);</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"></highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>factors;</highlight></codeline>
+<codeline lineno="145"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"></highlight></codeline>
+<codeline lineno="147"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>__device__<sp/>__host__<sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>bgr2yuv_kernel(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;r,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;g,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;b,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>&amp;y,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>&amp;u,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>&amp;v,</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors" kindref="compound">ConversionFactors</ref><sp/>factors)<sp/>{</highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/>y<sp/>=<sp/>r<sp/>*<sp/>factors.<ref refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kindref="member">a</ref><sp/>+<sp/>g<sp/>*<sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref><sp/>+<sp/>b<sp/>*<sp/>factors.<ref refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kindref="member">c</ref>;</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/>v<sp/>=<sp/>(r<sp/>-<sp/>y)<sp/>/<sp/>factors.<ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref>;</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"><sp/><sp/><sp/><sp/>u<sp/>=<sp/>(b<sp/>-<sp/>y)<sp/>/<sp/>factors.<ref refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kindref="member">d</ref>;</highlight></codeline>
+<codeline lineno="153"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="154"><highlight class="normal"></highlight></codeline>
+<codeline lineno="155"><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline lineno="156"><highlight class="normal"></highlight><highlight class="keyword">inline</highlight><highlight class="normal"><sp/>__device__<sp/>__host__<sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>yuv2rgb_kernel(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;y,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;u,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>&amp;v,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>&amp;r,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>&amp;g,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>&amp;b,</highlight></codeline>
+<codeline lineno="157"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="struct_conversion_factors" kindref="compound">ConversionFactors</ref><sp/>factors,<sp/></highlight><highlight class="keywordtype">float</highlight><highlight class="normal"><sp/>delta)<sp/>{</highlight></codeline>
+<codeline lineno="158"><highlight class="normal"><sp/><sp/><sp/><sp/>r<sp/>=<sp/>y<sp/>+<sp/>factors.<ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref><sp/>*<sp/>(v<sp/>-<sp/>delta);</highlight></codeline>
+<codeline lineno="159"><highlight class="normal"><sp/><sp/><sp/><sp/>g<sp/>=<sp/>y<sp/>-<sp/>(factors.<ref refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" kindref="member">a</ref><sp/>*<sp/>factors.<ref refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" kindref="member">e</ref><sp/>/<sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref>)<sp/>*<sp/>(v<sp/>-<sp/>delta)<sp/>-<sp/>(factors.<ref refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" kindref="member">c</ref><sp/>*<sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref><sp/>/<sp/>factors.<ref refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" kindref="member">b</ref>)<sp/>*<sp/>(u<sp/>-<sp/>delta);</highlight></codeline>
+<codeline lineno="160"><highlight class="normal"><sp/><sp/><sp/><sp/>b<sp/>=<sp/>y<sp/>+<sp/>factors.<ref refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" kindref="member">d</ref><sp/>*<sp/>(u<sp/>-<sp/>delta);</highlight></codeline>
+<codeline lineno="161"><highlight class="normal">}</highlight></codeline>
+<codeline lineno="162"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace</highlight></codeline>
+    </programlisting>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp"/>
+  </compounddef>
+</doxygen>

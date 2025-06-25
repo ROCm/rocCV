@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_warp_affine" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::WarpAffine</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__warp__affine_8hpp" local="no">op_warp_affine.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_warp_affine_1abb6c0df45737ca9e7fb2a999fa334fe7" prot="private" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_warp_perspective" kindref="compound">WarpPerspective</ref></type>
+        <definition>WarpPerspective roccv::WarpAffine::m_op</definition>
+        <argsstring></argsstring>
+        <name>m_op</name>
+        <qualifiedname>roccv::WarpAffine::m_op</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" line="96" column="21" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" bodystart="96" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_warp_affine_1a21fd9f8dcf07fc4118bab92e6b1d3c3f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::WarpAffine::operator()</definition>
+        <argsstring>(hipStream_t stream, const Tensor &amp;input, const Tensor &amp;output, const AffineTransform xform, const bool isInverted, const eInterpolationType interp, const eBorderType borderMode, const float4 borderValue, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::WarpAffine::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="namespaceroccv_1a15f4a1cf09cde8d730d28b8ca3ca7d13" kindref="member">AffineTransform</ref></type>
+          <declname>xform</declname>
+        </param>
+        <param>
+          <type>const bool</type>
+          <declname>isInverted</declname>
+        </param>
+        <param>
+          <type>const <ref refid="operator__types_8h_1a09a270009d7de1076424a0201917c528" kindref="member">eInterpolationType</ref></type>
+          <declname>interp</declname>
+        </param>
+        <param>
+          <type>const <ref refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0" kindref="member">eBorderType</ref></type>
+          <declname>borderMode</declname>
+        </param>
+        <param>
+          <type>const float4</type>
+          <declname>borderValue</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Executes the <ref refid="classroccv_1_1_warp_affine" kindref="compound">WarpAffine</ref> operation on the given HIP stream. <ref refid="classroccv_1_1_warp_affine" kindref="compound">WarpAffine</ref> applies an affine transformation to a given input image. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [NHWC, HWC] Channels: [1, 3, 4] Supported DataType(s): [U8, F32]</para>
+<para>Output: Supported TensorLayout(s): [NHWC, HWC] Channels: [1, 3, 4] Supported DataTypes(s) [U8, F32]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | Yes
+  Width         | No
+  Height        | No
+  Batch size    | Yes
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operator on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input tensor with image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor for storing modified image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">xform</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Affine transformation matrix in row-major order. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">isInverted</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Flag defining whether the xform (transformation matrix) is the inverted transformation or not. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">interp</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Interpolation method used for warp affine. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">borderMode</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The border mode to use for the affine transformation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">borderValue</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The border value to use in the case of a CONSTANT border mode. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to run this operator on. (Default: GPU) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" line="90" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_warp_affine_1aa0ceaa314c66003783f099797f408d4c" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::WarpAffine::WarpAffine</definition>
+        <argsstring>()</argsstring>
+        <name>WarpAffine</name>
+        <qualifiedname>roccv::WarpAffine::WarpAffine</qualifiedname>
+        <briefdescription>
+<para>Construct a new <ref refid="classroccv_1_1_warp_affine" kindref="compound">WarpAffine</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" line="44" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" bodystart="44" bodyend="44"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_warp_affine_1a579f8948f8e2ffbe62ceb888a6853873" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::WarpAffine::~WarpAffine</definition>
+        <argsstring>()</argsstring>
+        <name>~WarpAffine</name>
+        <qualifiedname>roccv::WarpAffine::~WarpAffine</qualifiedname>
+        <briefdescription>
+<para>Destroy the <ref refid="classroccv_1_1_warp_affine" kindref="compound">WarpAffine</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" line="50" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" bodystart="50" bodyend="50"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::WarpAffine</label>
+        <link refid="classroccv_1_1_warp_affine"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::WarpAffine</label>
+        <link refid="classroccv_1_1_warp_affine"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" line="38" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp" bodystart="38" bodyend="97"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_warp_affine_1abb6c0df45737ca9e7fb2a999fa334fe7" prot="private" virt="non-virtual"><scope>roccv::WarpAffine</scope><name>m_op</name></member>
+      <member refid="classroccv_1_1_warp_affine_1a21fd9f8dcf07fc4118bab92e6b1d3c3f" prot="public" virt="non-virtual"><scope>roccv::WarpAffine</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_warp_affine_1aa0ceaa314c66003783f099797f408d4c" prot="public" virt="non-virtual"><scope>roccv::WarpAffine</scope><name>WarpAffine</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::WarpAffine</scope><name>~IOperator</name></member>
+      <member refid="classroccv_1_1_warp_affine_1a579f8948f8e2ffbe62ceb888a6853873" prot="public" virt="non-virtual"><scope>roccv::WarpAffine</scope><name>~WarpAffine</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

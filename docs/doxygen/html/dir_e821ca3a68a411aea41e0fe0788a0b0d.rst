@@ -1,0 +1,14 @@
+.. meta::6b70001c05c87546362e5f99ca86373c1f55297c6d464a15fb10cffa4dc5fdf5a7776008622308c05f71486bbaacd368b06f1af499e3605bbe6aeab198e50130
+
+:orphan:
+
+.. title:: rocCV: /mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math Directory Reference
+
+/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math Directory Reference
+==================================================================================
+
+.. container:: doxygen-content
+
+   
+   .. raw:: html
+     :file: dir_e821ca3a68a411aea41e0fe0788a0b0d.html

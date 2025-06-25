@@ -1,0 +1,369 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_tensor_layout" kind="class" language="C++" prot="public">
+    <compoundname>roccv::TensorLayout</compoundname>
+    <includes refid="tensor__layout_8hpp" local="no">tensor_layout.hpp</includes>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_tensor_layout_1ac13cff6fd1de3fd293667938e8d447f1" prot="public" static="yes" mutable="no">
+        <type>const std::unordered_map&lt; <ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref>, <ref refid="structroccv_1_1_tensor_layout_desc" kindref="compound">TensorLayoutDesc</ref> &gt;</type>
+        <definition>const std::unordered_map&lt;eTensorLayout, TensorLayoutDesc&gt; roccv::TensorLayout::layoutDescriptorTable</definition>
+        <argsstring></argsstring>
+        <name>layoutDescriptorTable</name>
+        <qualifiedname>roccv::TensorLayout::layoutDescriptorTable</qualifiedname>
+        <initializer>= {
+        {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea5fcd457837a3f757a34cdea86fa61965" kindref="member">TENSOR_LAYOUT_HWC</ref>, {3, -1, 1, 0, 2, -1, -1, -1}}, {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea7b543ea47c200c290b7fbb6252093c35" kindref="member">TENSOR_LAYOUT_NC</ref>, {2, 0, -1, -1, 1, -1, -1, -1}},
+        {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea1ce6952c71ae83a143e051705384a5b4" kindref="member">TENSOR_LAYOUT_NW</ref>, {2, 0, 1, -1, -1, -1, -1, -1}}, {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eacc21f7993097e2cd90dd8feeaca53d6d" kindref="member">TENSOR_LAYOUT_NHWC</ref>, {4, 0, 2, 1, 3, -1, -1, -1}},
+        {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea3a77ffeccac79ab009ebab69e4994718" kindref="member">TENSOR_LAYOUT_NMC</ref>, {3, 0, -1, -1, -1, 1, 2, -1}}, {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eac79e1bc71e0333d4aa522731045ce486" kindref="member">TENSOR_LAYOUT_NMD</ref>, {3, 0, -1, -1, -1, 1, 2, -1}},
+        {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea924a3153e74d861677e1cc9124eb419f" kindref="member">TENSOR_LAYOUT_LNHWC</ref>, {5, 1, 3, 2, 4, -1, -1, 0}}, {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9eaa54d643f7f5d0768a94bd5c859c1595e" kindref="member">TENSOR_LAYOUT_NCHW</ref>, {4, 0, 3, 2, 1, -1, -1, -1}},
+        {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea25a7983178dc77a9f4e056ae15c79779" kindref="member">TENSOR_LAYOUT_N</ref>, {1, 0, -1, -1, -1, -1, -1, -1}}, {<ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9ea28e2d244756df493f5dc65bd573f1f05" kindref="member">TENSOR_LAYOUT_NWC</ref>, {3, 0, 1, -1, 2, -1, -1, -1}}}</initializer>
+        <briefdescription>
+<para>Provides descriptors for each feature of a specified layout type. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="77" column="44" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="77" bodyend="82"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_tensor_layout_1a876ae7d361beb856727199a52b1fdf97" prot="private" static="no" mutable="no">
+        <type><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref></type>
+        <definition>eTensorLayout roccv::TensorLayout::layout_</definition>
+        <argsstring></argsstring>
+        <name>layout_</name>
+        <qualifiedname>roccv::TensorLayout::layout_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="157" column="19" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="157" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_tensor_layout_1a66a2517fd92d3af7c4ea2b7d75dd08e8" prot="private" static="no" mutable="no">
+        <type><ref refid="structroccv_1_1_tensor_layout_desc" kindref="compound">TensorLayoutDesc</ref></type>
+        <definition>TensorLayoutDesc roccv::TensorLayout::layout_desc_</definition>
+        <argsstring></argsstring>
+        <name>layout_desc_</name>
+        <qualifiedname>roccv::TensorLayout::layout_desc_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="158" column="22" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="158" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a2563337fbe7838f25be7592f7de4965c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::batch_index</definition>
+        <argsstring>() const</argsstring>
+        <name>batch_index</name>
+        <qualifiedname>roccv::TensorLayout::batch_index</qualifiedname>
+        <briefdescription>
+<para>Index of the batch dimension specified by layout. E.g. returns 0 for TENSOR_LAYOUT_NHWC. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Index or -1 if the layout does not have a batch dimension. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="111" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="111" bodyend="111"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1ab52ebb83e9334fb6d7922b62ec8795e4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::channels_index</definition>
+        <argsstring>() const</argsstring>
+        <name>channels_index</name>
+        <qualifiedname>roccv::TensorLayout::channels_index</qualifiedname>
+        <briefdescription>
+<para>Index of the channels dimension specified by layout. E.g. returns 3 for TENSOR_LAYOUT_NHWC. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Index of the channels dimension. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="132" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="132" bodyend="132"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a338c9e7b2e36886708779b577eaa8af5" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref></type>
+        <definition>eTensorLayout roccv::TensorLayout::elayout</definition>
+        <argsstring>() const</argsstring>
+        <name>elayout</name>
+        <qualifiedname>roccv::TensorLayout::elayout</qualifiedname>
+        <briefdescription>
+<para>Returns the layout enum stored in the <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>eTensorLayout </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="89" column="19" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="89" bodyend="89"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a8ee7f04cff3be015aca23922ce894055" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::height_index</definition>
+        <argsstring>() const</argsstring>
+        <name>height_index</name>
+        <qualifiedname>roccv::TensorLayout::height_index</qualifiedname>
+        <briefdescription>
+<para>Index of the height dimension specified by layout. E.g. returns 1 for TENSOR_LAYOUT_NHWC. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Index of the height dimension. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="118" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="118" bodyend="118"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a878da82c6dcc1e8c432b7fa05634d7e4" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::max_features_index</definition>
+        <argsstring>() const</argsstring>
+        <name>max_features_index</name>
+        <qualifiedname>roccv::TensorLayout::max_features_index</qualifiedname>
+        <briefdescription>
+<para>Index of the max features dimension specified by layout. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Index of the max features dimension or -1 if the layout does not contain it. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="140" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="140" bodyend="140"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a10cac6e5e03f4af1056c4ceaea6465c3" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::TensorLayout::operator!=</definition>
+        <argsstring>(const eTensorLayout &amp;rhs) const</argsstring>
+        <name>operator!=</name>
+        <qualifiedname>roccv::TensorLayout::operator!=</qualifiedname>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="93" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="93" bodyend="93"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a6ff3e9ce75e769bd1313ee610386d465" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::TensorLayout::operator!=</definition>
+        <argsstring>(const TensorLayout &amp;rhs) const</argsstring>
+        <name>operator!=</name>
+        <qualifiedname>roccv::TensorLayout::operator!=</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="97" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="97" bodyend="97"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a4699fef6f06bc2c9bafe40c1113a014c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::TensorLayout::operator==</definition>
+        <argsstring>(const eTensorLayout &amp;rhs) const</argsstring>
+        <name>operator==</name>
+        <qualifiedname>roccv::TensorLayout::operator==</qualifiedname>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="91" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="91" bodyend="91"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a23bd10ebf2105ec4fbdf95122aacd5b6" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool roccv::TensorLayout::operator==</definition>
+        <argsstring>(const TensorLayout &amp;rhs) const</argsstring>
+        <name>operator==</name>
+        <qualifiedname>roccv::TensorLayout::operator==</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> &amp;</type>
+          <declname>rhs</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="95" column="10" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="95" bodyend="95"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1aa46891d79035718e12e72a0314bd6336" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::rank</definition>
+        <argsstring>() const</argsstring>
+        <name>rank</name>
+        <qualifiedname>roccv::TensorLayout::rank</qualifiedname>
+        <briefdescription>
+<para>Returns the rank of the <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> Layout object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>int32_t </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="104" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="104" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a038535a04e4d6e6ea3ab155fa21e6850" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::sift_features_index</definition>
+        <argsstring>() const</argsstring>
+        <name>sift_features_index</name>
+        <qualifiedname>roccv::TensorLayout::sift_features_index</qualifiedname>
+        <briefdescription>
+<para>Index of the sift features dimension specified by layout. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>int32_t </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="147" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="147" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a24f18684bf8944a2e8c10983e9ba7437" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::sift_octave_layer_index</definition>
+        <argsstring>() const</argsstring>
+        <name>sift_octave_layer_index</name>
+        <qualifiedname>roccv::TensorLayout::sift_octave_layer_index</qualifiedname>
+        <briefdescription>
+<para>Index of the sift octave layer dimension specified by layout. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>int32_t </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="154" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="154" bodyend="154"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a032d3fab1d5f835e72db9d7e9623e9ee" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorLayout::TensorLayout</definition>
+        <argsstring>(eTensorLayout layout)</argsstring>
+        <name>TensorLayout</name>
+        <qualifiedname>roccv::TensorLayout::TensorLayout</qualifiedname>
+        <param>
+          <type><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref></type>
+          <declname>layout</declname>
+        </param>
+        <briefdescription>
+<para>Construct a new <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> Layout object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">layout</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The desired layout of the <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> object. See eTensorLayout for information on supported layouts. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="65" column="14" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="65" bodyend="72"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_layout_1a5c27028f96112587131270b9fafd48ac" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::TensorLayout::width_index</definition>
+        <argsstring>() const</argsstring>
+        <name>width_index</name>
+        <qualifiedname>roccv::TensorLayout::width_index</qualifiedname>
+        <briefdescription>
+<para>Index of the width dimension specified by layout. E.g. returns 2 for TENSOR_LAYOUT_NHWC. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Index of the width dimension. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="125" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="125" bodyend="125"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para><ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> class. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>roccv::TensorLayout</label>
+        <link refid="classroccv_1_1_tensor_layout"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>layoutDescriptorTable</edgelabel>
+        </childnode>
+      </node>
+      <node id="3">
+        <label>roccv::TensorLayoutDesc</label>
+        <link refid="structroccv_1_1_tensor_layout_desc"/>
+      </node>
+      <node id="2">
+        <label>std::unordered_map&lt; eTensorLayout, roccv::TensorLayoutDesc &gt;</label>
+        <childnode refid="3" relation="usage">
+          <edgelabel>elements</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" line="57" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp" bodystart="57" bodyend="159"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_tensor_layout_1a2563337fbe7838f25be7592f7de4965c" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>batch_index</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1ab52ebb83e9334fb6d7922b62ec8795e4" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>channels_index</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a338c9e7b2e36886708779b577eaa8af5" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>elayout</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a8ee7f04cff3be015aca23922ce894055" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>height_index</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a876ae7d361beb856727199a52b1fdf97" prot="private" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>layout_</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a66a2517fd92d3af7c4ea2b7d75dd08e8" prot="private" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>layout_desc_</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1ac13cff6fd1de3fd293667938e8d447f1" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>layoutDescriptorTable</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a878da82c6dcc1e8c432b7fa05634d7e4" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>max_features_index</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a10cac6e5e03f4af1056c4ceaea6465c3" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>operator!=</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a6ff3e9ce75e769bd1313ee610386d465" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>operator!=</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a4699fef6f06bc2c9bafe40c1113a014c" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>operator==</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a23bd10ebf2105ec4fbdf95122aacd5b6" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>operator==</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1aa46891d79035718e12e72a0314bd6336" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>rank</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a038535a04e4d6e6ea3ab155fa21e6850" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>sift_features_index</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a24f18684bf8944a2e8c10983e9ba7437" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>sift_octave_layer_index</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a032d3fab1d5f835e72db9d7e9623e9ee" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>TensorLayout</name></member>
+      <member refid="classroccv_1_1_tensor_layout_1a5c27028f96112587131270b9fafd48ac" prot="public" virt="non-virtual"><scope>roccv::TensorLayout</scope><name>width_index</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

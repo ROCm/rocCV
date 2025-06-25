@@ -1,0 +1,14 @@
+.. meta::40d27a5fed39a8d9ce1df717aa07a88cfb00efc985ee589cab5ae8a9569b9764fe4b60a3ce27127ef17d6ccc859b78db695612202ea161fcd993b043a9774574
+
+:orphan:
+
+.. title:: rocCV: /mnt/c/Users/spolifro/Documents/rocCV/include/kernels Directory Reference
+
+/mnt/c/Users/spolifro/Documents/rocCV/include/kernels Directory Reference
+=========================================================================
+
+.. container:: doxygen-content
+
+   
+   .. raw:: html
+     :file: dir_f2fd8bd6424c93166d6dd5f2b70706e7.html

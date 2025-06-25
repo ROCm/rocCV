@@ -1,0 +1,524 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespaceroccv_1_1detail_1_1math" kind="namespace" language="C++">
+    <compoundname>roccv::detail::math</compoundname>
+    <innerclass refid="classroccv_1_1detail_1_1math_1_1_matrix" prot="public">roccv::detail::math::Matrix</innerclass>
+    <innerclass refid="classroccv_1_1detail_1_1math_1_1_vector" prot="public">roccv::detail::math::Vector</innerclass>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="namespaceroccv_1_1detail_1_1math_1a78327ac5675d99bd2419ce9bff06ba0b" prot="public" static="no" mutable="no">
+        <type><ref refid="namespaceroccv_1_1detail_1_1math_1aaf92b34bb9ecc9aabc11c97ab74b1688" kindref="member">DEFINE_VECTOR_BINARY_OP</ref> *</type>
+        <definition>DEFINE_VECTOR_BINARY_OP* roccv::detail::math::mul</definition>
+        <argsstring></argsstring>
+        <name>mul</name>
+        <qualifiedname>roccv::detail::math::mul</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="128" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" bodystart="128" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a60fbe2dfbeaa39c566c320664e766cc1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::math::DEFINE_VECTOR_BINARY_FUNC</definition>
+        <argsstring>(fdividef, vfdividef)</argsstring>
+        <name>DEFINE_VECTOR_BINARY_FUNC</name>
+        <qualifiedname>roccv::detail::math::DEFINE_VECTOR_BINARY_FUNC</qualifiedname>
+        <param>
+          <type>fdividef</type>
+        </param>
+        <param>
+          <type>vfdividef</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="132" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" declline="132" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1aaf92b34bb9ecc9aabc11c97ab74b1688" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::math::DEFINE_VECTOR_BINARY_OP</definition>
+        <argsstring>(+, add)</argsstring>
+        <name>DEFINE_VECTOR_BINARY_OP</name>
+        <qualifiedname>roccv::detail::math::DEFINE_VECTOR_BINARY_OP</qualifiedname>
+        <param>
+          <type>+</type>
+        </param>
+        <param>
+          <type>add</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="127" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" declline="127" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a6d9925b6287b87b2530102e680ca23d9" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::math::DEFINE_VECTOR_BINARY_OP</definition>
+        <argsstring>(-, sub)</argsstring>
+        <name>DEFINE_VECTOR_BINARY_OP</name>
+        <qualifiedname>roccv::detail::math::DEFINE_VECTOR_BINARY_OP</qualifiedname>
+        <param>
+          <type>-</type>
+        </param>
+        <param>
+          <type>sub</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="130" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" declline="130" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a886f49df1607c4a8655bf60ea65885dc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::math::DEFINE_VECTOR_BINARY_OP</definition>
+        <argsstring>(/, div)</argsstring>
+        <name>DEFINE_VECTOR_BINARY_OP</name>
+        <qualifiedname>roccv::detail::math::DEFINE_VECTOR_BINARY_OP</qualifiedname>
+        <param>
+          <type>/</type>
+        </param>
+        <param>
+          <type>div</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="129" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" declline="129" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a8afd1172f7fbf167f279af571041cd1c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::math::DEFINE_VECTOR_UNARY_FUNC</definition>
+        <argsstring>(rsqrtf, vrsqrtf)</argsstring>
+        <name>DEFINE_VECTOR_UNARY_FUNC</name>
+        <qualifiedname>roccv::detail::math::DEFINE_VECTOR_UNARY_FUNC</qualifiedname>
+        <param>
+          <type>rsqrtf</type>
+        </param>
+        <param>
+          <type>vrsqrtf</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="135" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" declline="135" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a71f9c592d39e70eef049f16be712257b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::math::DEFINE_VECTOR_UNARY_FUNC</definition>
+        <argsstring>(sqrtf, vsqrtf)</argsstring>
+        <name>DEFINE_VECTOR_UNARY_FUNC</name>
+        <qualifiedname>roccv::detail::math::DEFINE_VECTOR_UNARY_FUNC</qualifiedname>
+        <param>
+          <type>sqrtf</type>
+        </param>
+        <param>
+          <type>vsqrtf</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" line="134" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/vectorized_type_math.hpp" declline="134" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1af6987d5f8a6905aa718bbd648c9e9b84" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ T</type>
+        <definition>constexpr __host__ __device__ T roccv::detail::math::det</definition>
+        <argsstring>(const Matrix&lt; T, 0, 0 &gt; &amp;m)</argsstring>
+        <name>det</name>
+        <qualifiedname>roccv::detail::math::det</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 0, 0 &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="181" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="181" bodyend="183"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1af49416f5909e2a592b0057d0d86fa837" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ T</type>
+        <definition>constexpr __host__ __device__ T roccv::detail::math::det</definition>
+        <argsstring>(const Matrix&lt; T, 1, 1 &gt; &amp;m)</argsstring>
+        <name>det</name>
+        <qualifiedname>roccv::detail::math::det</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 1, 1 &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="186" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="186" bodyend="188"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1aece01af9649fc8b2939fb4e752e3153e" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ T</type>
+        <definition>constexpr __host__ __device__ T roccv::detail::math::det</definition>
+        <argsstring>(const Matrix&lt; T, 2, 2 &gt; &amp;m)</argsstring>
+        <name>det</name>
+        <qualifiedname>roccv::detail::math::det</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 2, 2 &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="191" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="191" bodyend="193"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a675b59e111ea867d61e6a1a722538b99" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ T</type>
+        <definition>constexpr __host__ __device__ T roccv::detail::math::det</definition>
+        <argsstring>(const Matrix&lt; T, 3, 3 &gt; &amp;m)</argsstring>
+        <name>det</name>
+        <qualifiedname>roccv::detail::math::det</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 3, 3 &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="196" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="196" bodyend="199"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1ad78812a7a62903013d35baae4e4fa90b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ T</type>
+        <definition>__host__ __device__ T roccv::detail::math::dot</definition>
+        <argsstring>(const Vector&lt; T, N &gt; &amp;a, const Vector&lt; T, N &gt; &amp;b)</argsstring>
+        <name>dot</name>
+        <qualifiedname>roccv::detail::math::dot</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="244" column="23" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="244" bodyend="251"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a695bd4b9c094c4a6ddc93765c4110b0a" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 3, 3 &gt;</type>
+        <definition>constexpr __host__ __device__ Matrix&lt; T, 3, 3 &gt; roccv::detail::math::inv</definition>
+        <argsstring>(const Matrix&lt; T, 3, 3 &gt; &amp;m, const T &amp;d)</argsstring>
+        <name>inv</name>
+        <qualifiedname>roccv::detail::math::inv</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 3, 3 &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const T &amp;</type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="203" column="38" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="203" bodyend="216"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1abdbc13e627b5d441e49b6ea2d19aa49a" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ void</type>
+        <definition>constexpr __host__ __device__ void roccv::detail::math::inv_inplace</definition>
+        <argsstring>(Matrix&lt; T, 3, 3 &gt; &amp;m, const T &amp;d)</argsstring>
+        <name>inv_inplace</name>
+        <qualifiedname>roccv::detail::math::inv_inplace</qualifiedname>
+        <param>
+          <type><ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, 3, 3 &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type>const T &amp;</type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="219" column="36" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="219" bodyend="221"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a6fb72794f34678297fc6179710fa7dae" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+          <param>
+            <type>class</type>
+            <defval>std::enable_if_t&lt;(N &lt; 4)&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>constexpr __host__ __device__ bool</type>
+        <definition>constexpr __host__ __device__ bool roccv::detail::math::inv_inplace</definition>
+        <argsstring>(Matrix&lt; T, N, N &gt; &amp;m)</argsstring>
+        <name>inv_inplace</name>
+        <qualifiedname>roccv::detail::math::inv_inplace</qualifiedname>
+        <param>
+          <type><ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, N, N &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="224" column="36" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="224" bodyend="234"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a7cc404fb9711bb1c6224a4fb38f0cb8d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class F</type>
+            <defval>float</defval>
+          </param>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ bool</type>
+        <definition>__host__ __device__ bool roccv::detail::math::lu_inplace</definition>
+        <argsstring>(Matrix&lt; T, N, N &gt; &amp;m, Vector&lt; int, N &gt; &amp;p)</argsstring>
+        <name>lu_inplace</name>
+        <qualifiedname>roccv::detail::math::lu_inplace</qualifiedname>
+        <param>
+          <type><ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, N, N &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; int, N &gt; &amp;</type>
+          <declname>p</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="254" column="26" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="254" bodyend="312"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a8576710ce367c7fec7cf3cdd268df94b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt;</type>
+        <definition>__host__ __device__ Vector&lt; T, N &gt; roccv::detail::math::operator-</definition>
+        <argsstring>(const Vector&lt; T, N &gt; &amp;v)</argsstring>
+        <name>operator-</name>
+        <qualifiedname>roccv::detail::math::operator-</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="66" column="28" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="66" bodyend="72"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a36478450f28d484ae7eb6ef9c48aaae6" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ void</type>
+        <definition>__host__ __device__ void roccv::detail::math::solve_inplace</definition>
+        <argsstring>(const Matrix&lt; T, N, N &gt; &amp;lu, const Vector&lt; int, N &gt; &amp;p, Vector&lt; T, N &gt; &amp;b)</argsstring>
+        <name>solve_inplace</name>
+        <qualifiedname>roccv::detail::math::solve_inplace</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, N, N &gt; &amp;</type>
+          <declname>lu</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; int, N &gt; &amp;</type>
+          <declname>p</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="315" column="26" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="315" bodyend="346"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1aa89ff4f7eb3295ac12358eb460185e39" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>N</declname>
+            <defname>N</defname>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ bool</type>
+        <definition>__host__ __device__ bool roccv::detail::math::solve_inplace</definition>
+        <argsstring>(const Matrix&lt; T, N, N &gt; &amp;m, Vector&lt; T, N &gt; &amp;b)</argsstring>
+        <name>solve_inplace</name>
+        <qualifiedname>roccv::detail::math::solve_inplace</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1detail_1_1math_1_1_matrix" kindref="compound">Matrix</ref>&lt; T, N, N &gt; &amp;</type>
+          <declname>m</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1detail_1_1math_1_1_vector" kindref="compound">Vector</ref>&lt; T, N &gt; &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="349" column="26" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="349" bodyend="360"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1_1math_1a8d4fc5c84e002375bd47c78c7a0757f0" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>class T</type>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ void</type>
+        <definition>__host__ __device__ void roccv::detail::math::swap</definition>
+        <argsstring>(T &amp;a, T &amp;b)</argsstring>
+        <name>swap</name>
+        <qualifiedname>roccv::detail::math::swap</qualifiedname>
+        <param>
+          <type>T &amp;</type>
+          <declname>a</declname>
+        </param>
+        <param>
+          <type>T &amp;</type>
+          <declname>b</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="237" column="26" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" bodystart="237" bodyend="241"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.</para>
+<para>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</para>
+<para>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</para>
+<para>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/math.hpp" line="28" column="1"/>
+  </compounddef>
+</doxygen>

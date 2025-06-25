@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_e821ca3a68a411aea41e0fe0788a0b0d" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math</compoundname>
+    <innerfile refid="math_8hpp">math.hpp</innerfile>
+    <innerfile refid="vectorized__type__math_8hpp">vectorized_type_math.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math/"/>
+  </compounddef>
+</doxygen>

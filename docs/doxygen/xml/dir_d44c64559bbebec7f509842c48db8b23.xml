@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_d44c64559bbebec7f509842c48db8b23" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include</compoundname>
+    <innerdir refid="dir_0966d06610f72609fd9aa4979c2b5a92">/mnt/c/Users/spolifro/Documents/rocCV/include/common</innerdir>
+    <innerdir refid="dir_3d69f64eaf81436fe2b22361382717e5">/mnt/c/Users/spolifro/Documents/rocCV/include/core</innerdir>
+    <innerdir refid="dir_f2fd8bd6424c93166d6dd5f2b70706e7">/mnt/c/Users/spolifro/Documents/rocCV/include/kernels</innerdir>
+    <innerfile refid="i__operator_8hpp">i_operator.hpp</innerfile>
+    <innerfile refid="op__bilateral__filter_8hpp">op_bilateral_filter.hpp</innerfile>
+    <innerfile refid="op__bnd__box_8hpp">op_bnd_box.hpp</innerfile>
+    <innerfile refid="op__composite_8hpp">op_composite.hpp</innerfile>
+    <innerfile refid="op__copy__make__border_8hpp">op_copy_make_border.hpp</innerfile>
+    <innerfile refid="op__custom__crop_8hpp">op_custom_crop.hpp</innerfile>
+    <innerfile refid="op__cvt__color_8hpp">op_cvt_color.hpp</innerfile>
+    <innerfile refid="op__flip_8hpp">op_flip.hpp</innerfile>
+    <innerfile refid="op__gamma__contrast_8hpp">op_gamma_contrast.hpp</innerfile>
+    <innerfile refid="op__histogram_8hpp">op_histogram.hpp</innerfile>
+    <innerfile refid="op__non__max__suppression_8hpp">op_non_max_suppression.hpp</innerfile>
+    <innerfile refid="op__normalize_8hpp">op_normalize.hpp</innerfile>
+    <innerfile refid="op__remap_8hpp">op_remap.hpp</innerfile>
+    <innerfile refid="op__resize_8hpp">op_resize.hpp</innerfile>
+    <innerfile refid="op__rotate_8hpp">op_rotate.hpp</innerfile>
+    <innerfile refid="op__thresholding_8hpp">op_thresholding.hpp</innerfile>
+    <innerfile refid="op__warp__affine_8hpp">op_warp_affine.hpp</innerfile>
+    <innerfile refid="op__warp__perspective_8hpp">op_warp_perspective.hpp</innerfile>
+    <innerfile refid="operator__types_8h">operator_types.h</innerfile>
+    <innerfile refid="roccv__operators_8hpp">roccv_operators.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/"/>
+  </compounddef>
+</doxygen>

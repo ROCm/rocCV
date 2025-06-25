@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_image_format" kind="class" language="C++" prot="public">
+    <compoundname>roccv::ImageFormat</compoundname>
+    <includes refid="image__format_8hpp" local="no">image_format.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_image_format_1a3efe00062f2f495ce943026b83ccd7b3" prot="private" static="no" mutable="no">
+        <type><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref></type>
+        <definition>eDataType roccv::ImageFormat::m_dtype</definition>
+        <argsstring></argsstring>
+        <name>m_dtype</name>
+        <qualifiedname>roccv::ImageFormat::m_dtype</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="42" column="15" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" bodystart="42" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_image_format_1aea154610b0e5b05f5e3d06d2bb043218" prot="private" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t roccv::ImageFormat::m_num_channels</definition>
+        <argsstring></argsstring>
+        <name>m_num_channels</name>
+        <qualifiedname>roccv::ImageFormat::m_num_channels</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="43" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" bodystart="43" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_image_format_1a36cf32c3f5fa2872a987054c354f116a" prot="public" static="no" const="yes" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type>int32_t</type>
+        <definition>int32_t roccv::ImageFormat::channels</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>channels</name>
+        <qualifiedname>roccv::ImageFormat::channels</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="39" column="13"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_image_format_1ac44154ffe559054c91478829bb62e731" prot="public" static="no" const="yes" explicit="no" inline="no" noexcept="yes" virt="non-virtual">
+        <type><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref></type>
+        <definition>eDataType roccv::ImageFormat::dtype</definition>
+        <argsstring>() const noexcept</argsstring>
+        <name>dtype</name>
+        <qualifiedname>roccv::ImageFormat::dtype</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="38" column="15"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_image_format_1ae67c3cf2eafa76e5c9b34efc3ba4666a" prot="public" static="no" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::ImageFormat::ImageFormat</definition>
+        <argsstring>()</argsstring>
+        <name>ImageFormat</name>
+        <qualifiedname>roccv::ImageFormat::ImageFormat</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="34" column="14" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" bodystart="34" bodyend="34"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_image_format_1a7fe4b77e60b88074e9671b77a709b2b8" prot="public" static="no" constexpr="yes" const="no" explicit="yes" inline="yes" virt="non-virtual">
+        <type>constexpr</type>
+        <definition>constexpr roccv::ImageFormat::ImageFormat</definition>
+        <argsstring>(eDataType dtype, int32_t num_channels)</argsstring>
+        <name>ImageFormat</name>
+        <qualifiedname>roccv::ImageFormat::ImageFormat</qualifiedname>
+        <param>
+          <type><ref refid="util__enums_8h_1acc461328b82c34604e8b428326a52183" kindref="member">eDataType</ref></type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>int32_t</type>
+          <declname>num_channels</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="35" column="24" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" bodystart="35" bodyend="36"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Acts as a container for data corresponding to how image data is laid out in memory. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" line="32" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp" bodystart="32" bodyend="44"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_image_format_1a36cf32c3f5fa2872a987054c354f116a" prot="public" virt="non-virtual"><scope>roccv::ImageFormat</scope><name>channels</name></member>
+      <member refid="classroccv_1_1_image_format_1ac44154ffe559054c91478829bb62e731" prot="public" virt="non-virtual"><scope>roccv::ImageFormat</scope><name>dtype</name></member>
+      <member refid="classroccv_1_1_image_format_1ae67c3cf2eafa76e5c9b34efc3ba4666a" prot="public" virt="non-virtual"><scope>roccv::ImageFormat</scope><name>ImageFormat</name></member>
+      <member refid="classroccv_1_1_image_format_1a7fe4b77e60b88074e9671b77a709b2b8" prot="public" virt="non-virtual"><scope>roccv::ImageFormat</scope><name>ImageFormat</name></member>
+      <member refid="classroccv_1_1_image_format_1a3efe00062f2f495ce943026b83ccd7b3" prot="private" virt="non-virtual"><scope>roccv::ImageFormat</scope><name>m_dtype</name></member>
+      <member refid="classroccv_1_1_image_format_1aea154610b0e5b05f5e3d06d2bb043218" prot="private" virt="non-virtual"><scope>roccv::ImageFormat</scope><name>m_num_channels</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

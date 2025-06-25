@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structroccv_1_1detail_1_1_has_type_traits__t" kind="struct" language="C++" prot="public">
+    <compoundname>roccv::detail::HasTypeTraits_t</compoundname>
+    <includes refid="type__traits_8hpp" local="no">type_traits.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type><ref refid="structroccv_1_1detail_1_1_has_type_traits__t_1a13a4ca0a3c52b86472c50d10d5160286" kindref="member">typename</ref> T</type>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="public-static-attrib">
+      <memberdef kind="variable" id="structroccv_1_1detail_1_1_has_type_traits__t_1a13a4ca0a3c52b86472c50d10d5160286" prot="public" static="yes" constexpr="yes" mutable="no">
+        <type>constexpr bool</type>
+        <definition>constexpr bool roccv::detail::HasTypeTraits_t&lt; T &gt;::value</definition>
+        <argsstring></argsstring>
+        <name>value</name>
+        <qualifiedname>roccv::detail::HasTypeTraits_t::value</qualifiedname>
+        <initializer>= false</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="30" column="27" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="30" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="29" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="29" bodyend="31"/>
+    <listofallmembers>
+      <member refid="structroccv_1_1detail_1_1_has_type_traits__t_1a13a4ca0a3c52b86472c50d10d5160286" prot="public" virt="non-virtual"><scope>roccv::detail::HasTypeTraits_t</scope><name>value</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_0966d06610f72609fd9aa4979c2b5a92" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include/common</compoundname>
+    <innerfile refid="array__wrapper_8hpp">array_wrapper.hpp</innerfile>
+    <innerfile refid="conversion__helpers_8hpp">conversion_helpers.hpp</innerfile>
+    <innerfile refid="math__vector_8hpp">math_vector.hpp</innerfile>
+    <innerfile refid="strided__data__wrap_8hpp">strided_data_wrap.hpp</innerfile>
+    <innerfile refid="validation__helpers_8hpp">validation_helpers.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/"/>
+  </compounddef>
+</doxygen>

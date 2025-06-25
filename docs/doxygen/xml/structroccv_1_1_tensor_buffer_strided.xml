@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="structroccv_1_1_tensor_buffer_strided" kind="struct" language="C++" prot="public">
+    <compoundname>roccv::TensorBufferStrided</compoundname>
+    <basecompoundref refid="structroccv_1_1_tensor_buffer" prot="public" virt="non-virtual">roccv::TensorBuffer</basecompoundref>
+    <includes refid="tensor__buffer_8hpp" local="no">tensor_buffer.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="structroccv_1_1_tensor_buffer_strided_1a13af060693d98bdb5de022b2f2b9d8a3" prot="public" static="no" mutable="no">
+        <type>std::array&lt; int64_t, <ref refid="tensor__layout_8hpp_1a5fc9cd7db841eb7a72c1f9fe727fcc04" kindref="member">ROCCV_TENSOR_MAX_RANK</ref> &gt;</type>
+        <definition>std::array&lt;int64_t, ROCCV_TENSOR_MAX_RANK&gt; roccv::TensorBufferStrided::strides</definition>
+        <argsstring></argsstring>
+        <name>strides</name>
+        <qualifiedname>roccv::TensorBufferStrided::strides</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" line="47" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" bodystart="47" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>A tensor buffer with strided data. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::TensorBuffer</label>
+        <link refid="structroccv_1_1_tensor_buffer"/>
+      </node>
+      <node id="1">
+        <label>roccv::TensorBufferStrided</label>
+        <link refid="structroccv_1_1_tensor_buffer_strided"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="3">
+        <label>std::array&lt; int64_t, ROCCV_TENSOR_MAX_RANK &gt;</label>
+      </node>
+      <node id="2">
+        <label>roccv::TensorBuffer</label>
+        <link refid="structroccv_1_1_tensor_buffer"/>
+      </node>
+      <node id="1">
+        <label>roccv::TensorBufferStrided</label>
+        <link refid="structroccv_1_1_tensor_buffer_strided"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>strides</edgelabel>
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" line="46" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp" bodystart="46" bodyend="48"/>
+    <listofallmembers>
+      <member refid="structroccv_1_1_tensor_buffer_1af5d43ac0466df5c95895a7bc8e6b0555" prot="public" virt="non-virtual"><scope>roccv::TensorBufferStrided</scope><name>basePtr</name></member>
+      <member refid="structroccv_1_1_tensor_buffer_strided_1a13af060693d98bdb5de022b2f2b9d8a3" prot="public" virt="non-virtual"><scope>roccv::TensorBufferStrided</scope><name>strides</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

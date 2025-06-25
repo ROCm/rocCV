@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="struct_conversion_factors" kind="struct" language="C++" prot="public">
+    <compoundname>ConversionFactors</compoundname>
+    <includes refid="kernel__helpers_8hpp" local="no">kernel_helpers.hpp</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float ConversionFactors::a</definition>
+        <argsstring></argsstring>
+        <name>a</name>
+        <qualifiedname>ConversionFactors::a</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="94" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float ConversionFactors::b</definition>
+        <argsstring></argsstring>
+        <name>b</name>
+        <qualifiedname>ConversionFactors::b</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="95" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="95" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float ConversionFactors::c</definition>
+        <argsstring></argsstring>
+        <name>c</name>
+        <qualifiedname>ConversionFactors::c</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="96" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="96" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float ConversionFactors::d</definition>
+        <argsstring></argsstring>
+        <name>d</name>
+        <qualifiedname>ConversionFactors::d</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="97" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" prot="public" static="no" mutable="no">
+        <type>float</type>
+        <definition>float ConversionFactors::e</definition>
+        <argsstring></argsstring>
+        <name>e</name>
+        <qualifiedname>ConversionFactors::e</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="98" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="98" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" line="93" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/kernel_helpers.hpp" bodystart="93" bodyend="99"/>
+    <listofallmembers>
+      <member refid="struct_conversion_factors_1abf15e038a0eac1cbc301d508dfe95b2b" prot="public" virt="non-virtual"><scope>ConversionFactors</scope><name>a</name></member>
+      <member refid="struct_conversion_factors_1a8af7e7790df58578978f169f61ce100e" prot="public" virt="non-virtual"><scope>ConversionFactors</scope><name>b</name></member>
+      <member refid="struct_conversion_factors_1add508ffaee513e9345c9e74e7731143e" prot="public" virt="non-virtual"><scope>ConversionFactors</scope><name>c</name></member>
+      <member refid="struct_conversion_factors_1abc3a2b5aee9cf3524da783a8143a7791" prot="public" virt="non-virtual"><scope>ConversionFactors</scope><name>d</name></member>
+      <member refid="struct_conversion_factors_1a3587e97deb3425a99ec54797164ae7e7" prot="public" virt="non-virtual"><scope>ConversionFactors</scope><name>e</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

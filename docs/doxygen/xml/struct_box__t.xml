@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="struct_box__t" kind="struct" language="C++" prot="public">
+    <compoundname>Box_t</compoundname>
+    <includes refid="operator__types_8h" local="no">operator_types.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_box__t_1a657e2a4948150afc7d92d71756e82910" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t Box_t::height</definition>
+        <argsstring></argsstring>
+        <name>height</name>
+        <qualifiedname>Box_t::height</qualifiedname>
+        <briefdescription>
+<para>width of the box. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="94" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_box__t_1a6ea74453e0761c9a2fbfc715aabe33f1" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t Box_t::width</definition>
+        <argsstring></argsstring>
+        <name>width</name>
+        <qualifiedname>Box_t::width</qualifiedname>
+        <briefdescription>
+<para>y coordinate of the top-left corner. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="93" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="93" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_box__t_1aea12efbc9c1e966b4d3efcf5bbec2dd6" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Box_t::x</definition>
+        <argsstring></argsstring>
+        <name>x</name>
+        <qualifiedname>Box_t::x</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="91" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="91" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_box__t_1ae7621b44fdca8f5831425f171b0d40e8" prot="public" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t Box_t::y</definition>
+        <argsstring></argsstring>
+        <name>y</name>
+        <qualifiedname>Box_t::y</qualifiedname>
+        <briefdescription>
+<para>x coordinate of the top-left corner. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="92" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="92" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="90" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="90" bodyend="95"/>
+    <listofallmembers>
+      <member refid="struct_box__t_1a657e2a4948150afc7d92d71756e82910" prot="public" virt="non-virtual"><scope>Box_t</scope><name>height</name></member>
+      <member refid="struct_box__t_1a6ea74453e0761c9a2fbfc715aabe33f1" prot="public" virt="non-virtual"><scope>Box_t</scope><name>width</name></member>
+      <member refid="struct_box__t_1aea12efbc9c1e966b4d3efcf5bbec2dd6" prot="public" virt="non-virtual"><scope>Box_t</scope><name>x</name></member>
+      <member refid="struct_box__t_1ae7621b44fdca8f5831425f171b0d40e8" prot="public" virt="non-virtual"><scope>Box_t</scope><name>y</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

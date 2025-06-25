@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_warp_perspective" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::WarpPerspective</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__warp__perspective_8hpp" local="no">op_warp_perspective.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_warp_perspective_1a2b0528202b880d3e374a32c5c859d060" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::WarpPerspective::operator()</definition>
+        <argsstring>(hipStream_t stream, const roccv::Tensor &amp;input, const roccv::Tensor &amp;output, const PerspectiveTransform transMatrix, bool isInverted, const eInterpolationType interpolation, const eBorderType borderType, const float4 borderValue, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::WarpPerspective::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const <ref refid="operator__types_8h_1a58e7332810cdbd5af8382d23016d47f5" kindref="member">PerspectiveTransform</ref></type>
+          <declname>transMatrix</declname>
+        </param>
+        <param>
+          <type>bool</type>
+          <declname>isInverted</declname>
+        </param>
+        <param>
+          <type>const <ref refid="operator__types_8h_1a09a270009d7de1076424a0201917c528" kindref="member">eInterpolationType</ref></type>
+          <declname>interpolation</declname>
+        </param>
+        <param>
+          <type>const <ref refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0" kindref="member">eBorderType</ref></type>
+          <declname>borderType</declname>
+        </param>
+        <param>
+          <type>const float4</type>
+          <declname>borderValue</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Construct a new Op Warp Perspective object. The object can be used to apply a perspective transformation operation on an image. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [HWC, NHWC] Channels: [1, 3, 4] Supported DataType(s): [U8, F32]</para>
+<para>Output: Supported TensorLayout(s): [HWC, NHWC] Channels: [1, 3, 4] Supported DataType(s): [U8, F32]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | Yes
+  Width         | No
+  Height        | No
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operator on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input tensor with image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor for storing modified image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">transMatrix</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A 3x3 transformation matrix for the perspective transformation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">isInverted</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Marks whether transMatrix is the inverted transformation matrix or not. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">interpolation</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Interpolation type (e.g. Nearest neigbour, linear). </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">borderType</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A border type to identify the pixel extrapolation method (e.g. BORDER_TYPE_CONSTANT or BORDER_TYPE_REPLICATE) </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">borderValue</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Set as 0 unless using a constant border. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to run this operator on. (Default: GPU) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp" line="76" column="10"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Class for managing the Warp Perspective operator. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::WarpPerspective</label>
+        <link refid="classroccv_1_1_warp_perspective"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::WarpPerspective</label>
+        <link refid="classroccv_1_1_warp_perspective"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp" line="35" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp" bodystart="35" bodyend="80"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_warp_perspective_1a2b0528202b880d3e374a32c5c859d060" prot="public" virt="non-virtual"><scope>roccv::WarpPerspective</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::WarpPerspective</scope><name>~IOperator</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

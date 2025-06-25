@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="dir_94f8cbda2f909ce34e390ec0afaf72c7" kind="dir">
+    <compoundname>/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail</compoundname>
+    <innerdir refid="dir_e821ca3a68a411aea41e0fe0788a0b0d">/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/math</innerdir>
+    <innerfile refid="casting_8hpp">casting.hpp</innerfile>
+    <innerfile refid="type__traits_8hpp">type_traits.hpp</innerfile>
+    <innerfile refid="vector__utils_8hpp">vector_utils.hpp</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/"/>
+  </compounddef>
+</doxygen>

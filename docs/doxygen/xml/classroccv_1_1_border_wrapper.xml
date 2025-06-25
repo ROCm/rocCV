@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_border_wrapper" kind="class" language="C++" prot="public">
+    <compoundname>roccv::BorderWrapper</compoundname>
+    <includes refid="border__wrapper_8hpp" local="no">border_wrapper.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+      <param>
+        <type><ref refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0" kindref="member">eBorderType</ref></type>
+        <declname>BorderType</declname>
+        <defname>BorderType</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_border_wrapper_1a6663eb8ab835f7a6bc1a0c97fdeeffbf" prot="private" static="no" mutable="no">
+        <type>T</type>
+        <definition>T roccv::BorderWrapper&lt; T, BorderType &gt;::m_border_value</definition>
+        <argsstring></argsstring>
+        <name>m_border_value</name>
+        <qualifiedname>roccv::BorderWrapper::m_border_value</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="145" column="7" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="145" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_border_wrapper_1a40410d54ffca8556730b6b41cc537015" prot="private" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_image_wrapper" kindref="compound">ImageWrapper</ref>&lt; T &gt;</type>
+        <definition>ImageWrapper&lt;T&gt; roccv::BorderWrapper&lt; T, BorderType &gt;::m_desc</definition>
+        <argsstring></argsstring>
+        <name>m_desc</name>
+        <qualifiedname>roccv::BorderWrapper::m_desc</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="144" column="18" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="144" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_border_wrapper_1aff2ca88ac7a30cc2a3689ffd278df334" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ const T</type>
+        <definition>__device__ __host__ const T roccv::BorderWrapper&lt; T, BorderType &gt;::at</definition>
+        <argsstring>(int64_t n, int64_t h, int64_t w, int64_t c) const</argsstring>
+        <name>at</name>
+        <qualifiedname>roccv::BorderWrapper::at</qualifiedname>
+        <param>
+          <type>int64_t</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>w</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Returns a reference to the underlying data given image coordinates. If the coordinates fall out of bounds, a fallback reference based on the provided border type will be given instead. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>n</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The batch index. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The height index. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>w</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The width index. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>c</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The channel index. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A reference to the underlying data or a fallback border value of type T. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="59" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="59" bodyend="113"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_border_wrapper_1a15e785cbaf3b329f50a602ed1a7354d7" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::BorderWrapper&lt; T, BorderType &gt;::batches</definition>
+        <argsstring>() const</argsstring>
+        <name>batches</name>
+        <qualifiedname>roccv::BorderWrapper::batches</qualifiedname>
+        <briefdescription>
+<para>Retrieves the number of batches in the image tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Number of batches. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="134" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="134" bodyend="134"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_border_wrapper_1af800c27f69f2f7d2a210de0cdaf24b35" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::BorderWrapper&lt; T, BorderType &gt;::BorderWrapper</definition>
+        <argsstring>(const Tensor &amp;tensor, T border_value)</argsstring>
+        <name>BorderWrapper</name>
+        <qualifiedname>roccv::BorderWrapper::BorderWrapper</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <param>
+          <type>T</type>
+          <declname>border_value</declname>
+        </param>
+        <briefdescription>
+<para>Wraps an <ref refid="classroccv_1_1_image_wrapper" kindref="compound">ImageWrapper</ref> and extends its capabilities to handle out of bounds coordinates. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>tensor</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The tensor to wrap. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>border_value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The fallback border color to use when using a constant border mode. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="47" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="47" bodyend="47"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_border_wrapper_1a7fdef41e7de65c6b92326884aeeebf3f" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::BorderWrapper&lt; T, BorderType &gt;::channels</definition>
+        <argsstring>() const</argsstring>
+        <name>channels</name>
+        <qualifiedname>roccv::BorderWrapper::channels</qualifiedname>
+        <briefdescription>
+<para>Retries the number of channels in the image. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Image channels. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="141" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="141" bodyend="141"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_border_wrapper_1a3c77b0626372d6a54f1392f9c4346f24" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::BorderWrapper&lt; T, BorderType &gt;::height</definition>
+        <argsstring>() const</argsstring>
+        <name>height</name>
+        <qualifiedname>roccv::BorderWrapper::height</qualifiedname>
+        <briefdescription>
+<para>Retrives the height of the images. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Image height. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="120" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="120" bodyend="120"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_border_wrapper_1a18ea8bf63eafad7640766d9f9b0fc35c" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::BorderWrapper&lt; T, BorderType &gt;::width</definition>
+        <argsstring>() const</argsstring>
+        <name>width</name>
+        <qualifiedname>roccv::BorderWrapper::width</qualifiedname>
+        <briefdescription>
+<para>Retrieves the width of the image. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Image width. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="127" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="127" bodyend="127"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Wrapper class for <ref refid="classroccv_1_1_image_wrapper" kindref="compound">ImageWrapper</ref>. This extends the descriptors by defining behaviors for when tensor coordinates go out of scope. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The underlying data type of the tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>BorderType</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The border type to use when coordinates are out of bounds. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" line="39" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp" bodystart="39" bodyend="146"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_border_wrapper_1aff2ca88ac7a30cc2a3689ffd278df334" prot="public" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>at</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1a15e785cbaf3b329f50a602ed1a7354d7" prot="public" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>batches</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1af800c27f69f2f7d2a210de0cdaf24b35" prot="public" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>BorderWrapper</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1a7fdef41e7de65c6b92326884aeeebf3f" prot="public" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>channels</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1a3c77b0626372d6a54f1392f9c4346f24" prot="public" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>height</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1a6663eb8ab835f7a6bc1a0c97fdeeffbf" prot="private" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>m_border_value</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1a40410d54ffca8556730b6b41cc537015" prot="private" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>m_desc</name></member>
+      <member refid="classroccv_1_1_border_wrapper_1a18ea8bf63eafad7640766d9f9b0fc35c" prot="public" virt="non-virtual"><scope>roccv::BorderWrapper</scope><name>width</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

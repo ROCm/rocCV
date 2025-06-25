@@ -1,0 +1,363 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="status__type_8h" kind="file" language="C++">
+    <compoundname>status_type.h</compoundname>
+    <includedby refid="strided__data__wrap_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp</includedby>
+    <includedby refid="exception_8hpp" local="yes">/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp</includedby>
+    <invincdepgraph>
+      <node id="2">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp</label>
+        <link refid="strided__data__wrap_8hpp"/>
+      </node>
+      <node id="8">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/common/validation_helpers.hpp</label>
+        <link refid="validation__helpers_8hpp"/>
+      </node>
+      <node id="4">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/data_type.hpp</label>
+        <link refid="data__type_8hpp"/>
+        <childnode refid="5" relation="include">
+        </childnode>
+        <childnode refid="6" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp</label>
+        <link refid="exception_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="4" relation="include">
+        </childnode>
+        <childnode refid="36" relation="include">
+        </childnode>
+        <childnode refid="38" relation="include">
+        </childnode>
+      </node>
+      <node id="36">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/hip_assert.h</label>
+        <link refid="hip__assert_8h"/>
+        <childnode refid="37" relation="include">
+        </childnode>
+      </node>
+      <node id="5">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/image_format.hpp</label>
+        <link refid="image__format_8hpp"/>
+      </node>
+      <node id="1">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/status_type.h</label>
+        <link refid="status__type_8h"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="3" relation="include">
+        </childnode>
+      </node>
+      <node id="7">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp</label>
+        <link refid="tensor_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="8" relation="include">
+        </childnode>
+        <childnode refid="9" relation="include">
+        </childnode>
+        <childnode refid="12" relation="include">
+        </childnode>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+      </node>
+      <node id="39">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_buffer.hpp</label>
+        <link refid="tensor__buffer_8hpp"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="6">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp</label>
+        <link refid="tensor__data_8hpp"/>
+        <childnode refid="2" relation="include">
+        </childnode>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="38">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_layout.hpp</label>
+        <link refid="tensor__layout_8hpp"/>
+        <childnode refid="39" relation="include">
+        </childnode>
+        <childnode refid="35" relation="include">
+        </childnode>
+        <childnode refid="40" relation="include">
+        </childnode>
+      </node>
+      <node id="35">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_requirements.hpp</label>
+        <link refid="tensor__requirements_8hpp"/>
+        <childnode refid="7" relation="include">
+        </childnode>
+      </node>
+      <node id="40">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_shape.hpp</label>
+        <link refid="tensor__shape_8hpp"/>
+        <childnode refid="6" relation="include">
+        </childnode>
+      </node>
+      <node id="13">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/border_wrapper.hpp</label>
+        <link refid="border__wrapper_8hpp"/>
+        <childnode refid="14" relation="include">
+        </childnode>
+      </node>
+      <node id="9">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/generic_tensor_wrapper.hpp</label>
+        <link refid="generic__tensor__wrapper_8hpp"/>
+        <childnode refid="10" relation="include">
+        </childnode>
+        <childnode refid="11" relation="include">
+        </childnode>
+      </node>
+      <node id="12">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/image_wrapper.hpp</label>
+        <link refid="image__wrapper_8hpp"/>
+        <childnode refid="13" relation="include">
+        </childnode>
+      </node>
+      <node id="14">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp</label>
+        <link refid="interpolation__wrapper_8hpp"/>
+        <childnode refid="15" relation="include">
+        </childnode>
+        <childnode refid="16" relation="include">
+        </childnode>
+      </node>
+      <node id="37">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/i_operator.hpp</label>
+        <link refid="i__operator_8hpp"/>
+        <childnode refid="17" relation="include">
+        </childnode>
+        <childnode refid="19" relation="include">
+        </childnode>
+        <childnode refid="20" relation="include">
+        </childnode>
+        <childnode refid="21" relation="include">
+        </childnode>
+        <childnode refid="22" relation="include">
+        </childnode>
+        <childnode refid="23" relation="include">
+        </childnode>
+        <childnode refid="24" relation="include">
+        </childnode>
+        <childnode refid="25" relation="include">
+        </childnode>
+        <childnode refid="26" relation="include">
+        </childnode>
+        <childnode refid="27" relation="include">
+        </childnode>
+        <childnode refid="28" relation="include">
+        </childnode>
+        <childnode refid="29" relation="include">
+        </childnode>
+        <childnode refid="30" relation="include">
+        </childnode>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="32" relation="include">
+        </childnode>
+        <childnode refid="33" relation="include">
+        </childnode>
+        <childnode refid="34" relation="include">
+        </childnode>
+      </node>
+      <node id="15">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/bilateral_filter_device.hpp</label>
+        <link refid="bilateral__filter__device_8hpp"/>
+      </node>
+      <node id="10">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/non_max_suppression_device.hpp</label>
+        <link refid="non__max__suppression__device_8hpp"/>
+      </node>
+      <node id="16">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/device/warp_perspective_device.hpp</label>
+        <link refid="warp__perspective__device_8hpp"/>
+      </node>
+      <node id="11">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/kernels/host/non_max_suppression_host.hpp</label>
+        <link refid="non__max__suppression__host_8hpp"/>
+      </node>
+      <node id="17">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bilateral_filter.hpp</label>
+        <link refid="op__bilateral__filter_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="19">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_bnd_box.hpp</label>
+        <link refid="op__bnd__box_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="20">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_composite.hpp</label>
+        <link refid="op__composite_8hpp"/>
+      </node>
+      <node id="21">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_copy_make_border.hpp</label>
+        <link refid="op__copy__make__border_8hpp"/>
+      </node>
+      <node id="22">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_custom_crop.hpp</label>
+        <link refid="op__custom__crop_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="23">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_cvt_color.hpp</label>
+        <link refid="op__cvt__color_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="24">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_flip.hpp</label>
+        <link refid="op__flip_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="25">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_gamma_contrast.hpp</label>
+        <link refid="op__gamma__contrast_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="26">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_histogram.hpp</label>
+        <link refid="op__histogram_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="27">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_non_max_suppression.hpp</label>
+        <link refid="op__non__max__suppression_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="28">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_normalize.hpp</label>
+        <link refid="op__normalize_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="29">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_remap.hpp</label>
+        <link refid="op__remap_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="30">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_resize.hpp</label>
+        <link refid="op__resize_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="31">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp</label>
+        <link refid="op__rotate_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="32">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_thresholding.hpp</label>
+        <link refid="op__thresholding_8hpp"/>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="33">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_affine.hpp</label>
+        <link refid="op__warp__affine_8hpp"/>
+        <childnode refid="31" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="34">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/op_warp_perspective.hpp</label>
+        <link refid="op__warp__perspective_8hpp"/>
+        <childnode refid="33" relation="include">
+        </childnode>
+        <childnode refid="18" relation="include">
+        </childnode>
+      </node>
+      <node id="18">
+        <label>/mnt/c/Users/spolifro/Documents/rocCV/include/roccv_operators.hpp</label>
+        <link refid="roccv__operators_8hpp"/>
+      </node>
+    </invincdepgraph>
+    <innernamespace refid="namespaceroccv">roccv</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceroccv" kindref="compound">roccv</ref><sp/>{</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight></codeline>
+<codeline lineno="30" refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0ca" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0ca" kindref="member">eStatusType</ref><sp/>{</highlight></codeline>
+<codeline lineno="31"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caad0749aaba8b833466dfcbb0428e4f89c" kindref="member">SUCCESS</ref>,</highlight></codeline>
+<codeline lineno="32"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa91bf81a15031ab01510ec064d6004db5" kindref="member">INVALID_HANDLE</ref>,<sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="33"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa01855c3c395dbe002f142dafcf953715" kindref="member">INVALID_POINTER</ref>,<sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="34"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caad8f24f388e990b9ccf8905b7993b99ae" kindref="member">INVALID_VALUE</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa71e5e8b8caeedea08ea1f0e75143e047" kindref="member">OUT_OF_BOUNDS</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caac56ddb8056b120c9d5fee05981f219c6" kindref="member">OUT_OF_MEMORY</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caade918d7abaea4c856c3c64720f3cbb7c" kindref="member">INVALID_OPERATION</ref>,<sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="42"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caae8c0c70879b5895c615677261d64a1ee" kindref="member">INTERNAL_ERROR</ref>,<sp/><sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="44"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa53270059a6bb240d4099226e2d9edab4" kindref="member">INVALID_COMBINATION</ref>,<sp/></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa3e860a081575fc82cc7b6ed2ca602947" kindref="member">NOT_IMPLEMENTED</ref>,<sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="47"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0caa02de9649e258d1dd94056e676061e969" kindref="member">NOT_INITIALIZED</ref>,<sp/><sp/><sp/><sp/><sp/></highlight></codeline>
+<codeline lineno="48"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="49"><highlight class="normal"></highlight></codeline>
+<codeline lineno="55" refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998a" refkind="member"><highlight class="normal"></highlight><highlight class="keyword">enum<sp/>class</highlight><highlight class="normal"><sp/><ref refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998a" kindref="member">eTestStatusType</ref><sp/>{</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998aa6d04ea4ab60daf85a03396a190bc356c" kindref="member">TEST_SUCCESS</ref>,</highlight></codeline>
+<codeline lineno="57"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998aac8f51132d8b61759783e5751b89a1f71" kindref="member">TEST_FAILURE</ref>,</highlight></codeline>
+<codeline lineno="58"><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998aaded53093f15fd3aacd7601dbd7a80968" kindref="member">UNEXPECTED_VALUE</ref>,<sp/></highlight></codeline>
+<codeline lineno="60"><highlight class="normal">};</highlight></codeline>
+<codeline lineno="61"><highlight class="normal">}<sp/><sp/></highlight><highlight class="comment">//<sp/>namespace<sp/>roccv</highlight></codeline>
+    </programlisting>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/status_type.h"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,699 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_tensor" kind="class" language="C++" prot="public">
+    <compoundname>roccv::Tensor</compoundname>
+    <includes refid="tensor_8hpp" local="no">tensor.hpp</includes>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classroccv_1_1_tensor_1a3ccb39b2ccfe61473e80ff8b38b4cf5a" prot="public" static="no">
+        <type><ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref></type>
+        <definition>using roccv::Tensor::Requirements =  TensorRequirements</definition>
+        <argsstring></argsstring>
+        <name>Requirements</name>
+        <qualifiedname>roccv::Tensor::Requirements</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="39" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" bodystart="39" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_tensor_1aa89913d951fb2fd3d77ac32c52a696bc" prot="private" static="no" mutable="no">
+        <type>std::shared_ptr&lt; <ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref> &gt;</type>
+        <definition>std::shared_ptr&lt;TensorStorage&gt; roccv::Tensor::m_data</definition>
+        <argsstring></argsstring>
+        <name>m_data</name>
+        <qualifiedname>roccv::Tensor::m_data</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="196" column="21" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" bodystart="196" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1_tensor_1a372cb0ec7ef6ab96ee6418ea1ad3c654" prot="private" static="no" mutable="no">
+        <type><ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref></type>
+        <definition>TensorRequirements roccv::Tensor::m_requirements</definition>
+        <argsstring></argsstring>
+        <name>m_requirements</name>
+        <qualifiedname>roccv::Tensor::m_requirements</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="195" column="24" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" bodystart="195" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a2fc816736648718078a5171cd66be26f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+        <definition>const eDeviceType roccv::Tensor::device</definition>
+        <argsstring>() const</argsstring>
+        <name>device</name>
+        <qualifiedname>roccv::Tensor::device</qualifiedname>
+        <briefdescription>
+<para>Returns the location (device or host) of the tensor data. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>The location of the tensor data. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="94" column="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1ab9140fe5b338b25481a9cb480d674ce2" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref> &amp;</type>
+        <definition>const DataType &amp; roccv::Tensor::dtype</definition>
+        <argsstring>() const</argsstring>
+        <name>dtype</name>
+        <qualifiedname>roccv::Tensor::dtype</qualifiedname>
+        <briefdescription>
+<para>Returns the data type of the tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Data type of the tensor </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="116" column="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a03f7426f087e59be21db8db926ce155c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor_data" kindref="compound">TensorData</ref></type>
+        <definition>TensorData roccv::Tensor::exportData</definition>
+        <argsstring>() const</argsstring>
+        <name>exportData</name>
+        <qualifiedname>roccv::Tensor::exportData</qualifiedname>
+        <briefdescription>
+<para>Exports the tensor data of the tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> data of the tensor </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="130" column="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a8e2af2c90152ae59def6e83217f92fa0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename DerivedTensorData</type>
+          </param>
+        </templateparamlist>
+        <type>DerivedTensorData</type>
+        <definition>DerivedTensorData roccv::Tensor::exportData</definition>
+        <argsstring>() const</argsstring>
+        <name>exportData</name>
+        <qualifiedname>roccv::Tensor::exportData</qualifiedname>
+        <briefdescription>
+<para>Exports tensor data and casts it to a specified tensor data object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>The</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>tensor data object to cast this tensor&apos;s data to </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The tensor data casted to the tensor data object specified </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="139" column="23" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" bodystart="139" bodyend="147"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1acdc3ebc42408ba774893d9088dbdbe1f" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="classroccv_1_1_tensor_layout" kindref="compound">TensorLayout</ref> &amp;</type>
+        <definition>const TensorLayout &amp; roccv::Tensor::layout</definition>
+        <argsstring>() const</argsstring>
+        <name>layout</name>
+        <qualifiedname>roccv::Tensor::layout</qualifiedname>
+        <briefdescription>
+<para>Returns the layout of the tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Layout of the tensor </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="123" column="24"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1ad93e09fe6b6c922a75906a2f1a7cea6d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+        <definition>Tensor &amp; roccv::Tensor::operator=</definition>
+        <argsstring>(const Tensor &amp;other)</argsstring>
+        <name>operator=</name>
+        <qualifiedname>roccv::Tensor::operator=</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="167" column="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a3f92b9a4b84f4adc953dee2e11065c03" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int roccv::Tensor::rank</definition>
+        <argsstring>() const</argsstring>
+        <name>rank</name>
+        <qualifiedname>roccv::Tensor::rank</qualifiedname>
+        <briefdescription>
+<para>Returns the rank of the tensor (i.e. the number of dimensions) </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>An integer representing the rank of the tensor </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="87" column="9"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1ac5388527a12c5287f271524583ad3d84" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref></type>
+        <definition>Tensor roccv::Tensor::reshape</definition>
+        <argsstring>(const TensorShape &amp;new_shape) const</argsstring>
+        <name>reshape</name>
+        <qualifiedname>roccv::Tensor::reshape</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>new_shape</declname>
+        </param>
+        <briefdescription>
+<para>Creates a view of this tensor with a new shape and layout. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">new_shape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>the new shape of the tensor </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="155" column="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1acad2d265df28b9d3485ea448172a369a" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref></type>
+        <definition>Tensor roccv::Tensor::reshape</definition>
+        <argsstring>(const TensorShape &amp;new_shape, const DataType &amp;new_dtype) const</argsstring>
+        <name>reshape</name>
+        <qualifiedname>roccv::Tensor::reshape</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>new_shape</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref> &amp;</type>
+          <declname>new_dtype</declname>
+        </param>
+        <briefdescription>
+<para>Creates a vew of this tensor with a new shape, layout, and data type. The number of bytes allocated must match the original tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>new_shape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The new tensor shape. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>new_dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The new data type of the underlying tensor data. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="165" column="12"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1ae244478b3a78a6e4492d0340901b2c7c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+        <definition>const TensorShape &amp; roccv::Tensor::shape</definition>
+        <argsstring>() const</argsstring>
+        <name>shape</name>
+        <qualifiedname>roccv::Tensor::shape</qualifiedname>
+        <briefdescription>
+<para>Returns the shape of the tensor. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><simplesect kind="return"><para>Shape of the tensor </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="101" column="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a66efd261db75c569ddef6514b634e02d" prot="public" static="no" const="yes" explicit="no" inline="no" refqual="lvalue" virt="non-virtual">
+        <type>const int64_t</type>
+        <definition>const int64_t roccv::Tensor::shape</definition>
+        <argsstring>(int d) const &amp;</argsstring>
+        <name>shape</name>
+        <qualifiedname>roccv::Tensor::shape</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+<para>Retrieves a specific dimension size from the tensor shape. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">d</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The index of the dimension. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The size of the specified dimension. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="109" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a15df579e1ebf8e775c42ca11f8b5df8f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Tensor::Tensor</definition>
+        <argsstring>(const Tensor &amp;other)=delete</argsstring>
+        <name>Tensor</name>
+        <qualifiedname>roccv::Tensor::Tensor</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="79" column="5"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a91ace02407a6e4bc5cb7920479dba2df" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Tensor::Tensor</definition>
+        <argsstring>(const TensorRequirements &amp;reqs)</argsstring>
+        <name>Tensor</name>
+        <qualifiedname>roccv::Tensor::Tensor</qualifiedname>
+        <param>
+          <type>const <ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref> &amp;</type>
+          <declname>reqs</declname>
+        </param>
+        <briefdescription>
+<para>Constructs a <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> object given a list of requirements. Creating a tensor through this constructor will automatically allocate the required amount of space on either the device or host. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">reqs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>An object representing the requirements for this tensor. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="48" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1af075e7d048c14967986a695038afc23d" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Tensor::Tensor</definition>
+        <argsstring>(const TensorRequirements &amp;reqs, std::shared_ptr&lt; TensorStorage &gt; data)</argsstring>
+        <name>Tensor</name>
+        <qualifiedname>roccv::Tensor::Tensor</qualifiedname>
+        <param>
+          <type>const <ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref> &amp;</type>
+          <declname>reqs</declname>
+        </param>
+        <param>
+          <type>std::shared_ptr&lt; <ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref> &gt;</type>
+          <declname>data</declname>
+        </param>
+        <briefdescription>
+<para>Constructs a <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> object given a list of requirements and the underlying data as a <ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref> pointer. This constructor will not automatically allocate data. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">reqs</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>An object representing the requirements for this tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">data</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A <ref refid="classroccv_1_1_tensor_storage" kindref="compound">TensorStorage</ref> object for the tensor&apos;s underlying data. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="57" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a2638c0c8cdc31e6ae0aaf7b6749e08fd" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Tensor::Tensor</definition>
+        <argsstring>(const TensorShape &amp;shape, DataType dtype, const eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>Tensor</name>
+        <qualifiedname>roccv::Tensor::Tensor</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref></type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Constructs a tensor object and allocates the appropriate amount of memory on the specified device. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">shape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The shape describing the tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The underlying datatype of the tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device the tensor should be allocated on. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="66" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1ad1fc14225901f692f4e69f0d9ccefe79" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Tensor::Tensor</definition>
+        <argsstring>(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>Tensor</name>
+        <qualifiedname>roccv::Tensor::Tensor</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>num_images</declname>
+        </param>
+        <param>
+          <type><ref refid="structroccv_1_1_size2_d" kindref="compound">Size2D</ref></type>
+          <declname>image_size</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1_image_format" kindref="compound">ImageFormat</ref></type>
+          <declname>fmt</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the specified device. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">num_images</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The number of images in the batch. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">image_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The size for images in the batch. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">fmt</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The format of the underlying image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device the tensor should be allocated on. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="77" column="14"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a69618f599091e6d268e426d599d1a7c3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Tensor::Tensor</definition>
+        <argsstring>(Tensor &amp;&amp;other)</argsstring>
+        <name>Tensor</name>
+        <qualifiedname>roccv::Tensor::Tensor</qualifiedname>
+        <param>
+          <type><ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;&amp;</type>
+          <declname>other</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="80" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classroccv_1_1_tensor_1a1f14a8478e9caeb17bfa61a278a45115" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor_1a3ccb39b2ccfe61473e80ff8b38b4cf5a" kindref="member">Requirements</ref></type>
+        <definition>static Requirements roccv::Tensor::CalcRequirements</definition>
+        <argsstring>(const TensorShape &amp;shape, DataType dtype, const eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>CalcRequirements</name>
+        <qualifiedname>roccv::Tensor::CalcRequirements</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>shape</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref></type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Calculates tensor requirements. This essentially wraps the provided parameters into a <ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">shape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The desired shape of the tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The desired data type of the tensor&apos;s raw data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The deivce the tensor data should belong to. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A <ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref> object representing this tensor&apos;s requirements. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="179" column="25"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_1ad115f847503fc70a1413f44dfda2ced6" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classroccv_1_1_tensor_1a3ccb39b2ccfe61473e80ff8b38b4cf5a" kindref="member">Requirements</ref></type>
+        <definition>static Requirements roccv::Tensor::CalcRequirements</definition>
+        <argsstring>(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>CalcRequirements</name>
+        <qualifiedname>roccv::Tensor::CalcRequirements</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>num_images</declname>
+        </param>
+        <param>
+          <type><ref refid="structroccv_1_1_size2_d" kindref="compound">Size2D</ref></type>
+          <declname>image_size</declname>
+        </param>
+        <param>
+          <type><ref refid="classroccv_1_1_image_format" kindref="compound">ImageFormat</ref></type>
+          <declname>fmt</declname>
+        </param>
+        <param>
+          <type><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Calculates tensor requirements using image-based parameters. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">num_images</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The number of images in the batch. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">image_size</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The size for images in the batch. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">fmt</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The format of the underlying image data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The deivce the tensor data should belong to. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A <ref refid="structroccv_1_1_tensor_requirements" kindref="compound">TensorRequirements</ref> object representing the tensor&apos;s requirements. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="191" column="25"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" line="37" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor.hpp" bodystart="37" bodyend="197"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_tensor_1a1f14a8478e9caeb17bfa61a278a45115" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>CalcRequirements</name></member>
+      <member refid="classroccv_1_1_tensor_1ad115f847503fc70a1413f44dfda2ced6" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>CalcRequirements</name></member>
+      <member refid="classroccv_1_1_tensor_1a2fc816736648718078a5171cd66be26f" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>device</name></member>
+      <member refid="classroccv_1_1_tensor_1ab9140fe5b338b25481a9cb480d674ce2" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>dtype</name></member>
+      <member refid="classroccv_1_1_tensor_1a03f7426f087e59be21db8db926ce155c" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>exportData</name></member>
+      <member refid="classroccv_1_1_tensor_1a8e2af2c90152ae59def6e83217f92fa0" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>exportData</name></member>
+      <member refid="classroccv_1_1_tensor_1acdc3ebc42408ba774893d9088dbdbe1f" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>layout</name></member>
+      <member refid="classroccv_1_1_tensor_1aa89913d951fb2fd3d77ac32c52a696bc" prot="private" virt="non-virtual"><scope>roccv::Tensor</scope><name>m_data</name></member>
+      <member refid="classroccv_1_1_tensor_1a372cb0ec7ef6ab96ee6418ea1ad3c654" prot="private" virt="non-virtual"><scope>roccv::Tensor</scope><name>m_requirements</name></member>
+      <member refid="classroccv_1_1_tensor_1ad93e09fe6b6c922a75906a2f1a7cea6d" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>operator=</name></member>
+      <member refid="classroccv_1_1_tensor_1a3f92b9a4b84f4adc953dee2e11065c03" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>rank</name></member>
+      <member refid="classroccv_1_1_tensor_1a3ccb39b2ccfe61473e80ff8b38b4cf5a" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Requirements</name></member>
+      <member refid="classroccv_1_1_tensor_1ac5388527a12c5287f271524583ad3d84" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>reshape</name></member>
+      <member refid="classroccv_1_1_tensor_1acad2d265df28b9d3485ea448172a369a" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>reshape</name></member>
+      <member refid="classroccv_1_1_tensor_1ae244478b3a78a6e4492d0340901b2c7c" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>shape</name></member>
+      <member refid="classroccv_1_1_tensor_1a66efd261db75c569ddef6514b634e02d" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>shape</name></member>
+      <member refid="classroccv_1_1_tensor_1a91ace02407a6e4bc5cb7920479dba2df" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Tensor</name></member>
+      <member refid="classroccv_1_1_tensor_1af075e7d048c14967986a695038afc23d" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Tensor</name></member>
+      <member refid="classroccv_1_1_tensor_1a2638c0c8cdc31e6ae0aaf7b6749e08fd" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Tensor</name></member>
+      <member refid="classroccv_1_1_tensor_1ad1fc14225901f692f4e69f0d9ccefe79" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Tensor</name></member>
+      <member refid="classroccv_1_1_tensor_1a15df579e1ebf8e775c42ca11f8b5df8f" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Tensor</name></member>
+      <member refid="classroccv_1_1_tensor_1a69618f599091e6d268e426d599d1a7c3" prot="public" virt="non-virtual"><scope>roccv::Tensor</scope><name>Tensor</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

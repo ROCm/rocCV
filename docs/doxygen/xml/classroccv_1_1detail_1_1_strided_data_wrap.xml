@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1detail_1_1_strided_data_wrap" kind="class" language="C++" prot="public">
+    <compoundname>roccv::detail::StridedDataWrap</compoundname>
+    <includes refid="strided__data__wrap_8hpp" local="no">strided_data_wrap.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>size_t</type>
+        <declname>RANK</declname>
+        <defname>RANK</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1detail_1_1_strided_data_wrap_1ab238060cc5b083ce87abd0b7e5e872bb" prot="private" static="no" mutable="no">
+        <type>unsigned char *</type>
+        <definition>unsigned char* roccv::detail::StridedDataWrap&lt; RANK &gt;::data_</definition>
+        <argsstring></argsstring>
+        <name>data_</name>
+        <qualifiedname>roccv::detail::StridedDataWrap::data_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="69" column="19" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="69" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classroccv_1_1detail_1_1_strided_data_wrap_1a64d4b069d0a79169fbe381b83ed6be08" prot="private" static="no" mutable="no">
+        <type>int64_t</type>
+        <definition>int64_t roccv::detail::StridedDataWrap&lt; RANK &gt;::strides_[RANK]</definition>
+        <argsstring>[RANK]</argsstring>
+        <name>strides_</name>
+        <qualifiedname>roccv::detail::StridedDataWrap::strides_</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="70" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="70" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1detail_1_1_strided_data_wrap_1aa03c678ea7aba2e96b08b93ca0ced0b1" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename...</type>
+            <declname>ARGS</declname>
+            <defname>ARGS</defname>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ T &amp;</type>
+        <definition>__device__ __host__ T &amp; roccv::detail::StridedDataWrap&lt; RANK &gt;::at</definition>
+        <argsstring>(ARGS... idx)</argsstring>
+        <name>at</name>
+        <qualifiedname>roccv::detail::StridedDataWrap::at</qualifiedname>
+        <param>
+          <type>ARGS...</type>
+          <declname>idx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="46" column="27" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="46" bodyend="50"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1_strided_data_wrap_1aa29ecd083d02270956838919c946c9c0" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename...</type>
+            <declname>ARGS</declname>
+            <defname>ARGS</defname>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ const T &amp;</type>
+        <definition>__device__ __host__ const T &amp; roccv::detail::StridedDataWrap&lt; RANK &gt;::at</definition>
+        <argsstring>(ARGS... idx) const</argsstring>
+        <name>at</name>
+        <qualifiedname>roccv::detail::StridedDataWrap::at</qualifiedname>
+        <param>
+          <type>ARGS...</type>
+          <declname>idx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="53" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="53" bodyend="66"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1detail_1_1_strided_data_wrap_1a01811bf4d86295a8d1ac4362ce94eb80" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename...</type>
+            <declname>ARGS</declname>
+            <defname>ARGS</defname>
+          </param>
+        </templateparamlist>
+        <type></type>
+        <definition>roccv::detail::StridedDataWrap&lt; RANK &gt;::StridedDataWrap</definition>
+        <argsstring>(void *data, ARGS... strides)</argsstring>
+        <name>StridedDataWrap</name>
+        <qualifiedname>roccv::detail::StridedDataWrap::StridedDataWrap</qualifiedname>
+        <param>
+          <type>void *</type>
+          <declname>data</declname>
+        </param>
+        <param>
+          <type>ARGS...</type>
+          <declname>strides</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="39" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="39" bodyend="43"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="36" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="36" bodyend="71"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1aa03c678ea7aba2e96b08b93ca0ced0b1" prot="public" virt="non-virtual"><scope>roccv::detail::StridedDataWrap</scope><name>at</name></member>
+      <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1aa29ecd083d02270956838919c946c9c0" prot="public" virt="non-virtual"><scope>roccv::detail::StridedDataWrap</scope><name>at</name></member>
+      <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1ab238060cc5b083ce87abd0b7e5e872bb" prot="private" virt="non-virtual"><scope>roccv::detail::StridedDataWrap</scope><name>data_</name></member>
+      <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1a01811bf4d86295a8d1ac4362ce94eb80" prot="public" virt="non-virtual"><scope>roccv::detail::StridedDataWrap</scope><name>StridedDataWrap</name></member>
+      <member refid="classroccv_1_1detail_1_1_strided_data_wrap_1a64d4b069d0a79169fbe381b83ed6be08" prot="private" virt="non-virtual"><scope>roccv::detail::StridedDataWrap</scope><name>strides_</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

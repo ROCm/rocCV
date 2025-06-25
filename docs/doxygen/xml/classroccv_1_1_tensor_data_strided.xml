@@ -1,0 +1,205 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_tensor_data_strided" kind="class" language="C++" prot="public">
+    <compoundname>roccv::TensorDataStrided</compoundname>
+    <basecompoundref refid="classroccv_1_1_tensor_data" prot="public" virt="non-virtual">roccv::TensorData</basecompoundref>
+    <includes refid="tensor__data_8hpp" local="no">tensor_data.hpp</includes>
+    <sectiondef kind="public-type">
+      <memberdef kind="typedef" id="classroccv_1_1_tensor_data_strided_1a6203aa1ca4223e8b99725ce367125da8" prot="public" static="no">
+        <type><ref refid="structroccv_1_1_tensor_buffer_strided" kindref="compound">TensorBufferStrided</ref></type>
+        <definition>using roccv::TensorDataStrided::Buffer =  TensorBufferStrided</definition>
+        <argsstring></argsstring>
+        <name>Buffer</name>
+        <qualifiedname>roccv::TensorDataStrided::Buffer</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp" line="116" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp" bodystart="116" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_tensor_data_strided_1a26e3fefe8fc9cc4bbb453b16cd2896fa" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const int64_t</type>
+        <definition>const int64_t roccv::TensorDataStrided::stride</definition>
+        <argsstring>(int d) const</argsstring>
+        <name>stride</name>
+        <qualifiedname>roccv::TensorDataStrided::stride</qualifiedname>
+        <param>
+          <type>int</type>
+          <declname>d</declname>
+        </param>
+        <briefdescription>
+<para>Returns the stride at a given dimension. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">d</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The specified dimension of the tensor. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The stride for the given dimension. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp" line="135" column="19"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_tensor_data_strided_1a271f03c0f05dc4340f2c37c8392115a3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::TensorDataStrided::TensorDataStrided</definition>
+        <argsstring>(const TensorShape &amp;tshape, const DataType &amp;dtype, const TensorBufferStrided &amp;buffer, const eDeviceType device=eDeviceType::GPU)</argsstring>
+        <name>TensorDataStrided</name>
+        <qualifiedname>roccv::TensorDataStrided::TensorDataStrided</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor_shape" kindref="compound">TensorShape</ref> &amp;</type>
+          <declname>tshape</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_data_type" kindref="compound">DataType</ref> &amp;</type>
+          <declname>dtype</declname>
+        </param>
+        <param>
+          <type>const <ref refid="structroccv_1_1_tensor_buffer_strided" kindref="compound">TensorBufferStrided</ref> &amp;</type>
+          <declname>buffer</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Constructs a <ref refid="classroccv_1_1_tensor_data_strided" kindref="compound">TensorDataStrided</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">tshape</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The shape of the tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">dtype</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The datatype of the tensor. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">buffer</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The buffer containing the tensor&apos;s underlying data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">data_location</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The data location of the tensor (default: DATA_ON_DEVICE). </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp" line="126" column="5"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Holds the underlying tensor data alongside tensor metadata. This particular tensor data type is used to store strided data, and contains additional methods for handling strided data. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::TensorData</label>
+        <link refid="classroccv_1_1_tensor_data"/>
+      </node>
+      <node id="1">
+        <label>roccv::TensorDataStrided</label>
+        <link refid="classroccv_1_1_tensor_data_strided"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="7">
+        <label>std::array&lt; int64_t, ROCCV_TENSOR_MAX_RANK &gt;</label>
+      </node>
+      <node id="4">
+        <label>roccv::DataType</label>
+        <link refid="classroccv_1_1_data_type"/>
+      </node>
+      <node id="6">
+        <label>roccv::TensorBuffer</label>
+        <link refid="structroccv_1_1_tensor_buffer"/>
+      </node>
+      <node id="5">
+        <label>roccv::TensorBufferStrided</label>
+        <link refid="structroccv_1_1_tensor_buffer_strided"/>
+        <childnode refid="6" relation="public-inheritance">
+        </childnode>
+        <childnode refid="7" relation="usage">
+          <edgelabel>strides</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>roccv::TensorData</label>
+        <link refid="classroccv_1_1_tensor_data"/>
+        <childnode refid="3" relation="usage">
+          <edgelabel>m_shape</edgelabel>
+        </childnode>
+        <childnode refid="4" relation="usage">
+          <edgelabel>m_dtype</edgelabel>
+        </childnode>
+        <childnode refid="5" relation="usage">
+          <edgelabel>m_buffer</edgelabel>
+        </childnode>
+      </node>
+      <node id="1">
+        <label>roccv::TensorDataStrided</label>
+        <link refid="classroccv_1_1_tensor_data_strided"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="3">
+        <label>roccv::TensorShape</label>
+        <link refid="classroccv_1_1_tensor_shape"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp" line="114" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/tensor_data.hpp" bodystart="114" bodyend="136"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_tensor_data_1a27edf41eea6476faae79de874bf88e06" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>basePtr</name></member>
+      <member refid="classroccv_1_1_tensor_data_strided_1a6203aa1ca4223e8b99725ce367125da8" prot="public" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>Buffer</name></member>
+      <member refid="classroccv_1_1_tensor_data_1a66a4f32b7fad1ec4fb33cc73a7b6e16e" prot="public" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>cast</name></member>
+      <member refid="classroccv_1_1_tensor_data_1acd77c8217801032347610909c9379b35" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>device</name></member>
+      <member refid="classroccv_1_1_tensor_data_1ac4f872e1728b9d0ee2a43561992b39ec" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>dtype</name></member>
+      <member refid="classroccv_1_1_tensor_data_1addf1ffe6a2ed2840720d181d06be4059" prot="protected" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>m_buffer</name></member>
+      <member refid="classroccv_1_1_tensor_data_1afb4de4d439577b8650324ca8e0d6920c" prot="protected" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>m_deviceType</name></member>
+      <member refid="classroccv_1_1_tensor_data_1ae4cf6c5f7926ac56014643bd1fea8e45" prot="protected" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>m_dtype</name></member>
+      <member refid="classroccv_1_1_tensor_data_1a1ad5276d1071f9b55c7bdcb96798c8b9" prot="protected" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>m_shape</name></member>
+      <member refid="classroccv_1_1_tensor_data_1a21b09151a2531e2733481b9cc8298df0" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>rank</name></member>
+      <member refid="classroccv_1_1_tensor_data_1a36cb5e9305487e186a061d0e8832618c" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>shape</name></member>
+      <member refid="classroccv_1_1_tensor_data_1af7d93be188a24bb8f905bd8692290b63" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>shape</name></member>
+      <member refid="classroccv_1_1_tensor_data_strided_1a26e3fefe8fc9cc4bbb453b16cd2896fa" prot="public" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>stride</name></member>
+      <member refid="classroccv_1_1_tensor_data_1a735c1b6246a513646513bfb8fd1a8105" prot="public" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>TensorData</name></member>
+      <member refid="classroccv_1_1_tensor_data_1a8df315a795bd3d3f9ebb8a704d1fee3c" prot="protected" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>TensorData</name></member>
+      <member refid="classroccv_1_1_tensor_data_strided_1a271f03c0f05dc4340f2c37c8392115a3" prot="public" virt="non-virtual"><scope>roccv::TensorDataStrided</scope><name>TensorDataStrided</name></member>
+      <member refid="classroccv_1_1_tensor_data_1af3d53941cc189cc36a0625244b6ae849" prot="public" virt="virtual"><scope>roccv::TensorDataStrided</scope><name>~TensorData</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

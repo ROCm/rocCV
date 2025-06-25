@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespaceroccv_1_1_exception_message" kind="namespace" language="C++">
+    <compoundname>roccv::ExceptionMessage</compoundname>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceroccv_1_1_exception_message_1a66bd687ed2b9633ed9a9e12abd4e2126" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * roccv::ExceptionMessage::getMessageByEnum</definition>
+        <argsstring>(eStatusType status)</argsstring>
+        <name>getMessageByEnum</name>
+        <qualifiedname>roccv::ExceptionMessage::getMessageByEnum</qualifiedname>
+        <param>
+          <type><ref refid="namespaceroccv_1ad153d3aa032503c4da2ea9395d25f0ca" kindref="member">eStatusType</ref></type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp" line="44" column="12" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp" declline="44" declcolumn="12"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1_exception_message_1a3eeaf3d3e3abc9e47518727276b7275d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * roccv::ExceptionMessage::getMessageByEnum</definition>
+        <argsstring>(eTestStatusType status)</argsstring>
+        <name>getMessageByEnum</name>
+        <qualifiedname>roccv::ExceptionMessage::getMessageByEnum</qualifiedname>
+        <param>
+          <type><ref refid="namespaceroccv_1ab3844a8838e9a9d1195da9cbc6bf998a" kindref="member">eTestStatusType</ref></type>
+          <declname>status</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp" line="45" column="12" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp" declline="45" declcolumn="12"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/exception.hpp" line="43" column="1"/>
+  </compounddef>
+</doxygen>

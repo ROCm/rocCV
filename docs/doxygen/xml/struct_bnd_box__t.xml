@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="struct_bnd_box__t" kind="struct" language="C++" prot="public">
+    <compoundname>BndBox_t</compoundname>
+    <includes refid="operator__types_8h" local="no">operator_types.h</includes>
+    <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="struct_bnd_box__t_1a04cf5ee590aa36f4cfac2999a45f5c35" prot="public" static="no" mutable="no">
+        <type><ref refid="struct_color4__t" kindref="compound">Color4_t</ref></type>
+        <definition>Color4_t BndBox_t::borderColor</definition>
+        <argsstring></argsstring>
+        <name>borderColor</name>
+        <qualifiedname>BndBox_t::borderColor</qualifiedname>
+        <briefdescription>
+<para>Border thickness of bounding box. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="100" column="14" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_bnd_box__t_1aae3a901957f8ee644d1c91fa7f755a38" prot="public" static="no" mutable="no">
+        <type><ref refid="struct_box__t" kindref="compound">Box_t</ref></type>
+        <definition>Box_t BndBox_t::box</definition>
+        <argsstring></argsstring>
+        <name>box</name>
+        <qualifiedname>BndBox_t::box</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="98" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_bnd_box__t_1a8f15c8e36e5f0cb09d66de41425173cc" prot="public" static="no" mutable="no">
+        <type><ref refid="struct_color4__t" kindref="compound">Color4_t</ref></type>
+        <definition>Color4_t BndBox_t::fillColor</definition>
+        <argsstring></argsstring>
+        <name>fillColor</name>
+        <qualifiedname>BndBox_t::fillColor</qualifiedname>
+        <briefdescription>
+<para>Border color of bounding box. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="101" column="14" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="struct_bnd_box__t_1a23bc003dc941d8d65f2f554e3d691910" prot="public" static="no" mutable="no">
+        <type>int32_t</type>
+        <definition>int32_t BndBox_t::thickness</definition>
+        <argsstring></argsstring>
+        <name>thickness</name>
+        <qualifiedname>BndBox_t::thickness</qualifiedname>
+        <briefdescription>
+<para>Bounding box definition. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="99" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="99" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <collaborationgraph>
+      <node id="1">
+        <label>BndBox_t</label>
+        <link refid="struct_bnd_box__t"/>
+        <childnode refid="2" relation="usage">
+          <edgelabel>box</edgelabel>
+        </childnode>
+        <childnode refid="3" relation="usage">
+          <edgelabel>borderColor</edgelabel>
+          <edgelabel>fillColor</edgelabel>
+        </childnode>
+      </node>
+      <node id="2">
+        <label>Box_t</label>
+        <link refid="struct_box__t"/>
+      </node>
+      <node id="3">
+        <label>Color4_t</label>
+        <link refid="struct_color4__t"/>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" line="97" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/operator_types.h" bodystart="97" bodyend="102"/>
+    <listofallmembers>
+      <member refid="struct_bnd_box__t_1a04cf5ee590aa36f4cfac2999a45f5c35" prot="public" virt="non-virtual"><scope>BndBox_t</scope><name>borderColor</name></member>
+      <member refid="struct_bnd_box__t_1aae3a901957f8ee644d1c91fa7f755a38" prot="public" virt="non-virtual"><scope>BndBox_t</scope><name>box</name></member>
+      <member refid="struct_bnd_box__t_1a8f15c8e36e5f0cb09d66de41425173cc" prot="public" virt="non-virtual"><scope>BndBox_t</scope><name>fillColor</name></member>
+      <member refid="struct_bnd_box__t_1a23bc003dc941d8d65f2f554e3d691910" prot="public" virt="non-virtual"><scope>BndBox_t</scope><name>thickness</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

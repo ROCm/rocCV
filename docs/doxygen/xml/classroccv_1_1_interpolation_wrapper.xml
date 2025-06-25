@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_interpolation_wrapper" kind="class" language="C++" prot="public">
+    <compoundname>roccv::InterpolationWrapper</compoundname>
+    <includes refid="interpolation__wrapper_8hpp" local="no">interpolation_wrapper.hpp</includes>
+    <templateparamlist>
+      <param>
+        <type>typename T</type>
+      </param>
+      <param>
+        <type><ref refid="operator__types_8h_1ace89cf8b7e2015ff86ed87ec9ce229c0" kindref="member">eBorderType</ref></type>
+        <declname>B</declname>
+        <defname>B</defname>
+      </param>
+      <param>
+        <type><ref refid="operator__types_8h_1a09a270009d7de1076424a0201917c528" kindref="member">eInterpolationType</ref></type>
+        <declname>I</declname>
+        <defname>I</defname>
+      </param>
+    </templateparamlist>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_interpolation_wrapper_1a3779a841e961d8c1b145cb00a3ec9d5c" prot="private" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_border_wrapper" kindref="compound">BorderWrapper</ref>&lt; T, B &gt;</type>
+        <definition>BorderWrapper&lt;T, B&gt; roccv::InterpolationWrapper&lt; T, B, I &gt;::m_desc</definition>
+        <argsstring></argsstring>
+        <name>m_desc</name>
+        <qualifiedname>roccv::InterpolationWrapper::m_desc</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="104" column="19" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="104" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_interpolation_wrapper_1a07471ce19a8c87ced5c4d394256a544b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ const T</type>
+        <definition>__device__ __host__ const T roccv::InterpolationWrapper&lt; T, B, I &gt;::at</definition>
+        <argsstring>(int64_t n, float h, float w, int64_t c) const</argsstring>
+        <name>at</name>
+        <qualifiedname>roccv::InterpolationWrapper::at</qualifiedname>
+        <param>
+          <type>int64_t</type>
+          <declname>n</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>h</declname>
+        </param>
+        <param>
+          <type>float</type>
+          <declname>w</declname>
+        </param>
+        <param>
+          <type>int64_t</type>
+          <declname>c</declname>
+        </param>
+        <briefdescription>
+<para>Retrieves an interpolated value at given image batch coordinates. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>n</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Batch index. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>h</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Height coordinates. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>w</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Width coordinates. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>An interpolated value. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="61" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="61" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_interpolation_wrapper_1ac4f32f78f3ddbd09e0c98ee80f979380" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::InterpolationWrapper&lt; T, B, I &gt;::batches</definition>
+        <argsstring>() const</argsstring>
+        <name>batches</name>
+        <qualifiedname>roccv::InterpolationWrapper::batches</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="100" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="100" bodyend="100"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_interpolation_wrapper_1a133fafbefab9cbb16f784eff8eaf610b" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::InterpolationWrapper&lt; T, B, I &gt;::channels</definition>
+        <argsstring>() const</argsstring>
+        <name>channels</name>
+        <qualifiedname>roccv::InterpolationWrapper::channels</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="101" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="101" bodyend="101"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_interpolation_wrapper_1ad11866e6b8c69e11e1b313feceb52404" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::InterpolationWrapper&lt; T, B, I &gt;::height</definition>
+        <argsstring>() const</argsstring>
+        <name>height</name>
+        <qualifiedname>roccv::InterpolationWrapper::height</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="98" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="98" bodyend="98"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_interpolation_wrapper_1a073746eadafd7f83d41675fcd61dd0b2" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::InterpolationWrapper&lt; T, B, I &gt;::InterpolationWrapper</definition>
+        <argsstring>(const Tensor &amp;tensor, T border_value)</argsstring>
+        <name>InterpolationWrapper</name>
+        <qualifiedname>roccv::InterpolationWrapper::InterpolationWrapper</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <param>
+          <type>T</type>
+          <declname>border_value</declname>
+        </param>
+        <briefdescription>
+<para>Wraps a <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> in an <ref refid="classroccv_1_1_interpolation_wrapper" kindref="compound">InterpolationWrapper</ref> to provide pixel interpolation when accessing non-integer coordinate mappings. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>tensor</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The tensor to wrap. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>border_value</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A fallback border value to use in the case of a constant border mode. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="51" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="51" bodyend="51"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_interpolation_wrapper_1a08589d23d5352a6cded11f88df4b5fc9" prot="public" static="no" const="yes" explicit="no" inline="yes" virt="non-virtual">
+        <type>__device__ __host__ int64_t</type>
+        <definition>__device__ __host__ int64_t roccv::InterpolationWrapper&lt; T, B, I &gt;::width</definition>
+        <argsstring>() const</argsstring>
+        <name>width</name>
+        <qualifiedname>roccv::InterpolationWrapper::width</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="99" column="40" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="99" bodyend="99"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>A kernel-friendly wrapper which provides interpolation logic based on the given coordinates. This tensor wrapper is typically only used for input tensors and does not provide write access to its underlying data. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Underlying data type of the tensor data. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>C</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Number of channels in data type. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>B</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Border type to use for interpolation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername>I</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Interpolation type to use. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" line="42" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/wrappers/interpolation_wrapper.hpp" bodystart="42" bodyend="105"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_interpolation_wrapper_1a07471ce19a8c87ced5c4d394256a544b" prot="public" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>at</name></member>
+      <member refid="classroccv_1_1_interpolation_wrapper_1ac4f32f78f3ddbd09e0c98ee80f979380" prot="public" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>batches</name></member>
+      <member refid="classroccv_1_1_interpolation_wrapper_1a133fafbefab9cbb16f784eff8eaf610b" prot="public" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>channels</name></member>
+      <member refid="classroccv_1_1_interpolation_wrapper_1ad11866e6b8c69e11e1b313feceb52404" prot="public" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>height</name></member>
+      <member refid="classroccv_1_1_interpolation_wrapper_1a073746eadafd7f83d41675fcd61dd0b2" prot="public" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>InterpolationWrapper</name></member>
+      <member refid="classroccv_1_1_interpolation_wrapper_1a3779a841e961d8c1b145cb00a3ec9d5c" prot="private" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>m_desc</name></member>
+      <member refid="classroccv_1_1_interpolation_wrapper_1a08589d23d5352a6cded11f88df4b5fc9" prot="public" virt="non-virtual"><scope>roccv::InterpolationWrapper</scope><name>width</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

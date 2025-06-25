@@ -1,0 +1,746 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="namespaceroccv_1_1detail" kind="namespace" language="C++">
+    <compoundname>roccv::detail</compoundname>
+    <innerclass refid="structroccv_1_1detail_1_1_has_type_traits__t" prot="public">roccv::detail::HasTypeTraits_t</innerclass>
+    <innerclass refid="structroccv_1_1detail_1_1_make_type__t" prot="public">roccv::detail::MakeType_t</innerclass>
+    <innerclass refid="classroccv_1_1detail_1_1_strided_data_wrap" prot="public">roccv::detail::StridedDataWrap</innerclass>
+    <innerclass refid="structroccv_1_1detail_1_1_type_traits" prot="public">roccv::detail::TypeTraits</innerclass>
+    <innernamespace refid="namespaceroccv_1_1detail_1_1math">roccv::detail::math</innernamespace>
+    <sectiondef kind="typedef">
+      <memberdef kind="typedef" id="namespaceroccv_1_1detail_1a12a16ca87f8c52e6ad35a806a9426b6d" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>typename <ref refid="structroccv_1_1detail_1_1_type_traits" kindref="compound">TypeTraits</ref>&lt; T &gt;::base_type</type>
+        <definition>using roccv::detail::BaseType = typedef typename TypeTraits&lt;T&gt;::base_type</definition>
+        <argsstring></argsstring>
+        <name>BaseType</name>
+        <qualifiedname>roccv::detail::BaseType</qualifiedname>
+        <briefdescription>
+<para>Returns the base type of a given HIP vectorized type. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>A HIP vectorized type. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="114" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="114" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="typedef" id="namespaceroccv_1_1detail_1a22f7e1ff390f63a7bd92ac5b41a6c410" prot="public" static="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>int</type>
+            <declname>C</declname>
+            <defname>C</defname>
+          </param>
+        </templateparamlist>
+        <type><ref refid="structroccv_1_1detail_1_1_make_type__t" kindref="compound">MakeType_t</ref>&lt; T, C &gt;::type</type>
+        <definition>using roccv::detail::MakeType = typedef MakeType_t&lt;T, C&gt;::type</definition>
+        <argsstring></argsstring>
+        <name>MakeType</name>
+        <qualifiedname>roccv::detail::MakeType</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="94" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="var">
+      <memberdef kind="variable" id="namespaceroccv_1_1detail_1affc422303d386fa7c2a00f52beaa52f4" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool roccv::detail::HasTypeTraits</definition>
+        <argsstring></argsstring>
+        <name>HasTypeTraits</name>
+        <qualifiedname>roccv::detail::HasTypeTraits</qualifiedname>
+        <initializer>= <ref refid="structroccv_1_1detail_1_1_has_type_traits__t" kindref="compound">HasTypeTraits_t</ref>&lt;T&gt;::value</initializer>
+        <briefdescription>
+<para>Returns whether the datatype passed in has type traits associated with it. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para></para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="122" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="122" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceroccv_1_1detail_1a09c8d6e84ec939040ab8e05c757472fa" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr bool</type>
+        <definition>constexpr bool roccv::detail::IsCompound</definition>
+        <argsstring></argsstring>
+        <name>IsCompound</name>
+        <qualifiedname>roccv::detail::IsCompound</qualifiedname>
+        <initializer>= <ref refid="structroccv_1_1detail_1_1_type_traits" kindref="compound">TypeTraits</ref>&lt;T&gt;::components != 0</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="106" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="106" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceroccv_1_1detail_1a874cf5548e2f68e2859b5f63ebc19761" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr int</type>
+        <definition>constexpr int roccv::detail::NumComponents</definition>
+        <argsstring></argsstring>
+        <name>NumComponents</name>
+        <qualifiedname>roccv::detail::NumComponents</qualifiedname>
+        <initializer>= <ref refid="structroccv_1_1detail_1_1_type_traits" kindref="compound">TypeTraits</ref>&lt;T&gt;::components</initializer>
+        <briefdescription>
+<para>Returns the number of components in a given type. Scalar types will have 0 components, while vectorized types will have 1-4 components typically. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para></para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="103" column="15" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="namespaceroccv_1_1detail_1ad1c6ebf43f0f21a5f6f707cf25c9baee" prot="public" static="no" constexpr="yes" mutable="no">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+        </templateparamlist>
+        <type>constexpr int</type>
+        <definition>constexpr int roccv::detail::NumElements</definition>
+        <argsstring></argsstring>
+        <name>NumElements</name>
+        <qualifiedname>roccv::detail::NumElements</qualifiedname>
+        <initializer>= <ref refid="structroccv_1_1detail_1_1_type_traits" kindref="compound">TypeTraits</ref>&lt;T&gt;::elements</initializer>
+        <briefdescription>
+<para>Returns the number of elements in a HIP vectorized type. For example: uchar3 will return 3, int2 will return 2. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para></para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="91" column="15" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="91" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a76634f084d520e0acfda6109a5a7042e" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</definition>
+        <argsstring>(char, signed char)</argsstring>
+        <name>DEFINE_TYPE_TRAITS_0_TO_4</name>
+        <qualifiedname>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</qualifiedname>
+        <param>
+          <type>char</type>
+        </param>
+        <param>
+          <type>signed char</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="78" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" declline="78" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a7c0991d1dbf07e50e1fbbe63f5a59fe1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</definition>
+        <argsstring>(float, float)</argsstring>
+        <name>DEFINE_TYPE_TRAITS_0_TO_4</name>
+        <qualifiedname>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</qualifiedname>
+        <param>
+          <type>float</type>
+        </param>
+        <param>
+          <type>float</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="79" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" declline="79" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a9fed805a779127ab7a0a15e017e1863f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</definition>
+        <argsstring>(int, signed int)</argsstring>
+        <name>DEFINE_TYPE_TRAITS_0_TO_4</name>
+        <qualifiedname>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</qualifiedname>
+        <param>
+          <type>int</type>
+        </param>
+        <param>
+          <type>signed int</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="81" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" declline="81" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1ae3477906818acf35b7130aa03b4316e7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</definition>
+        <argsstring>(short, signed short)</argsstring>
+        <name>DEFINE_TYPE_TRAITS_0_TO_4</name>
+        <qualifiedname>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</qualifiedname>
+        <param>
+          <type>short</type>
+        </param>
+        <param>
+          <type>signed short</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="82" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" declline="82" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a4726720f0005d24f901a579f27126634" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</definition>
+        <argsstring>(uchar, unsigned char)</argsstring>
+        <name>DEFINE_TYPE_TRAITS_0_TO_4</name>
+        <qualifiedname>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</qualifiedname>
+        <param>
+          <type>uchar</type>
+        </param>
+        <param>
+          <type>unsigned char</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="77" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" declline="77" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a481f3bb72bbfc51488a62e86e7512434" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</definition>
+        <argsstring>(uint, unsigned int)</argsstring>
+        <name>DEFINE_TYPE_TRAITS_0_TO_4</name>
+        <qualifiedname>roccv::detail::DEFINE_TYPE_TRAITS_0_TO_4</qualifiedname>
+        <param>
+          <type>uint</type>
+        </param>
+        <param>
+          <type>unsigned int</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="80" column="1" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" declline="80" declcolumn="1"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a8be5b7a499ba4ad561cb8dbdd4b96d97" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref></type>
+            <declname>LAYOUT</declname>
+            <defname>LAYOUT</defname>
+          </param>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>auto roccv::detail::get_sdwrapper</definition>
+        <argsstring>(const roccv::Tensor &amp;tensor) -&gt; const StridedDataWrap&lt; layout_get_rank&lt; LAYOUT &gt;()&gt;</argsstring>
+        <name>get_sdwrapper</name>
+        <qualifiedname>roccv::detail::get_sdwrapper</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="102" column="13" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" declline="102" declcolumn="13"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1af9da179f8c2b46d46bcc8c0ee1293c88" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref></type>
+            <declname>LAYOUT</declname>
+            <defname>LAYOUT</defname>
+          </param>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>auto roccv::detail::get_sdwrapper</definition>
+        <argsstring>(roccv::Tensor &amp;tensor) -&gt; StridedDataWrap&lt; layout_get_rank&lt; LAYOUT &gt;()&gt;</argsstring>
+        <name>get_sdwrapper</name>
+        <qualifiedname>roccv::detail::get_sdwrapper</qualifiedname>
+        <param>
+          <type><ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="106" column="13" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="106" bodyend="109"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a3b3ed8654e1856dcbdb0e9baf1018d95" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>auto roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_LNHWC &gt;</definition>
+        <argsstring>(const roccv::Tensor &amp;tensor) -&gt; const StridedDataWrap&lt; layout_get_rank&lt; TENSOR_LAYOUT_LNHWC &gt;()&gt;</argsstring>
+        <name>get_sdwrapper&lt; TENSOR_LAYOUT_LNHWC &gt;</name>
+        <qualifiedname>roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_LNHWC &gt;</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="139" column="8" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="139" bodyend="162"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a5d708328dac8841d63721a38eae662f8" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>auto roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_NHWC &gt;</definition>
+        <argsstring>(const roccv::Tensor &amp;tensor) -&gt; const StridedDataWrap&lt; layout_get_rank&lt; TENSOR_LAYOUT_NHWC &gt;()&gt;</argsstring>
+        <name>get_sdwrapper&lt; TENSOR_LAYOUT_NHWC &gt;</name>
+        <qualifiedname>roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_NHWC &gt;</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="112" column="8" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="112" bodyend="136"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1ab7d7beff847ba2875d613c76d7023988" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>auto roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_NMC &gt;</definition>
+        <argsstring>(const roccv::Tensor &amp;tensor) -&gt; const StridedDataWrap&lt; layout_get_rank&lt; TENSOR_LAYOUT_NMC &gt;()&gt;</argsstring>
+        <name>get_sdwrapper&lt; TENSOR_LAYOUT_NMC &gt;</name>
+        <qualifiedname>roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_NMC &gt;</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="165" column="8" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="165" bodyend="181"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a2c0d50ae162facd793768ca5dcbbe5d0" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>auto</type>
+        <definition>auto roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_NMD &gt;</definition>
+        <argsstring>(const roccv::Tensor &amp;tensor) -&gt; const StridedDataWrap&lt; layout_get_rank&lt; TENSOR_LAYOUT_NMD &gt;()&gt;</argsstring>
+        <name>get_sdwrapper&lt; TENSOR_LAYOUT_NMD &gt;</name>
+        <qualifiedname>roccv::detail::get_sdwrapper&lt; TENSOR_LAYOUT_NMD &gt;</qualifiedname>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>tensor</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="184" column="8" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="184" bodyend="200"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1adda0c1378cee5d0c6a24c6d78fc0f0da" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename RT</type>
+            <defval>BaseType&lt;T&gt;</defval>
+          </param>
+          <param>
+            <type>class</type>
+            <defval>std::enable_if_t&lt;HasTypeTraits&lt;T&gt;&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>__host__ __device__ RT &amp;</type>
+        <definition>__host__ __device__ RT &amp; roccv::detail::GetElement</definition>
+        <argsstring>(T &amp;v, int idx)</argsstring>
+        <name>GetElement</name>
+        <qualifiedname>roccv::detail::GetElement</qualifiedname>
+        <param>
+          <type>T &amp;</type>
+          <declname>v</declname>
+        </param>
+        <param>
+          <type>int</type>
+          <declname>idx</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" line="125" column="24" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/type_traits.hpp" bodystart="125" bodyend="132"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a5e4907e5587c52455694921044e8f16d" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type><ref refid="util__enums_8h_1a5c199c5c75ba4dd278fec6873c7bcc9e" kindref="member">eTensorLayout</ref></type>
+            <declname>LAYOUT</declname>
+            <defname>LAYOUT</defname>
+          </param>
+        </templateparamlist>
+        <type>constexpr size_t</type>
+        <definition>constexpr size_t roccv::detail::layout_get_rank</definition>
+        <argsstring>()</argsstring>
+        <name>layout_get_rank</name>
+        <qualifiedname>roccv::detail::layout_get_rank</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="74" column="18" declfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" declline="74" declcolumn="18"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a08eba02e28ffd4db4db94548b2092fcd" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>constexpr size_t</type>
+        <definition>constexpr size_t roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_HWC &gt;</definition>
+        <argsstring>()</argsstring>
+        <name>layout_get_rank&lt; TENSOR_LAYOUT_HWC &gt;</name>
+        <qualifiedname>roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_HWC &gt;</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="87" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="87" bodyend="89"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a2e19f4a7f29005449e20587ddf29cee5" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>constexpr size_t</type>
+        <definition>constexpr size_t roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_LNHWC &gt;</definition>
+        <argsstring>()</argsstring>
+        <name>layout_get_rank&lt; TENSOR_LAYOUT_LNHWC &gt;</name>
+        <qualifiedname>roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_LNHWC &gt;</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="77" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="77" bodyend="79"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1ae9926f7edb19443e8147c14301dae408" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>constexpr size_t</type>
+        <definition>constexpr size_t roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_NHWC &gt;</definition>
+        <argsstring>()</argsstring>
+        <name>layout_get_rank&lt; TENSOR_LAYOUT_NHWC &gt;</name>
+        <qualifiedname>roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_NHWC &gt;</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="82" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="82" bodyend="84"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a403fb5b9dab75008529b375a52f58f9f" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>constexpr size_t</type>
+        <definition>constexpr size_t roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_NMC &gt;</definition>
+        <argsstring>()</argsstring>
+        <name>layout_get_rank&lt; TENSOR_LAYOUT_NMC &gt;</name>
+        <qualifiedname>roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_NMC &gt;</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="92" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="92" bodyend="94"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a00667125fb7df22488f77b5d9297895f" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+        </templateparamlist>
+        <type>constexpr size_t</type>
+        <definition>constexpr size_t roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_NMD &gt;</definition>
+        <argsstring>()</argsstring>
+        <name>layout_get_rank&lt; TENSOR_LAYOUT_NMD &gt;</name>
+        <qualifiedname>roccv::detail::layout_get_rank&lt; TENSOR_LAYOUT_NMD &gt;</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="97" column="11" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" bodystart="97" bodyend="99"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a05175914f40cf839a197f5e6921a2d0b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>class</type>
+            <defval>std::enable_if_t&lt;(HasTypeTraits&lt;T&gt; &amp;&amp; HasTypeTraits&lt;U&gt;) &amp;&amp; (NumElements&lt;T&gt; &lt;= NumElements&lt;U&gt;)&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ T</type>
+        <definition>__device__ __host__ T roccv::detail::SaturateCast</definition>
+        <argsstring>(U v)</argsstring>
+        <name>SaturateCast</name>
+        <qualifiedname>roccv::detail::SaturateCast</qualifiedname>
+        <param>
+          <type>U</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+<para>Performs a saturation cast from one type to another. Each type must have type traits supported. A saturation cast converts one type to another, clamping values down to the minimum/maximum of the desired cast if the value being cast goes out of bounds. For example, casting a float with a value of 256.0f to a uchar would result in a uchar with value 255. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The type to cast &lt;v&gt; to. The number of elements in this type must be &lt;= to that of v. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">v</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The value to cast.</para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The values in v saturate casted to type T. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/casting.hpp" line="85" column="23" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/casting.hpp" bodystart="85" bodyend="98"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1ac50c951f995414d6feda198154de209b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>class</type>
+            <defval>std::enable_if_t&lt;(HasTypeTraits&lt;T&gt; &amp;&amp; HasTypeTraits&lt;U&gt;) &amp;&amp; (!IsCompound&lt;T&gt; &amp;&amp; !IsCompound&lt;U&gt;)&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ T</type>
+        <definition>__device__ __host__ T roccv::detail::ScalarRangeCast</definition>
+        <argsstring>(U v)</argsstring>
+        <name>ScalarRangeCast</name>
+        <qualifiedname>roccv::detail::ScalarRangeCast</qualifiedname>
+        <param>
+          <type>U</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+<para>ScalarRangeCast is for implementation purposes only. Use RangeCast directly instead. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/casting.hpp" line="105" column="23" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/casting.hpp" bodystart="105" bodyend="122"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1a2624260944ce343286d9dd0ed2fe3cef" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename U</type>
+          </param>
+          <param>
+            <type>class</type>
+            <defval>std::enable_if_t&lt;!IsCompound&lt;T&gt; &amp;&amp; !IsCompound&lt;U&gt;&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ T</type>
+        <definition>__device__ __host__ T roccv::detail::ScalarSaturateCast</definition>
+        <argsstring>(U v)</argsstring>
+        <name>ScalarSaturateCast</name>
+        <qualifiedname>roccv::detail::ScalarSaturateCast</qualifiedname>
+        <param>
+          <type>U</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+<para>ScalarSaturateCast is for implementation purposes only. Use SaturateCast directly. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/casting.hpp" line="34" column="23" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/casting.hpp" bodystart="34" bodyend="70"/>
+      </memberdef>
+      <memberdef kind="function" id="namespaceroccv_1_1detail_1ad283c9b3810c9a892eb9192187170a06" prot="public" static="no" constexpr="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist>
+          <param>
+            <type>typename T</type>
+          </param>
+          <param>
+            <type>typename Base</type>
+            <defval>BaseType&lt;T&gt;</defval>
+          </param>
+          <param>
+            <type>class</type>
+            <defval>std::enable_if_t&lt;HasTypeTraits&lt;T&gt;&gt;</defval>
+          </param>
+        </templateparamlist>
+        <type>__device__ __host__ constexpr T</type>
+        <definition>__device__ __host__ constexpr T roccv::detail::SetAll</definition>
+        <argsstring>(Base v)</argsstring>
+        <name>SetAll</name>
+        <qualifiedname>roccv::detail::SetAll</qualifiedname>
+        <param>
+          <type>Base</type>
+          <declname>v</declname>
+        </param>
+        <briefdescription>
+<para>Create a vectorized type with all values set to v. </para>
+        </briefdescription>
+        <detaileddescription>
+<para><parameterlist kind="templateparam"><parameteritem>
+<parameternamelist>
+<parametername>T</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The vectorized type. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>v</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The value to set. Value must be the same as the base type of type T. </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>A vectorized type with all values set to v. </para>
+</simplesect>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/vector_utils.hpp" line="36" column="33" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/core/detail/vector_utils.hpp" bodystart="36" bodyend="49"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.</para>
+<para>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</para>
+<para>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</para>
+<para>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </para>
+    </detaileddescription>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/common/strided_data_wrap.hpp" line="33" column="1"/>
+  </compounddef>
+</doxygen>

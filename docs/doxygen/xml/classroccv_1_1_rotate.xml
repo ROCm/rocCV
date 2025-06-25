@@ -1,0 +1,206 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.8" xml:lang="en-US">
+  <compounddef id="classroccv_1_1_rotate" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>roccv::Rotate</compoundname>
+    <basecompoundref refid="classroccv_1_1_i_operator" prot="public" virt="non-virtual">roccv::IOperator</basecompoundref>
+    <includes refid="op__rotate_8hpp" local="no">op_rotate.hpp</includes>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classroccv_1_1_rotate_1ae6b4645d613564d001621e81faf32072" prot="private" static="no" mutable="no">
+        <type><ref refid="classroccv_1_1_warp_affine" kindref="compound">WarpAffine</ref></type>
+        <definition>WarpAffine roccv::Rotate::m_op</definition>
+        <argsstring></argsstring>
+        <name>m_op</name>
+        <qualifiedname>roccv::Rotate::m_op</qualifiedname>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" line="94" column="16" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" bodystart="94" bodyend="-1"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classroccv_1_1_rotate_1a6b87db9dca0abb4713fa54ce0064556c" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void roccv::Rotate::operator()</definition>
+        <argsstring>(hipStream_t stream, const roccv::Tensor &amp;input, const roccv::Tensor &amp;output, const double angle_deg, const double2 shift, const eInterpolationType interpolation, const eDeviceType device=eDeviceType::GPU) const</argsstring>
+        <name>operator()</name>
+        <qualifiedname>roccv::Rotate::operator()</qualifiedname>
+        <param>
+          <type>hipStream_t</type>
+          <declname>stream</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>input</declname>
+        </param>
+        <param>
+          <type>const <ref refid="classroccv_1_1_tensor" kindref="compound">roccv::Tensor</ref> &amp;</type>
+          <declname>output</declname>
+        </param>
+        <param>
+          <type>const double</type>
+          <declname>angle_deg</declname>
+        </param>
+        <param>
+          <type>const double2</type>
+          <declname>shift</declname>
+        </param>
+        <param>
+          <type>const <ref refid="operator__types_8h_1a09a270009d7de1076424a0201917c528" kindref="member">eInterpolationType</ref></type>
+          <declname>interpolation</declname>
+        </param>
+        <param>
+          <type>const <ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114" kindref="member">eDeviceType</ref></type>
+          <declname>device</declname>
+          <defval><ref refid="util__enums_8h_1a4ec2e35c9447ccc1764ba80c1490a114a52f9ec21735243ad9917cda3ca077d32" kindref="member">eDeviceType::GPU</ref></defval>
+        </param>
+        <briefdescription>
+<para>Rotates a batch of images by a given angle in degrees clockwise. </para>
+        </briefdescription>
+        <detaileddescription>
+<para>Limitations:</para>
+<para>Input: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_NCHW] Channels: 1, 3 Supported DataType(s): [DATA_TYPE_U8, DATA_TYPE_F32, DATA_TYPE_S8]</para>
+<para>Output: Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_NCHW] Channels: 1, 3 Supported DataType(s) [DATA_TYPE_U8, DATA_TYPE_F32, DATA_TYPE_S8]</para>
+<para>Input/Output dependency: <verbatim>  Property      |  Input == Output
+ -------------- | -------------
+  TensorLayout  | Yes
+  DataType      | Yes
+  Channels      | Yes
+  Width         | Yes
+  Height        | Yes
+  Batch         | Yes
+</verbatim> <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername direction="in">stream</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The HIP stream to run this operator on. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">input</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Input tensor with image batch data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="out">output</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Output tensor for storing modified image batch data </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">angle_deg</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The angle in degrees for which images are rotated by. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">shift</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>x and y coordinates to perform a shift after a rotation. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">interpolation</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The interpolation method to be applied to the images. </para>
+</parameterdescription>
+</parameteritem>
+<parameteritem>
+<parameternamelist>
+<parametername direction="in">device</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>The device to run this operation on. (Default: GPU) </para>
+</parameterdescription>
+</parameteritem>
+</parameterlist>
+</para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" line="89" column="10"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_rotate_1a7831b127e9c5f78c6e141e5dc2be6529" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Rotate::Rotate</definition>
+        <argsstring>()</argsstring>
+        <name>Rotate</name>
+        <qualifiedname>roccv::Rotate::Rotate</qualifiedname>
+        <briefdescription>
+<para>Construct a new Op <ref refid="classroccv_1_1_rotate" kindref="compound">Rotate</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" line="43" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" bodystart="43" bodyend="43"/>
+      </memberdef>
+      <memberdef kind="function" id="classroccv_1_1_rotate_1ae7e5698d7b0fe8b8499a6f14010e76f7" prot="public" static="no" const="no" explicit="no" inline="yes" virt="non-virtual">
+        <type></type>
+        <definition>roccv::Rotate::~Rotate</definition>
+        <argsstring>()</argsstring>
+        <name>~Rotate</name>
+        <qualifiedname>roccv::Rotate::~Rotate</qualifiedname>
+        <briefdescription>
+<para>Destroy the Op <ref refid="classroccv_1_1_rotate" kindref="compound">Rotate</ref> object. </para>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" line="49" column="5" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" bodystart="49" bodyend="49"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription>
+<para>Class for managing the <ref refid="classroccv_1_1_rotate" kindref="compound">Rotate</ref> operator. </para>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::Rotate</label>
+        <link refid="classroccv_1_1_rotate"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>roccv::IOperator</label>
+        <link refid="classroccv_1_1_i_operator"/>
+      </node>
+      <node id="1">
+        <label>roccv::Rotate</label>
+        <link refid="classroccv_1_1_rotate"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" line="37" column="1" bodyfile="/mnt/c/Users/spolifro/Documents/rocCV/include/op_rotate.hpp" bodystart="37" bodyend="95"/>
+    <listofallmembers>
+      <member refid="classroccv_1_1_rotate_1ae6b4645d613564d001621e81faf32072" prot="private" virt="non-virtual"><scope>roccv::Rotate</scope><name>m_op</name></member>
+      <member refid="classroccv_1_1_rotate_1a6b87db9dca0abb4713fa54ce0064556c" prot="public" virt="non-virtual"><scope>roccv::Rotate</scope><name>operator()</name></member>
+      <member refid="classroccv_1_1_rotate_1a7831b127e9c5f78c6e141e5dc2be6529" prot="public" virt="non-virtual"><scope>roccv::Rotate</scope><name>Rotate</name></member>
+      <member refid="classroccv_1_1_i_operator_1ab7247b4825f7803f16d0d48fa6ad4226" prot="public" virt="virtual"><scope>roccv::Rotate</scope><name>~IOperator</name></member>
+      <member refid="classroccv_1_1_rotate_1ae7e5698d7b0fe8b8499a6f14010e76f7" prot="public" virt="non-virtual"><scope>roccv::Rotate</scope><name>~Rotate</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>
