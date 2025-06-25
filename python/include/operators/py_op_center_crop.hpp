@@ -22,26 +22,19 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <hip/hip_runtime.h>
+#include <operator_types.h>
+#include <pybind11/pybind11.h>
 
-#include "operator_types.h"
+#include "py_stream.hpp"
+#include "py_tensor.hpp"
 
-namespace Kernels {
-namespace Device {
-template <typename SrcWrapper, typename DstWrapper>
-__global__ void custom_crop(SrcWrapper input, DstWrapper output, Box_t cropRect) {
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
-    const int y = blockIdx.y * blockDim.y + threadIdx.y;
-    const int b = blockIdx.z;
+namespace py = pybind11;
 
-    if (x >= cropRect.width || y >= cropRect.height || b >= output.batches()) return;
-
-    const int srcX = x + cropRect.x;
-    const int srcY = y + cropRect.y;
-    const int dstX = x;
-    const int dstY = y;
-
-    output.at(b, dstY, dstX, 0) = input.at(b, srcY, srcX, 0);
-}
-}  // namespace Device
-}  // namespace Kernels
+class PyOpCenterCrop {
+   public:
+    static void ExecuteInto(PyTensor& output, PyTensor& input, int32_t cropWidth, int32_t cropHeight,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
+    static PyTensor Execute(PyTensor& input, int32_t cropWidth, int32_t cropHeight, std::optional<std::reference_wrapper<PyStream>> stream,
+                            eDeviceType device);
+    static void Export(py::module& m);
+};

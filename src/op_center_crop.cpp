@@ -19,29 +19,29 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include "op_center_crop.hpp"
 
-#pragma once
-
-#include <hip/hip_runtime.h>
-
+#include "op_custom_crop.hpp"
 #include "operator_types.h"
 
-namespace Kernels {
-namespace Device {
-template <typename SrcWrapper, typename DstWrapper>
-__global__ void custom_crop(SrcWrapper input, DstWrapper output, Box_t cropRect) {
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
-    const int y = blockIdx.y * blockDim.y + threadIdx.y;
-    const int b = blockIdx.z;
+namespace roccv {
+void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const int32_t cropWidth, const int32_t cropHeight,
+                            const eDeviceType device) const {
 
-    if (x >= cropRect.width || y >= cropRect.height || b >= output.batches()) return;
+    auto i_height = input.shape()[input.shape().layout().height_index()];
+    auto i_width = input.shape()[input.shape().layout().width_index()];
 
-    const int srcX = x + cropRect.x;
-    const int srcY = y + cropRect.y;
-    const int dstX = x;
-    const int dstY = y;
+    auto half_height = i_height >> 1;
+    auto half_width = i_width >> 1;
 
-    output.at(b, dstY, dstX, 0) = input.at(b, srcY, srcX, 0);
+    int32_t half_cropWidth = cropWidth >> 1;
+    int32_t half_cropHeight = cropHeight >> 1;
+
+    int64_t upper_left_corner_x = half_width - half_cropWidth;
+    int64_t upper_left_corner_y = half_height - half_cropHeight;
+
+    Box_t cropRect{upper_left_corner_x, upper_left_corner_y, cropWidth, cropHeight};
+
+    m_op(stream, input, output, cropRect, device);
 }
-}  // namespace Device
-}  // namespace Kernels
+}  // namespace roccv

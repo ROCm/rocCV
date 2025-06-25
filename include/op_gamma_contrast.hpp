@@ -36,12 +36,12 @@ class GammaContrast final : public IOperator {
     /**
      * @brief Default constructor.
      */
-    GammaContrast();
+    GammaContrast() {}
 
     /**
      * @brief Destructor.
      */
-    ~GammaContrast();
+    ~GammaContrast() {}
 
     /**
      * @brief @brief Executes the Gamma Contrast operation. The operation adjusts the gamma contrast on the images

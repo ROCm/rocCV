@@ -186,6 +186,13 @@ if(Python3_FOUND AND ROCCV_PYBIND_SCRIPTS)
   )
   set_property(TEST roccv_pybind_test_op_copy_make_border PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
+  # 19 - Test:OP -- Center Crop
+  add_test(NAME roccv_pybind_test_op_center_crop
+    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_center_crop.py ${PYTEST_FLAGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+  set_property(TEST roccv_pybind_test_op_center_crop PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
+
 else()
   if(NOT Python3_FOUND)
     message("-- NOTE: rocCV pybind requires Python3 - NOT FOUND")

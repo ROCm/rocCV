@@ -35,3 +35,4 @@ THE SOFTWARE.
 #include "op_thresholding.hpp"
 #include "op_warp_affine.hpp"
 #include "op_warp_perspective.hpp"
+#include "op_center_crop.hpp"

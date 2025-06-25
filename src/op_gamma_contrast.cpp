@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <functional>
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -32,18 +34,35 @@ THE SOFTWARE.
 #include "common/array_wrapper.hpp"
 #include "common/math_vector.hpp"
 #include "common/strided_data_wrap.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/tensor.hpp"
 #include "kernels/device/gamma_contrast_device.hpp"
 #include "kernels/host/gamma_contrast_host.hpp"
 
 namespace roccv {
-GammaContrast::GammaContrast() {}
 
-GammaContrast::~GammaContrast() {}
+template <typename T>
+void dispatch_gamma_contrast_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
+                                    const Tensor &gamma, eDeviceType device) {
+    ImageWrapper<T> inputWrapper(input);
+    ImageWrapper<T> outputWrapper(output);
 
-void GammaContrast::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                               const roccv::Tensor &gamma, eDeviceType device) {
+    auto gamma_data = gamma.exportData<TensorDataStrided>();
+
+    if (device == eDeviceType::GPU) {
+        dim3 block(64, 16);
+        dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y, outputWrapper.batches());
+       
+        Kernels::Device::gamma_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, static_cast<float *>(gamma_data.basePtr()));
+    }
+    else if (device == eDeviceType::CPU) {
+        Kernels::Host::gamma_contrast(inputWrapper, outputWrapper, static_cast<float *>(gamma_data.basePtr()));
+    }
+}
+
+void GammaContrast::operator()(hipStream_t stream, const Tensor &input, const Tensor &output,
+                               const Tensor &gamma, eDeviceType device) {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
     CHECK_TENSOR_DEVICE(gamma, device);
@@ -53,36 +72,28 @@ void GammaContrast::operator()(hipStream_t stream, const roccv::Tensor &input, c
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(gamma, eTensorLayout::TENSOR_LAYOUT_N);
+    CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    const auto batch_i = input.shape().layout().batch_index();
-    const auto batch = (batch_i >= 0) ? input.shape()[batch_i] : 1;
-    const auto height = input.shape()[input.shape().layout().height_index()];
-    const auto width = input.shape()[input.shape().layout().width_index()];
-    const auto channels = input.shape()[input.shape().layout().channels_index()];
+    eDataType dtype = input.dtype().etype();
+    size_t channels = input.shape(input.layout().channels_index());
 
-    if (channels < 1 || channels > 4) {
-        throw Exception("Invalid channel size: must be between 1 and 4.", eStatusType::INVALID_COMBINATION);
-    }
+    // Select kernel dispatcher based on number of channels and a base datatype.
+    // clang-format off
+    const std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const eDeviceType)>
+        funcs[5][4] = {
+            {dispatch_gamma_contrast_dtype<uchar1>, 0, dispatch_gamma_contrast_dtype<uchar3>, dispatch_gamma_contrast_dtype<uchar4>},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0},
+            {0, 0, 0, 0},
+            {dispatch_gamma_contrast_dtype<float1>, 0, dispatch_gamma_contrast_dtype<float3>, dispatch_gamma_contrast_dtype<float4>}
+        };
+    // clang-format on
 
-    auto gamma_data = gamma.exportData<roccv::TensorDataStrided>();
+    auto func = funcs[dtype][channels - 1];
+    func(stream, input, output, gamma, device);
 
-    if (device == eDeviceType::GPU) {
-        dim3 block(64, 16);
-        dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y, batch);
-       
-        Kernels::Device::gamma_contrast_wrapped_u8<uchar3>
-            <<<grid, block, 0, stream>>>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), batch, width,
-                height, static_cast<float *>(gamma_data.basePtr()));
-    }
-    else if (device == eDeviceType::CPU) {
-        Kernels::Host::gamma_contrast_wrapped_u8<uchar3>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-            detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-            batch, width, height,
-            static_cast<float *>(gamma_data.basePtr()));
-        }
 }
 }  // namespace roccv
