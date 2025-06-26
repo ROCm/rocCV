@@ -1,20 +1,3 @@
-# Build files
-.build/
-build
-
-# Sample data files
-data/samples/python/output
-
-# Configuration files
-.devenv/
-.vscode/
-
-# vcpkg installs
-vcpkg_installed
-
-# Prerequisites
-*.d
-
 # Compiled Object files
 *.slo
 *.lo
@@ -24,6 +7,7 @@ vcpkg_installed
 # Precompiled Headers
 *.gch
 *.pch
+*.ipch
 
 # Compiled Dynamic libraries
 *.so
@@ -32,7 +16,6 @@ vcpkg_installed
 
 # Fortran module files
 *.mod
-*.smod
 
 # Compiled Static libraries
 *.lai
@@ -45,9 +28,43 @@ vcpkg_installed
 *.out
 *.app
 
-# Clangd
-.cache
-compile_commands.json
+# vim tags
+tags
+.tags
+.*.swp
 
-# Pycache
+# Editors
+.vscode
+
+# build-in-source directory
+build*
+
+# emacs temporary/backup files
+.\#*
+\#*\#
+*~
+
+# GDB temporary files
+.gdb_history
+install.dir*
+
+# documentation artifacts
+_build/
+_images/
+_static/
+_templates/
+_toc.yml
+_doxygen/
+docs/doxygen/html
+docs/doxygen/xml
+
+# JetBrains IDE
+.idea/
+cmake-build*/
+build*/
+
+# Python virtualenv
+.venv/
+
+# Python cache
 __pycache__/
