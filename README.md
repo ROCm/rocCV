@@ -2,9 +2,15 @@
 
 <p align="center"><img width="70%" src="docs/data/amd_roccv_logo.png" /></p>
 
-rocCV is an efficient GPU-accelerated library for image pre- and post-processing, powered by AMD's HIP platform.
+rocCV is an efficient GPU-accelerated library for image pre and post-processing, powered by AMD's HIP platform.
 
 ---
+
+>[!NOTE]
+> **rocCV is currently only available as a source install.**
+> 
+> As rocCV is in early preview with ROCm 7.0.0, pre-built packages are not yet provided.
+> Packages will be made available with the ROCm 7.1.x release.
 
 ## Prerequisites
 
@@ -60,31 +66,27 @@ rocCV is an efficient GPU-accelerated library for image pre- and post-processing
   ```
 
 > [!IMPORTANT] 
-> * Compiler features required
+> The following compiler features are required:
 >   * C++20
 
-### Samples, and tests
+### Samples and tests
 
-* Python: Pytest
-  
+To be able to build/run the samples and tests for both the rocCV C++ library and the python module, additional dependencies are required.
+
+#### Python Samples/Tests
+
   ```shell
-  sudo apt install python3-pytest
+  sudo apt install python3-pytest python3-opencv python3-numpy
   ```
 
-* Python: OpenCV
-  
-  ```shell
-  sudo apt install python3-opencv
-  ```
+#### C++ Samples/Tests
 
-* Python: numpy
-  
-  ```shell
-  sudo apt install python3-numpy
-  ```
+```shell
+sudo apt install 
+```
 
 >[!NOTE]
-> * All package installs are shown with the `apt` package manager. Use the appropriate package manager for your operating system.
+> All package installs are shown with the `apt` package manager. Use the appropriate package manager for your operating system.
 
 ### Prerequisites setup script
 
@@ -132,9 +134,13 @@ Install rocCV runtime, development, and test packages.
   ```
 
 >[!IMPORTANT]
-> * `RedHat`/`SLES` requires additional `OpenCV` and `DLPack` dev package manual install
-> * rocCV Python module: To use python module, you can set `PYTHONPATH`:
->   + `export PYTHONPATH=/opt/rocm/lib:$PYTHONPATH`
+> `RedHat`/`SLES` requires an additional manual installation of the `OpenCV` and `DLPack` dev packages.
+
+>[!IMPORTANT]
+> To use the rocCV python module, `PYTHONPATH` must be set appropriately to point to its install location in the ROCm directory:
+> ```bash
+> export PYTHONPATH=/opt/rocm/lib:$PYTHONPATH`
+> ```
 
 ### Source install
 
@@ -196,7 +202,7 @@ The installer copies:
 * Documents folder into `/opt/rocm/share/doc/roccv`
 
 >[!NOTE]
-> Set path:
+> Ensure the required ROCm directories are added to your paths:
 >   ```shell
 >   export PATH=$PATH:/opt/rocm/bin
 >   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
@@ -213,7 +219,7 @@ ctest -VV
 ```
 
 >[!NOTE]
-> * Make sure all rocCV required libraries are in your PATH
+> Make sure all rocCV required libraries are in your PATH
 > ```shell
 > export PATH=$PATH:/opt/rocm/bin
 > export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
