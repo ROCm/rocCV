@@ -75,15 +75,20 @@ To be able to build/run the samples and tests for both the rocCV C++ library and
 
 #### Python Samples/Tests
 
+* **OpenCV:** Python module required for loading test images. Sample applications also use OpenCV to load and write images.
+* **Pytest:** Required for running the tests.
+* **Numpy:** Required as OpenCV loads its data into numpy arrays.
+
   ```shell
   sudo apt install python3-pytest python3-opencv python3-numpy
   ```
 
 #### C++ Samples/Tests
+- **OpenCV:** Development package required for loading test images. Sample applications also use OpenCV to load and write images.
 
-```shell
-sudo apt install 
-```
+  ```shell
+  sudo apt install libopencv-dev
+  ```
 
 >[!NOTE]
 > All package installs are shown with the `apt` package manager. Use the appropriate package manager for your operating system.
