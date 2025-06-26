@@ -2,7 +2,7 @@
 
 <p align="center"><img width="70%" src="docs/data/amd_roccv_logo.png" /></p>
 
-rocCV is an efficient GPU-accelerated library for image pre and post-processing, powered by AMD's HIP platform.
+rocCV is an efficient GPU-accelerated library for image pre- and post-processing, powered by AMD's HIP platform.
 
 ---
 
@@ -90,7 +90,7 @@ To be able to build/run the samples and tests for both the rocCV C++ library and
   sudo apt install libopencv-dev
   ```
 
->[!NOTE]
+> [!NOTE]
 > All package installs are shown with the `apt` package manager. Use the appropriate package manager for your operating system.
 
 ### Prerequisites setup script
@@ -144,7 +144,7 @@ Install rocCV runtime, development, and test packages.
 >[!IMPORTANT]
 > To use the rocCV python module, `PYTHONPATH` must be set appropriately to point to its install location in the ROCm directory:
 > ```bash
-> export PYTHONPATH=/opt/rocm/lib:$PYTHONPATH`
+> export PYTHONPATH=/opt/rocm/lib:$PYTHONPATH
 > ```
 
 ### Source install
@@ -206,7 +206,7 @@ The installer copies:
 * Samples folder into `/opt/rocm/share/roccv`
 * Documents folder into `/opt/rocm/share/doc/roccv`
 
->[!NOTE]
+> [!NOTE]
 > Ensure the required ROCm directories are added to your paths:
 >   ```shell
 >   export PATH=$PATH:/opt/rocm/bin
@@ -223,7 +223,7 @@ cmake /opt/rocm/share/roccv/test/pybind
 ctest -VV
 ```
 
->[!NOTE]
+> [!NOTE]
 > Make sure all rocCV required libraries are in your PATH
 > ```shell
 > export PATH=$PATH:/opt/rocm/bin
