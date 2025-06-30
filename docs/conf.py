@@ -60,4 +60,4 @@ extensions = [
 
 html_title = f"{project} {version_number} documentation"
 
-external_projects_current_project = "PROJECT NAME"
+external_projects_current_project = "roccv"

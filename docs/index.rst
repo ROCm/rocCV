@@ -27,14 +27,18 @@ The rocCV public repository is located at `https://github.com/ROCm/rocCV <https:
   
   .. grid-item-card:: How to
 
-    * :doc:`Use rocCV to run an operator <./how-to/using-rocCV-cpp>`
-
+    * :doc:`Use rocCV to run an operator (C++) <./how-to/using-rocCV-cpp>`
+    * :doc:`Use rocCV to run an operator (Python) <./how-to/using-rocCV-python>`
 
 
   .. grid-item-card:: Samples|Examples|Tutorials
 
 
   .. grid-item-card:: Reference
+
+    * :doc:`rocCV supported operators <./reference/rocCV-supported-operators>`
+    * :doc:`API <./doxygen/html/annotated>`
+    * :doc:`API Namespace <./doxygen/html/namespaceroccv>`
 
 
 To contribute to the documentation, refer to

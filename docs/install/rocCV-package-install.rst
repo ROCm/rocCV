@@ -28,17 +28,20 @@ Use the following commands to install only the rocCV runtime package:
 
       sudo apt-get install roccv
 
+
   .. tab-item:: RHEL
 
     .. code:: shell
     
       sudo yum install roccv
 
+
   .. tab-item:: SLES
 
     .. code:: shell
 
       sudo zypper install roccv
+
 
 Complete installation
 ========================================

@@ -19,8 +19,14 @@ subtrees:
 - caption: How to
   entries:
   - file: how-to/using-rocCV-cpp
-    title: Use rocCV to run an operator
+    title: Use rocCV to run an operator (C++)
+  - file: how-to/using-rocCV-python
+    title: Use rocCV to run an operator (Python)
 
+- caption: Reference
+  entries:
+  - file: reference/rocCV-supported-operators
+    title: rocCV supported operators
     
 - caption: About
   entries:

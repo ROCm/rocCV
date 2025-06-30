@@ -1,9 +1,9 @@
 .. meta::
-  :description: using the rocCV C++ API
+  :description: using the rocCV C++ library
   :keywords: rocCV, ROCm, API,  C++, cpp, api 
 
 ******************************************
-Using rocCV in C++
+Using rocCV with C++ 
 ******************************************
 
 rocCV is used for image pre- and post-processing. The rocCV library is a collection of computer vision operators. 
