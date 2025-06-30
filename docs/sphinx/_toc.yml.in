@@ -9,28 +9,18 @@ subtrees:
 
 - caption: Install
   entries:
-  - file: install/FILENAME
-    title: TITLE
-
-- caption: Conceptual
-  entries:
-  - file: conceptual/FILENAME
-    title: TITLE
+  - file: install/rocCV-prerequisites
+    title: rocCV prerequisites
+  - file: install/rocCV-package-install
+    title: rocCV package installation
+  - file: install/rocCV-build-and-install.rst
+    title: Build rocCV from source
 
 - caption: How to
   entries:
-  - file: how-to/FILENAME
-    title: Use SOMETHING
+  - file: how-to/using-rocCV-cpp
+    title: Use rocCV to run an operator
 
-- caption: Tutorials|Samples|Examples
-  entries:
-  - file: tutorials/FILENAME 
-    title: TITLE
-
-- caption: Reference
-  entries:
-  - file: reference/FILENAME
-    title: TITLE
     
 - caption: About
   entries:
