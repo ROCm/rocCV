@@ -32,7 +32,7 @@ all_article_info_author = ""
 version_number = "1"
 
 # for PDF output on Read the Docs
-project = "PROJECT NAME"
+project = "rocCV"
 author = "Advanced Micro Devices, Inc."
 copyright = "Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved."
 version = version_number
