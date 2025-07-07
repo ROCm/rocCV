@@ -98,7 +98,7 @@ eTestStatusType compareArray(const Tensor& tensor, std::vector<T>& expected_data
     // Flatten tensor data to a vector on the host (CPU)
     auto tensor_data = tensor.exportData<TensorDataStrided>();
     size_t tensor_data_size = tensor.shape().size() * tensor.dtype().size();
-    std::vector<uint8_t> tensor_data_host(tensor.shape().size());
+    std::vector<uint8_t> tensor_data_host(tensor_data_size);
 
     switch (tensor.device()) {
         case eDeviceType::GPU: {
