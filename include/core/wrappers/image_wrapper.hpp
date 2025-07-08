@@ -83,7 +83,7 @@ class ImageWrapper {
         shape.n = batchSize;
 
         // Copy data pointer from input vector
-        data = static_cast<unsigned char*>(input.data());
+        data = reinterpret_cast<unsigned char*>(input.data());
     }
 
     /**
