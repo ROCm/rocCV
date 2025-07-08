@@ -133,33 +133,29 @@ eTestStatusType TestCorrectness(int batchSize, int width, int height, int flipCo
 
 eTestStatusType test_op_flip(int argc, char** argv) {
     try {
+        // clang-format off
+        
         // GPU correctness tests
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
 
         // CPU correctness tests
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+        EXPECT_TEST_STATUS(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+
+        // clang-format on
 
     } catch (Exception e) {
         std::cout << "Exception: " << e.what() << std::endl;
