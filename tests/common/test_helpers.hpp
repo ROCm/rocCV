@@ -21,10 +21,14 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include <operator_types.h>
+
 #include <core/exception.hpp>
+#include <core/image_format.hpp>
 #include <core/tensor.hpp>
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <random>
 #include <span>
 
 namespace roccv {
@@ -157,6 +161,105 @@ void copyData(const Tensor& input, const std::span<const T>& data, eDeviceType d
         }
     }
 }
+
+/**
+ * @brief Generates a vector containing randomized values within the specifed range. Its size is based on the parameters
+ * given.
+ *
+ * @tparam T The underlying type of the vector data.
+ * @param size The size of the image.
+ * @param numImages The number of images in the batch.
+ * @param fmt The image format.
+ * @param seed A random seed. (Defaults to 12345)
+ * @return A vector containing randomized data.
+ */
+template <typename T>
+std::vector<T> GenerateRandVector(roccv::Size2D size, int32_t numImages, roccv::ImageFormat fmt,
+                                  uint32_t seed = 12345) {
+    int32_t vectorSize = size.w * size.h * fmt.channels() * numImages;
+
+    // Create random number generator with seed and distribution.
+    std::mt19937 eng(seed);
+    std::vector<T> result(vectorSize);
+
+    // Select real distribution if T is a floating point, integer distribution otherwise
+    if constexpr (std::is_floating_point_v<T>) {
+        std::uniform_real_distribution<T> dist(0.0f, 1.0f);
+        for (int i = 0; i < vectorSize; i++) {
+            result[i] = dist(eng);
+        }
+    } else {
+        std::uniform_int_distribution<T> dist(std::numeric_limits<T>().min(), std::numeric_limits<T>().max());
+        for (int i = 0; i < vectorSize; i++) {
+            result[i] = dist(eng);
+        }
+    }
+
+    return result;
+}
+
+template <typename T>
+eTestStatusType CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
+    if (result.size() != ref.size()) {
+        std::cerr << "Result output size (" << result.size() << ") does not match reference size (" << ref.size() << ")"
+                  << std::endl;
+        return eTestStatusType::UNEXPECTED_VALUE;
+    }
+
+    for (int i = 0; i < ref.size(); ++i) {
+        if (result[i] != ref[i]) {
+            std::cerr << "Value at index " << i << " does not match! Actual value: " << result[i]
+                      << ", Expected value: " << ref[i] << std::endl;
+            return eTestStatusType::UNEXPECTED_VALUE;
+        }
+    }
+
+    return eTestStatusType::TEST_SUCCESS;
+}
+
+template <typename T>
+void CopyVectorIntoTensor(std::vector<T>& src, const Tensor& dst) {
+    auto tensorData = dst.exportData<TensorDataStrided>();
+    size_t dataSize = dst.shape().size() * dst.dtype().size();
+
+    switch (dst.device()) {
+        case eDeviceType::GPU: {
+            HIP_VALIDATE_NO_ERRORS(
+                hipMemcpy(tensorData.basePtr(), src.data(), dataSize, hipMemcpyKind::hipMemcpyHostToDevice));
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            HIP_VALIDATE_NO_ERRORS(
+                hipMemcpy(tensorData.basePtr(), src.data(), dataSize, hipMemcpyKind::hipMemcpyHostToHost));
+            break;
+        }
+    }
+}
+
+template <typename T>
+std::vector<T> CopyTensorIntoVector(const Tensor& src) {
+    std::vector<T> dst(src.shape().size());
+    size_t size = src.shape().size() * src.dtype().size();
+    auto tensorData = src.exportData<TensorDataStrided>();
+
+    switch (src.device()) {
+        case eDeviceType::GPU: {
+            HIP_VALIDATE_NO_ERRORS(
+                hipMemcpy(dst.data(), tensorData.basePtr(), size, hipMemcpyKind::hipMemcpyDeviceToHost));
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            HIP_VALIDATE_NO_ERRORS(
+                hipMemcpy(dst.data(), tensorData.basePtr(), size, hipMemcpyKind::hipMemcpyHostToHost));
+            break;
+        }
+    }
+
+    return dst;
+}
+
 }  // namespace tests
 
 }  // namespace roccv

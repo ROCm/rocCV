@@ -23,6 +23,9 @@
 
 #include <hip/hip_runtime.h>
 
+#include <vector>
+
+#include "core/detail/type_traits.hpp"
 #include "core/tensor.hpp"
 
 namespace roccv {
@@ -37,6 +40,7 @@ template <typename T>
 class ImageWrapper {
    public:
     using ValueType = T;
+    using BaseType = detail::BaseType<T>;
 
     /**
      * @brief Creates an ImageWrapper from a Tensor.
@@ -63,6 +67,23 @@ class ImageWrapper {
         shape = {num_batches, tdata.shape(indexes.h), tdata.shape(indexes.w), tdata.shape(indexes.c)};
         stride = {batch_stride, tdata.stride(indexes.h), tdata.stride(indexes.w), tdata.stride(indexes.c)};
         data = static_cast<unsigned char*>(tdata.basePtr());
+    }
+
+    ImageWrapper(std::vector<BaseType>& input, int32_t batchSize, int32_t width, int32_t height) {
+        // Calculate strides based on input (byte-wise strides)
+        stride.c = sizeof(BaseType);
+        stride.w = stride.c * detail::NumElements<T>;
+        stride.h = stride.w * width;
+        stride.n = stride.h * height;
+
+        // Copy shape information
+        shape.c = detail::NumElements<T>;
+        shape.w = width;
+        shape.h = height;
+        shape.n = batchSize;
+
+        // Copy data pointer from input vector
+        data = static_cast<unsigned char*>(input.data());
     }
 
     /**
