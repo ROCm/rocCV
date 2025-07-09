@@ -34,32 +34,28 @@ THE SOFTWARE.
 namespace roccv {
 namespace tests {
 
-#define EXPECT_EXCEPTION(call_, expected_status_)                                                                   \
-    try {                                                                                                           \
-        call_;                                                                                                      \
-        std::cerr << __FILE__ << "[" << __LINE__ << "]: "                                                           \
-                  << "Expected (" << ExceptionMessage::getMessageByEnum(expected_status_)                           \
-                  << ") but completed instead." << std::endl;                                                       \
-        throw 1;                                                                                                    \
-    } catch (Exception e) {                                                                                         \
-        eStatusType received_ = e.getStatusEnum();                                                                  \
-        if (received_ != expected_status_) {                                                                        \
-            std::cerr << __FILE__ << "[" << __LINE__ << "]: "                                                       \
-                      << "Expected (" << ExceptionMessage::getMessageByEnum(expected_status_) << ") but received (" \
-                      << ExceptionMessage::getMessageByEnum(received_) << ") instead." << std::endl;                \
-            throw 1;                                                                                                \
-        }                                                                                                           \
-    }
-
-#define EXPECT_STATUS(call_, expected_status_)                                                                      \
-    {                                                                                                               \
-        eStatusType received_ = call_;                                                                              \
-        if (received_ != expected_status_) {                                                                        \
-            std::cerr << __FILE__ << "[" << __LINE__ << "]: "                                                       \
-                      << "Expected (" << ExceptionMessage::getMessageByEnum(expected_status_) << ") but received (" \
-                      << ExceptionMessage::getMessageByEnum(received_) << ") instead." << std::endl;                \
-            exit(1);                                                                                                \
-        }                                                                                                           \
+/**
+ * @brief Ensures that a correct roccv::Exception is thrown from a call. If the call is successful or the thrown
+ * Exception does not match, will throw a runtime error to be caught by the test suite.
+ *
+ * @param[in] call_ The function call to test.
+ * @param[in] expected_status_ eStatusType expected to be thrown from the call.
+ * @throws std::runtime_error if no exception is thrown or if the resulting exception status does not match the provided
+ * status.
+ */
+#define EXPECT_EXCEPTION(call_, expected_status_)                                                                \
+    try {                                                                                                        \
+        call_;                                                                                                   \
+        throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +                 \
+                                 ExceptionMessage::getMessageByEnum(expected_status_) +                          \
+                                 ") but completed successfully instead.");                                       \
+    } catch (Exception e) {                                                                                      \
+        eStatusType received_ = e.getStatusEnum();                                                               \
+        if (received_ != expected_status_) {                                                                     \
+            throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +             \
+                                     ExceptionMessage::getMessageByEnum(expected_status_) + ") but received (" + \
+                                     ExceptionMessage::getMessageByEnum(received_) + ") instead.");              \
+        }                                                                                                        \
     }
 
 #define EXPECT_TEST_STATUS(call_, expected_status_)                                                                 \
@@ -73,7 +69,37 @@ namespace tests {
         }                                                                                                           \
     }
 
-#define CHECK_ERROR(call_) EXPECT_STATUS(call_, SUCCESS)
+/**
+ * @brief A macro to be placed at the beginning of a collection of test cases. This will define the global status of all
+ * proceeding TEST_CASE macros in order to keep track of the overall final result.
+ *
+ */
+#define TEST_SUITE_BEGIN() eTestStatusType _testSuiteStatus = eTestStatusType::TEST_SUCCESS
+
+/**
+ * @brief A macro to be placed at the end of a collection of test cases. Will return the final result of the collected
+ * test cases.
+ *
+ */
+#define TEST_SUITE_END() return _testSuiteStatus;
+
+/**
+ * @brief Defines a test case for a call. This catches any error thrown by the call and marks the entire test suite as
+ * failed if one is thrown. TEST_CASE macros must be preceeded by a TEST_CASES_BEGIN() macro and proceeded by a
+ * TEST_CASES_END() macro in order to function properly.
+ *
+ * @param[in] call The function call to test.
+ */
+#define TEST_CASE(call)                                                                             \
+    {                                                                                               \
+        try {                                                                                       \
+            call;                                                                                   \
+        } catch (const std::exception& e) {                                                         \
+            std::cerr << "Test Failed: " << #call << "\n    Line: [" << __FILE__ << ":" << __LINE__ \
+                      << "]\n    Reason: " << e.what() << "\n\n";                                   \
+            _testSuiteStatus = eTestStatusType::TEST_FAILURE;                                       \
+        }                                                                                           \
+    }
 
 /**
  * @brief Creates a NHWC tensor which contains data loaded from an image.
@@ -163,62 +189,72 @@ void copyData(const Tensor& input, const std::span<const T>& data, eDeviceType d
 }
 
 /**
- * @brief Generates a vector containing randomized values within the specifed range. Its size is based on the parameters
- * given.
+ * @brief Fills a vector with random values based on a provided seed.
  *
  * @tparam T The underlying type of the vector data.
- * @param size The size of the image.
- * @param numImages The number of images in the batch.
- * @param fmt The image format.
- * @param seed A random seed. (Defaults to 12345)
- * @return A vector containing randomized data.
+ * @param[out] vec The vector to fill with random data.
+ * @param[in] seed A random seed. (Defaults to 12345)
  */
 template <typename T>
-std::vector<T> GenerateRandVector(roccv::Size2D size, int32_t numImages, roccv::ImageFormat fmt,
-                                  uint32_t seed = 12345) {
-    int32_t vectorSize = size.w * size.h * fmt.channels() * numImages;
-
+void FillVector(std::vector<T>& vec, uint32_t seed = 12345) {
     // Create random number generator with seed and distribution.
     std::mt19937 eng(seed);
-    std::vector<T> result(vectorSize);
 
     // Select real distribution if T is a floating point, integer distribution otherwise
     if constexpr (std::is_floating_point_v<T>) {
         std::uniform_real_distribution<T> dist(0.0f, 1.0f);
-        for (int i = 0; i < vectorSize; i++) {
-            result[i] = dist(eng);
+        for (int i = 0; i < vec.size(); i++) {
+            vec[i] = dist(eng);
         }
     } else {
         std::uniform_int_distribution<T> dist(std::numeric_limits<T>().min(), std::numeric_limits<T>().max());
-        for (int i = 0; i < vectorSize; i++) {
-            result[i] = dist(eng);
+        for (int i = 0; i < vec.size(); i++) {
+            vec[i] = dist(eng);
         }
     }
-
-    return result;
 }
 
+/**
+ * @brief Compares a vector to a reference vector.
+ *
+ * @tparam T The base type of the vector data.
+ * @param result A vector containing data of the actual result.
+ * @param ref A vector containing data of the reference to compare against.
+ * @throws std::runtime_error if the result vector does not match with the reference vector.
+ */
 template <typename T>
-eTestStatusType CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
+void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
     if (result.size() != ref.size()) {
-        std::cerr << "Result output size (" << result.size() << ") does not match reference size (" << ref.size() << ")"
-                  << std::endl;
-        return eTestStatusType::UNEXPECTED_VALUE;
+        throw std::runtime_error("Result output size (" + std::to_string(result.size()) +
+                                 ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
     for (int i = 0; i < ref.size(); ++i) {
         if (result[i] != ref[i]) {
-            std::cerr << "Value at index " << i << " does not match! Actual value: " << result[i]
-                      << ", Expected value: " << ref[i] << std::endl;
-            return eTestStatusType::UNEXPECTED_VALUE;
+            // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
+            // rather than the raw value will be printed.
+            if constexpr (std::is_integral_v<T>) {
+                throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
+                                         std::to_string(static_cast<int>(result[i])) +
+                                         ", Expected value: " + std::to_string(static_cast<int>(ref[i])));
+            } else {
+                throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
+                                         std::to_string(result[i]) + ", Expected value: " + std::to_string(ref[i]));
+            }
         }
     }
-
-    return eTestStatusType::TEST_SUCCESS;
 }
 
+/**
+ * @brief Copies vector data into a roccv::Tensor. This will copy vector data into either GPU memory or CPU memory,
+ * depending on the device specified in the roccv::Tensor's metadata.
+ *
+ * @tparam T The base datatype of the underlying data.
+ * @param dst The destination roccv::Tensor to copy data into.
+ * @param src A source vector containing data.
+ */
 template <typename T>
-void CopyVectorIntoTensor(std::vector<T>& src, const Tensor& dst) {
+void CopyVectorIntoTensor(const Tensor& dst, std::vector<T>& src) {
     auto tensorData = dst.exportData<TensorDataStrided>();
     size_t dataSize = dst.shape().size() * dst.dtype().size();
 
@@ -237,9 +273,15 @@ void CopyVectorIntoTensor(std::vector<T>& src, const Tensor& dst) {
     }
 }
 
+/**
+ * @brief Copies roccv::Tensor data into a destination vector.
+ *
+ * @tparam T The base datatype of the underlying tensor data.
+ * @param dst The destination vector which the data will be copied into.
+ * @param src The roccv::Tensor containing the source data.
+ */
 template <typename T>
-std::vector<T> CopyTensorIntoVector(const Tensor& src) {
-    std::vector<T> dst(src.shape().size());
+void CopyTensorIntoVector(std::vector<T>& dst, const Tensor& src) {
     size_t size = src.shape().size() * src.dtype().size();
     auto tensorData = src.exportData<TensorDataStrided>();
 
@@ -256,10 +298,7 @@ std::vector<T> CopyTensorIntoVector(const Tensor& src) {
             break;
         }
     }
-
-    return dst;
 }
 
 }  // namespace tests
-
 }  // namespace roccv

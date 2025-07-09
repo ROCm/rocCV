@@ -34,6 +34,7 @@ THE SOFTWARE.
 using namespace roccv;
 using namespace roccv::tests;
 
+// Keep all non-entrypoint functions in an anonymous namespace to prevent redefinition errors across translation units.
 namespace {
 
 /**
@@ -41,13 +42,13 @@ namespace {
  *
  * @tparam T Vectorized datatype of the image's pixels.
  * @tparam BT Base type of the image's data.
- * @param input An input vector containing image data.
- * @param batchSize The number of images in the batch.
- * @param width Image width.
- * @param height Image height.
- * @param channels Number of channels in the image.
- * @param flipCode
- * @return std::vector<BT>
+ * @param[in] input An input vector containing image data.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] width Image width.
+ * @param[in] height Image height.
+ * @param[in] channels Number of channels in the image.
+ * @param[in] flipCode
+ * @return Vector containing the results of the operation.
  */
 template <typename T, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenFlip(std::vector<BT>& input, int32_t batchSize, int32_t width, int32_t height, int32_t flipCode) {
@@ -89,26 +90,25 @@ std::vector<BT> GoldenFlip(std::vector<BT>& input, int32_t batchSize, int32_t wi
  *
  * @tparam T Underlying datatype of the image's pixels.
  * @tparam BT Base type of the image data.
- * @param batchSize The number of images in the batch.
- * @param width The width of each image in the batch.
- * @param height The height of each image in the batch.
- * @param flipCode The flip code for each image in the batch.
- * @param format The image format.
- * @param device The device this correctness test should be run on.
- * @return The result of the test.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] width The width of each image in the batch.
+ * @param[in] height The height of each image in the batch.
+ * @param[in] flipCode The flip code for each image in the batch.
+ * @param[in] format The image format.
+ * @param[in] device The device this correctness test should be run on.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-eTestStatusType TestCorrectness(int batchSize, int width, int height, int flipCode, ImageFormat format,
-                                eDeviceType device) {
-    // Generate random input data
-    std::vector<BT> inputData = GenerateRandVector<BT>({width, height}, batchSize, format);
-
+void TestCorrectness(int batchSize, int width, int height, int flipCode, ImageFormat format, eDeviceType device) {
     // Create input and output tensor based on test parameters
     Tensor input(batchSize, {width, height}, format, device);
     Tensor output(batchSize, {width, height}, format, device);
 
+    // Create a vector and fill it with random data.
+    std::vector<BT> inputData(input.shape().size());
+    FillVector(inputData);
+
     // Copy generated input data into input tensor
-    CopyVectorIntoTensor(inputData, input);
+    CopyVectorIntoTensor(input, inputData);
 
     // Calculate golden output reference
     std::vector<BT> ref = GoldenFlip<T>(inputData, batchSize, width, height, flipCode);
@@ -122,88 +122,86 @@ eTestStatusType TestCorrectness(int batchSize, int width, int height, int flipCo
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
-    // Copy data from output tensor into a host vector
-    std::vector<BT> outputVec = CopyTensorIntoVector<BT>(output);
+    // Copy data from output tensor into a host allocated vector
+    std::vector<BT> result(output.shape().size());
+    CopyTensorIntoVector(result, output);
 
-    // Compare final results
-    return CompareVectors(outputVec, ref);
+    // Compare data in actual output versus the generated golden reference image
+    CompareVectors(result, ref);
+}
+
+/**
+ * @brief Tests a variety of negative cases for the Flip operator. Ensures that exceptions are being thrown properly.
+ *
+ */
+void TestNegativeFlip() {
+    TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
+    Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+    Tensor validCPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
+    Flip op;
+
+    {
+        // Test output tensor on CPU for GPU operation
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validCPUTensor, 0, eDeviceType::GPU),
+                         eStatusType::INVALID_OPERATION);
+    }
+
+    {
+        // Test input tensor on CPU for GPU operation
+        EXPECT_EXCEPTION(op(nullptr, validCPUTensor, validGPUTensor, 0, eDeviceType::GPU),
+                         eStatusType::INVALID_OPERATION);
+    }
+
+    {
+        // Test unsupported layout
+        TensorShape invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
+        Tensor invalidTensor(invalidLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test unsupported data type
+        Tensor invalidTensor(validGPUTensor.shape(), DataType(eDataType::DATA_TYPE_U32), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU), eStatusType::NOT_IMPLEMENTED);
+    }
+
+    {
+        // Test input/output shape mismatch
+        Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {2, 2, 2, 2}), DataType(eDataType::DATA_TYPE_U8),
+                             eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
 }
 
 }  // namespace
 
 eTestStatusType test_op_flip(int argc, char** argv) {
-    try {
-        // clang-format off
-        
-        // GPU correctness tests
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::GPU), eTestStatusType::TEST_SUCCESS);
+    TEST_SUITE_BEGIN();
 
-        // CPU correctness tests
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::CPU), eTestStatusType::TEST_SUCCESS);
+    // Test negative Flip operator cases
+    TEST_CASE(TestNegativeFlip());
 
-        // clang-format on
+    // GPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::GPU));
 
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    // CPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::CPU));
+
+    TEST_SUITE_END();
 }
-
-// eTestStatusType TestErrorHandling() {
-//     TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
-//     Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
-//     Tensor validCPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
-//     Flip op;
-
-//     {
-//         // Test output tensor on CPU for GPU operation
-//         EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validCPUTensor, 0, eDeviceType::GPU),
-//                          eStatusType::INVALID_OPERATION);
-//     }
-
-//     {
-//         // Test input tensor on CPU for GPU operation
-//         EXPECT_EXCEPTION(op(nullptr, validCPUTensor, validGPUTensor, 0, eDeviceType::GPU),
-//                          eStatusType::INVALID_OPERATION);
-//     }
-
-//     {
-//         // Test unsupported layout
-//         TensorShape invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
-//         Tensor invalidTensor(invalidLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
-//         EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU),
-//                          eStatusType::INVALID_COMBINATION);
-//     }
-
-//     {
-//         // Test unsupported data type
-//         Tensor invalidTensor(validGPUTensor.shape(), DataType(eDataType::DATA_TYPE_U32), eDeviceType::GPU);
-//         EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU),
-//         eStatusType::NOT_IMPLEMENTED);
-//     }
-
-//     {
-//         // Test input/output shape mismatch
-//         Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {2, 2, 2, 2}), DataType(eDataType::DATA_TYPE_U8),
-//                              eDeviceType::GPU);
-//         EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU),
-//                          eStatusType::INVALID_COMBINATION);
-//     }
-
-//     return eTestStatusType::TEST_SUCCESS;
-// }
