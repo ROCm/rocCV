@@ -178,7 +178,7 @@ void TestNegativeFlip() {
 }  // namespace
 
 eTestStatusType test_op_flip(int argc, char** argv) {
-    TEST_SUITE_BEGIN();
+    TEST_CASES_BEGIN();
 
     // Test negative Flip operator cases
     TEST_CASE(TestNegativeFlip());
@@ -203,5 +203,5 @@ eTestStatusType test_op_flip(int argc, char** argv) {
     TEST_CASE(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::CPU));
     TEST_CASE(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::CPU));
 
-    TEST_SUITE_END();
+    TEST_CASES_END();
 }

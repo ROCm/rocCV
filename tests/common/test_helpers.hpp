@@ -74,14 +74,14 @@ namespace tests {
  * proceeding TEST_CASE macros in order to keep track of the overall final result.
  *
  */
-#define TEST_SUITE_BEGIN() eTestStatusType _testSuiteStatus = eTestStatusType::TEST_SUCCESS
+#define TEST_CASES_BEGIN() eTestStatusType _testSuiteStatus = eTestStatusType::TEST_SUCCESS
 
 /**
  * @brief A macro to be placed at the end of a collection of test cases. Will return the final result of the collected
  * test cases.
  *
  */
-#define TEST_SUITE_END() return _testSuiteStatus;
+#define TEST_CASES_END() return _testSuiteStatus;
 
 /**
  * @brief Defines a test case for a call. This catches any error thrown by the call and marks the entire test suite as
