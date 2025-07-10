@@ -22,7 +22,6 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-
 #include <cassert>
 
 namespace roccv::detail::math {
