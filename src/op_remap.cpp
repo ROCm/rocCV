@@ -80,6 +80,8 @@ void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor
         };  // clang-format on
 
     auto func = funcs[mapInterpolation];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, map, mapValueType, alignCorners, borderValue, device);
 }
 
@@ -98,6 +100,8 @@ void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const T
         };  // clang-format on
 
     auto func = funcs[inInterpolation];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, map, mapInterpolation, mapValueType, alignCorners, borderValue, device);
 }
 
@@ -117,6 +121,8 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
     // clang-format on
 
     auto func = funcs[borderType];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners, detail::RangeCast<T>(borderValue), device);
 }
 
@@ -158,6 +164,8 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
     // clang-format on
 
     auto func = funcs[dtype][channels - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners, borderType, borderValue, device);
 }
 }

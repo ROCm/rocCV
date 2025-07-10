@@ -75,6 +75,8 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
     // clang-format on
 
     auto func = funcs[border_mode];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, top, left, detail::RangeCast<T>(border_value), device);
 }
 
@@ -108,6 +110,8 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
     eDataType dtype = output.dtype().etype();
     int64_t channels = output.shape(output.layout().channels_index());
     auto func = funcs[dtype][channels - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, top, left, border_mode, border_value, device);
 }
 }  // namespace roccv

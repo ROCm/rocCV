@@ -68,6 +68,8 @@ void dispatch_composite_srctype(hipStream_t stream, const Tensor& foreground, co
             {0, 0, dispatch_composite_dsttype<SrcType, float3>, dispatch_composite_dsttype<SrcType, float4>}};
 
     auto func = funcs[output.dtype().etype()][output.shape(output.layout().channels_index()) - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, foreground, background, mask, output, device);
 }
 
@@ -102,6 +104,8 @@ void Composite::operator()(hipStream_t stream, const Tensor& foreground, const T
                        {0, 0, dispatch_composite_srctype<float3>, 0}};
 
     auto func = funcs[foreground.dtype().etype()][foreground.shape(output.layout().channels_index()) - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, foreground, background, mask, output, device);
 }
 };  // namespace roccv
