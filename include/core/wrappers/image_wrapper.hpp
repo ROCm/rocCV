@@ -69,6 +69,14 @@ class ImageWrapper {
         data = static_cast<unsigned char*>(tdata.basePtr());
     }
 
+    /**
+     * @brief Creates an ImageWrapper from a vector.
+     *
+     * @param input The input vector to wrap.
+     * @param batchSize The number of images within the batch.
+     * @param width The width of each image within the batch.
+     * @param height The height of each image within the batch.
+     */
     ImageWrapper(std::vector<BaseType>& input, int32_t batchSize, int32_t width, int32_t height) {
         // Calculate strides based on input (byte-wise strides)
         stride.c = sizeof(BaseType);
@@ -137,6 +145,15 @@ class ImageWrapper {
     };
 
     ImageShape shape;
+
+    /**
+     * @brief Describes the number of bytes to move in order to access the next index of the shape.
+     *
+     * stride.n: Number of bytes to move to the next image in the batch.
+     * stride.h: Number of bytes to access the next row in the image.
+     * stride.w: Number of bytes to access the next pixel in the image.
+     * stride.c: Number of bytes to access the next channel in a pixel.
+     */
     ImageShape stride;
 
     unsigned char* data;

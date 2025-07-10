@@ -252,11 +252,19 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
  * @tparam T The base datatype of the underlying data.
  * @param dst The destination roccv::Tensor to copy data into.
  * @param src A source vector containing data.
+ * @throws std::runtime_error if the size of the dst and src do not match.
  */
 template <typename T>
 void CopyVectorIntoTensor(const Tensor& dst, std::vector<T>& src) {
     auto tensorData = dst.exportData<TensorDataStrided>();
     size_t dataSize = dst.shape().size() * dst.dtype().size();
+
+    // Ensure source and destination have the same amount of memory allocated.
+    if (dataSize != src.size() * sizeof(T)) {
+        throw std::runtime_error(
+            "Cannot copy source vector into destination tensor. Size of src vector and destination tensor do not "
+            "match.");
+    }
 
     switch (dst.device()) {
         case eDeviceType::GPU: {
@@ -279,11 +287,18 @@ void CopyVectorIntoTensor(const Tensor& dst, std::vector<T>& src) {
  * @tparam T The base datatype of the underlying tensor data.
  * @param dst The destination vector which the data will be copied into.
  * @param src The roccv::Tensor containing the source data.
+ * @throws std::runtime_error if the size of src and dst do not match.
  */
 template <typename T>
 void CopyTensorIntoVector(std::vector<T>& dst, const Tensor& src) {
     size_t size = src.shape().size() * src.dtype().size();
     auto tensorData = src.exportData<TensorDataStrided>();
+
+    if (size != dst.size() * sizeof(T)) {
+        throw std::runtime_error(
+            "Cannot copy source tensor data into destination vector. Size of destination vector and source tensor do "
+            "not match.");
+    }
 
     switch (src.device()) {
         case eDeviceType::GPU: {
