@@ -103,7 +103,6 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    assert(func != 0);
     func(stream, input, output, interpolation, device);
 }
 }  // namespace roccv

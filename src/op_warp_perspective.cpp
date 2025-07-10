@@ -73,7 +73,6 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
         };  // clang-format on
 
     auto func = funcs[interpolation];
-    assert(func != 0);
     func(stream, input, output, transMatrix, borderValue, device);
 }
 
@@ -93,7 +92,6 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
     // clang-format on
 
     auto func = funcs[borderType];
-    assert(func != 0);
     func(stream, input, output, transMatrix, interpolation, detail::RangeCast<T>(borderValue), device);
 }
 

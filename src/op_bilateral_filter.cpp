@@ -126,7 +126,6 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
     // clang-format on
 
     auto func = funcs[borderMode];
-    assert(func != 0);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderValue), device);
 }
 

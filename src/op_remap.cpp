@@ -80,7 +80,6 @@ void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor
         };  // clang-format on
 
     auto func = funcs[mapInterpolation];
-    assert(func != 0);
     func(stream, input, output, map, mapValueType, alignCorners, borderValue, device);
 }
 
@@ -99,7 +98,6 @@ void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const T
         };  // clang-format on
 
     auto func = funcs[inInterpolation];
-    assert(func != 0);
     func(stream, input, output, map, mapInterpolation, mapValueType, alignCorners, borderValue, device);
 }
 
@@ -119,7 +117,6 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
     // clang-format on
 
     auto func = funcs[borderType];
-    assert(func != 0);
     func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners, detail::RangeCast<T>(borderValue), device);
 }
 
