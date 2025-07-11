@@ -32,9 +32,9 @@ namespace py = pybind11;
 
 class PyOpCenterCrop {
    public:
-    static void ExecuteInto(PyTensor& output, PyTensor& input, int32_t cropWidth, int32_t cropHeight,
+    static void ExecuteInto(PyTensor& output, PyTensor& input, py::tuple crop_size,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
-    static PyTensor Execute(PyTensor& input, int32_t cropWidth, int32_t cropHeight, std::optional<std::reference_wrapper<PyStream>> stream,
+    static PyTensor Execute(PyTensor& input, py::tuple crop_size, std::optional<std::reference_wrapper<PyStream>> stream,
                             eDeviceType device);
     static void Export(py::module& m);
 };

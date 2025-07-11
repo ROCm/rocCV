@@ -39,7 +39,7 @@ __global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float *gamma
     
     const int x = threadIdx.x + blockIdx.x * blockDim.x;
     const int y = threadIdx.y + blockIdx.y * blockDim.y;
-    const int batch = threadIdx.z + blockIdx.z * blockDim.z;
+    const int batch = blockIdx.z;
 
     if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
     

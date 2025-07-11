@@ -24,19 +24,20 @@ THE SOFTWARE.
 
 #include <op_center_crop.hpp>
 
+#include "py_helpers.hpp"
+
 using namespace py::literals;
 
-void PyOpCenterCrop::ExecuteInto(PyTensor& output, PyTensor& input, int32_t cropWidth, int32_t cropHeight,
+PyTensor PyOpCenterCrop::Execute(PyTensor& input, py::tuple crop_size,
                                  std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
-    roccv::CenterCrop op;
-    op(hipStream, *input.getTensor(), *output.getTensor(), cropWidth, cropHeight, device);
-}
-
-PyTensor PyOpCenterCrop::Execute(PyTensor& input, int32_t cropWidth, int32_t cropHeight,
-                                 std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
-    hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
+    int2 work_crop_size = GetInt2FromTuple(crop_size);
+    int cropWidth = work_crop_size.x;
+    int cropHeight = work_crop_size.y;
+    roccv::Size2D cropSize;
+    cropSize.w = cropWidth;
+    cropSize.h = cropHeight;
 
     auto inputTensor = input.getTensor();
     std::vector<int64_t> outputShape(inputTensor->rank());
@@ -49,30 +50,27 @@ PyTensor PyOpCenterCrop::Execute(PyTensor& input, int32_t cropWidth, int32_t cro
                                                         inputTensor->dtype(), inputTensor->device());
 
     roccv::CenterCrop op;
-    op(hipStream, *inputTensor, *outputTensor, cropWidth, cropHeight, device);
+    op(hipStream, *inputTensor, *outputTensor, cropSize, device);
     return PyTensor(outputTensor);
 }
 
-void PyOpCenterCrop::Export(py::module& m) {
-    m.def("center_crop_into", &PyOpCenterCrop::ExecuteInto, "dst"_a, "src"_a, "crop_width"_a, "crop_height"_a, "stream"_a = nullptr,
-          "device"_a = eDeviceType::GPU, R"pbdoc(
-          
-            Executes the Center Crop operation on the given HIP stream.
+void PyOpCenterCrop::ExecuteInto(PyTensor& output, PyTensor& input, py::tuple crop_size,
+                                 std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
+    hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
-            See also:
-                Refer to the rocCV C++ API reference for more information on this operation.
-        
-            Args:
-                src (rocpycv.Tensor): Input tensor containing one or more images.
-                crop_width (int): The crop rectangle width.
-                crop_height (int): The crop rectangle height.
-                stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
-                device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
-            
-            Returns:
-                rocpycv.Tensor: The output tensor.
-          )pbdoc");
-    m.def("center_crop", &PyOpCenterCrop::Execute, "src"_a, "crop_width"_a, "crop_height"_a, "stream"_a = nullptr,
+    int2 work_crop_size = GetInt2FromTuple(crop_size);
+    int cropWidth = work_crop_size.x;
+    int cropHeight = work_crop_size.y;
+    roccv::Size2D cropSize;
+    cropSize.w = cropWidth;
+    cropSize.h = cropHeight;
+
+    roccv::CenterCrop op;
+    op(hipStream, *input.getTensor(), *output.getTensor(), cropSize, device);
+}
+
+void PyOpCenterCrop::Export(py::module& m) {
+    m.def("center_crop", &PyOpCenterCrop::Execute, "src"_a, "crop_size"_a, "stream"_a = nullptr,
           "device"_a = eDeviceType::GPU, R"pbdoc(
           
             Executes the Center Crop operation on the given HIP stream.
@@ -83,12 +81,33 @@ void PyOpCenterCrop::Export(py::module& m) {
             Args:
                 dst (rocpycv.Tensor): Output tensor which image results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                crop_width (int): The crop rectangle width.
-                crop_height (int): The crop rectangle height.
+                crop_size (Tuple[int]): The crop rectangle width and height.
+                stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+            
+            Returns:
+                rocpycv.Tensor: The output tensor.
+          )pbdoc");
+    
+    m.def("center_crop_into", &PyOpCenterCrop::ExecuteInto, "dst"_a, "src"_a, "crop_size"_a, "stream"_a = nullptr,
+          "device"_a = eDeviceType::GPU, R"pbdoc(
+          
+            Executes the Center Crop operation on the given HIP stream.
+
+            See also:
+                Refer to the rocCV C++ API reference for more information on this operation.
+        
+            Args:
+                dst (rocpycv.Tensor): Output tensor which image results are written to.
+                src (rocpycv.Tensor): Input tensor containing one or more images.
+                crop_size (Tuple[int]): The crop rectangle width and height.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
             Returns:
                 None
           )pbdoc");
+    
+    
+    
 }

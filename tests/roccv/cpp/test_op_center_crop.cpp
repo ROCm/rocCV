@@ -36,8 +36,12 @@ void TestCorrectness(const std::string& inputFile, const std::string& expectedFi
     Tensor input = createTensorFromImage(inputFile, DataType(eDataType::DATA_TYPE_U8), device);
     Tensor output(TensorShape(input.layout(), {1, cropHeight, cropWidth, 3}), input.dtype(), device);
 
+    Size2D cropSize;
+    cropSize.w = cropWidth;
+    cropSize.h = cropHeight;
+
     CenterCrop op;
-    op(nullptr, input, output, cropWidth, cropHeight, device);
+    op(nullptr, input, output, cropSize, device);
     hipDeviceSynchronize();
 
     EXPECT_TEST_STATUS(compareImage(output, expectedFile, errorThreshold), eTestStatusType::TEST_SUCCESS);

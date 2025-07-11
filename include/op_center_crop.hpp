@@ -81,7 +81,7 @@ class CenterCrop final : public IOperator {
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
 
-    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const int32_t cropWidth, const int32_t cropHeight,
+    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Size2D cropSize,
                     const eDeviceType device = eDeviceType::GPU) const;
 
     private:
