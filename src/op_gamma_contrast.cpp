@@ -82,17 +82,16 @@ void GammaContrast::operator()(hipStream_t stream, const Tensor &input, const Te
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const eDeviceType)>
-        funcs[5][4] = {
-            {dispatch_gamma_contrast_dtype<uchar1>, 0, dispatch_gamma_contrast_dtype<uchar3>, dispatch_gamma_contrast_dtype<uchar4>},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {dispatch_gamma_contrast_dtype<float1>, 0, dispatch_gamma_contrast_dtype<float3>, dispatch_gamma_contrast_dtype<float4>}
+    static const std::unordered_map<
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const eDeviceType)>, 4>>
+        funcs = 
+        {
+            {eDataType::DATA_TYPE_U8, {dispatch_gamma_contrast_dtype<uchar1>, 0, dispatch_gamma_contrast_dtype<uchar3>, dispatch_gamma_contrast_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_gamma_contrast_dtype<float1>, 0, dispatch_gamma_contrast_dtype<float3>, dispatch_gamma_contrast_dtype<float4>}}
         };
     // clang-format on
 
-    auto func = funcs[dtype][channels - 1];
+    auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
     func(stream, input, output, gamma, device);
 
 }

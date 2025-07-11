@@ -73,20 +73,16 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor &, const Tensor &, const Box_t, const eDeviceType)>
-        funcs[8][4] = {
-            {dispatch_custom_crop_dtype<uchar1>, 0, dispatch_custom_crop_dtype<uchar3>, dispatch_custom_crop_dtype<uchar4>},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {dispatch_custom_crop_dtype<float1>, 0, dispatch_custom_crop_dtype<float3>, dispatch_custom_crop_dtype<float4>}
+    static const std::unordered_map<
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Box_t, const eDeviceType)>, 4>>
+        funcs = 
+        {
+            {eDataType::DATA_TYPE_U8, {dispatch_custom_crop_dtype<uchar1>, 0, dispatch_custom_crop_dtype<uchar3>, dispatch_custom_crop_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_custom_crop_dtype<float1>, 0, dispatch_custom_crop_dtype<float3>, dispatch_custom_crop_dtype<float4>}}
         };
     // clang-format on
 
-    auto func = funcs[dtype][channels - 1];
+    auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
     func(stream, input, output, cropRect, device);
 }
 }  // namespace roccv
