@@ -34,6 +34,8 @@ THE SOFTWARE.
 namespace roccv {
 namespace tests {
 
+#define ERROR_PREFIX "[" __FILE__ ":" + std::to_string(__LINE__) + "] "
+
 /**
  * @brief Ensures that a correct roccv::Exception is thrown from a call. If the call is successful or the thrown
  * Exception does not match, will throw a runtime error to be caught by the test suite.
@@ -43,19 +45,18 @@ namespace tests {
  * @throws std::runtime_error if no exception is thrown or if the resulting exception status does not match the provided
  * status.
  */
-#define EXPECT_EXCEPTION(call_, expected_status_)                                                                \
-    try {                                                                                                        \
-        call_;                                                                                                   \
-        throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +                 \
-                                 ExceptionMessage::getMessageByEnum(expected_status_) +                          \
-                                 ") but completed successfully instead.");                                       \
-    } catch (Exception e) {                                                                                      \
-        eStatusType received_ = e.getStatusEnum();                                                               \
-        if (received_ != expected_status_) {                                                                     \
-            throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +             \
-                                     ExceptionMessage::getMessageByEnum(expected_status_) + ") but received (" + \
-                                     ExceptionMessage::getMessageByEnum(received_) + ") instead.");              \
-        }                                                                                                        \
+#define EXPECT_EXCEPTION(call_, expected_status_)                                                                   \
+    try {                                                                                                           \
+        call_;                                                                                                      \
+        throw std::runtime_error(ERROR_PREFIX "Expected (" + ExceptionMessage::getMessageByEnum(expected_status_) + \
+                                 ") but completed successfully instead.");                                          \
+    } catch (Exception e) {                                                                                         \
+        eStatusType received_ = e.getStatusEnum();                                                                  \
+        if (received_ != expected_status_) {                                                                        \
+            throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +                \
+                                     ExceptionMessage::getMessageByEnum(expected_status_) + ") but received (" +    \
+                                     ExceptionMessage::getMessageByEnum(received_) + ") instead.");                 \
+        }                                                                                                           \
     }
 
 #define EXPECT_TEST_STATUS(call_, expected_status_)                                                                 \
@@ -99,6 +100,13 @@ namespace tests {
                       << "]\n    Reason: " << e.what() << "\n\n";                                   \
             _testSuiteStatus = eTestStatusType::TEST_FAILURE;                                       \
         }                                                                                           \
+    }
+
+#define EXPECT_EQ(v1, v2)                                                                        \
+    {                                                                                            \
+        if (v1 != v2)                                                                            \
+            throw std::runtime_error(ERROR_PREFIX #v1 + " != " #v2 + " (" + std::to_string(v1) + \
+                                     " != " + std::to_string(v2) + ")");                         \
     }
 
 /**
