@@ -131,3 +131,10 @@ double2 GetDouble2FromTuple(py::tuple src) {
     }
     return make_double2(src[0].cast<double>(), src[1].cast<double>());
 }
+
+int2 GetInt2FromTuple(py::tuple src) {
+    if (src.size() != 2) {
+        std::runtime_error("Cannot convert py::tuple to int2. py::tuple.size() != 2.");
+    }
+    return make_int2(src[0].cast<int>(), src[1].cast<int>());
+}

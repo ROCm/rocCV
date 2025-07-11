@@ -10,7 +10,8 @@ See below for a list of Computer Vision operators rocCV supports.
 |CvtColor|Converts the color space of the images in a tensor.|U8|NHWC, HWC|Both|
 |CopyMakeBorder|Generates a border using a specified border mode around the input tensor.|U8, S8, U32, S32, F32|NHWC|Both|
 |CustomCrop|Crops a region of interest from an input tensor.|U8|NHWC, HWC|Both|
-|Flip|Flips a 2D image around its axis.|U8, S32, F32|NHWC, HWC|Both|
+|CenterCrop|Crops a region of interest from the center of an input tensor.|U8|NHWC, HWC|Both|
+|Flip|Flips the images in a tensor about the horizontal, vertical or both axes.|U8, S32, F32|NHWC, HWC|Both|
 |GammaContrast|Adjusts the gamma contrast on images in a tensor.|U8|NHWC, HWC|Both|
 |Histogram|Calculates a histogram of values from a grayscale image.|U8|NHWC, HWC|Both|
 |NonMaximumSuppression|Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.|S16, 4S16|NW, NWC|Both|

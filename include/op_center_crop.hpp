@@ -25,30 +25,30 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 #include "operator_types.h"
+#include "op_custom_crop.hpp"
 
 /**
- * @brief Class for managing the Custom Crop operator.
+ * @brief Class for managing the Center Crop operator.
  *
  */
 namespace roccv {
-class CustomCrop final : public IOperator {
+class CenterCrop final : public IOperator {
    public:
     /**
-     * @brief Construct a new Op CustomCrop object
+     * @brief Construct a new Op CenterCrop object
      *
      */
-    CustomCrop() {}
+    CenterCrop() {}
 
     /**
-     * @brief Destroy the Op CustomCrop object
+     * @brief Destroy the Op CenterCrop object
      *
      */
-    ~CustomCrop() {}
-
+    ~CenterCrop() {}
 
     /**
-     * @brief Construct a new Op Custom Crop object. The object can be used to
-     * crop a region of interest from an image.
+     * @brief Construct a new Op Center Crop object. The object can be used to
+     * crop a region of interest from the center of an image.
      *
      * Limitations:
      *
@@ -76,12 +76,15 @@ class CustomCrop final : public IOperator {
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.
      * @param[out] output Output tensor for storing modified image data.
-     * @param[in] croppingBox A box representing how the input image should be
-     * cropped to the output image. Its dimensions should match that of the
-     * output tensor's images.
+     * @param[in] cropWidth The crop rectangle width.
+     * @param[in] cropHeight The crop rectangle height.
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
-    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Box_t cropRect,
+
+    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Size2D cropSize,
                     const eDeviceType device = eDeviceType::GPU) const;
+
+    private:
+        CustomCrop m_op;
 };
 }  // namespace roccv
