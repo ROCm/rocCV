@@ -1,0 +1,34 @@
+{
+    "params": [
+        {
+            "batches": 1,
+            "height": 1080,
+            "width": 1920,
+            "runs": 5
+        },
+        {
+            "batches": 16,
+            "height": 1080,
+            "width": 1920,
+            "runs": 5
+        },
+        {
+            "batches": 32,
+            "height": 1080,
+            "width": 1920,
+            "runs": 5
+        },
+        {
+            "batches": 64,
+            "height": 1080,
+            "width": 1920,
+            "runs": 5
+        },
+        {
+            "batches": 128,
+            "height": 1080,
+            "width": 1920,
+            "runs": 5
+        }
+    ]
+}

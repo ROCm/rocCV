@@ -63,4 +63,11 @@ constexpr ImageFormat FMT_RGB8(eDataType::DATA_TYPE_U8, 3);
 
 // Single plane with interleaved RGBA 8-bit channel.
 constexpr ImageFormat FMT_RGBA8(eDataType::DATA_TYPE_U8, 4);
+
+// Single plane with interleaved RGB float32 channel.
+constexpr ImageFormat FMT_RGBf32(eDataType::DATA_TYPE_F32, 3);
+
+// Single plane with interleaved RGBA float32 channel.
+constexpr ImageFormat FMT_RGBAf32(eDataType::DATA_TYPE_F32, 4);
+
 }  // namespace roccv

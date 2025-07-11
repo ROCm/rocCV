@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c) 2025 Advanced Micro Devices, Inc.
+# Copyright (c)  - 2025 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,11 @@
 #
 # ##############################################################################
 
-file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
-create_test_sourcelist(CppRocCVTests 
-    system_test_main.cpp 
-    ${CPP_ROCCV_TEST_SOURCES})
+project(roccv_bench)
 
-add_executable(RocCVTests ${CppRocCVTests})
-target_link_libraries(RocCVTests PRIVATE TestHelpers)
+add_subdirectory("roccvbench")
 
-foreach (test ${CPP_ROCCV_TEST_SOURCES})
-    get_filename_component(TName ${test} NAME_WE)
-    add_test(NAME ${TName} COMMAND RocCVTests ${TName} "${CMAKE_SOURCE_DIR}/data")
-endforeach()
+file(GLOB BENCHMARK_SOURCES "src/*.cpp")
+add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES})
+target_link_libraries(${PROJECT_NAME} PRIVATE roccv_bench_utils)
+target_include_directories(${PROJECT_NAME} PRIVATE "vendor")

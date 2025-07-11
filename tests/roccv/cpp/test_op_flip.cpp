@@ -21,6 +21,9 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
+#include <core/detail/casting.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/image_wrapper.hpp>
 #include <filesystem>
 #include <iostream>
 #include <op_flip.hpp>
@@ -31,7 +34,107 @@ THE SOFTWARE.
 using namespace roccv;
 using namespace roccv::tests;
 
-eTestStatusType TestErrorHandling() {
+// Keep all non-entrypoint functions in an anonymous namespace to prevent redefinition errors across translation units.
+namespace {
+
+/**
+ * @brief Verified golden C++ model for the flip operation.
+ *
+ * @tparam T Vectorized datatype of the image's pixels.
+ * @tparam BT Base type of the image's data.
+ * @param[in] input An input vector containing image data.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] width Image width.
+ * @param[in] height Image height.
+ * @param[in] channels Number of channels in the image.
+ * @param[in] flipCode
+ * @return Vector containing the results of the operation.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenFlip(std::vector<BT>& input, int32_t batchSize, int32_t width, int32_t height, int32_t flipCode) {
+    // Create an output vector the same size as the input vector
+    std::vector<BT> output(input.size());
+
+    // Wrap input/output vectors for simplified data access
+    ImageWrapper<T> src(input, batchSize, width, height);
+    ImageWrapper<T> dst(output, batchSize, width, height);
+
+    for (int b = 0; b < batchSize; ++b) {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                T srcValue;
+
+                // Flip along y-axis
+                if (flipCode > 0) {
+                    srcValue = src.at(b, y, (src.width() - 1 - x), 0);
+                }
+                // Flip along x-axis
+                else if (flipCode == 0) {
+                    srcValue = src.at(b, (src.height() - 1 - y), x, 0);
+                }
+                // Flip along both axes
+                else {
+                    srcValue = src.at(b, (src.height() - 1 - y), (src.width() - 1 - x), 0);
+                }
+
+                dst.at(b, y, x, 0) = detail::SaturateCast<T>(srcValue);
+            }
+        }
+    }
+
+    return output;
+}
+
+/**
+ * @brief Tests correctness of the Flip operator, comparing it against a generated golden result.
+ *
+ * @tparam T Underlying datatype of the image's pixels.
+ * @tparam BT Base type of the image data.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] width The width of each image in the batch.
+ * @param[in] height The height of each image in the batch.
+ * @param[in] flipCode The flip code for each image in the batch.
+ * @param[in] format The image format.
+ * @param[in] device The device this correctness test should be run on.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, int width, int height, int flipCode, ImageFormat format, eDeviceType device) {
+    // Create input and output tensor based on test parameters
+    Tensor input(batchSize, {width, height}, format, device);
+    Tensor output(batchSize, {width, height}, format, device);
+
+    // Create a vector and fill it with random data.
+    std::vector<BT> inputData(input.shape().size());
+    FillVector(inputData);
+
+    // Copy generated input data into input tensor
+    CopyVectorIntoTensor(input, inputData);
+
+    // Calculate golden output reference
+    std::vector<BT> ref = GoldenFlip<T>(inputData, batchSize, width, height, flipCode);
+
+    // Run roccv::Flip operator to obtain actual results
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    Flip op;
+    op(stream, input, output, flipCode, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy data from output tensor into a host allocated vector
+    std::vector<BT> result(output.shape().size());
+    CopyTensorIntoVector(result, output);
+
+    // Compare data in actual output versus the generated golden reference image
+    CompareVectors(result, ref);
+}
+
+/**
+ * @brief Tests a variety of negative cases for the Flip operator. Ensures that exceptions are being thrown properly.
+ *
+ */
+void TestNegativeFlip() {
     TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
     Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
     Tensor validCPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
@@ -70,45 +173,35 @@ eTestStatusType TestErrorHandling() {
         EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 0, eDeviceType::GPU),
                          eStatusType::INVALID_COMBINATION);
     }
-
-    return eTestStatusType::TEST_SUCCESS;
 }
 
-eTestStatusType TestCorrectness(const std::string& inputFile, const std::string& expectedFile, int32_t flipCode,
-                                float errorThreshold, eDeviceType device) {
-    Tensor input = createTensorFromImage(inputFile, DataType(eDataType::DATA_TYPE_U8), device);
-    Tensor output(input.shape(), input.dtype(), device);
-
-    Flip op;
-    op(nullptr, input, output, flipCode, device);
-    hipDeviceSynchronize();
-
-    return compareImage(output, expectedFile, errorThreshold);
-}
+}  // namespace
 
 eTestStatusType test_op_flip(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    std::filesystem::path testDataPath = std::filesystem::path(argv[1]) / "tests" / "ops";
+    TEST_CASES_BEGIN();
 
-    // Test that errors are being handled properly
-    TestErrorHandling();
+    // Test negative Flip operator cases
+    TEST_CASE(TestNegativeFlip());
 
-    try {
-        // Test GPU implementation correctness
-        EXPECT_TEST_STATUS(TestCorrectness(testDataPath / "test_input.bmp", testDataPath / "expected_flip.bmp", 1, 0.0f,
-                                           eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
+    // GPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::GPU));
 
-        // Test CPU implementation correctness
-        EXPECT_TEST_STATUS(TestCorrectness(testDataPath / "test_input.bmp", testDataPath / "expected_flip.bmp", 1, 0.0f,
-                                           eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    // CPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, 0, FMT_RGB8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar4>(2, 480, 120, 1, FMT_RGBA8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar1>(3, 360, 360, -1, FMT_U8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(4, 134, 360, 0, FMT_RGB8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float1>(5, 134, 360, 1, FMT_F32, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float3>(4, 134, 360, 0, FMT_RGBf32, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float4>(2, 480, 120, 1, FMT_RGBAf32, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<int1>(5, 134, 360, -1, FMT_S32, eDeviceType::CPU));
+
+    TEST_CASES_END();
 }
