@@ -77,9 +77,6 @@ void GammaContrast::operator()(hipStream_t stream, const Tensor &input, const Te
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    eDataType dtype = input.dtype().etype();
-    size_t channels = input.shape(input.layout().channels_index());
-
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<

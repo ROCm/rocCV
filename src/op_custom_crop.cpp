@@ -62,7 +62,6 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
     size_t batchSize = input.shape(input.layout().batch_index());
-    eDataType dtype = input.dtype().etype();
     size_t channels = input.shape(input.layout().channels_index());
 
     CHECK_TENSOR_DEVICE(output, device);
