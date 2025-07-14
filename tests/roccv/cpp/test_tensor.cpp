@@ -29,7 +29,7 @@ using namespace roccv::tests;
 namespace {
 
 /**
- * @brief Golden model for calculating strides given a TensorShape and a datatype
+ * @brief Golden model for calculating strides given a TensorShape and a datatype.
  *
  * @param shape The tensor's shape.
  * @param dtype The datatype of the tensor.
