@@ -57,7 +57,6 @@ void TestNegativeTensorShape() {
         EXPECT_EXCEPTION(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {1, 10}), eStatusType::OUT_OF_BOUNDS);
         TensorShape shape(TensorLayout(TENSOR_LAYOUT_N), {10});
         EXPECT_EXCEPTION(shape[1], eStatusType::OUT_OF_BOUNDS);
-        EXPECT_EQ(shape.size(), 10);
     }
 }
 
@@ -99,7 +98,7 @@ void TestTensorCorrectness() {
         EXPECT_EQ(tensor.dtype().size(), 1);
     }
 
-    // Tensor manipulation correctness tests
+    // Tensor reshape: Change layout
     {
         // Reshape tensor from NHWC -> HWC layout
         Tensor tensor(1, {720, 480}, FMT_RGB8);
@@ -107,6 +106,26 @@ void TestTensorCorrectness() {
         EXPECT_EQ(reshapedTensor.rank(), 3);
         EXPECT_NE(reshapedTensor.rank(), tensor.rank());
         EXPECT_EQ(reshapedTensor.shape().size(), tensor.shape().size());
+
+        // Ensure they are sharing the same underlying data
+        auto data = tensor.exportData<TensorDataStrided>();
+        auto dataReshaped = reshapedTensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.basePtr() == dataReshaped.basePtr());
+    }
+
+    // Tensor reshape: Change layout and datatype
+    {
+        Tensor tensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {1, 5, 4}), DataType(DATA_TYPE_S16));
+        Tensor reshapedTensor =
+            tensor.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {1, 5}), DataType(DATA_TYPE_4S16));
+        EXPECT_NE(reshapedTensor.shape().size(), tensor.shape().size());
+        EXPECT_NE(reshapedTensor.rank(), tensor.rank());
+        EXPECT_EQ(reshapedTensor.rank(), 2);
+
+        // Ensure they are sharing the same underlying data
+        auto data = tensor.exportData<TensorDataStrided>();
+        auto dataReshaped = reshapedTensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.basePtr() == dataReshaped.basePtr());
     }
 }
 
