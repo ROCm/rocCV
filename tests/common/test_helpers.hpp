@@ -143,7 +143,7 @@ namespace tests {
                                          ", Expected value: " + std::to_string(expected[i]));                     \
             }                                                                                                     \
         }                                                                                                         \
-    }  // namespace tests
+    }
 
 /**
  * @brief Compares two values to ensure they are not equal.
