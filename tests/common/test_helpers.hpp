@@ -117,6 +117,17 @@ namespace tests {
                                      " == " #v2 + " (" + std::to_string(v1) + " == " + std::to_string(v2) + ")"); \
     }
 
+/**
+ * @brief Compares the values of two STL containers. Throws an error if the values within are not identical or if the
+ * sizes do not match. This a macro version of CompareVectors which additionally prints the offending line number upon a
+ * failure for better bug tracing capabilities.
+ *
+ * @param[in] actual Actual container values to compare against.
+ * @param[in] expected Expected container values to compare against.
+ * @throws std::runtime_error If the sizes of the containers differ or if any of the values within the containers
+ * differ.
+ *
+ */
 #define EXPECT_VECTOR_EQ(actual, expected)                                                                        \
     {                                                                                                             \
         if (actual.size() != expected.size()) {                                                                   \
