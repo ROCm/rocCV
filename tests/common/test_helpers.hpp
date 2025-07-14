@@ -117,6 +117,23 @@ namespace tests {
                                      " == " #v2 + " (" + std::to_string(v1) + " == " + std::to_string(v2) + ")"); \
     }
 
+#define EXPECT_VECTOR_EQ(actual, expected)                                                                        \
+    {                                                                                                             \
+        if (actual.size() != expected.size()) {                                                                   \
+            throw std::runtime_error(ERROR_PREFIX + "Vectors " + #actual + " (" + std::to_string(actual.size()) + \
+                                     " elements) and " + #expected + "(" + std::to_string(expected.size()) +      \
+                                     " elements) differ in size.");                                               \
+        }                                                                                                         \
+                                                                                                                  \
+        for (int i = 0; i < actual.size(); i++) {                                                                 \
+            if (actual[i] != expected[i]) {                                                                       \
+                throw std::runtime_error(ERROR_PREFIX + "Value at index " + std::to_string(i) +                   \
+                                         " does not match! Actual value: " + std::to_string(actual[i]) +          \
+                                         ", Expected value: " + std::to_string(expected[i]));                     \
+            }                                                                                                     \
+        }                                                                                                         \
+    }  // namespace tests
+
 /**
  * @brief Compares two values to ensure they are not equal.
  *
@@ -140,7 +157,7 @@ namespace tests {
  */
 #define EXPECT_TRUE(comparison)                                                                                 \
     {                                                                                                           \
-        if (!comparison)                                                                                        \
+        if (!(comparison))                                                                                      \
             throw std::runtime_error(ERROR_PREFIX + #comparison + " expected to be true, but returned false."); \
     }
 
@@ -152,8 +169,16 @@ namespace tests {
  */
 #define EXPECT_FALSE(comparison)                                                                                \
     {                                                                                                           \
-        if (!comparison)                                                                                        \
+        if (comparison)                                                                                         \
             throw std::runtime_error(ERROR_PREFIX + #comparison + " expected to be false, but returned true."); \
+    }
+
+#define EXPECT_NO_ERRORS(call)                                                                                   \
+    try {                                                                                                        \
+        call;                                                                                                    \
+    } catch (const roccv::Exception& e) {                                                                        \
+        throw std::runtime_error(ERROR_PREFIX + #call +                                                          \
+                                 ". Expected no exceptions, but received the following exception: " + e.what()); \
     }
 
 /**
