@@ -50,7 +50,7 @@ namespace tests {
         call_;                                                                                                        \
         throw std::runtime_error(ERROR_PREFIX + "Expected (" + ExceptionMessage::getMessageByEnum(expected_status_) + \
                                  ") but completed successfully instead.");                                            \
-    } catch (Exception e) {                                                                                           \
+    } catch (const Exception& e) {                                                                                    \
         eStatusType received_ = e.getStatusEnum();                                                                    \
         if (received_ != expected_status_) {                                                                          \
             throw std::runtime_error(ERROR_PREFIX + "Expected (" +                                                    \
