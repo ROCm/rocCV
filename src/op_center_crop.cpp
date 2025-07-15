@@ -19,24 +19,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
-#include "op_bilateral_filter.hpp"
-#include "op_bnd_box.hpp"
-#include "op_composite.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_custom_crop.hpp"
 #include "op_center_crop.hpp"
-#include "op_cvt_color.hpp"
-#include "op_composite.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_flip.hpp"
-#include "op_gamma_contrast.hpp"
-#include "op_histogram.hpp"
-#include "op_non_max_suppression.hpp"
-#include "op_normalize.hpp"
-#include "op_remap.hpp"
-#include "op_resize.hpp"
-#include "op_rotate.hpp"
-#include "op_thresholding.hpp"
-#include "op_warp_affine.hpp"
-#include "op_warp_perspective.hpp"
+
+#include "op_custom_crop.hpp"
+#include "operator_types.h"
+
+namespace roccv {
+void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Size2D cropSize,
+                            const eDeviceType device) const {
+
+    auto i_height = input.shape()[input.shape().layout().height_index()];
+    auto i_width = input.shape()[input.shape().layout().width_index()];
+
+    auto half_height = i_height >> 1;
+    auto half_width = i_width >> 1;
+
+    int32_t cropWidth = cropSize.w;
+    int32_t cropHeight = cropSize.h;
+
+    int32_t half_cropWidth = cropWidth >> 1;
+    int32_t half_cropHeight = cropHeight >> 1;
+
+    int64_t upper_left_corner_x = half_width - half_cropWidth;
+    int64_t upper_left_corner_y = half_height - half_cropHeight;
+
+    Box_t cropRect{upper_left_corner_x, upper_left_corner_y, cropWidth, cropHeight};
+
+    m_op(stream, input, output, cropRect, device);
+}
+}  // namespace roccv

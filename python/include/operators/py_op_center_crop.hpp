@@ -20,23 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "op_bilateral_filter.hpp"
-#include "op_bnd_box.hpp"
-#include "op_composite.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_custom_crop.hpp"
-#include "op_center_crop.hpp"
-#include "op_cvt_color.hpp"
-#include "op_composite.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_flip.hpp"
-#include "op_gamma_contrast.hpp"
-#include "op_histogram.hpp"
-#include "op_non_max_suppression.hpp"
-#include "op_normalize.hpp"
-#include "op_remap.hpp"
-#include "op_resize.hpp"
-#include "op_rotate.hpp"
-#include "op_thresholding.hpp"
-#include "op_warp_affine.hpp"
-#include "op_warp_perspective.hpp"
+#pragma once
+
+#include <operator_types.h>
+#include <pybind11/pybind11.h>
+
+#include "py_stream.hpp"
+#include "py_tensor.hpp"
+
+namespace py = pybind11;
+
+class PyOpCenterCrop {
+   public:
+    static void ExecuteInto(PyTensor& output, PyTensor& input, py::tuple crop_size,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
+    static PyTensor Execute(PyTensor& input, py::tuple crop_size, std::optional<std::reference_wrapper<PyStream>> stream,
+                            eDeviceType device);
+    static void Export(py::module& m);
+};
