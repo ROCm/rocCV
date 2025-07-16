@@ -81,6 +81,8 @@ DEFINE_TYPE_TRAITS_0_TO_4(float, float);
 DEFINE_TYPE_TRAITS_0_TO_4(uint, unsigned int);
 DEFINE_TYPE_TRAITS_0_TO_4(int, signed int);
 DEFINE_TYPE_TRAITS_0_TO_4(short, signed short);
+DEFINE_TYPE_TRAITS_0_TO_4(ushort, unsigned short);
+DEFINE_TYPE_TRAITS_0_TO_4(double, double);
 
 /**
  * @brief Returns the number of elements in a HIP vectorized type. For example: uchar3 will return 3, int2 will

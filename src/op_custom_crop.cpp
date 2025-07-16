@@ -57,8 +57,8 @@ void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const T
 void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Box_t cropRect,
                             const eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
-    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC);
-    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
+    CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_HWC, TENSOR_LAYOUT_NHWC);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
     size_t batchSize = input.shape(input.layout().batch_index());
@@ -69,6 +69,12 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) == channels);
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == batchSize);
+    CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) <= input.shape(input.layout().width_index()));
+    CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) <= input.shape(input.layout().height_index()));
+    CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) == cropRect.width);
+    CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) == cropRect.height);
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) >= (cropRect.x + cropRect.width));
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) >= (cropRect.y + cropRect.height));
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
@@ -77,11 +83,19 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
         funcs = 
         {
             {eDataType::DATA_TYPE_U8, {dispatch_custom_crop_dtype<uchar1>, 0, dispatch_custom_crop_dtype<uchar3>, dispatch_custom_crop_dtype<uchar4>}},
-            {eDataType::DATA_TYPE_F32, {dispatch_custom_crop_dtype<float1>, 0, dispatch_custom_crop_dtype<float3>, dispatch_custom_crop_dtype<float4>}}
+            {eDataType::DATA_TYPE_S8, {dispatch_custom_crop_dtype<char1>, 0, dispatch_custom_crop_dtype<char3>, dispatch_custom_crop_dtype<char4>}},
+            {eDataType::DATA_TYPE_U16, {dispatch_custom_crop_dtype<ushort1>, 0, dispatch_custom_crop_dtype<ushort3>, dispatch_custom_crop_dtype<ushort4>}},
+            {eDataType::DATA_TYPE_S16, {dispatch_custom_crop_dtype<short1>, 0, dispatch_custom_crop_dtype<short3>, dispatch_custom_crop_dtype<short4>}},
+            {eDataType::DATA_TYPE_U32, {dispatch_custom_crop_dtype<uint1>, 0, dispatch_custom_crop_dtype<uint3>, dispatch_custom_crop_dtype<uint4>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_custom_crop_dtype<int1>, 0, dispatch_custom_crop_dtype<int3>, dispatch_custom_crop_dtype<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_custom_crop_dtype<float1>, 0, dispatch_custom_crop_dtype<float3>, dispatch_custom_crop_dtype<float4>}},
+            {eDataType::DATA_TYPE_F64, {dispatch_custom_crop_dtype<double1>, 0, dispatch_custom_crop_dtype<double3>, dispatch_custom_crop_dtype<double4>}}
         };
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, cropRect, device);
 }
 }  // namespace roccv
