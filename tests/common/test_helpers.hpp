@@ -34,6 +34,8 @@ THE SOFTWARE.
 namespace roccv {
 namespace tests {
 
+#define ERROR_PREFIX ("[" __FILE__ ":" + std::to_string(__LINE__) + "] ")
+
 /**
  * @brief Ensures that a correct roccv::Exception is thrown from a call. If the call is successful or the thrown
  * Exception does not match, will throw a runtime error to be caught by the test suite.
@@ -43,30 +45,29 @@ namespace tests {
  * @throws std::runtime_error if no exception is thrown or if the resulting exception status does not match the provided
  * status.
  */
-#define EXPECT_EXCEPTION(call_, expected_status_)                                                                \
-    try {                                                                                                        \
-        call_;                                                                                                   \
-        throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +                 \
-                                 ExceptionMessage::getMessageByEnum(expected_status_) +                          \
-                                 ") but completed successfully instead.");                                       \
-    } catch (Exception e) {                                                                                      \
-        eStatusType received_ = e.getStatusEnum();                                                               \
-        if (received_ != expected_status_) {                                                                     \
-            throw std::runtime_error("[" __FILE__ ":" + std::to_string(__LINE__) + "]: Expected (" +             \
-                                     ExceptionMessage::getMessageByEnum(expected_status_) + ") but received (" + \
-                                     ExceptionMessage::getMessageByEnum(received_) + ") instead.");              \
-        }                                                                                                        \
+#define EXPECT_EXCEPTION(call_, expected_status_)                                                                     \
+    try {                                                                                                             \
+        call_;                                                                                                        \
+        throw std::runtime_error(ERROR_PREFIX + "Expected (" + ExceptionMessage::getMessageByEnum(expected_status_) + \
+                                 ") but completed successfully instead.");                                            \
+    } catch (const Exception& e) {                                                                                    \
+        eStatusType received_ = e.getStatusEnum();                                                                    \
+        if (received_ != expected_status_) {                                                                          \
+            throw std::runtime_error(ERROR_PREFIX + "Expected (" +                                                    \
+                                     ExceptionMessage::getMessageByEnum(expected_status_) + ") but received (" +      \
+                                     ExceptionMessage::getMessageByEnum(received_) + ") instead.");                   \
+        }                                                                                                             \
     }
 
-#define EXPECT_TEST_STATUS(call_, expected_status_)                                                                 \
-    {                                                                                                               \
-        eTestStatusType received_ = call_;                                                                          \
-        if (received_ != expected_status_) {                                                                        \
-            std::cerr << __FILE__ << "[" << __LINE__ << "]: "                                                       \
-                      << "Expected (" << ExceptionMessage::getMessageByEnum(expected_status_) << ") but received (" \
-                      << ExceptionMessage::getMessageByEnum(received_) << ") instead." << std::endl;                \
-            exit(1);                                                                                                \
-        }                                                                                                           \
+#define EXPECT_TEST_STATUS(call_, expected_status_)                                                           \
+    {                                                                                                         \
+        eTestStatusType received_ = call_;                                                                    \
+        if (received_ != expected_status_) {                                                                  \
+            std::cerr << ERROR_PREFIX << "Expected (" << ExceptionMessage::getMessageByEnum(expected_status_) \
+                      << ") but received (" << ExceptionMessage::getMessageByEnum(received_) << ") instead."  \
+                      << std::endl;                                                                           \
+            exit(1);                                                                                          \
+        }                                                                                                     \
     }
 
 /**
@@ -90,15 +91,105 @@ namespace tests {
  *
  * @param[in] call The function call to test.
  */
-#define TEST_CASE(call)                                                                             \
-    {                                                                                               \
-        try {                                                                                       \
-            call;                                                                                   \
-        } catch (const std::exception& e) {                                                         \
-            std::cerr << "Test Failed: " << #call << "\n    Line: [" << __FILE__ << ":" << __LINE__ \
-                      << "]\n    Reason: " << e.what() << "\n\n";                                   \
-            _testSuiteStatus = eTestStatusType::TEST_FAILURE;                                       \
-        }                                                                                           \
+#define TEST_CASE(call)                                                                                             \
+    {                                                                                                               \
+        try {                                                                                                       \
+            call;                                                                                                   \
+        } catch (const std::exception& e) {                                                                         \
+            std::cerr << "Test Failed: " << #call << "\n    Line: " << ERROR_PREFIX << "\n    Reason: " << e.what() \
+                      << "\n\n";                                                                                    \
+            _testSuiteStatus = eTestStatusType::TEST_FAILURE;                                                       \
+        }                                                                                                           \
+    }
+
+/**
+ * @brief Compares two values to ensure they are equal.
+ *
+ * @param[in] v1 Left side value.
+ * @param[in] v2 Right side value.
+ * @throws std::runtime_error if the values are not equal.
+ */
+#define EXPECT_EQ(v1, v2)                                                                                         \
+    {                                                                                                             \
+        if (v1 != v2)                                                                                             \
+            throw std::runtime_error(ERROR_PREFIX +                                                               \
+                                     "Expected the following values to be equal, but they are not: " #v1 +        \
+                                     " == " #v2 + " (" + std::to_string(v1) + " == " + std::to_string(v2) + ")"); \
+    }
+
+/**
+ * @brief Compares the values of two STL containers. Throws an error if the values within are not identical or if the
+ * sizes do not match. This a macro version of CompareVectors which additionally prints the offending line number upon a
+ * failure for better bug tracing capabilities.
+ *
+ * @param[in] actual Actual container values to compare against.
+ * @param[in] expected Expected container values to compare against.
+ * @throws std::runtime_error If the sizes of the containers differ or if any of the values within the containers
+ * differ.
+ *
+ */
+#define EXPECT_VECTOR_EQ(actual, expected)                                                                        \
+    {                                                                                                             \
+        if (actual.size() != expected.size()) {                                                                   \
+            throw std::runtime_error(ERROR_PREFIX + "Vectors " + #actual + " (" + std::to_string(actual.size()) + \
+                                     " elements) and " + #expected + "(" + std::to_string(expected.size()) +      \
+                                     " elements) differ in size.");                                               \
+        }                                                                                                         \
+                                                                                                                  \
+        for (int i = 0; i < actual.size(); i++) {                                                                 \
+            if (actual[i] != expected[i]) {                                                                       \
+                throw std::runtime_error(ERROR_PREFIX + "Value at index " + std::to_string(i) +                   \
+                                         " does not match! Actual value: " + std::to_string(actual[i]) +          \
+                                         ", Expected value: " + std::to_string(expected[i]));                     \
+            }                                                                                                     \
+        }                                                                                                         \
+    }
+
+/**
+ * @brief Compares two values to ensure they are not equal.
+ *
+ * @param[in] v1 Left side value.
+ * @param[in] v2 Right side value.
+ * @throws std::runtime_error if the values are equal.
+ */
+#define EXPECT_NE(v1, v2)                                                                                         \
+    {                                                                                                             \
+        if (v1 == v2)                                                                                             \
+            throw std::runtime_error(ERROR_PREFIX +                                                               \
+                                     "Expected the following values to not be equal, but they were: " #v1 +       \
+                                     " != " #v2 + " (" + std::to_string(v1) + " != " + std::to_string(v2) + ")"); \
+    }
+
+/**
+ * @brief Tests whether a comparison is true.
+ *
+ * @param[in] comparison The comparison to test.
+ * @throws std::runtime_error if the comparison is false.
+ */
+#define EXPECT_TRUE(comparison)                                                                                 \
+    {                                                                                                           \
+        if (!(comparison))                                                                                      \
+            throw std::runtime_error(ERROR_PREFIX + #comparison + " expected to be true, but returned false."); \
+    }
+
+/**
+ * @brief Tests whether a comparison is false.
+ *
+ * @param[in] comparison The comparison to test.
+ * @throws std::runtime_error if the comparison returns true.
+ */
+#define EXPECT_FALSE(comparison)                                                                                \
+    {                                                                                                           \
+        if (comparison)                                                                                         \
+            throw std::runtime_error(ERROR_PREFIX + #comparison + " expected to be false, but returned true."); \
+    }
+
+#define EXPECT_NO_ERRORS(call)                                                                                   \
+    try {                                                                                                        \
+        call;                                                                                                    \
+    } catch (const roccv::Exception& e) {                                                                        \
+        throw std::runtime_error(ERROR_PREFIX + #call +                                                          \
+                                 ". Expected no exceptions, but received the following exception: " + e.what()); \
     }
 
 /**
