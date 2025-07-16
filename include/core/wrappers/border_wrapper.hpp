@@ -67,7 +67,8 @@ class BorderWrapper {
      * @return A reference to the underlying data or a fallback border value of type T.
      */
     __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
-        // Constant border type implementation
+        // Constant border type implementation. This is a special case which doesn't remap values, but rather returns
+        // the provided constant value.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_CONSTANT) {
             if (w < 0 || w >= width() || h < 0 || h >= height())
                 return m_border_value;
@@ -75,51 +76,58 @@ class BorderWrapper {
                 return m_desc.at(n, h, w, c);
         }
 
-        // Reflect border type implementation
-        else if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
-            // clang-format off
-            bool x_overflow_n = (w < 0);
-            bool x_overflow_p = (w >= width());
-            int64_t x = (x_overflow_n) * (std::abs(w + 1) % width()) +
-                        (x_overflow_p) * (width() - (w % width()) - 1) + 
-                        (!x_overflow_n && !x_overflow_p) * w;
-            
-        
-            bool y_overflow_n = (h < 0);
-            bool y_overflow_p = (h >= height());
-            int64_t y = (y_overflow_n) * (std::abs(h + 1) % height()) +
-                        (y_overflow_p) * (height() - (h % height()) - 1) + 
-                        (!y_overflow_n && !y_overflow_p) * h;
-            // clang-format on
+        // We can return early if our coordinates are within the bounds. This is to avoid expensive calculations
+        // required at image borders. While this may cause branch divergence, a good bulk of the pixels should fall
+        // within image bounds and will take the same branch. This is preferred over having to do expensive calculations
+        // for EVERY pixel in the image (most of which do not require said calculations).
+        if (w >= 0 && w < width() && h >= 0 && h < height()) {
+            return m_desc.at(n, h, w, c);
+        }
 
-            return m_desc.at(n, y, x, c);
+        // Otherwise, do some additional calculations to map the provided x and y coordinates to be within bounds.
+        int64_t x = w, y = h;
+
+        // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
+        // is the intended behavior for this border mode.)
+        if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
+            int64_t tWidth = width();
+            // There is a special case if we have a dimension of size 1
+            if (tWidth == 1) {
+                x = 0;
+            } else {
+                int64_t scale = tWidth * 2;
+                int64_t val = (w % scale + scale) % scale;
+                x = (val < tWidth) ? val : scale - 1 - val;
+            }
+
+            int64_t tHeight = height();
+            if (tHeight == 1) {
+                y = 0;
+            } else {
+                int64_t scale = tHeight * 2;
+                int64_t val = (h % scale + scale) % scale;
+                y = (val < tHeight) ? val : scale - 1 - val;
+            }
         }
 
         // Replicate border type implementation
-        else if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            int64_t x = std::clamp<int64_t>(w, 0, width() - 1);
-            int64_t y = std::clamp<int64_t>(h, 0, height() - 1);
-            return m_desc.at(n, y, x, c);
+        if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
+            x = std::clamp<int64_t>(w, 0, width() - 1);
+            y = std::clamp<int64_t>(h, 0, height() - 1);
         }
 
         // Wrap border type implementation
-        else if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
-            // clang-format off
-            bool x_overflow = (w < 0 || w >= width());
-            int64_t x = x_overflow * (w % width() + width()) % width() +
-                        !x_overflow * w;
+        if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
+            if (w < 0 || w >= width()) {
+                x = (w % width() + width()) % width();
+            }
 
-            bool y_overflow = (h < 0 || h >= height());
-            int64_t y = y_overflow * (h % height() + height()) % height() +
-                        !y_overflow * h;
-            //clang-format on
-
-            return m_desc.at(n, y, x, c);
+            if (h < 0 || h >= height()) {
+                y = (h % height() + height()) % height();
+            }
         }
 
-        else {
-            static_assert(false, "BorderType tparam must be a supported border mode.");
-        }
+        return m_desc.at(n, y, x, c);
     }
 
     /**

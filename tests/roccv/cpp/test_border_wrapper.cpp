@@ -73,17 +73,48 @@ BT GoldenBorderAt(ImageWrapper<T>& input, const eBorderType borderMode, T border
         }
 
         case eBorderType::BORDER_TYPE_REFLECT: {
-            // TODO: Reflection golden implementation
+            // Note, BORDER_TYPE_REFLECT also copies the border pixels. This behavior is intended, as an additional
+            // BORDER_TYPE_REFLECT101 will be implemented to handle reflections without copying the pixels on the
+            // border.
+
+            int64_t width = input.width();
+            // Handle the special case where we have a dimension of size 1.
+            if (width == 1) {
+                outX = 0;
+            } else {
+                int64_t scale = width * 2;  // The period of the reflection, used for wrapping.
+                int64_t val = (x % scale + scale) % scale;
+                outX = (val < width) ? val : scale - 1 - val;
+            }
+
+            // Identical to the logic above, just handled along the y axis instead.
+            int64_t height = input.height();
+            if (height == 1) {
+                outY = 0;
+            } else {
+                int64_t scale = height * 2;
+                int64_t val = (y % scale + scale) % scale;
+                outY = (val < height) ? val : scale - 1 - val;
+            }
             break;
         }
 
         case eBorderType::BORDER_TYPE_REPLICATE: {
+            // BORDER_TYPE_REPLICATE just clamps out-of-bounds coordinates to the coordinate at the nearest border. We
+            // handle this for both the x and y axis.
+
             outX = std::clamp<int64_t>(x, 0, input.width() - 1);
             outY = std::clamp<int64_t>(y, 0, input.height() - 1);
             break;
         }
 
         case eBorderType::BORDER_TYPE_WRAP: {
+            // Note: We cannot just do x % input.width() since a negative divisor (x) will result in a negative number.
+            int64_t width = input.width();
+            outX = ((x % width) + width) % width;
+
+            int64_t height = input.height();
+            outY = ((y % height) + height) % height;
             break;
         }
     }
@@ -166,6 +197,14 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
     TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // clang-format on
 
