@@ -190,6 +190,8 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
+
+    // U8 datatype tests
     TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
     TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
@@ -206,6 +208,95 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+
+    // S8 datatype tests
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+
+    // S16 datatype tests
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+
+    // S32 datatype tests
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+
+    // U32 datatype tests
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+
+    // F32 datatype tests
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
     // clang-format on
 
     TEST_CASES_END();

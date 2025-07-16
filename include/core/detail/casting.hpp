@@ -109,9 +109,17 @@ __device__ __host__ T ScalarRangeCast(U v) {
         // Float to any integer
         // Signed integer values accept float ranges in [-1.0, 1.0] while unsigned integer values accept float values in
         // [0.0, 1.0].
-        constexpr float minClamp = std::is_signed_v<T> ? -1.0f : 0.0f;
-        return static_cast<T>(
-            std::round(std::clamp<U>(v, minClamp, 1.0f) * static_cast<U>(std::numeric_limits<T>::max())));
+        if constexpr (std::is_signed_v<T>) {
+            // float to signed integers
+            return v >= 1.0f    ? std::numeric_limits<T>::max()
+                   : v <= -1.0f ? std::numeric_limits<T>::min()
+                                : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+        } else {
+            // float to unsigned integers
+            return v >= 1.0f   ? std::numeric_limits<T>::max()
+                   : v <= 0.0f ? 0
+                               : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+        }
     } else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U>) {
         // Any integer to float
         return static_cast<T>(v) / static_cast<T>(std::numeric_limits<U>::max());
