@@ -11,7 +11,7 @@ Building and installing rocCV from source code
 
 The rocCV source code is available from `https://github.com/ROCm/rocCV <https://github.com/ROCm/rocCV>`_. Use the rocCV version that corresponds to the installed version of ROCm.
 
-You can use the |setup| setup script to install most :doc:`prerequisites <./rocAL-prerequisites>`:
+You can use the |setup| setup script to install most :doc:`prerequisites <./rocCV-prerequisites>`:
 
 .. code:: shell
 
@@ -56,4 +56,4 @@ You can optionally create deb, rpm, and gzip packages for distribution:
 Run ``ctest`` in the ``build`` directory to verify the installation.
 
 .. |setup| replace:: ``rocCV-setup.py``
-.. _setup: https://github.com/ROCm/rocAL/blob/develop/rocAL-setup.py
+.. _setup: https://github.com/ROCm/rocCV/blob/develop/rocCV-setup.py
