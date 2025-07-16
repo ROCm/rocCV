@@ -47,6 +47,16 @@ class BorderWrapper {
     BorderWrapper(const Tensor& tensor, T border_value) : m_desc(tensor), m_border_value(border_value) {}
 
     /**
+     * @brief Constructs a BorderWrapper from an existing ImageWrapper. Extends its capabilities to handle out of bound
+     * coordinates.
+     *
+     * @param image_wrapper The ImageWrapper to wrap around the BorderWrapper.
+     * @param border_value The fallback border color to use when using a constant border mode.
+     */
+    BorderWrapper(ImageWrapper<T> image_wrapper, T border_value)
+        : m_desc(image_wrapper), m_border_value(border_value) {}
+
+    /**
      * @brief Returns a reference to the underlying data given image coordinates. If the coordinates fall out of bounds,
      * a fallback reference based on the provided border type will be given instead.
      *
