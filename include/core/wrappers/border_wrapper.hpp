@@ -86,44 +86,43 @@ class BorderWrapper {
 
         // Otherwise, do some additional calculations to map the provided x and y coordinates to be within bounds.
         int64_t x = w, y = h;
+        int64_t imgWidth = width(), imgHeight = height();
 
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
-            int64_t tWidth = width();
             // There is a special case if we have a dimension of size 1
-            if (tWidth == 1) {
+            if (imgWidth == 1) {
                 x = 0;
             } else {
-                int64_t scale = tWidth * 2;
+                int64_t scale = imgWidth * 2;
                 int64_t val = (w % scale + scale) % scale;
-                x = (val < tWidth) ? val : scale - 1 - val;
+                x = (val < imgWidth) ? val : scale - 1 - val;
             }
 
-            int64_t tHeight = height();
-            if (tHeight == 1) {
+            if (imgHeight == 1) {
                 y = 0;
             } else {
-                int64_t scale = tHeight * 2;
+                int64_t scale = imgHeight * 2;
                 int64_t val = (h % scale + scale) % scale;
-                y = (val < tHeight) ? val : scale - 1 - val;
+                y = (val < imgHeight) ? val : scale - 1 - val;
             }
         }
 
         // Replicate border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            x = std::clamp<int64_t>(w, 0, width() - 1);
-            y = std::clamp<int64_t>(h, 0, height() - 1);
+            x = std::clamp<int64_t>(w, 0, imgWidth - 1);
+            y = std::clamp<int64_t>(h, 0, imgHeight - 1);
         }
 
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
-            if (w < 0 || w >= width()) {
-                x = (w % width() + width()) % width();
+            if (w < 0 || w >= imgWidth) {
+                x = (w % imgWidth + imgWidth) % imgWidth;
             }
 
-            if (h < 0 || h >= height()) {
-                y = (h % height() + height()) % height();
+            if (h < 0 || h >= imgHeight) {
+                y = (h % imgHeight + imgHeight) % imgHeight;
             }
         }
 
