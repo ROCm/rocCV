@@ -44,6 +44,18 @@ eTestStatusType test_range_cast(int argc, char **argv) {
     TEST_CASE(EXPECT_EQ(RangeCast<float>(std::numeric_limits<uint>::max()), 1.0f));
     TEST_CASE(EXPECT_EQ(RangeCast<float>(0), 0.0f));
 
+    // Test double -> unsigned/signed integer casting
+    TEST_CASE(EXPECT_EQ(RangeCast<int>(1.0), std::numeric_limits<int>::max()));
+    TEST_CASE(EXPECT_EQ(RangeCast<int>(-1.0), std::numeric_limits<int>::min()));
+    TEST_CASE(EXPECT_EQ(RangeCast<uint>(1.0), std::numeric_limits<uint>::max()));
+    TEST_CASE(EXPECT_EQ(RangeCast<uint>(-1.0), 0));
+
+    // Testing unsigned/signed integer -> double casting
+    TEST_CASE(EXPECT_EQ(RangeCast<double>(std::numeric_limits<int>::max()), 1.0f));
+    TEST_CASE(EXPECT_EQ(RangeCast<double>(std::numeric_limits<int>::min()), -1.0f));
+    TEST_CASE(EXPECT_EQ(RangeCast<double>(std::numeric_limits<uint>::max()), 1.0f));
+    TEST_CASE(EXPECT_EQ(RangeCast<double>(0), 0.0f));
+
     // clang-format on
 
     TEST_CASES_END();

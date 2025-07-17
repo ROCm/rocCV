@@ -110,15 +110,15 @@ __device__ __host__ T ScalarRangeCast(U v) {
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_signed_v<T>) {
         // Float to signed integers
-        return v >= 1.0f    ? std::numeric_limits<T>::max()
-               : v <= -1.0f ? std::numeric_limits<T>::min()
+        return v >= T{1}    ? std::numeric_limits<T>::max()
+               : v <= T{-1} ? std::numeric_limits<T>::min()
                             : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
     }
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_unsigned_v<T>) {
         // float to unsigned integers
-        return v >= 1.0f   ? std::numeric_limits<T>::max()
-               : v <= 0.0f ? 0
+        return v >= T{1}   ? std::numeric_limits<T>::max()
+               : v <= T{0} ? 0
                            : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
     }
 
