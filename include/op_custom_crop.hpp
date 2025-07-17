@@ -55,12 +55,12 @@ class CustomCrop final : public IOperator {
      * Input:
      *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [DATA_TYPE_U8]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Output:
      *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported TensorLayout(s): [DATA_TYPE_U8]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Input/Output dependency:
      *
