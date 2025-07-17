@@ -60,7 +60,7 @@ class Flip final : public IOperator {
      * Output:
      *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC]
      *                        Channels: [1, 3, 4]
-     *       Supported TensorLayout(s)  [U8, S32, F32]
+     *       Supported DataType(s)      [U8, S32, F32]
      *
      * Input/Output dependency:
      *
