@@ -35,7 +35,7 @@ namespace {
  * @param coordinate The coordinate value to check.
  * @param dimSize The size of the dimension to check along.
  * @return true if the coordinates are out of bounds.
- * @return false if the coordinate are in bound.
+ * @return false if the coordinates are in bounds.
  */
 bool IsOutOfBounds(int32_t coordinate, int32_t dimSize) { return (coordinate < 0) || (coordinate >= dimSize); }
 
@@ -152,14 +152,14 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
     // BorderWrapper to calculate the actual calculated values.
     BorderWrapper<T, BorderType> borderWrap(ImageWrapper<T>(inputData, batchSize, imageSize.w, imageSize.h), borderVal);
     std::vector<BT> actualOutput(numElementsWithBorder);
-    int i = 0;
+    int actualIndex = 0;
     for (int batch = 0; batch < batchSize; ++batch) {
         for (int y = -borderRadius; y < imageSize.h + borderRadius; ++y) {
             for (int x = -borderRadius; x < imageSize.w + borderRadius; ++x) {
                 for (int c = 0; c < channels; ++c) {
                     T val = borderWrap.at(batch, y, x, 0);
-                    actualOutput[i] = detail::GetElement(val, c);
-                    i++;
+                    actualOutput[actualIndex] = detail::GetElement(val, c);
+                    actualIndex++;
                 }
             }
         }
@@ -169,13 +169,13 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
     // considered working at this point in the dependency chain.
     ImageWrapper<T> imageWrap(inputData, batchSize, imageSize.w, imageSize.h);
     std::vector<BT> goldenOutput(numElementsWithBorder);
-    i = 0;
+    int goldenIndex = 0;
     for (int batch = 0; batch < batchSize; ++batch) {
         for (int y = -borderRadius; y < imageSize.h + borderRadius; ++y) {
             for (int x = -borderRadius; x < imageSize.w + borderRadius; ++x) {
                 for (int c = 0; c < channels; ++c) {
-                    goldenOutput[i] = GoldenBorderAt(imageWrap, BorderType, borderVal, batch, y, x, c);
-                    i++;
+                    goldenOutput[goldenIndex] = GoldenBorderAt(imageWrap, BorderType, borderVal, batch, y, x, c);
+                    goldenIndex++;
                 }
             }
         }
