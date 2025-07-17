@@ -27,7 +27,7 @@ Exception::Exception(std::string message, eStatusType customStatus)
 
 Exception::Exception(eStatusType customStatus) : customStatus_(customStatus) {};
 
-eStatusType Exception::getStatusEnum() { return this->customStatus_; };
+eStatusType Exception::getStatusEnum() const { return this->customStatus_; };
 
 const char *Exception::what() const throw() { return this->errorMessage_.c_str(); }
 

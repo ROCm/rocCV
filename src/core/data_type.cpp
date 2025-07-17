@@ -26,11 +26,13 @@ DataType::DataType(eDataType etype) {
     switch (etype) {
         case eDataType::DATA_TYPE_U8:
         case eDataType::DATA_TYPE_S8:
+        case eDataType::DATA_TYPE_U16:
+        case eDataType::DATA_TYPE_S16:
         case eDataType::DATA_TYPE_U32:
         case eDataType::DATA_TYPE_S32:
         case eDataType::DATA_TYPE_F32:
+        case eDataType::DATA_TYPE_F64:
         case eDataType::DATA_TYPE_4S16:
-        case eDataType::DATA_TYPE_S16:
             etype_ = etype;
             return;
         default:
@@ -48,16 +50,20 @@ size_t DataType::size() const {
             return sizeof(uint8_t);
         case DATA_TYPE_S8:
             return sizeof(int8_t);
+        case DATA_TYPE_U16:
+            return sizeof(uint16_t);
+        case DATA_TYPE_S16:
+            return sizeof(short);
         case DATA_TYPE_U32:
             return sizeof(uint32_t);
         case DATA_TYPE_S32:
             return sizeof(int32_t);
         case DATA_TYPE_F32:
             return sizeof(float);
+        case DATA_TYPE_F64:
+            return sizeof(double);
         case DATA_TYPE_4S16:
             return sizeof(short4);
-        case DATA_TYPE_S16:
-            return sizeof(short);
     }
 
     return 0;

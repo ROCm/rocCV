@@ -60,7 +60,7 @@ class CenterCrop final : public IOperator {
      * Output:
      *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported TensorLayout(s): [DATA_TYPE_U8]
+     *       Supported DataType(s): [DATA_TYPE_U8]
      *
      * Input/Output dependency:
      *
