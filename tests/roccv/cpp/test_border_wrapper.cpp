@@ -227,6 +227,24 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
 
+    // U16 datatype tests
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+
     // S16 datatype tests
     TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
     TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
@@ -297,6 +315,24 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
     TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+
+    // F64 datatype tests
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_REPLICATE>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_WRAP>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_WRAP>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
     // clang-format on
 
     TEST_CASES_END();
