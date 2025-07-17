@@ -108,7 +108,7 @@ __device__ __host__ T ScalarRangeCast(U v) {
         return v;
     }
 
-    else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U>) {
+    else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_signed_v<T>) {
         // Float to signed integers
         return v >= 1.0f    ? std::numeric_limits<T>::max()
                : v <= -1.0f ? std::numeric_limits<T>::min()
