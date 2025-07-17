@@ -21,14 +21,10 @@ THE SOFTWARE.
 */
 #include <algorithm>
 #include <cstdint>
-#include <filesystem>
-#include <iostream>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/image_wrapper.hpp>
 #include <op_custom_crop.hpp>
-#include <opencv2/opencv.hpp>
-
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -150,7 +146,7 @@ void TestNegative() {
 eTestStatusType test_op_custom_crop(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
-    // Test negative Flip operator cases
+    // Test negative CustomCrop operator cases
     TEST_CASE(TestNegative());
 
     // GPU correctness tests

@@ -24,11 +24,7 @@ THE SOFTWARE.
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/image_wrapper.hpp>
-#include <filesystem>
-#include <iostream>
 #include <op_flip.hpp>
-#include <opencv2/opencv.hpp>
-
 #include "test_helpers.hpp"
 
 using namespace roccv;
