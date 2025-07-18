@@ -51,12 +51,12 @@ void GenerateGoldenCrop(std::vector<BT>& input, std::vector<BT>& output, int32_t
     ImageWrapper<T> src(input, batchSize, width, height);
     ImageWrapper<T> dst(output, batchSize, cropSize.w, cropSize.h);
 
-    int top_left_x = (width >> 1) - (cropSize.w >> 1);
-    int top_left_y = (height >> 1) - (cropSize.h >> 1);
+    int topLeftX = (width >> 1) - (cropSize.w >> 1);
+    int topLeftY = (height >> 1) - (cropSize.h >> 1);
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < cropSize.h; y++) {
             for (int x = 0; x < cropSize.w; x++) {
-                dst.at(b, y, x, 0) = detail::SaturateCast<T>(src.at(b, (y + top_left_y), (x + top_left_x), 0));
+                dst.at(b, y, x, 0) = detail::SaturateCast<T>(src.at(b, (y + topLeftY), (x + topLeftX), 0));
             }
         }
     }
@@ -87,7 +87,7 @@ void TestCorrectness(int batchSize, int width, int height, Size2D cropSize, Imag
     // Copy generated input data into input tensor
     CopyVectorIntoTensor(input, inputData);
 
-    // Run roccv::CustomCrop operator
+    // Run roccv::CenterCrop operator
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
     CenterCrop op;
