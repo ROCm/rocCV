@@ -23,6 +23,9 @@
 
 #include <hip/hip_runtime.h>
 
+#include <vector>
+
+#include "core/detail/type_traits.hpp"
 #include "core/tensor.hpp"
 
 namespace roccv {
@@ -37,6 +40,7 @@ template <typename T>
 class ImageWrapper {
    public:
     using ValueType = T;
+    using BaseType = detail::BaseType<T>;
 
     /**
      * @brief Creates an ImageWrapper from a Tensor.
@@ -63,6 +67,31 @@ class ImageWrapper {
         shape = {num_batches, tdata.shape(indexes.h), tdata.shape(indexes.w), tdata.shape(indexes.c)};
         stride = {batch_stride, tdata.stride(indexes.h), tdata.stride(indexes.w), tdata.stride(indexes.c)};
         data = static_cast<unsigned char*>(tdata.basePtr());
+    }
+
+    /**
+     * @brief Creates an ImageWrapper from a vector.
+     *
+     * @param input The input vector to wrap.
+     * @param batchSize The number of images within the batch.
+     * @param width The width of each image within the batch.
+     * @param height The height of each image within the batch.
+     */
+    ImageWrapper(std::vector<BaseType>& input, int32_t batchSize, int32_t width, int32_t height) {
+        // Calculate strides based on input (byte-wise strides)
+        stride.c = sizeof(BaseType);
+        stride.w = stride.c * detail::NumElements<T>;
+        stride.h = stride.w * width;
+        stride.n = stride.h * height;
+
+        // Copy shape information
+        shape.c = detail::NumElements<T>;
+        shape.w = width;
+        shape.h = height;
+        shape.n = batchSize;
+
+        // Copy data pointer from input vector
+        data = reinterpret_cast<unsigned char*>(input.data());
     }
 
     /**
@@ -116,6 +145,15 @@ class ImageWrapper {
     };
 
     ImageShape shape;
+
+    /**
+     * @brief Describes the number of bytes to move in order to access the next index of the shape.
+     *
+     * stride.n: Number of bytes to move to the next image in the batch.
+     * stride.h: Number of bytes to access the next row in the image.
+     * stride.w: Number of bytes to access the next pixel in the image.
+     * stride.c: Number of bytes to access the next channel in a pixel.
+     */
     ImageShape stride;
 
     unsigned char* data;

@@ -79,3 +79,11 @@ extern float4 GetFloat4FromPyList(py::list src);
  * @return double2
  */
 extern double2 GetDouble2FromTuple(py::tuple src);
+
+/**
+ * @brief Creates an int2 given a python tuple. Ensures that the provided tuple is of the right size.
+ *
+ * @param src A python tuple of size 2.
+ * @return int2
+ */
+extern int2 GetInt2FromTuple(py::tuple src);

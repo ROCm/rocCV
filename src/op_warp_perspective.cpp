@@ -73,7 +73,8 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
         };  // clang-format on
 
     auto func = funcs[interpolation];
-    assert(func != 0);
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, transMatrix, borderValue, device);
 }
 
@@ -93,7 +94,8 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
     // clang-format on
 
     auto func = funcs[borderType];
-    assert(func != 0);
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, transMatrix, interpolation, detail::RangeCast<T>(borderValue), device);
 }
 
@@ -144,6 +146,8 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
     // clang-format on
 
     auto func = funcs[dtype][channels - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, invertedTransform, interpolation, borderType, borderValue, device);
 }
 }  // namespace roccv

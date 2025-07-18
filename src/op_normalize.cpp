@@ -74,6 +74,8 @@ void dispatch_normalize_dtype(hipStream_t stream, const Tensor& input, const Ten
         funcs[2] = {dispatch_normalize_stddev<T, false>, dispatch_normalize_stddev<T, true>};
 
     auto func = funcs[(flags & ROCCV_NORMALIZE_SCALE_IS_STDDEV) != 0];
+    if (func == 0)
+        throw Exception("Not mapped to defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, base, scale, output, global_scale, shift, epsilon, device);
 }
 
@@ -132,6 +134,8 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
+    if (func == 0)
+        throw Exception("Not mapped to defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, base, scale, output, global_scale, shift, epsilon, flags, device);
 }
 }  // namespace roccv

@@ -58,4 +58,10 @@ void PyStructs::Export(py::module& m) {
         .def_readwrite("batch", &BndBoxes_t::batch)
         .def_readwrite("numBoxes", &BndBoxes_t::numBoxes)
         .def_readwrite("boxes", &BndBoxes_t::boxes);
+
+    py::class_<roccv::Size2D>(m, "Size2D")
+        .def(py::init<>())
+        .def(py::init<int, int>(), "w"_a, "h"_a)
+        .def_readwrite("w", &roccv::Size2D::w)
+        .def_readwrite("h", &roccv::Size2D::h);
 }

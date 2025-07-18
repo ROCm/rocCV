@@ -126,7 +126,8 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
     // clang-format on
 
     auto func = funcs[borderMode];
-    assert(func != 0);
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderValue), device);
 }
 
@@ -163,6 +164,8 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     // clang-format on
 
     auto func = funcs[dtype][channels - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, borderMode, borderValue, device);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////

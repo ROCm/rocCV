@@ -29,10 +29,7 @@ create_test_sourcelist(CppRocCVTests
 add_executable(RocCVTests ${CppRocCVTests})
 target_link_libraries(RocCVTests PRIVATE TestHelpers)
 
-set(TestsToRun ${CppRocCVTests})
-remove (TestsToRun system_test_main.cpp)
-
-foreach (test ${TestsToRun})
+foreach (test ${CPP_ROCCV_TEST_SOURCES})
     get_filename_component(TName ${test} NAME_WE)
     add_test(NAME ${TName} COMMAND RocCVTests ${TName} "${CMAKE_SOURCE_DIR}/data")
 endforeach()

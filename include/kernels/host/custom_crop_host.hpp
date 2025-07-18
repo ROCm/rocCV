@@ -28,19 +28,14 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Host {
-template <typename T, typename SourceWrapper, typename DestWrapper>
-void custom_crop(SourceWrapper input, DestWrapper output, Box_t cropRect,
-                 size_t channels, size_t batches) {
-    for (int b = 0; b < batches; b++) {
+template <typename SrcWrapper, typename DstWrapper>
+void custom_crop(SrcWrapper input, DstWrapper output, Box_t cropRect) {
+    for (int b = 0; b < output.batches(); b++) {
         for (int i = 0; i < cropRect.width; i++) {
             for (int j = 0; j < cropRect.height; j++) {
-                for (int k = 0; k < channels; k++) {
                     int sourceX = i + cropRect.x;
                     int sourceY = j + cropRect.y;
-                    int sourceZ = k;
-                    output.template at<T>(b, j, i, k) =
-                        input.template at<T>(b, sourceY, sourceX, sourceZ);
-                }
+                    output.at(b, j, i, 0) = input.at(b, sourceY, sourceX, 0);
             }
         }
     }
