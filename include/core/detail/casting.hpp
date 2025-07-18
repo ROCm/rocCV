@@ -104,18 +104,38 @@ template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && (!IsCompound<T> && !IsCompound<U>)>>
 __device__ __host__ T ScalarRangeCast(U v) {
     if constexpr (std::is_same_v<T, U>) {
+        // Types are the same, no work needed
         return v;
-    } else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U>) {
-        // Float to any integer
-        // Signed integer values accept float ranges in [-1.0, 1.0] while unsigned integer values accept float values in
-        // [0.0, 1.0].
-        constexpr float minClamp = std::is_signed_v<T> ? -1.0f : 0.0f;
-        return static_cast<T>(
-            std::round(std::clamp<U>(v, minClamp, 1.0f) * static_cast<U>(std::numeric_limits<T>::max())));
-    } else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U>) {
-        // Any integer to float
-        return static_cast<T>(v) / static_cast<T>(std::numeric_limits<U>::max());
-    } else {
+    }
+
+    else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_signed_v<T>) {
+        // Float to signed integers
+        return v >= T{1}    ? std::numeric_limits<T>::max()
+               : v <= T{-1} ? std::numeric_limits<T>::min()
+                            : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+    }
+
+    else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_unsigned_v<T>) {
+        // float to unsigned integers
+        return v >= T{1}   ? std::numeric_limits<T>::max()
+               : v <= T{0} ? 0
+                           : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+    }
+
+    else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U> && std::is_signed_v<U>) {
+        // Signed integer to float
+        constexpr T invmax = T{1} / static_cast<T>(std::numeric_limits<U>::max());
+        T out = static_cast<T>(v) * invmax;
+        return out < T{-1} ? T{-1} : out;
+    }
+
+    else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U> && std::is_unsigned_v<U>) {
+        // Unsigned integer to float
+        constexpr T invmax = T{1} / static_cast<T>(std::numeric_limits<U>::max());
+        return static_cast<T>(v) * invmax;
+    }
+
+    else {
         // All other cases reduce to a saturate cast
         return ScalarSaturateCast<T>(v);
     }
