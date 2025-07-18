@@ -109,7 +109,7 @@ BT GoldenBorderAt(ImageWrapper<T>& input, const eBorderType borderMode, T border
         }
 
         case eBorderType::BORDER_TYPE_WRAP: {
-            // Note: We cannot just do x % input.width() since a negative divisor (x) will result in a negative number.
+            // Note: We cannot just do x % input.width() since a negative dividend (x) will result in a negative number.
             int64_t width = input.width();
             outX = ((x % width) + width) % width;
 
