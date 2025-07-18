@@ -116,18 +116,17 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
                                      const float4 borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, const eDeviceType)>
-        funcs[4] = {
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>,
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>,
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>,
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_WRAP>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, const eDeviceType)>>
+        funcs = {
+            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_WRAP,        dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
 
-    auto func = funcs[borderMode];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(borderMode);
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderValue), device);
 }
 
@@ -157,15 +156,16 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float, eBorderType, const float4, const eDeviceType)>
-        funcs[1][4] = {
-            {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>},
+    static const std::unordered_map<
+        eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float,
+                                                 eBorderType, const float4, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8, {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>}}
         };
     // clang-format on
 
-    auto func = funcs[dtype][channels - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(dtype)[channels - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, borderMode, borderValue, device);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
