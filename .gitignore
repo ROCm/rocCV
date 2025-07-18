@@ -49,5 +49,23 @@ vcpkg_installed
 .cache
 compile_commands.json
 
+# documentation artifacts
+_build/
+_images/
+_static/
+_templates/
+_toc.yml
+_doxygen/
+docs/doxygen/html
+docs/doxygen/xml
+
+# JetBrains IDE
+.idea/
+cmake-build*/
+build*/
+
+# Python virtualenv
+.venv/
+
 # Pycache
 __pycache__/
