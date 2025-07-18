@@ -76,7 +76,8 @@ void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& 
                  {eAxis::BOTH, dispatch_flip_axis<T, eAxis::BOTH>}};
 
     auto func = funcs[flipType];
-    assert(func != 0);
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, device);
 }
 
@@ -94,18 +95,18 @@ void Flip::operator()(hipStream_t stream, const Tensor& input, const Tensor& out
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
     // clang-format off
-    std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t flipCode,
-        const eDeviceType device)> funcs[5][4] = {
-            {dispatch_flip_dtype<uchar1>, 0, dispatch_flip_dtype<uchar3>, dispatch_flip_dtype<uchar4>},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {dispatch_flip_dtype<int1>, 0, dispatch_flip_dtype<int3>, dispatch_flip_dtype<int4>},
-            {dispatch_flip_dtype<float1>, 0, dispatch_flip_dtype<float3>, dispatch_flip_dtype<float4>}
+    static const std::unordered_map<
+    eDataType, std::array<std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t flipCode,
+        const eDeviceType device)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8, {dispatch_flip_dtype<uchar1>, 0, dispatch_flip_dtype<uchar3>, dispatch_flip_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_flip_dtype<int1>, 0, dispatch_flip_dtype<int3>, dispatch_flip_dtype<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_flip_dtype<float1>, 0, dispatch_flip_dtype<float3>, dispatch_flip_dtype<float4>}}
         };
     // clang-format on
-
-    auto func = funcs[input.dtype().etype()][input.shape(input.layout().channels_index()) - 1];
-    assert(func != 0);
+    auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, flipCode, device);
 }
 }  // namespace roccv

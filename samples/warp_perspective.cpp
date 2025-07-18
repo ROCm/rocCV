@@ -30,7 +30,7 @@ THE SOFTWARE.
 using namespace roccv;
 
 /**
- * @brief Normalize operation example.
+ * @brief Warp perspective operation example.
  */
 int main(int argc, char** argv) {
     if (argc != 6) {

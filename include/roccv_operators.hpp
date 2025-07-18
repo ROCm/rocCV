@@ -22,8 +22,13 @@ THE SOFTWARE.
 
 #include "op_bilateral_filter.hpp"
 #include "op_bnd_box.hpp"
+#include "op_composite.hpp"
+#include "op_copy_make_border.hpp"
 #include "op_custom_crop.hpp"
+#include "op_center_crop.hpp"
 #include "op_cvt_color.hpp"
+#include "op_composite.hpp"
+#include "op_copy_make_border.hpp"
 #include "op_flip.hpp"
 #include "op_gamma_contrast.hpp"
 #include "op_histogram.hpp"

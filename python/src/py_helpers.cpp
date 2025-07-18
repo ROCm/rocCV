@@ -28,20 +28,19 @@ eDataType DLTypeToRoccvType(DLDataType dtype) {
     if (dtype.bits == 8) {
         if (dtype.code == kDLUInt) return eDataType::DATA_TYPE_U8;
         if (dtype.code == kDLInt) return eDataType::DATA_TYPE_S8;
-    }
-
-    else if (dtype.bits == 32) {
-        if (dtype.code == kDLFloat) return eDataType::DATA_TYPE_F32;
-        if (dtype.code == kDLUInt) return eDataType::DATA_TYPE_U32;
-        if (dtype.code == kDLInt) return eDataType::DATA_TYPE_S32;
-    }
-
-    else if (dtype.bits == 16) {
+    } else if (dtype.bits == 16) {
         if (dtype.lanes == 4) {
             return eDataType::DATA_TYPE_4S16;
         } else if (dtype.lanes == 1) {
-            return eDataType::DATA_TYPE_S16;
+            if (dtype.code == kDLUInt) return eDataType::DATA_TYPE_U16;
+            if (dtype.code == kDLInt) return eDataType::DATA_TYPE_S16;
         }
+    } else if (dtype.bits == 32) {
+        if (dtype.code == kDLFloat) return eDataType::DATA_TYPE_F32;
+        if (dtype.code == kDLUInt) return eDataType::DATA_TYPE_U32;
+        if (dtype.code == kDLInt) return eDataType::DATA_TYPE_S32;
+    } else if (dtype.bits == 64) {
+        if (dtype.code == kDLFloat) return eDataType::DATA_TYPE_F64;
     }
 
     throw std::runtime_error("Datatype is not supported.");
@@ -113,6 +112,17 @@ DLDataType RoccvTypeToDLType(eDataType dtype) {
             ret.bits = 16;
             ret.lanes = 1;
             ret.code = kDLInt;
+            break;
+        case eDataType::DATA_TYPE_U16:
+            ret.bits = 16;
+            ret.lanes = 1;
+            ret.code = kDLUInt;
+            break;
+        case eDataType::DATA_TYPE_F64:
+            ret.bits = 64;
+            ret.lanes = 1;
+            ret.code = kDLFloat;
+            break;
     }
 
     return ret;
@@ -130,4 +140,11 @@ double2 GetDouble2FromTuple(py::tuple src) {
         std::runtime_error("Cannot convert py::tuple to double2. py::tuple.size() != 2.");
     }
     return make_double2(src[0].cast<double>(), src[1].cast<double>());
+}
+
+int2 GetInt2FromTuple(py::tuple src) {
+    if (src.size() != 2) {
+        std::runtime_error("Cannot convert py::tuple to int2. py::tuple.size() != 2.");
+    }
+    return make_int2(src[0].cast<int>(), src[1].cast<int>());
 }

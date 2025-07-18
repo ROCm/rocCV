@@ -25,11 +25,13 @@ THE SOFTWARE.
 typedef enum eDataType {
     DATA_TYPE_U8 = 0, /* 8 bit unsigned integer. */
     DATA_TYPE_S8,     /* 8 bit signed integer. */
+    DATA_TYPE_U16,    /* 16 bit unsigned integer. */
+    DATA_TYPE_S16,    /* 16 bit signed integer. */
     DATA_TYPE_U32,    /* 32 bit unsigned integer. */
     DATA_TYPE_S32,    /* 32 bit signed integer. */
     DATA_TYPE_F32,    /* 32 bit single precision float */
+    DATA_TYPE_F64,    /* 64 bit double precision float */
     DATA_TYPE_4S16,   /* 4-channel 16-bit signed integer*/
-    DATA_TYPE_S16     /* 16 bit signed integer */
 } eDataType;
 
 /* Supported Tensor Layout Types. */
