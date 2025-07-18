@@ -117,7 +117,7 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
 
     // Create kernel dispatching table based on input/output datatype and number of channels.
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float,uint32_t, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float, uint32_t, const eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_normalize_dtype<uchar1>, 0, dispatch_normalize_dtype<uchar3>, dispatch_normalize_dtype<uchar4>}},
             {eDataType::DATA_TYPE_S8, {dispatch_normalize_dtype<char1>, 0, dispatch_normalize_dtype<char3>, dispatch_normalize_dtype<char4>}},

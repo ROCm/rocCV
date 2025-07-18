@@ -125,8 +125,11 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
         };
     // clang-format on
 
+    if (!funcs.contains(borderMode)) {
+        throw Exception("BilateralFilter does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(borderMode);
-    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderValue), device);
 }
 

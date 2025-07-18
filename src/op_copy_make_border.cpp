@@ -65,7 +65,7 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
                                eBorderType border_mode, float4 border_value, const eDeviceType device) {
     // clang-format off
     // Maps copy_make_border dispatchers to a given border type.
-    std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, T, const eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, T, const eDeviceType)>>
     funcs = {
         {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
         {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
@@ -74,8 +74,11 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
     };
     // clang-format on
 
+    if (!funcs.contains(border_mode)) {
+        throw Exception("Operation does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(border_mode);
-    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, top, left, detail::RangeCast<T>(border_value), device);
 }
 
@@ -108,6 +111,7 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
 
     eDataType dtype = output.dtype().etype();
     int64_t channels = output.shape(output.layout().channels_index());
+
     auto func = funcs.at(dtype)[channels - 1];
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, top, left, border_mode, border_value, device);

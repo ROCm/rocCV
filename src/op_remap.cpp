@@ -75,6 +75,11 @@ void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor
             {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>}
         };  // clang-format on
 
+    if (!funcs.contains(mapInterpolation)) {
+        throw Exception("Operation does not support the given interpolation mode for mapInterpolation.",
+                        eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(mapInterpolation);
     func(stream, input, output, map, mapValueType, alignCorners, borderValue, device);
 }
@@ -91,6 +96,11 @@ void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const T
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
         };  // clang-format on
+
+    if (!funcs.contains(inInterpolation)) {
+        throw Exception("Remap does not support the given interpolation mode for inInterpolation.",
+                        eStatusType::NOT_IMPLEMENTED);
+    }
 
     auto func = funcs.at(inInterpolation);
     func(stream, input, output, map, mapInterpolation, mapValueType, alignCorners, borderValue, device);
@@ -111,6 +121,10 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
             {eBorderType::BORDER_TYPE_WRAP,         dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
+
+    if (!funcs.contains(borderType)) {
+        throw Exception("Remap does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
 
     auto func = funcs.at(borderType);
     func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners,

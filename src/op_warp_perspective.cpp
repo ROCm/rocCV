@@ -70,8 +70,11 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
             {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
         };  // clang-format on
 
+    if (!funcs.contains(interpolation)) {
+        throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(interpolation);
-    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, transMatrix, borderValue, device);
 }
 
@@ -90,8 +93,11 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
         };
     // clang-format on
 
+    if (!funcs.contains(borderType)) {
+        throw Exception("Operator does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(borderType);
-    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, transMatrix, interpolation, detail::RangeCast<T>(borderValue), device);
 }
 
