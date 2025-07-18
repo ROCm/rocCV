@@ -1,0 +1,33 @@
+defaults:
+  numbered: False
+  maxdepth: 6
+root: index
+subtrees:
+- entries:
+  - file: what-is-component.rst
+    title: What is component?
+
+- caption: Install
+  entries:
+  - file: install/rocCV-prerequisites
+    title: rocCV prerequisites
+  - file: install/rocCV-package-install
+    title: rocCV package installation
+  - file: install/rocCV-build-and-install.rst
+    title: Build rocCV from source
+
+- caption: How to
+  entries:
+  - file: how-to/using-rocCV-cpp
+    title: Use rocCV to run an operator (C++)
+  - file: how-to/using-rocCV-python
+    title: Use rocCV to run an operator (Python)
+
+- caption: Reference
+  entries:
+  - file: reference/rocCV-supported-operators
+    title: rocCV supported operators
+    
+- caption: About
+  entries:
+  - file: license.md
