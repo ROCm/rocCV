@@ -18,20 +18,11 @@ The rocCV public repository is located at `https://github.com/ROCm/rocCV <https:
     * :doc:`rocCV prerequisites <./install/rocCV-prerequisites>`
     * :doc:`Installing rocCV with the package installer <./install/rocCV-package-install>`
     * :doc:`Building and installing rocCV from source code <./install/rocCV-build-and-install>`
-
-.. grid:: 2
-  :gutter: 3
-
-  .. grid-item-card:: Conceptual
-
   
   .. grid-item-card:: How to
 
     * :doc:`Use rocCV to run an operator (C++) <./how-to/using-rocCV-cpp>`
     * :doc:`Use rocCV to run an operator (Python) <./how-to/using-rocCV-python>`
-
-
-  .. grid-item-card:: Samples|Examples|Tutorials
 
 
   .. grid-item-card:: Reference
