@@ -27,6 +27,8 @@ subtrees:
   entries:
   - file: reference/rocCV-supported-operators
     title: rocCV supported operators
+  - file: doxygen/html/annotated
+    title: rocCV API reference
     
 - caption: About
   entries:
