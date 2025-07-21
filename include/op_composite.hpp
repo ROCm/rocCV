@@ -36,22 +36,22 @@ class Composite final : public IOperator {
      * Limitations:
      *
      * Foreground:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3]
      *       Supported DataType(s):     [U8, F32]
      *
      * Background:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3]
      *       Supported DataTypes(s):    [U8, F32]
      *
      * Mask:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [1]
-     *       Supported DataTypes(s):    [U8, F32]
+     *       Supported DataTypes(s):    [U8]
      *
      * Output:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3, 4]
      *       Supported DataTypes(s):    [U8, F32]
      *
