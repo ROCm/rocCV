@@ -59,6 +59,7 @@ void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& o
 template <typename T>
 void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t flipCode,
                          const eDeviceType device) {
+    // Determine type of flip based on the given flipCode
     eAxis flipType;
     if (flipCode == 0) {
         flipType = eAxis::X;
@@ -75,9 +76,7 @@ void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& 
                  {eAxis::Y, dispatch_flip_axis<T, eAxis::Y>},
                  {eAxis::BOTH, dispatch_flip_axis<T, eAxis::BOTH>}};
 
-    auto func = funcs[flipType];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(flipType);
     func(stream, input, output, device);
 }
 
@@ -105,8 +104,7 @@ void Flip::operator()(hipStream_t stream, const Tensor& input, const Tensor& out
         };
     // clang-format on
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, flipCode, device);
 }
 }  // namespace roccv

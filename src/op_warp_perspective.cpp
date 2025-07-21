@@ -64,17 +64,17 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
                                            const eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    const std::function<void(hipStream_t stream, const Tensor &, const Tensor &, const PerspectiveTransform, const T,
-                             const eDeviceType)>
-        funcs[3] = {
-            dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>,
-            dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>,
-            0
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor &, const Tensor &, const PerspectiveTransform, const T, const eDeviceType)>>
+        funcs = {
+            {eInterpolationType::INTERP_TYPE_NEAREST,   dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
+            {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
         };  // clang-format on
 
-    auto func = funcs[interpolation];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (!funcs.contains(interpolation)) {
+        throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(interpolation);
     func(stream, input, output, transMatrix, borderValue, device);
 }
 
@@ -84,18 +84,20 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
                                      const eBorderType borderType, const float4 borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor&, const Tensor&, const PerspectiveTransform, const eInterpolationType, T, const eDeviceType)>
-        funcs[4] = {
-            dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>,
-            dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>,
-            dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>,
-            dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_WRAP>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const PerspectiveTransform, const eInterpolationType, T, const eDeviceType)>>
+        funcs = {
+            {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_REFLECT,      dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_WRAP,         dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
 
-    auto func = funcs[borderType];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (!funcs.contains(borderType)) {
+        throw Exception("Operator does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(borderType);
     func(stream, input, output, transMatrix, interpolation, detail::RangeCast<T>(borderValue), device);
 }
 
@@ -119,7 +121,7 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
     CHECK_TENSOR_COMPARISON(output.layout() == input.layout());
     if (output.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) ==
-                                 input.shape(input.layout().batch_index()));
+                                input.shape(input.layout().batch_index()));
     }
 
     PerspectiveTransform invertedTransform;
@@ -134,20 +136,15 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor &, const Tensor &, const PerspectiveTransform,
-                             const eInterpolationType, const eBorderType, const float4, const eDeviceType)>
-        funcs[5][4] = {
-            {dispatch_warp_perspective_dtype<uchar1>, 0, dispatch_warp_perspective_dtype<uchar3>, dispatch_warp_perspective_dtype<uchar4>},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {dispatch_warp_perspective_dtype<float1>, 0, dispatch_warp_perspective_dtype<float3>, dispatch_warp_perspective_dtype<float4>}
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const PerspectiveTransform, const eInterpolationType, const eBorderType, const float4, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8,  {dispatch_warp_perspective_dtype<uchar1>, 0, dispatch_warp_perspective_dtype<uchar3>, dispatch_warp_perspective_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_warp_perspective_dtype<float1>, 0, dispatch_warp_perspective_dtype<float3>, dispatch_warp_perspective_dtype<float4>}}
         };
     // clang-format on
 
-    auto func = funcs[dtype][channels - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(dtype)[channels - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, invertedTransform, interpolation, borderType, borderValue, device);
 }
 }  // namespace roccv
