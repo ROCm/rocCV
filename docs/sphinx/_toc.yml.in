@@ -3,7 +3,6 @@ defaults:
   maxdepth: 6
 root: index
 subtrees:
-- entries:
  
 - caption: Install
   entries:
