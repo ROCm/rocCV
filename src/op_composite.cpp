@@ -59,17 +59,16 @@ void dispatch_composite_dsttype(hipStream_t stream, const Tensor& foreground, co
 template <typename SrcType>
 void dispatch_composite_srctype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
                                 const Tensor& mask, const Tensor& output, const eDeviceType device) {
-    std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>
-        funcs[5][4] = {
-            {0, 0, dispatch_composite_dsttype<SrcType, uchar3>, dispatch_composite_dsttype<SrcType, uchar4>},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, dispatch_composite_dsttype<SrcType, float3>, dispatch_composite_dsttype<SrcType, float4>}};
+    // clang-format off
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8,  {0, 0, dispatch_composite_dsttype<SrcType, uchar3>, dispatch_composite_dsttype<SrcType, uchar4>}},
+            {eDataType::DATA_TYPE_F32, {0, 0, dispatch_composite_dsttype<SrcType, float3>, dispatch_composite_dsttype<SrcType, float4>}}
+        };
+    // clang-format on
 
-    auto func = funcs[output.dtype().etype()][output.shape(output.layout().channels_index()) - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(output.dtype().etype())[output.shape(output.layout().channels_index()) - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, foreground, background, mask, output, device);
 }
 
@@ -96,16 +95,16 @@ void Composite::operator()(hipStream_t stream, const Tensor& foreground, const T
     CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_F32);
     CHECK_TENSOR_CHANNELS(output, 3, 4);
 
-    std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>
-        funcs[5][4] = {{0, 0, dispatch_composite_srctype<uchar3>, 0},
-                       {0, 0, 0, 0},
-                       {0, 0, 0, 0},
-                       {0, 0, 0, 0},
-                       {0, 0, dispatch_composite_srctype<float3>, 0}};
+    // clang-format off
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8,  {0, 0, dispatch_composite_srctype<uchar3>, 0}},
+            {eDataType::DATA_TYPE_F32, {0, 0, dispatch_composite_srctype<float3>, 0}}
+        };
+    // clang-format on
 
-    auto func = funcs[foreground.dtype().etype()][foreground.shape(output.layout().channels_index()) - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(foreground.dtype().etype())[foreground.shape(output.layout().channels_index()) - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, foreground, background, mask, output, device);
 }
 };  // namespace roccv

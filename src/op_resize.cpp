@@ -71,9 +71,11 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
                  {eInterpolationType::INTERP_TYPE_LINEAR,
                   dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>}};
 
+    if (!funcs.contains(interpolation)) {
+        throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(interpolation);
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, device);
 }
 
@@ -89,10 +91,10 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().channels_index()) ==
-                             output.shape(output.layout().channels_index()));
+                            output.shape(output.layout().channels_index()));
     if (input.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
-                                 output.shape(output.layout().batch_index()));
+                                output.shape(output.layout().batch_index()));
     }
 
     // clang-format off
@@ -105,8 +107,7 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, interpolation, device);
 }
 }  // namespace roccv

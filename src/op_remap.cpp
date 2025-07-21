@@ -24,14 +24,14 @@ THE SOFTWARE.
 #include <functional>
 
 #include "common/array_wrapper.hpp"
-#include "core/wrappers/image_wrapper.hpp"
-#include "core/wrappers/interpolation_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/math/math.hpp"
 #include "core/detail/type_traits.hpp"
-#include "kernels/host/remap_host.hpp"
+#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/remap_device.hpp"
+#include "kernels/host/remap_host.hpp"
 
 namespace roccv {
 Remap::Remap() {}
@@ -40,12 +40,11 @@ Remap::~Remap() {}
 
 template <typename T, eBorderType B, eInterpolationType I, eInterpolationType M>
 void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                                        const eRemapType mapValueType, const bool alignCorners, 
-                                        const T borderValue, const eDeviceType device) {
+                              const eRemapType mapValueType, const bool alignCorners, const T borderValue,
+                              const eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
-    InterpolationWrapper<float2, B, M> wrappedMapTensor(map, make_float2(0,0));
+    InterpolationWrapper<float2, B, M> wrappedMapTensor(map, make_float2(0, 0));
     InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);
-    
 
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
@@ -62,74 +61,80 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
             break;
         }
     }
-
 }
 
 template <typename T, eBorderType B, eInterpolationType I>
 void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                                        const eInterpolationType mapInterpolation, const eRemapType mapValueType, const bool alignCorners, 
-                                        const T borderValue, const eDeviceType device) {
+                           const eInterpolationType mapInterpolation, const eRemapType mapValueType,
+                           const bool alignCorners, const T borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    const std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eRemapType, const bool, const T,
-                             const eDeviceType)>
-        funcs[3] = {
-            dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_NEAREST>,
-            dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>,
-            0
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eRemapType, const bool, const T, const eDeviceType)>>
+        funcs = {
+            {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_NEAREST>},
+            {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>}
         };  // clang-format on
 
-    auto func = funcs[mapInterpolation];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (!funcs.contains(mapInterpolation)) {
+        throw Exception("Operation does not support the given interpolation mode for mapInterpolation.",
+                        eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(mapInterpolation);
     func(stream, input, output, map, mapValueType, alignCorners, borderValue, device);
 }
 
 template <typename T, eBorderType B>
 void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                            const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation, const eRemapType mapValueType,
-                            const bool alignCorners, const T borderValue, const eDeviceType device) {
+                                const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
+                                const eRemapType mapValueType, const bool alignCorners, const T borderValue,
+                                const eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    const std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eRemapType, const bool, const T,
-                             const eDeviceType)>
-        funcs[3] = {
-            dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>,
-            dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>,
-            0
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eRemapType, const bool, const T, const eDeviceType)>>
+        funcs = {
+            {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
+            {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
         };  // clang-format on
 
-    auto func = funcs[inInterpolation];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (!funcs.contains(inInterpolation)) {
+        throw Exception("Remap does not support the given interpolation mode for inInterpolation.",
+                        eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(inInterpolation);
     func(stream, input, output, map, mapInterpolation, mapValueType, alignCorners, borderValue, device);
 }
 
 template <typename T>
 void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                            const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation, const eRemapType mapValueType,
-                            const bool alignCorners, const eBorderType borderType, const float4 borderValue, const eDeviceType device) {
+                          const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
+                          const eRemapType mapValueType, const bool alignCorners, const eBorderType borderType,
+                          const float4 borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eInterpolationType, const eRemapType, const bool, T, const eDeviceType)>
-        funcs[4] = {
-            dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>,
-            dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>,
-            dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>,
-            dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_WRAP>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eInterpolationType, const eRemapType, const bool, T, const eDeviceType)>>
+        funcs = {
+            {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_REFLECT,      dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_WRAP,         dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
 
-    auto func = funcs[borderType];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
-    func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners, detail::RangeCast<T>(borderValue), device);
+    if (!funcs.contains(borderType)) {
+        throw Exception("Remap does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(borderType);
+    func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners,
+         detail::RangeCast<T>(borderValue), device);
 }
 
-void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map, 
-                        const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation, const eRemapType mapValueType, 
-                        const bool alignCorners, const eBorderType borderType, const float4 borderValue, eDeviceType device) {
-
+void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
+                       const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
+                       const eRemapType mapValueType, const bool alignCorners, const eBorderType borderType,
+                       const float4 borderValue, eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -143,7 +148,7 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
     // Ensure all tensors are using supported layouts.
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
-    CHECK_TENSOR_LAYOUT(map, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);                         
+    CHECK_TENSOR_LAYOUT(map, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
 
     // Ensure the layout and shapes for the input/output tensors match
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
@@ -152,20 +157,18 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
 
     eDataType dtype = input.dtype().etype();
     int64_t channels = input.shape(input.layout().channels_index());
-    
+
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &,
-                             const eInterpolationType, const eInterpolationType, const eRemapType, 
-                             const bool, const eBorderType, const float4, const eDeviceType)>
-        funcs[1][4] = {
-            {dispatch_remap_dtype<uchar1>, 0, dispatch_remap_dtype<uchar3>, dispatch_remap_dtype<uchar4>},
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const eInterpolationType, const eInterpolationType, const eRemapType,  const bool, const eBorderType, const float4, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8, {dispatch_remap_dtype<uchar1>, 0, dispatch_remap_dtype<uchar3>, dispatch_remap_dtype<uchar4>}},
         };
     // clang-format on
 
-    auto func = funcs[dtype][channels - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
-    func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners, borderType, borderValue, device);
+    auto func = funcs.at(dtype)[channels - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    func(stream, input, output, map, inInterpolation, mapInterpolation, mapValueType, alignCorners, borderType,
+         borderValue, device);
 }
-}
+}  // namespace roccv
