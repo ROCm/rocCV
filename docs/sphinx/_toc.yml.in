@@ -4,31 +4,29 @@ defaults:
 root: index
 subtrees:
 - entries:
-  - file: what-is-component.rst
-    title: What is component?
-
+ 
 - caption: Install
   entries:
   - file: install/rocCV-prerequisites
-    title: rocCV prerequisites
+    title: Prerequisites
   - file: install/rocCV-package-install
-    title: rocCV package installation
+    title: Package installation
   - file: install/rocCV-build-and-install.rst
-    title: Build rocCV from source
+    title: Build from source
 
 - caption: How to
   entries:
   - file: how-to/using-rocCV-cpp
-    title: Use rocCV to run an operator (C++)
+    title: Run an operator in C++
   - file: how-to/using-rocCV-python
-    title: Use rocCV to run an operator (Python)
+    title: Run an operator in Python
 
 - caption: Reference
   entries:
   - file: reference/rocCV-supported-operators
-    title: rocCV supported operators
+    title: Supported operators
   - file: doxygen/html/annotated
-    title: rocCV API reference
+    title: API reference
     
 - caption: About
   entries:
