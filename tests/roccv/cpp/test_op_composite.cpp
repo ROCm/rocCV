@@ -92,6 +92,7 @@ std::vector<detail::BaseType<OutputType>> GoldenComposite(std::vector<detail::Ba
                     outWrap.at(b, y, x, 0) =
                         detail::RangeCast<OutputType>((detail::MakeType<float, 4>){outVal.x, outVal.y, outVal.z, 1.0f});
                 } else {
+                    // Otherwise, there is no more work to be done and we cast the working type back to the output type
                     outWrap.at(b, y, x, 0) = detail::RangeCast<OutputType>(outVal);
                 }
             }
@@ -101,6 +102,21 @@ std::vector<detail::BaseType<OutputType>> GoldenComposite(std::vector<detail::Ba
     return output;
 }
 
+/**
+ * @brief Performs a correctness test for the Composite operator by comparing actual results to the results of the
+ * golden model.
+ *
+ * @tparam InputType The type for the foreground and background images.
+ * @tparam MaskType Type for the alpha mask images.
+ * @tparam OutputType Type for the output images.
+ * @param[in] batchSize Number of images in the batch.
+ * @param[in] width Width of images in the batch.
+ * @param[in] height Height of images in the batch.
+ * @param[in] fmt Format for foreground and background images.
+ * @param[in] mskFmt Format for mask images.
+ * @param[in] outFormat Format for output images.
+ * @param[in] device Device for this correctness test.
+ */
 template <typename InputType, typename MaskType, typename OutputType>
 void TestCorrectness(int batchSize, int width, int height, ImageFormat fmt, ImageFormat mskFmt, ImageFormat outFormat,
                      eDeviceType device) {
@@ -156,7 +172,7 @@ eTestStatusType test_op_composite(int argc, char **argv) {
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar3>(1, 80, 40, FMT_RGB8, FMT_U8, FMT_RGB8, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar3>(5, 56, 32, FMT_RGB8, FMT_U8, FMT_RGB8, eDeviceType::CPU)));
 
-    // Test RGB8 input, RGBA8 output
+    // Test RGB8 input, RGBA8 output (to ensure alpha-channel is being set properly)
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar4>(1, 80, 40, FMT_RGB8, FMT_U8, FMT_RGBA8, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar4>(5, 56, 32, FMT_RGB8, FMT_U8, FMT_RGBA8, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar4>(1, 80, 40, FMT_RGB8, FMT_U8, FMT_RGBA8, eDeviceType::CPU)));
