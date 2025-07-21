@@ -27,11 +27,12 @@ THE SOFTWARE.
 #include "operator_types.h"
 #include "op_custom_crop.hpp"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Center Crop operator.
  *
  */
-namespace roccv {
 class CenterCrop final : public IOperator {
    public:
     /**

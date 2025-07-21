@@ -27,11 +27,12 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Histogram operator.
  *
  */
-namespace roccv {
 class Histogram final : public IOperator {
    public:
     /**

@@ -26,11 +26,12 @@ THE SOFTWARE.
 #include "i_operator.hpp"
 #include "operator_types.h"
 
+
+namespace roccv {
 /**
- * @brief Class for managing the Gamma Correct operator.
+ * @brief Class for managing the Gamma Contrast operator.
  *
  */
-namespace roccv {
 class GammaContrast final : public IOperator {
    public:
     /**
