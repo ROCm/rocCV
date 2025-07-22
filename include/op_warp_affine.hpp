@@ -26,12 +26,12 @@ THE SOFTWARE.
 #include "op_warp_perspective.hpp"
 #include "operator_types.h"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Warp Affine Operator
  *
  */
-namespace roccv {
-
 // Typedef for affine transformation matrix. Row-major.
 typedef float AffineTransform[6];
 

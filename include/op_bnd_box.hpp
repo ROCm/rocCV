@@ -27,12 +27,13 @@ THE SOFTWARE.
 #include <vector>
 
 #include "core/tensor.hpp"
+
+namespace roccv {
 /**
  * @brief Class for managing the BndBox Operator
  *
  *
  */
-namespace roccv {
 class BndBox final : public IOperator {
    public:
     /**

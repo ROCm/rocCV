@@ -27,11 +27,12 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Threshold operator.
  *
  */
-namespace roccv {
 class Threshold final : public IOperator {
    public:
     /**

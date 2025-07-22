@@ -26,11 +26,12 @@ THE SOFTWARE.
 #include <i_operator.hpp>
 
 #include "core/tensor.hpp"
+
+namespace roccv {
 /**
  * @brief Class for managing the Color Conversion operator.
  *
  */
-namespace roccv {
 class CvtColor final : public IOperator {
    public:
     /**

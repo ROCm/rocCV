@@ -120,11 +120,13 @@ typedef struct {
     bool bordered;
 } Rect_t;
 
+
+namespace roccv {
+
 /**
  * @brief Describes the 2D dimensions of an image.
  *
  */
-namespace roccv {
 struct Size2D {
     int w, h;
 };

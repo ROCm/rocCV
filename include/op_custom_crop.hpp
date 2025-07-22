@@ -26,11 +26,12 @@ THE SOFTWARE.
 #include "core/tensor.hpp"
 #include "operator_types.h"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Custom Crop operator.
  *
  */
-namespace roccv {
 class CustomCrop final : public IOperator {
    public:
     /**
