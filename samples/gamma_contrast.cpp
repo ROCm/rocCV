@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
     
     // Load input image using the OpenCV library.
     // The Mat image_data will store all of the data of the image
-    // Image width can be gotten with image_data.rows
-    // Image height can be gotten with image_data.cols
+    // Image width can be gotten with image_data.cols
+    // Image height can be gotten with image_data.rows
     // The amount of channels can be gotten with image_data.channels()
     cv::Mat image_data = cv::imread(argv[1]);
 
