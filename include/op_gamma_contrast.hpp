@@ -50,14 +50,14 @@ class GammaContrast final : public IOperator {
      * Limitations:
      *
      * Input:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_U32, DATA_TYPE_F32]
+     *       Supported DataType(s):     [U8, U16, U32, F32]
      *
      * Output:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_U32, DATA_TYPE_F32]
+     *       Supported DataType(s):     [U8, U16, U32, F32]
      *
      * Input/Output dependency:
      *

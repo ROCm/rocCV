@@ -359,6 +359,8 @@ void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref)
         // Next 3 lines are needed for a workaround because std::abs is not working with templates
         T abs_res = result[i] >= ref[i] ? result[i] - ref[i] : ref[i] - result[i];
         T thresh = detail::RangeCast<T>(NEAR_EQUAL_THRESHOLD);
+        // If thresh is cast to an integer it may be round down to 0 and should be changed to 1
+        // so that there is an acceptable error threshold between the result and ref values.
         thresh = thresh == 0 ? 1 : thresh;
         if (abs_res > thresh) {
             // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
