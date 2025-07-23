@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     // Batch size is needed to create the input and output tensors
     int batchSize = 1;
 
-    // A floating point gamma value to apply to the input image
+    // A gamma value to apply to the input image
     float gammaValue = 2.2;
 
     // Create input/output tensors
