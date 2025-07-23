@@ -159,7 +159,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat fmt, Imag
     CopyTensorIntoVector(actualOutput, output);
 
     // Compare final vectors
-    EXPECT_VECTOR_EQ(actualOutput, goldenOutput);
+    CompareVectors(actualOutput, goldenOutput);
 }
 }  // namespace
 
@@ -177,6 +177,24 @@ eTestStatusType test_op_composite(int argc, char **argv) {
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar4>(5, 56, 32, FMT_RGB8, FMT_U8, FMT_RGBA8, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar4>(1, 80, 40, FMT_RGB8, FMT_U8, FMT_RGBA8, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<uchar3, uchar1, uchar4>(5, 56, 32, FMT_RGB8, FMT_U8, FMT_RGBA8, eDeviceType::CPU)));
+
+    // Test RGBf32 input/output
+    TEST_CASE((TestCorrectness<float3, uchar1, float3>(1, 80, 40, FMT_RGBf32, FMT_U8, FMT_RGBf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, uchar1, float3>(5, 56, 32, FMT_RGBf32, FMT_U8, FMT_RGBf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, uchar1, float3>(1, 80, 40, FMT_RGBf32, FMT_U8, FMT_RGBf32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, uchar1, float3>(5, 56, 32, FMT_RGBf32, FMT_U8, FMT_RGBf32, eDeviceType::CPU)));
+
+    // Test RGBf32 input, RGBAf32 output (alpha channel)
+    TEST_CASE((TestCorrectness<float3, uchar1, float4>(1, 80, 40, FMT_RGBf32, FMT_U8, FMT_RGBAf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, uchar1, float4>(5, 56, 32, FMT_RGBf32, FMT_U8, FMT_RGBAf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, uchar1, float4>(1, 80, 40, FMT_RGBf32, FMT_U8, FMT_RGBAf32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, uchar1, float4>(5, 56, 32, FMT_RGBf32, FMT_U8, FMT_RGBAf32, eDeviceType::CPU)));
+
+    // Test RGB8 input/output, F32 alpha mask
+    TEST_CASE((TestCorrectness<uchar3, float1, uchar3>(1, 80, 40, FMT_RGB8, FMT_F32, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, float1, uchar3>(5, 56, 32, FMT_RGB8, FMT_F32, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, float1, uchar3>(1, 80, 40, FMT_RGB8, FMT_F32, FMT_RGB8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, float1, uchar3>(5, 56, 32, FMT_RGB8, FMT_F32, FMT_RGB8, eDeviceType::CPU)));
 
     TEST_CASES_END();
 }
