@@ -29,78 +29,70 @@ THE SOFTWARE.
 using namespace roccv;
 
 /**
- * @brief Gamma contrast operator example.
+ * @brief Gamma contrast operator sample app.
  */
 int main(int argc, char** argv) {
-    if (argc != 4) {
+    if (argc != 3) {
         std::cerr << "Usage: " << argv[0]
-                  << " <input_image> <output_image> <output image 2>"
+                  << " <input_image> <output_image>"
                   << std::endl;
         return EXIT_FAILURE;
     }
-    eDeviceType device =  eDeviceType::GPU;
 
+    // Device to use in this sample will be the GPU
+    eDeviceType device =  eDeviceType::GPU;
     
-    
-    // Load input image
+    // Load input image using the OpenCV library.
+    // The Mat image_data will store all of the data of the image
+    // Image width can be gotten with image_data.rows
+    // Image height can be gotten with image_data.cols
+    // The amount of channels can be gotten with image_data.channels()
     cv::Mat image_data = cv::imread(argv[1]);
 
-    int batchSize = 2;
-    std::vector<float> gammaValues = {2.2, 0.8};
+    // Batch size is needed to create the input and output tensors
+    int batchSize = 1;
 
-    Tensor gammaTensor(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_N), {2}),
-                              DataType(eDataType::DATA_TYPE_F32), device);
-    
-    auto gammaTensorData = gammaTensor.exportData<TensorDataStrided>();
-
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy(gammaTensorData.basePtr(), gammaValues.data(),
-                                             gammaTensor.shape().size() * gammaTensor.dtype().size(),
-                                             hipMemcpyHostToDevice));
+    // A floating point gamma value to apply to the input image
+    float gammaValue = 2.2;
 
     // Create input/output tensors
+    // Tensor shape
+    //      - Takes layout as input, in this case NHWC (N - batch size, H - image height, W - image width, C - number of channels)
+    //      - Also takes the datatype, in this case U8 or an unsigned integer of 8 bits.
     TensorShape shape(
         TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
         {batchSize, image_data.rows, image_data.cols, image_data.channels()});
     DataType dtype(eDataType::DATA_TYPE_U8);
 
-    Tensor d_in(shape, dtype, device);
-    Tensor d_out(shape, dtype, device);
+    Tensor input(shape, dtype, device);
+    Tensor output(shape, dtype, device);
 
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
-    // Move image data to input tensor
-    size_t mem_offset = 0;
-    size_t num_images = 2;
+    // imageSize is needed to know how much data needs to be copied to the GPU
     size_t imageSize = image_data.rows * image_data.cols * image_data.channels() * sizeof(uint8_t);
-    auto d_in_data = d_in.exportData<TensorDataStrided>();
-    for (int b = 0; b < num_images; b++) {
-        HIP_VALIDATE_NO_ERRORS(
-            hipMemcpy(static_cast<uint8_t *>(d_in_data.basePtr()) + mem_offset, image_data.data, imageSize, hipMemcpyHostToDevice));
-        mem_offset += imageSize;
-    }
-
+    
+    auto input_data = input.exportData<TensorDataStrided>();
+    HIP_VALIDATE_NO_ERRORS(
+            hipMemcpy(static_cast<uint8_t *>(input_data.basePtr()), image_data.data, imageSize, hipMemcpyHostToDevice));
+    
     // Apply gamma correction
     GammaContrast gamma_contrast;
-    gamma_contrast(stream, d_in, d_out, gammaTensor, eDeviceType::GPU);
+    gamma_contrast(stream, input, output, gammaValue, device);
 
     // Move output data back to host
-    auto d_out_data = d_out.exportData<TensorDataStrided>();
+    auto output_data = output.exportData<TensorDataStrided>();
     std::vector<uint8_t> h_output(imageSize);
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy(h_output.data(), d_out_data.basePtr(), imageSize, hipMemcpyDeviceToHost));
-    std::vector<uint8_t> h_output_2(imageSize);
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy(h_output_2.data(), static_cast<uint8_t *>(d_out_data.basePtr()) + imageSize, imageSize, hipMemcpyDeviceToHost));
-
+    HIP_VALIDATE_NO_ERRORS(hipMemcpy(h_output.data(), output_data.basePtr(), imageSize, hipMemcpyDeviceToHost));
+    
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
 
     // Save the gamma-corrected image
     cv::Mat output_image(image_data.rows, image_data.cols, CV_8UC3, h_output.data());
-    cv::Mat output_image2(image_data.rows, image_data.cols, CV_8UC3, h_output_2.data());
     cv::imwrite(argv[2], output_image);
-    cv::imwrite(argv[3], output_image2);
 
     std::cout << "Gamma correction applied successfully. Output saved to: " << argv[2] << std::endl;
-    std::cout << "Gamma correction applied successfully. Output saved to: " << argv[3] << std::endl;
     
     return EXIT_SUCCESS;
 }
