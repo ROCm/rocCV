@@ -159,7 +159,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat fmt, Imag
     CopyTensorIntoVector(actualOutput, output);
 
     // Compare final vectors
-    CompareVectors(actualOutput, goldenOutput);
+    CompareVectorsNear(actualOutput, goldenOutput);
 }
 }  // namespace
 

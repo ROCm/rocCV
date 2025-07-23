@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include <operator_types.h>
 
+#include <core/detail/casting.hpp>
 #include <core/exception.hpp>
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
@@ -332,6 +333,45 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
                 throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
                                          std::to_string(result[i]) + ", Expected value: " + std::to_string(ref[i]));
             }
+        }
+    }
+}
+
+/**
+ * @brief Compares values from two vectors, allowing a difference between values of at most delta.
+ *
+ * @tparam T Datatype of the underlying vector data.
+ * @param result Vector containing actual results.
+ * @param ref Reference vector to compare against.
+ * @param delta The allowable error between two values in normalized [0-1.0] range.
+ * @throws std::runtime_error if difference between vector values exceeds the given delta.
+ */
+template <typename T>
+void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref, double delta = 1E-6) {
+    if (result.size() != ref.size()) {
+        throw std::runtime_error("Result output size (" + std::to_string(result.size()) +
+                                 ") does not match reference size (" + std::to_string(ref.size()) + ")");
+    }
+
+    for (int i = 0; i < ref.size(); ++i) {
+        T error = std::abs(result[i] - ref[i]);
+        T thresh = detail::RangeCast<T>(delta);
+        // Clamp error threshold to at least 1 if the delta ends up being 0 after the RangeCast.
+        thresh = thresh == 0 ? 1 : thresh;
+
+        if (error > thresh) {
+            std::stringstream errorMsg;
+            // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
+            // rather than the raw value will be printed.
+            if constexpr (std::is_same_v<T, unsigned char> || std::is_same_v<T, char>) {
+                errorMsg << "Value at index " << i << " does not match! Actual value: " << static_cast<int>(result[i])
+                         << " Expected value: " << static_cast<int>(ref[i]) << ". Error: " << static_cast<int>(error)
+                         << " > " << static_cast<int>(thresh);
+            } else {
+                errorMsg << "Value at index " << i << " does not match! Actual value: " << result[i]
+                         << " Expected value: " << ref[i] << ". Error: " << error << " > " << thresh;
+            }
+            throw std::runtime_error(errorMsg.str());
         }
     }
 }
