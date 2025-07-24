@@ -31,19 +31,18 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper>
-void gamma_contrast(SrcWrapper input, DstWrapper output, float *gamma) {
+void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
     
     for (int batch = 0; batch < output.batches(); batch++) {
-        float gamma_val = gamma[batch];
 #pragma omp parallel for
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
                 auto inVal = (RangeCast<work_type>(input.at(batch, y, x, 0)));
-                work_type result = math::vpowf(inVal, gamma_val);
+                work_type result = math::vpowf(inVal, gamma);
                 if constexpr (NumElements<dst_type> == 4) {
                     output.at(batch, y, x, 0) = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
                 } else {

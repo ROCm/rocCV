@@ -25,12 +25,11 @@ THE SOFTWARE.
 #include "i_operator.hpp"
 #include "operator_types.h"
 
+namespace roccv {
 /**
  * @brief Class for managing the Resize operator.
  *
  */
-
-namespace roccv {
 class Resize final : public IOperator {
    public:
     /**

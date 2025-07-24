@@ -25,6 +25,10 @@
 #include "i_operator.hpp"
 
 namespace roccv {
+/**
+ * @brief Class for managing the Composite operator.
+ *
+ */
 class Composite final : public IOperator {
    public:
     Composite() {}

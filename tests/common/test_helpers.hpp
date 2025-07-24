@@ -23,10 +23,12 @@ THE SOFTWARE.
 
 #include <operator_types.h>
 
+#include <cmath>
 #include <core/detail/casting.hpp>
 #include <core/exception.hpp>
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
+#include <cstdlib>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <random>
@@ -35,6 +37,7 @@ THE SOFTWARE.
 namespace roccv {
 namespace tests {
 
+#define NEAR_EQUAL_THRESHOLD 1e-6
 #define ERROR_PREFIX ("[" __FILE__ ":" + std::to_string(__LINE__) + "] ")
 
 /**
@@ -347,16 +350,18 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
  * @throws std::runtime_error if difference between vector values exceeds the given delta.
  */
 template <typename T>
-void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref, double delta = 1E-6) {
+void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref, double delta = NEAR_EQUAL_THRESHOLD) {
     if (result.size() != ref.size()) {
         throw std::runtime_error("Result output size (" + std::to_string(result.size()) +
                                  ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
     for (int i = 0; i < ref.size(); ++i) {
-        T error = std::abs(result[i] - ref[i]);
+        // Compute the absolute difference between reference and result vector values.
+        T error = result[i] < ref[i] ? ref[i] - result[i] : result[i] - ref[i];
         T thresh = detail::RangeCast<T>(delta);
-        // Clamp error threshold to at least 1 if the delta ends up being 0 after the RangeCast.
+        // Clamp error threshold to at least 1 if the delta ends up being 0 after the RangeCast. This is to ensure that
+        // integers which get rounded down to 0 still have some sort of proper error threshold to compare against.
         thresh = thresh == 0 ? 1 : thresh;
 
         if (error > thresh) {

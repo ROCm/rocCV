@@ -27,6 +27,10 @@
 #include "operator_types.h"
 
 namespace roccv {
+/**
+ * @brief Class for managing the CopyMakeBorder operator.
+ *
+ */
 class CopyMakeBorder final : public IOperator {
    public:
     explicit CopyMakeBorder() {}

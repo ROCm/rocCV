@@ -26,11 +26,12 @@ THE SOFTWARE.
 #include "i_operator.hpp"
 #include "operator_types.h"
 
+
+namespace roccv {
 /**
- * @brief Class for managing the Gamma Correct operator.
+ * @brief Class for managing the Gamma Contrast operator.
  *
  */
-namespace roccv {
 class GammaContrast final : public IOperator {
    public:
     /**
@@ -44,20 +45,19 @@ class GammaContrast final : public IOperator {
     ~GammaContrast() {}
 
     /**
-     * @brief @brief Executes the Gamma Contrast operation. The operation adjusts the gamma contrast on the images
-     * in a tensor. A gamma tensor is given as input to apply a different gamma value on each image in the input tensor.
+     * @brief @brief Executes the Gamma Contrast operation. The operation adjusts the gamma contrast on the input images
      *
      * Limitations:
      *
      * Input:
      *       Supported TensorLayout(s): [NHWC, HWC]
-     *                        Channels: [3]
-     *       Supported DataType(s):     [U8]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s):     [U8, U16, U32, F32]
      *
      * Output:
      *       Supported TensorLayout(s): [NHWC, HWC]
-     *                        Channels: [3]
-     *       Supported DataType(s):     [U8]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s):     [U8, U16, U32, F32]
      *
      * Input/Output dependency:
      *
@@ -74,10 +74,10 @@ class GammaContrast final : public IOperator {
      * @param[in] stream The HIP stream to run this operation on.
      * @param[in] input The input tensor.
      * @param[out] output The output tensor with gamma correction applied.
-     * @param[in] gamma One dimensional tensor with shape N, containing the gamma values for each image in the batch
+     * @param[in] gamma The gamma value to be applied.
      * @param[in] device The device type to execute on (CPU/GPU).
      */
     void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output,
-                    const roccv::Tensor& gamma, eDeviceType device = eDeviceType::GPU);
+                    float gamma, eDeviceType device = eDeviceType::GPU);
 };
 }  // namespace roccv
