@@ -324,7 +324,7 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
                                  ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
-    for (int i = 0; i < ref.size(); ++i) {
+    for (size_t i = 0; i < ref.size(); ++i) {
         if (result[i] != ref[i]) {
             // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
             // rather than the raw value will be printed.
@@ -356,7 +356,7 @@ void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref,
                                  ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
-    for (int i = 0; i < ref.size(); ++i) {
+    for (size_t i = 0; i < ref.size(); ++i) {
         // Compute the absolute difference between reference and result vector values.
         T error = result[i] < ref[i] ? ref[i] - result[i] : result[i] - ref[i];
         T thresh = detail::RangeCast<T>(delta);

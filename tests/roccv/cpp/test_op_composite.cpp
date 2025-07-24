@@ -72,7 +72,7 @@ std::vector<detail::BaseType<OutputType>> GoldenComposite(std::vector<detail::Ba
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 // Mask will always only have a single channel. We use the RangeCast to normalize it into a float of
-                // range 0-1.0f.
+                // the range [0-1.0f],
                 float1 maskVal = detail::RangeCast<float1>(maskWrap.at(b, y, x, 0));
 
                 // We cast our foreground and background values into the appropriate WorkType to maintain consistency
