@@ -37,11 +37,9 @@ BENCHMARK(GammaContrast, GPU) {
         DataType(DATA_TYPE_U8));
     Tensor input(reqs);
     Tensor output(reqs);
-    Tensor gamma(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_N), {config.batches}),
-                 DataType(eDataType::DATA_TYPE_F32));
+    float gamma = 2.2f;
 
     roccvbench::FillTensor(input);
-    roccvbench::FillTensor(gamma);
 
     GammaContrast op;
     ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, gamma), results.execution_time, config.runs);
@@ -58,11 +56,9 @@ BENCHMARK(GammaContrast, CPU) {
         DataType(DATA_TYPE_U8), eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);
-    Tensor gamma(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_N), {config.batches}),
-                 DataType(eDataType::DATA_TYPE_F32), eDeviceType::CPU);
+    float gamma = 2.2f;
 
     roccvbench::FillTensor(input);
-    roccvbench::FillTensor(gamma);
 
     GammaContrast op;
     ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, gamma, eDeviceType::CPU), results.execution_time,
