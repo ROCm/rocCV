@@ -31,7 +31,7 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 template <typename SrcWrapper, typename DstWrapper>
-__global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float *gamma) {
+__global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
@@ -43,10 +43,8 @@ __global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float *gamma
 
     if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
     
-    float gamma_val = gamma[batch];
-    
     auto inVal = (RangeCast<work_type>(input.at(batch, y, x, 0)));
-    work_type result = math::vpowf(inVal, gamma_val);
+    work_type result = math::vpowf(inVal, gamma);
     if constexpr (NumElements<dst_type> == 4) {
         output.at(batch, y, x, 0) = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
     } else {

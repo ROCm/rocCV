@@ -22,7 +22,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <operator_types.h>
-
+#include <core/detail/casting.hpp>
 #include <core/exception.hpp>
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
@@ -30,10 +30,13 @@ THE SOFTWARE.
 #include <opencv2/opencv.hpp>
 #include <random>
 #include <span>
+#include <cstdlib>
+#include <cmath>
 
 namespace roccv {
 namespace tests {
 
+#define NEAR_EQUAL_THRESHOLD 1e-6
 #define ERROR_PREFIX ("[" __FILE__ ":" + std::to_string(__LINE__) + "] ")
 
 /**
@@ -322,6 +325,44 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
 
     for (int i = 0; i < ref.size(); ++i) {
         if (result[i] != ref[i]) {
+            // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
+            // rather than the raw value will be printed.
+            if constexpr (std::is_integral_v<T>) {
+                throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
+                                         std::to_string(static_cast<int>(result[i])) +
+                                         ", Expected value: " + std::to_string(static_cast<int>(ref[i])));
+            } else {
+                throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
+                                         std::to_string(result[i]) + ", Expected value: " + std::to_string(ref[i]));
+            }
+        }
+    }
+}
+
+/**
+ * @brief Compares a vector to a reference vector and checks if the result is within a threshold range.
+ *
+ * @tparam T The base type of the vector data.
+ * @param result A vector containing data of the actual result.
+ * @param ref A vector containing data of the reference to compare against.
+ * @throws std::runtime_error if the result vector does not match with the reference vector.
+ */
+template <typename T>
+void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref) {
+    
+    if (result.size() != ref.size()) {
+        throw std::runtime_error("Result output size (" + std::to_string(result.size()) +
+                                 ") does not match reference size (" + std::to_string(ref.size()) + ")");
+    }
+
+    for (int i = 0; i < ref.size(); ++i) {
+        // Next 3 lines are needed for a workaround because std::abs is not working with templates
+        T abs_res = result[i] >= ref[i] ? result[i] - ref[i] : ref[i] - result[i];
+        T thresh = detail::RangeCast<T>(NEAR_EQUAL_THRESHOLD);
+        // If thresh is cast to an integer it may be round down to 0 and should be changed to 1
+        // so that there is an acceptable error threshold between the result and ref values.
+        thresh = thresh == 0 ? 1 : thresh;
+        if (abs_res > thresh) {
             // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
             // rather than the raw value will be printed.
             if constexpr (std::is_integral_v<T>) {

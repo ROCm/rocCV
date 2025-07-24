@@ -33,8 +33,8 @@ namespace py = pybind11;
 class PyOpGammaContrast {
    public:
     static void Export(py::module& m);
-    static PyTensor Execute(PyTensor& input, PyTensor& gamma,
+    static PyTensor Execute(PyTensor& input, float gamma,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
-    static void ExecuteInto(PyTensor& output, PyTensor& input, PyTensor& gamma,
+    static void ExecuteInto(PyTensor& output, PyTensor& input, float gamma,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
 };

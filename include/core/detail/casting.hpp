@@ -119,7 +119,7 @@ __device__ __host__ T ScalarRangeCast(U v) {
         // float to unsigned integers
         return v >= T{1}   ? std::numeric_limits<T>::max()
                : v <= T{0} ? 0
-                           : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+                           : static_cast<T>(lrintf(static_cast<U>(std::numeric_limits<T>::max()) * v));
     }
 
     else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U> && std::is_signed_v<U>) {
