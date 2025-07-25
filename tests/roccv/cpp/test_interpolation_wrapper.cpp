@@ -29,52 +29,108 @@ using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
+
+/**
+ * @brief Golden model for Bilinear pixel interpolation. This implementation is based on the repeated linear computation
+ * method described in https://en.wikipedia.org/wiki/Bilinear_interpolation.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border type for boundary conditions.
+ * @param input BorderWrapper containing input data.
+ * @param sample The sample within the image batch to index into.
+ * @param y A floating point describing the y position of the selected image.
+ * @param x A floating point describing the x position of the selected image.
+ * @return T The interpolated pixel.
+ */
+template <typename T, eBorderType BorderType>
+T GoldenLinear(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x) {
+    // Defines the vectorized float type for intermediate calculations.
+    using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
+
+    // Grab four known points around the given area
+    int64_t x1 = static_cast<int64_t>(floorf(x));
+    int64_t x2 = x1 + 1;
+    int64_t y1 = static_cast<int64_t>(floorf(y));
+    int64_t y2 = y1 + 1;
+
+    // Values of each of the known points, these are casted to a floating point representation as we require
+    // floating point arithmetic for linear interpolation.
+    WorkType q11 = detail::RangeCast<WorkType>(input.at(sample, y1, x1, 0));
+    WorkType q12 = detail::RangeCast<WorkType>(input.at(sample, y2, x1, 0));
+    WorkType q21 = detail::RangeCast<WorkType>(input.at(sample, y1, x2, 0));
+    WorkType q22 = detail::RangeCast<WorkType>(input.at(sample, y2, x2, 0));
+
+    // Perform linear interpolation on the x-axis first
+    WorkType fxy1 = (x2 - x) * q11 + (x - x1) * q21;
+    WorkType fxy2 = (x2 - x) * q12 + (x - x1) * q22;
+
+    // Then, begin interpolation in the y-direction to obtain desired result
+    WorkType fxy = (y2 - y) * fxy1 + (y - y1) * fxy2;
+
+    // Cast values back to type T.
+    return detail::RangeCast<T>(fxy);
+}
+
+/**
+ * @brief Golden model for Nearest Neighbor interpolation. This is not based on any implementation due to its
+ * simplicity. Rounds coordinates to the nearest integer.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border type for boundary conditions.
+ * @param input BorderWrapper containing input data.
+ * @param sample The sample within the image batch to index into.
+ * @param y A floating point describing the y position of the selected image.
+ * @param x A floating point describing the x position of the selected image.
+ * @return T The interpolated pixel.
+ */
+template <typename T, eBorderType BorderType>
+T GoldenNearest(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x) {
+    // Nearest neighbor interpolation. Rounds given floating point values to the nearest integer.
+    return input.at(sample, lroundf(y), lroundf(x), 0);
+}
+
+/**
+ * @brief General Golden model for image interpolation. Does interpolation, but allows you to select a given
+ * interpolation type.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border type for boundary conditions.
+ * @param input BorderWrapper containing input data.
+ * @param sample The sample within the image batch to index into.
+ * @param y A floating point describing the y position of the selected image.
+ * @param x A floating point describing the x position of the selected image.
+ * @param interp The interpolation type to use.
+ * @return T The interpolated pixel.
+ */
 template <typename T, eBorderType BorderType>
 T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x,
                         const eInterpolationType interp) {
     switch (interp) {
-        case eInterpolationType::INTERP_TYPE_NEAREST: {
-            // Nearest neighbor interpolation. Rounds given floating point values to the nearest integer.
-            return input.at(sample, lroundf(y), lroundf(x), 0);
-            break;
-        }
+        case eInterpolationType::INTERP_TYPE_NEAREST:
+            return GoldenNearest(input, sample, y, x);
 
-        case eInterpolationType::INTERP_TYPE_LINEAR: {
-            // Bilinear interpolation. Implementation based on the repeated linear interpolation computation method
-            // described in https://en.wikipedia.org/wiki/Bilinear_interpolation.
-
-            // Defines the vectorized float type for intermediate calculations.
-            using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
-
-            // Grab four known points around the given area
-            int64_t x1 = static_cast<int64_t>(floorf(x));
-            int64_t x2 = x1 + 1;
-            int64_t y1 = static_cast<int64_t>(floorf(y));
-            int64_t y2 = y1 + 1;
-
-            // Values of each of the known points, these are casted to a floating point representation as we require
-            // floating point arithmetic for linear interpolation.
-            WorkType q11 = detail::RangeCast<WorkType>(input.at(sample, y1, x1, 0));
-            WorkType q12 = detail::RangeCast<WorkType>(input.at(sample, y2, x1, 0));
-            WorkType q21 = detail::RangeCast<WorkType>(input.at(sample, y1, x2, 0));
-            WorkType q22 = detail::RangeCast<WorkType>(input.at(sample, y2, x2, 0));
-
-            // Perform linear interpolation on the x-axis first
-            WorkType fxy1 = (x2 - x) * q11 + (x - x1) * q21;
-            WorkType fxy2 = (x2 - x) * q12 + (x - x1) * q22;
-
-            // Then, begin interpolation in the y-direction to obtain desired result
-            WorkType fxy = (y2 - y) * fxy1 + (y - y1) * fxy2;
-
-            // Cast values back to type T.
-            return detail::RangeCast<T>(fxy);
-        }
+        case eInterpolationType::INTERP_TYPE_LINEAR:
+            return GoldenLinear(input, sample, y, x);
 
         default:
-            return input.at(sample, lroundf(y), lroundf(x), 0);
+            throw std::runtime_error("Interpolation type does not have a golden model yet.");
     }
 }
 
+/**
+ * @brief Compares the golden model with the rocCV version of image interpolation. This will iterate over the entire
+ * randomly generated image, and compare each pixel in the actual and golden results.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border type to use for out-of-bounds conditions.
+ * @tparam InterpType Interpolation type to test.
+ * @param batchSize Number of images in the batch.
+ * @param imageSize With and height of images in the batch.
+ * @param borderValue Fallback value when CONSTANT border mode is used.
+ * @param idxDelta A floating point delta to iterate by when iterating through the original image and interpolating
+ * pixels. For example, given an image dimension of 2 and a delta of 0.25, coordinates at 0.0, 0.25, 0.5,
+ * 0.75, 1.0, 1.25, 1.5, 1.75, 2.0 will be tested.
+ */
 template <typename T, eBorderType BorderType, eInterpolationType InterpType>
 void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, float idxDelta) {
     // Convert borderValue into the same type as image data
