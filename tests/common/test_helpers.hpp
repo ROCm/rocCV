@@ -22,16 +22,17 @@ THE SOFTWARE.
 #pragma once
 
 #include <operator_types.h>
+
+#include <cmath>
 #include <core/detail/casting.hpp>
 #include <core/exception.hpp>
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
+#include <cstdlib>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <random>
 #include <span>
-#include <cstdlib>
-#include <cmath>
 
 namespace roccv {
 namespace tests {
@@ -323,7 +324,7 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
                                  ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
-    for (int i = 0; i < ref.size(); ++i) {
+    for (size_t i = 0; i < ref.size(); ++i) {
         if (result[i] != ref[i]) {
             // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
             // rather than the raw value will be printed.
@@ -340,39 +341,42 @@ void CompareVectors(const std::vector<T>& result, const std::vector<T>& ref) {
 }
 
 /**
- * @brief Compares a vector to a reference vector and checks if the result is within a threshold range.
+ * @brief Compares values from two vectors, allowing a difference between values of at most delta.
  *
- * @tparam T The base type of the vector data.
- * @param result A vector containing data of the actual result.
- * @param ref A vector containing data of the reference to compare against.
- * @throws std::runtime_error if the result vector does not match with the reference vector.
+ * @tparam T Datatype of the underlying vector data.
+ * @param result Vector containing actual results.
+ * @param ref Reference vector to compare against.
+ * @param delta The allowable error between two values in normalized [0-1.0] range.
+ * @throws std::runtime_error if difference between vector values exceeds the given delta.
  */
 template <typename T>
-void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref) {
-    
+void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref, double delta = NEAR_EQUAL_THRESHOLD) {
     if (result.size() != ref.size()) {
         throw std::runtime_error("Result output size (" + std::to_string(result.size()) +
                                  ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
-    for (int i = 0; i < ref.size(); ++i) {
-        // Next 3 lines are needed for a workaround because std::abs is not working with templates
-        T abs_res = result[i] >= ref[i] ? result[i] - ref[i] : ref[i] - result[i];
-        T thresh = detail::RangeCast<T>(NEAR_EQUAL_THRESHOLD);
-        // If thresh is cast to an integer it may be round down to 0 and should be changed to 1
-        // so that there is an acceptable error threshold between the result and ref values.
+    for (size_t i = 0; i < ref.size(); ++i) {
+        // Compute the absolute difference between reference and result vector values.
+        T error = result[i] < ref[i] ? ref[i] - result[i] : result[i] - ref[i];
+        T thresh = detail::RangeCast<T>(delta);
+        // Clamp error threshold to at least 1 if the delta ends up being 0 after the RangeCast. This is to ensure that
+        // integers which get rounded down to 0 still have some sort of proper error threshold to compare against.
         thresh = thresh == 0 ? 1 : thresh;
-        if (abs_res > thresh) {
+
+        if (error > thresh) {
+            std::stringstream errorMsg;
             // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
             // rather than the raw value will be printed.
-            if constexpr (std::is_integral_v<T>) {
-                throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
-                                         std::to_string(static_cast<int>(result[i])) +
-                                         ", Expected value: " + std::to_string(static_cast<int>(ref[i])));
+            if constexpr (std::is_same_v<T, unsigned char> || std::is_same_v<T, char>) {
+                errorMsg << "Value at index " << i << " does not match! Actual value: " << static_cast<int>(result[i])
+                         << " Expected value: " << static_cast<int>(ref[i]) << ". Error: " << static_cast<int>(error)
+                         << " > " << static_cast<int>(thresh);
             } else {
-                throw std::runtime_error("Value at index " + std::to_string(i) + " does not match! Actual value: " +
-                                         std::to_string(result[i]) + ", Expected value: " + std::to_string(ref[i]));
+                errorMsg << "Value at index " << i << " does not match! Actual value: " << result[i]
+                         << " Expected value: " << ref[i] << ". Error: " << error << " > " << thresh;
             }
+            throw std::runtime_error(errorMsg.str());
         }
     }
 }

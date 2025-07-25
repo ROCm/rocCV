@@ -35,36 +35,46 @@ class Composite final : public IOperator {
     ~Composite() {}
 
     /**
-     * @brief Executes the Composite operation on the given HIP stream.
+     * @brief Executes the Composite operation on the given HIP stream. Compositing blends the foreground image into the
+     * background image using the values in a grayscale alpha mask.
+     *
      *
      * Limitations:
      *
      * Foreground:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3]
      *       Supported DataType(s):     [U8, F32]
+     *       Notes:                     Must be the same shape and datatype as the background tensor.
      *
      * Background:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3]
      *       Supported DataTypes(s):    [U8, F32]
+     *       Notes:                     Must be the same shape and datatype as the foreground tensor.
      *
      * Mask:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [1]
      *       Supported DataTypes(s):    [U8, F32]
+     *       Notes:                     Must be the same shape as the foreground/background tensor.
+     *                                  Can use any of the supported datatypes.
      *
      * Output:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
+     *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3, 4]
      *       Supported DataTypes(s):    [U8, F32]
+     *       Notes:                     Must be the same layout as the foreground/background/mask tensor. If 4 channels are selected,
+     *                                  an alpha channel will be created with its value at 100%. Any of the supported datatypes can
+     *                                  be used. This will convert the foreground/background images into the output datatype if they
+     *                                  differ.
      *
      * Input/Output dependency:
      *
      *       Property      |  Input == Output
      *      -------------- | -------------
      *       TensorLayout  | Yes
-     *       DataType      | Yes
+     *       DataType      | No
      *       Channels      | No
      *       Width         | Yes
      *       Height        | Yes
