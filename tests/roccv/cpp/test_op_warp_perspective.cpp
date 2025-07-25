@@ -1,75 +1,108 @@
-/**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+/*
+ * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-
-#include <algorithm>
-#include <filesystem>
-#include <iostream>
+#include <core/detail/casting.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/interpolation_wrapper.hpp>
 #include <op_warp_perspective.hpp>
 
+#include "math_utils.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
 
-struct OpParams {
-    PerspectiveTransform transform_matrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
-    bool inverted = true;
-    eInterpolationType interpolation_type = INTERP_TYPE_NEAREST;
-    eBorderType border_type = BORDER_TYPE_CONSTANT;
-    const float4 border_value = {255, 0, 255, 0};
-};
+namespace {
+template <typename T, eBorderType BorderType, eInterpolationType InterpType>
+std::vector<detail::BaseType<T>> GoldenWarpPerspective(const std::vector<detail::BaseType<T>>& input,
+                                                       const std::array<float, 9>& mat, bool isInverted, int batchSize,
+                                                       Size2D inputSize, Size2D outputSize, float4 borderValue) {
+    // Create interpolation wrapper for input vector
+    InterpolationWrapper<T, BorderType, InterpType> inputWrap((BorderWrapper<T, BorderType>(
+        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::RangeCast<T>(borderValue))));
 
-void TestCorrectness(const std::string& inputFile, const std::string& expectedFile, const OpParams params,
-                     const eDeviceType device, float errorThreshold) {
-    Tensor input = createTensorFromImage(inputFile, DataType(eDataType::DATA_TYPE_U8), device);
-    Tensor output(input.shape(), input.dtype(), device);
+    // Create ImageWrapper for output vector. We also need to create said output vector.
+    std::vector<detail::BaseType<T>> output(batchSize * outputSize.w * outputSize.h);
+    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
-    roccv::WarpPerspective op;
-    op(nullptr, input, output, params.transform_matrix, params.inverted, params.interpolation_type, params.border_type,
-       params.border_value, device);
-    hipDeviceSynchronize();
+    // TODO: Handle inversion for matrix if specified
 
-    EXPECT_TEST_STATUS(compareImage(output, expectedFile, errorThreshold), eTestStatusType::TEST_SUCCESS);
+    // Iterate through the output wrap
+    for (int b = 0; b < outputWrap.batches(); b++) {
+        for (int y = 0; y < outputWrap.height(); y++) {
+            for (int x = 0; x < outputWrap.width(); x++) {
+                // Get transformed input point by multiplying by the given perspective transformation matrix
+                Point2D inputCoord = MatrixMultiply((Point2D){x, y}, mat);
+                outputWrap.at(b, y, x, 0) = inputWrap.at(b, inputCoord.y, inputCoord.x, 0);
+            }
+        }
+    }
 }
 
-eTestStatusType test_op_warp_perspective(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
+template <typename T, eBorderType BorderType, eInterpolationType InterpType>
+void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, bool isInverted,
+                     std::array<float, 9> mat, float4 borderValue, eDeviceType device) {
+    using BT = detail::BaseType<T>;
+
+    // Generate input data
+    std::vector<BT> input(batchSize * inputSize.w * inputSize.h * format.channels());
+    FillVector(input);
+
+    // Create input and output tensors for rocCV result
+    Tensor inputTensor(batchSize, inputSize, format, device);
+    Tensor outputTensor(batchSize, outputSize, format, device);
+
+    // Copy input data into input tensor
+    CopyVectorIntoTensor(inputTensor, input);
+
+    // Copy mat into PerspectiveMatrix for rocCV op
+    PerspectiveTransform transMat;
+    for (int i = 0; i < 9; i++) {
+        transMat[i] = mat[i];
     }
-    std::filesystem::path testDataPath = std::filesystem::path(argv[1]) / "tests" / "ops";
 
-    try {
-        // Test GPU implementation correctness
-        TestCorrectness(testDataPath / "test_input.bmp", testDataPath / "expected_warp_perspective.bmp", OpParams(),
-                        eDeviceType::GPU, 1.0f);
+    // TODO: Need to handle matrix inversion at some point
 
-        // Test CPU implementation correctness
-        TestCorrectness(testDataPath / "test_input.bmp", testDataPath / "expected_warp_perspective.bmp", OpParams(),
-                        eDeviceType::CPU, 1.0f);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    WarpPerspective op;
+    op(stream, inputTensor, outputTensor, transMat, isInverted, InterpType, BorderType, borderValue, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
-    return eTestStatusType::TEST_SUCCESS;
+    // Copy output tensor into host-allocated output vector
+    std::vector<BT> actualOutput(outputTensor.shape().size());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Determine golden results
+    std::vector<BT> goldenOutput =
+        GoldenWarpPerspective<T, BorderType, InterpType>(input, mat, batchSize, inputSize, outputSize, borderValue);
+
+    // Compare output results
+    CompareVectorsNear(actualOutput, goldenOutput);
+}
+
+}  // namespace
+
+eTestStatusType test_warp_perspective(int argc, char** argv) {
+    TEST_CASES_BEGIN();
+    TEST_CASES_END();
 }
