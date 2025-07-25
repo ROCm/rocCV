@@ -30,7 +30,7 @@ using namespace roccv::tests;
 
 namespace {
 template <typename T, eBorderType BorderType>
-T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, int64_t y, int64_t x,
+T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x,
                         const eInterpolationType interp) {
     switch (interp) {
         case eInterpolationType::INTERP_TYPE_NEAREST: {
@@ -46,9 +46,9 @@ T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, int6
             using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
 
             // Grab four known points around the given area
-            int64_t x1 = static_cast<int64_t>(floor(w));
+            int64_t x1 = static_cast<int64_t>(floor(x));
             int64_t x2 = x1 + 1;
-            int64_t y1 = static_cast<int64_t>(floor(h));
+            int64_t y1 = static_cast<int64_t>(floor(y));
             int64_t y2 = y1 + 1;
 
             // Values of each of the known points, these are casted to a floating point representation as we require
@@ -63,7 +63,7 @@ T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, int6
 
             // Perform linear interpolation on the x-axis first
             WorkType fxy1 = (x2 - x) * q11 + (x - x1) * q21;
-            WorkType fxy2 = (x2 - x) * q21 + (x - x1) * q22;
+            WorkType fxy2 = (x2 - x) * q12 + (x - x1) * q22;
 
             // Then, begin interpolation in the y-direction to obtain desired result
             WorkType fxy = (y2 - y) * fxy1 + (y - y1) * fxy2;
@@ -118,7 +118,36 @@ eTestStatusType test_interpolation_wrapper(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+
+    // Test nearest neighbor interpolation with all supported datatypes
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+    
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+    
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+    
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+    
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+    
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.5f)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.5f)));
+
     // clang-format on
 
     TEST_CASES_END();
