@@ -368,7 +368,7 @@ void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref,
             std::stringstream errorMsg;
             // Additional handling in case the datatype of T is uint8_t. Must be casted to int, otherwise the character
             // rather than the raw value will be printed.
-            if constexpr (std::is_same_v<T, unsigned char> || std::is_same_v<T, char>) {
+            if constexpr (std::is_same_v<T, unsigned char> || std::is_same_v<T, signed char>) {
                 errorMsg << "Value at index " << i << " does not match! Actual value: " << static_cast<int>(result[i])
                          << " Expected value: " << static_cast<int>(ref[i]) << ". Error: " << static_cast<int>(error)
                          << " > " << static_cast<int>(thresh);
