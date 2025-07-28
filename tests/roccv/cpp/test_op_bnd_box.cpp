@@ -23,9 +23,12 @@ THE SOFTWARE.
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
+#include <core/detail/casting.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/image_wrapper.hpp>
 #include <op_bnd_box.hpp>
 #include <opencv2/opencv.hpp>
-
+#include "common/math_vector.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -33,6 +36,93 @@ using namespace roccv::tests;
 namespace fs = std::filesystem;
 
 namespace {
+
+template <typename _T>
+uint8_t u8cast(_T value) {
+    return value < 0 ? 0 : (value > 255 ? 255 : value);
+}
+
+bool pixel_in_box(float ix, float iy, float left, float right, float top, float bottom) {
+    return (ix > left) && (ix < right) && (iy > top) && (iy < bottom);
+}
+
+void blend_single_color(uchar4 &color, const uchar4 &color_in) {
+    int foreground_alpha = color_in.w;
+    int background_alpha = color.w;
+    int blend_alpha = ((background_alpha * (255 - foreground_alpha)) >> 8) + foreground_alpha;
+    color.x =
+        u8cast((((color.x * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.x * foreground_alpha)) /
+               blend_alpha);
+    color.y =
+        u8cast((((color.y * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.y * foreground_alpha)) /
+               blend_alpha);
+    color.z =
+        u8cast((((color.z * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.z * foreground_alpha)) /
+               blend_alpha);
+    color.w = blend_alpha;
+}
+
+void shade_rectangle(const Rect_t &rect, int ix, int iy, uchar4 *out_color) {
+    if (rect.bordered) {
+        if (!pixel_in_box(ix, iy, rect.i_left, rect.i_right, rect.i_top, rect.i_bottom) &&
+            pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
+            blend_single_color(out_color[0], rect.color);
+        }
+    } else {
+        if (pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
+            blend_single_color(out_color[0], rect.color);
+        }
+    }
+}
+
+/**
+ * @brief Verified golden C++ model for the bounding box operation.
+ *
+ * @tparam T Vectorized datatype of the image's pixels.
+ * @tparam BT Base type of the image's data.
+ * @param[in] input Input vector containing image data.
+ * @param[out] output Output vector containing cropped image data.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] width Image width.
+ * @param[in] height Image height.
+ * @param[in] bboxes Bounding box array.
+ * @return None.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, int32_t width, int32_t height, BndBoxes_t bboxes) {
+    // Wrap input/output vectors for simplified data access
+    ImageWrapper<T> src(input, batchSize, width, height);
+    ImageWrapper<T> dst(output, batchSize, width, height);
+
+    std::vector<Rect_t> rects;
+    BndBox op;
+    op.generateRects(rects, bboxes, height, width);
+
+    bool has_alpha = detail::NumElements<T> == 4 ? true : false;
+
+    for (int b_idx = 0; b_idx < batchSize; b_idx++) {
+        for (int y_idx = 0; y_idx < height; y_idx++) {
+            for (int x_idx = 0; x_idx < width; x_idx++) {
+                uchar4 shaded_pixel{0, 0, 0, 0}; // Todo use template
+
+                for (size_t i = 0; i < rects.size(); i++) {
+                    Rect_t curr_rect = rects[i];
+                    if (curr_rect.batch <= b_idx)
+                        shade_rectangle(curr_rect, x_idx, y_idx, &shaded_pixel);
+                }
+
+                uchar4 out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));
+                out_color.w = has_alpha ? out_color.w : 255;
+
+                if (shaded_pixel.w != 0)
+                    blend_single_color(out_color, shaded_pixel);
+
+                MathVector::trunc(out_color, &dst.at(b_idx, y_idx, x_idx, 0));
+            }
+        }
+    }
+}
+
 eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedData, const eDeviceType device) {
     cv::Mat testData = cv::imread(inputFile);
     // Create input/output tensors for the image.
@@ -67,7 +157,31 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
     bbox_vector[2].fillColor = {111, 159, 232, 150};
     BndBoxes_t bboxes{1, bboxes_size_vector, bbox_vector};
 
-    if (device == eDeviceType::GPU) {
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    BndBox op;
+    op(stream, input, output, bboxes, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy data from output tensor into a host allocated vector
+    std::vector<uchar> result(output.shape().size()); // Jefftest to template
+    CopyTensorIntoVector(result, output);
+
+    // Reference
+    std::vector<uchar> inputData(input.shape().size()); // Jefftest to template
+    CopyTensorIntoVector(inputData, input);
+
+    std::vector<uchar> ref(output.shape().size()); // Jefftest to template
+    //enerateGoldenBndBox<uchar4>(inputData, ref, 1, width, height, bboxes);
+    GenerateGoldenBndBox<uchar3>(inputData, ref, 1, width, height, bboxes);
+    //memcpy(ref.data(), expectedData, ref.size());
+
+    CompareVectorsNear(result, ref);
+    // Jefftest CompareVectors(result, ref);
+
+
+    /*if (device == eDeviceType::GPU) {
         hipStream_t stream;
         HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
@@ -110,7 +224,7 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
                 return eTestStatusType::UNEXPECTED_VALUE;
             }
         }
-    }
+    }*/
     return eTestStatusType::TEST_SUCCESS;
 }
 }  // namespace

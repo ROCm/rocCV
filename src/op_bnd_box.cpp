@@ -22,13 +22,13 @@ THE SOFTWARE.
 #include "op_bnd_box.hpp"
 
 #include <hip/hip_runtime.h>
-
+#include <functional>
 #include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <vector>
 
-#include "common/array_wrapper.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "common/math_vector.hpp"
 #include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
@@ -41,7 +41,46 @@ BndBox::BndBox() {}
 
 BndBox::~BndBox() {}
 
-void BndBox::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
+template <bool has_alpha, typename T>
+void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, std::vector<Rect_t> rects, const eDeviceType device) {
+    ImageWrapper<T> inputWrapper(input);
+    ImageWrapper<T> outputWrapper(output);
+
+    auto width = inputWrapper.width();
+    auto height = inputWrapper.height();
+    auto batch_size = inputWrapper.batches();
+    switch (device) {
+        case eDeviceType::GPU: {
+            const auto blockSize = 32;
+            const auto xGridSize = (width + blockSize - 1) / blockSize;
+            const auto yGridSize = (height + blockSize - 1) / blockSize;
+            const auto zGridSize = batch_size;
+
+            Rect_t *rects_ptr = nullptr;
+            const auto n_rects = rects.size();
+
+            if (n_rects > 0) {
+                HIP_VALIDATE_NO_ERRORS(hipMallocAsync(&rects_ptr, sizeof(Rect_t) * n_rects, stream));
+                HIP_VALIDATE_NO_ERRORS(
+                    hipMemcpyAsync(rects_ptr, rects.data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
+            }
+            Kernels::Device::bndbox_kernel<has_alpha, T>
+                    <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
+                        inputWrapper, outputWrapper, rects_ptr, n_rects, batch_size, height, width);
+            if (n_rects > 0) {
+                HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
+            }
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            Kernels::Host::bndbox_kernel<has_alpha, T>(inputWrapper, outputWrapper, rects.data(), rects.size(), batch_size, height, width);
+            break;
+        }
+    }
+}
+
+void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &output,
                         const BndBoxes_t bnd_boxes, eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
@@ -59,8 +98,8 @@ void BndBox::operator()(hipStream_t stream, const roccv::Tensor &input, const ro
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    const auto i_batch_i = input.shape().layout().batch_index();
-    const auto i_batch = (i_batch_i >= 0) ? input.shape()[i_batch_i] : 1;
+    //const auto i_batch_i = input.shape().layout().batch_index();
+    //const auto i_batch = (i_batch_i >= 0) ? input.shape()[i_batch_i] : 1;
     const auto i_height = input.shape()[input.shape().layout().height_index()];
     const auto i_width = input.shape()[input.shape().layout().width_index()];
     const auto i_channels = input.shape()[input.shape().layout().channels_index()];
@@ -78,14 +117,31 @@ void BndBox::operator()(hipStream_t stream, const roccv::Tensor &input, const ro
         throw Exception("Invalid channel stride: channel elements must be contiguous.", eStatusType::NOT_IMPLEMENTED);
     }
 
-    auto batch_size = i_batch;
+    //auto batch_size = i_batch;
     auto height = i_height;
     auto width = i_width;
 
     std::vector<Rect_t> rects;
     generateRects(rects, bnd_boxes, height, width);
 
-    switch (device) {
+    // Select kernel dispatcher based on number of channels and a base datatype.
+    // clang-format off
+    static const std::unordered_map<
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>, const eDeviceType)>, 4>>
+        funcs =
+        {
+            {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}}
+        };
+    // clang-format on
+
+    auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
+    if (func == 0)
+        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    func(stream, input, output, rects, device);
+
+
+
+    /*switch (device) {
         case eDeviceType::GPU: {
             const auto blockSize = 32;
             const auto xGridSize = (width + blockSize - 1) / blockSize;
@@ -132,7 +188,7 @@ void BndBox::operator()(hipStream_t stream, const roccv::Tensor &input, const ro
             }
             break;
         }
-    }
+    }*/
 }
 
 void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes_t &bnd_boxes, int64_t height, int64_t width) {

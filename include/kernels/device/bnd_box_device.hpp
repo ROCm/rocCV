@@ -49,13 +49,13 @@ __global__ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
     }
 
     uchar4 out_color =
-        MathVector::fill(input.template at<T>(b_idx, y_idx, x_idx, 0));
+        MathVector::fill(input.at(b_idx, y_idx, x_idx, 0));
     out_color.w = has_alpha ? out_color.w : 255;
 
     if (shaded_pixel.w != 0) blend_single_color(out_color, shaded_pixel);
 
     MathVector::trunc(out_color,
-                      &output.template at<T>(b_idx, y_idx, x_idx, 0));
+                      &output.at(b_idx, y_idx, x_idx, 0));
 }
 };  // namespace Device
 };  // namespace Kernels

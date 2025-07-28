@@ -35,7 +35,7 @@ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
     for (int64_t b_idx = 0; b_idx < batch; b_idx++) {
         for (int64_t y_idx = 0; y_idx < height; y_idx++) {
             for (int64_t x_idx = 0; x_idx < width; x_idx++) {
-                uchar4 shaded_pixel{0, 0, 0, 0};
+                uchar4 shaded_pixel{0, 0, 0, 0}; // Todo use template
 
                 for (size_t i = 0; i < n_rects; i++) {
                     Rect_t curr_rect = rects[i];
@@ -44,14 +44,14 @@ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
                 }
 
                 uchar4 out_color = MathVector::fill(
-                    input.template at<T>(b_idx, y_idx, x_idx, 0));
+                    input.at(b_idx, y_idx, x_idx, 0));
                 out_color.w = has_alpha ? out_color.w : 255;
 
                 if (shaded_pixel.w != 0)
                     blend_single_color(out_color, shaded_pixel);
 
                 MathVector::trunc(
-                    out_color, &output.template at<T>(b_idx, y_idx, x_idx, 0));
+                    out_color, &output.at(b_idx, y_idx, x_idx, 0));
             }
         }
     }
