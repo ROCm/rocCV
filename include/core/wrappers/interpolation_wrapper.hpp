@@ -51,6 +51,14 @@ class InterpolationWrapper {
     InterpolationWrapper(const Tensor& tensor, T border_value) : m_desc(tensor, border_value) {}
 
     /**
+     * @brief Wraps a BorderWrapper in an Interpolation wrapper. Extends capabilities to interpolate pixel values when
+     * given non-integer coordinates.
+     *
+     * @param borderWrapper The BorderWrapper to wrap.
+     */
+    InterpolationWrapper(BorderWrapper<T, B> borderWrapper) : m_desc(borderWrapper) {}
+
+    /**
      * @brief Retrieves an interpolated value at given image batch coordinates.
      *
      * @param n Batch index.

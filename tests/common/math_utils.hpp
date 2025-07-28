@@ -20,6 +20,7 @@
  */
 
 #include <array>
+#include <optional>
 
 namespace roccv::tests {
 struct Point2D {
@@ -33,5 +34,23 @@ struct Point2D {
  * @param mat A row-major, 3x3 transformation matrix.
  * @return The transformed x and y coordinates.
  */
-extern Point2D MatrixMultiply(const Point2D point, const std::array<float, 9>& mat);
+extern Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat);
+
+/**
+ * @brief Calculates the determinant of a 3x3 matrix.
+ *
+ * @param m 3x3 matrix in row-major order.
+ * @return The determinant of the matrix.
+ */
+extern float MatDet(const std::array<float, 9>& m);
+
+/**
+ * @brief Inverts a 3x3 matrix.
+ *
+ * @param m A 3x3 matrix in row-major order.
+ * @return An optional containing the inverted 3x3 matrix in row-major order. If the matrix cannot be inverted, a
+ * nullopt is returned instead.
+ */
+extern std::optional<std::array<float, 9>> MatInv(const std::array<float, 9>& m);
+
 }  // namespace roccv::tests
