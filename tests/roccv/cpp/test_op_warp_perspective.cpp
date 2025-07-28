@@ -112,9 +112,14 @@ void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFo
 
 // Some pre-defined transformation matrices to use for our test cases. Should not randomly generate these since we want
 // to ensure we're doing transformations which make sense.
-static const std::array<float, 9> MAT_IDENTITY = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-// static const std::array<float, 9> MAT_2 = {};
-// static const std::array<float, 9> MAT_3 = {};
+// clang-format off
+static const std::array<float, 9> MAT_IDENTITY =            {1, 0,    0,  0,    1,    0,  0,      0,      1};
+static const std::array<float, 9> MAT_TRANSLATE =           {1, 0,    30, 0,    1,    50, 0,      0,      1};
+static const std::array<float, 9> MAT_SCALE =               {2, 0,    0,  0,    0.5f, 0,  0,      0,      1};
+static const std::array<float, 9> MAT_HORIZONTAL_SHEAR =    {1, 1.5f, 0,  0,    1,    0,  0,      0,      1};
+static const std::array<float, 9> MAT_VERTICAL_SHEAR =      {1, 0,    0,  0.7f, 1,    0,  0,      0,      1};
+static const std::array<float, 9> MAT_PERSPECTIVE_SKEW =    {1, 0,    0,  0,    1,    0,  0.001f, 0.001f, 1};
+// clang-format on
 
 }  // namespace
 
@@ -122,9 +127,22 @@ eTestStatusType test_op_warp_perspective(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8, false, MAT_IDENTITY, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB8, false, MAT_IDENTITY, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {20, 30}, {34, 86}, FMT_RGBA8, false, MAT_IDENTITY, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB8,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA8,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        true,  MAT_HORIZONTAL_SHEAR,    make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB8,      false, MAT_VERTICAL_SHEAR,      make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA8,     true,  MAT_PERSPECTIVE_SKEW,    make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F32,       false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf32,    true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf32,   false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F32,       true,  MAT_HORIZONTAL_SHEAR,    make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf32,    false, MAT_VERTICAL_SHEAR,      make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf32,   true,  MAT_PERSPECTIVE_SKEW,    make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
 
     // clang-format on
 
