@@ -130,7 +130,7 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>, const eDeviceType)>, 4>>
         funcs =
         {
-            {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}}
+            {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}},
         };
     // clang-format on
 
@@ -138,57 +138,6 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     if (func == 0)
         throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, rects, device);
-
-
-
-    /*switch (device) {
-        case eDeviceType::GPU: {
-            const auto blockSize = 32;
-            const auto xGridSize = (width + blockSize - 1) / blockSize;
-            const auto yGridSize = (height + blockSize - 1) / blockSize;
-            const auto zGridSize = batch_size;
-
-            Rect_t *rects_ptr;
-            const auto n_rects = rects.size();
-
-            if (n_rects > 0) {
-                HIP_VALIDATE_NO_ERRORS(hipMallocAsync(&rects_ptr, sizeof(Rect_t) * n_rects, stream));
-                HIP_VALIDATE_NO_ERRORS(
-                    hipMemcpyAsync(rects_ptr, rects.data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
-            }
-            const auto channels = input.shape()[input.shape().layout().channels_index()];
-
-            if (channels == 3) {
-                Kernels::Device::bndbox_kernel<false, uchar3>
-                    <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), rects_ptr, n_rects, batch_size, height,
-                        width);
-            } else {
-                Kernels::Device::bndbox_kernel<true, uchar4>
-                    <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), rects_ptr, n_rects, batch_size, height,
-                        width);
-            }
-            if (n_rects > 0) HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
-            break;
-        }
-        case eDeviceType::CPU: {
-            const auto channels = input.shape()[input.shape().layout().channels_index()];
-
-            if (channels == 3) {
-                Kernels::Host::bndbox_kernel<false, uchar3>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                            detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-                                                            rects.data(), rects.size(), batch_size, height, width);
-            } else {
-                Kernels::Host::bndbox_kernel<true, uchar4>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                           detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-                                                           rects.data(), rects.size(), batch_size, height, width);
-            }
-            break;
-        }
-    }*/
 }
 
 void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes_t &bnd_boxes, int64_t height, int64_t width) {

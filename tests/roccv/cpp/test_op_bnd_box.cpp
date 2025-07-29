@@ -21,19 +21,16 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
-#include <filesystem>
 #include <iostream>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/image_wrapper.hpp>
 #include <op_bnd_box.hpp>
-#include <opencv2/opencv.hpp>
 #include "common/math_vector.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
-namespace fs = std::filesystem;
 
 namespace {
 
@@ -81,7 +78,7 @@ void shade_rectangle(const Rect_t &rect, int ix, int iy, uchar4 *out_color) {
  * @tparam T Vectorized datatype of the image's pixels.
  * @tparam BT Base type of the image's data.
  * @param[in] input Input vector containing image data.
- * @param[out] output Output vector containing cropped image data.
+ * @param[out] output Output vector containing image data with drawn bounding boxes.
  * @param[in] batchSize The number of images in the batch.
  * @param[in] width Image width.
  * @param[in] height Image height.
@@ -94,6 +91,9 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
     ImageWrapper<T> src(input, batchSize, width, height);
     ImageWrapper<T> dst(output, batchSize, width, height);
 
+    // Working type for internal pixel format, which has 4 channels.
+    using WorkType = detail::MakeType<BT, 4>;
+
     std::vector<Rect_t> rects;
     BndBox op;
     op.generateRects(rects, bboxes, height, width);
@@ -103,7 +103,7 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
     for (int b_idx = 0; b_idx < batchSize; b_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
-                uchar4 shaded_pixel{0, 0, 0, 0}; // Todo use template
+                WorkType shaded_pixel{0, 0, 0, 0};
 
                 for (size_t i = 0; i < rects.size(); i++) {
                     Rect_t curr_rect = rects[i];
@@ -111,8 +111,8 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
                         shade_rectangle(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
-                uchar4 out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));
-                out_color.w = has_alpha ? out_color.w : 255;
+                WorkType out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));
+                out_color.w = has_alpha ? out_color.w : (std::numeric_limits<BT>::max());
 
                 if (shaded_pixel.w != 0)
                     blend_single_color(out_color, shaded_pixel);
@@ -123,18 +123,31 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
     }
 }
 
-eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedData, const eDeviceType device) {
-    cv::Mat testData = cv::imread(inputFile);
-    // Create input/output tensors for the image.
-    Tensor input = createTensorFromImage(inputFile, DataType(eDataType::DATA_TYPE_U8), device);
-    Tensor output(input.shape(), input.dtype(), device);
+/**
+ * @brief Tests correctness of the bounding box operator, comparing it against a generated golden result.
+ *
+ * @tparam T Underlying datatype of the image's pixels.
+ * @tparam BT Base type of the image data.
+ * @param[in] batchSize Number of images in the batch.
+ * @param[in] width Width of each image in the batch.
+ * @param[in] height Height of each image in the batch.
+ * @param[in] format Image format.
+ * @param[in] device Device this correctness test should be run on.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, int width, int height, ImageFormat format, eDeviceType device) {
+    // Create input and output tensor based on test parameters
+    Tensor input(batchSize, {width, height}, format, device);
+    Tensor output(batchSize, {width, height}, format, device);
 
-    int width = testData.cols;
-    int height = testData.rows;
+    // Create a vector and fill it with random data.
+    std::vector<BT> inputData(input.shape().size());
+    FillVector(inputData);
+    // Copy generated input data into input tensor
+    CopyVectorIntoTensor(input, inputData);
 
     std::vector<int32_t> bboxes_size_vector(1, 3);
     std::vector<BndBox_t> bbox_vector(3);
-
     bbox_vector[0].box.x = width / 4;
     bbox_vector[0].box.y = height / 4;
     bbox_vector[0].box.width = width / 2;
@@ -165,87 +178,29 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     // Copy data from output tensor into a host allocated vector
-    std::vector<uchar> result(output.shape().size()); // Jefftest to template
+    std::vector<BT> result(output.shape().size());
     CopyTensorIntoVector(result, output);
 
-    // Reference
-    std::vector<uchar> inputData(input.shape().size()); // Jefftest to template
-    CopyTensorIntoVector(inputData, input);
+    // Calculate golden output reference
+    std::vector<BT> ref(output.shape().size());
+    GenerateGoldenBndBox<T>(inputData, ref, batchSize, width, height, bboxes);
 
-    std::vector<uchar> ref(output.shape().size()); // Jefftest to template
-    //enerateGoldenBndBox<uchar4>(inputData, ref, 1, width, height, bboxes);
-    GenerateGoldenBndBox<uchar3>(inputData, ref, 1, width, height, bboxes);
-    //memcpy(ref.data(), expectedData, ref.size());
-
-    CompareVectorsNear(result, ref);
-    // Jefftest CompareVectors(result, ref);
-
-
-    /*if (device == eDeviceType::GPU) {
-        hipStream_t stream;
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-        BndBox op;
-        op(stream, input, output, bboxes, device);
-
-        auto outputTensorData = output.exportData<TensorDataStrided>();
-        std::vector<uint8_t> resultData;
-        resultData.assign(output.shape().size(), 0);
-
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(resultData.data(), outputTensorData.basePtr(),
-                                              output.shape().size() * output.dtype().size(), hipMemcpyDeviceToHost,
-                                              stream));
-
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-
-        for (int i = 0; i < output.shape().size(); i++) {
-            float err = std::abs(resultData[i] - expectedData[i]);
-
-            if (err > 1) {
-                std::cout << "BndBox(DEVICE) failed at index: " << i << " with an error of: " << err << std::endl;
-                return eTestStatusType::UNEXPECTED_VALUE;
-            }
-        }
-    } else if (device == eDeviceType::CPU) {
-        BndBox op;
-        op(nullptr, input, output, bboxes, device);
-
-        auto outputTensorData = output.exportData<TensorDataStrided>();
-        std::vector<uint8_t> resultData;
-        resultData.assign(output.shape().size(), 0);
-
-        memcpy(resultData.data(), outputTensorData.basePtr(), output.shape().size() * output.dtype().size());
-
-        for (int i = 0; i < output.shape().size(); i++) {
-            float err = std::abs(resultData[i] - expectedData[i]);
-
-            if (err > 1) {
-                std::cout << "BndBox(HOST) failed at index: " << i << " with an error of: " << err << std::endl;
-                return eTestStatusType::UNEXPECTED_VALUE;
-            }
-        }
-    }*/
-    return eTestStatusType::TEST_SUCCESS;
+    // Compare data in actual output versus the generated golden reference image
+    CompareVectors(result, ref);
 }
+
 }  // namespace
 
 eTestStatusType test_op_bnd_box(int argc, char **argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    fs::path testDataPath = fs::path(argv[1]) / "tests" / "ops";
+    TEST_CASES_BEGIN();
 
-    try {
-        cv::Mat expectedData = cv::imread(testDataPath / "expected_bnd_box.bmp");
+    // GPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 720, 480, FMT_RGB8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar4>(1, 720, 480, FMT_RGBA8, eDeviceType::GPU));
 
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedData.data, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedData.data, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    // CPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 720, 480, FMT_RGB8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar4>(1, 720, 480, FMT_RGBA8, eDeviceType::CPU));
+
+    TEST_CASES_END();
 }
