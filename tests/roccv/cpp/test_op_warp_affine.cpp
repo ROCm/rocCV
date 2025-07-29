@@ -20,57 +20,156 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <algorithm>
-#include <filesystem>
-#include <iostream>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/interpolation_wrapper.hpp>
 #include <op_warp_affine.hpp>
-#include <opencv2/opencv.hpp>
 
+#include "math_utils.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
 
-eTestStatusType TestCorrectness(const std::string &inputFile, const std::string &expectedFile,
-                                const AffineTransform xform, const bool isInverted,
-                                const eInterpolationType interpolation, const eBorderType borderMode,
-                                const float4 borderValue, float errorThreshold, const eDeviceType device) {
-    Tensor input = createTensorFromImage(inputFile, DataType(eDataType::DATA_TYPE_U8), device);
-    Tensor output(input.shape(), input.dtype(), device);
+namespace {
+template <typename T, eBorderType BorderType, eInterpolationType InterpType>
+std::vector<detail::BaseType<T>> GoldenWarpAffine(std::vector<detail::BaseType<T>>& input,
+                                                  const std::array<float, 6>& mat, bool isInverted, int batchSize,
+                                                  Size2D inputSize, Size2D outputSize, float4 borderValue) {
+    // Create interpolation wrapper for input vector
+    InterpolationWrapper<T, BorderType, InterpType> inputWrap((BorderWrapper<T, BorderType>(
+        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::RangeCast<T>(borderValue))));
 
-    WarpAffine op;
-    op(nullptr, input, output, xform, isInverted, interpolation, borderMode, borderValue, device);
-    hipDeviceSynchronize();
+    // Create ImageWrapper for output vector. We also need to create said output vector.
+    std::vector<detail::BaseType<T>> output(batchSize * outputSize.w * outputSize.h * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
-    return compareImage(output, expectedFile, errorThreshold);
+    // Prepare the transformation matrix. An affine transform is effectively a 3x3 perspective transform with its last
+    // row set to [0, 0, 1].
+    std::array<float, 9> matPerspective = {mat[0], mat[1], mat[2], mat[3], mat[4], mat[5], 0, 0, 1};
+
+    // If given matrix is not the inverted representation of the transformation, we have to invert it first (since we
+    // transform from output -> input).
+    std::optional<std::array<float, 9>> invMat = std::make_optional(matPerspective);
+    if (!isInverted) {
+        invMat = MatInv(matPerspective);
+    }
+
+    if (!invMat.has_value()) {
+        throw std::runtime_error("The given matrix could not be inverted.");
+    }
+
+    // Iterate through the output wrapper
+    for (int b = 0; b < outputWrap.batches(); b++) {
+        for (int y = 0; y < outputWrap.height(); y++) {
+            for (int x = 0; x < outputWrap.width(); x++) {
+                // Get transformed input point by multiplying by the given perspective transformation matrix
+                Point2D inputCoord =
+                    MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value());
+                outputWrap.at(b, y, x, 0) = inputWrap.at(b, inputCoord.y, inputCoord.x, 0);
+            }
+        }
+    }
+
+    return output;
 }
 
-eTestStatusType test_op_warp_affine(int argc, char **argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    std::filesystem::path testDataPath = std::filesystem::path(argv[1]) / "tests" / "ops";
+template <typename T, eBorderType BorderType, eInterpolationType InterpType>
+void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, bool isInverted,
+                     std::array<float, 6> mat, float4 borderValue, eDeviceType device) {
+    using BT = detail::BaseType<T>;
 
-    try {
-        AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
-        eInterpolationType interpolation = eInterpolationType::INTERP_TYPE_LINEAR;
+    // Generate input data
+    std::vector<BT> input(batchSize * inputSize.w * inputSize.h * format.channels());
+    FillVector(input);
 
-        // Test GPU implementation correctness
-        EXPECT_TEST_STATUS(TestCorrectness(testDataPath / "test_input.bmp", testDataPath / "expected_warp_affine.bmp",
-                                           affineMatrix, false, interpolation, eBorderType::BORDER_TYPE_CONSTANT,
-                                           make_float4(0, 0, 0, 0), 0.0f, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
+    // Create input and output tensors for rocCV result
+    Tensor inputTensor(batchSize, inputSize, format, device);
+    Tensor outputTensor(batchSize, outputSize, format, device);
 
-        // Test CPU implementation correctness
-        EXPECT_TEST_STATUS(TestCorrectness(testDataPath / "test_input.bmp", testDataPath / "expected_warp_affine.bmp",
-                                           affineMatrix, false, interpolation, eBorderType::BORDER_TYPE_CONSTANT,
-                                           make_float4(0, 0, 0, 0), 0.0f, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
+    // Copy input data into input tensor
+    CopyVectorIntoTensor(inputTensor, input);
+
+    // Copy mat into AffineTransform matrix for rocCV op
+    AffineTransform transMat;
+    for (int i = 0; i < 6; i++) {
+        transMat[i] = mat[i];
     }
 
-    return eTestStatusType::TEST_SUCCESS;
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    WarpAffine op;
+    op(stream, inputTensor, outputTensor, transMat, isInverted, InterpType, BorderType, borderValue, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy output tensor into host-allocated output vector
+    std::vector<BT> actualOutput(outputTensor.shape().size());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Determine golden results
+    std::vector<BT> goldenOutput = GoldenWarpAffine<T, BorderType, InterpType>(input, mat, isInverted, batchSize,
+                                                                               inputSize, outputSize, borderValue);
+
+    // Compare output results
+    CompareVectorsNear(actualOutput, goldenOutput, 1E-5);
+}
+
+// Some common pre-defined affine transforms to test various functionality
+// clang-format off
+static const std::array<float, 6> MAT_IDENTITY =    {1,     0, 0,     0, 1, 0};
+static const std::array<float, 6> MAT_REFLECT =     {-1.0f, 0, 0,     0, 1, 0};
+static const std::array<float, 6> MAT_TRANSLATE =   {1,     0, 10.0f, 0, 1, -30.0f};
+static const std::array<float, 6> MAT_SCALE =       {2.0f,  0, 0,     0, 1, 0};
+// clang-format on
+
+}  // namespace
+
+eTestStatusType test_op_warp_affine(int argc, char** argv) {
+    TEST_CASES_BEGIN();
+
+    // clang-format off
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB8,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA8,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // S8
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S8,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S8,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // U16
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U16,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB16,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA16,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U16,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // S16
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S16,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S16,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // U32
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U32,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB32,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA32,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U32,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // S32
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S32,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S32,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F32,       false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf32,    true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf32,   false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F32,       true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // F64
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F64,         false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf64,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf64,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F64,         true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+    // clang-format on
+
+    TEST_CASES_END();
 }
