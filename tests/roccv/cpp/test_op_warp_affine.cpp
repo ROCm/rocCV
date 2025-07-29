@@ -31,6 +31,22 @@ using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
+
+/**
+ * @brief Golden model for applying an affine transformation to an image.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border mode to use.
+ * @tparam InterpType Interpolation mode to use.
+ * @param input Vector containing input images.
+ * @param mat The affine 2x3 transformation matrix in row-major order.
+ * @param isInverted Whether the given matrix is inverted or not.
+ * @param batchSize Number of images within the batch.
+ * @param inputSize Width and height of the input images.
+ * @param outputSize Width and height of the requested output images.
+ * @param borderValue Border value to use as a fallback when going out of bounds.
+ * @return An output vector containing the results.
+ */
 template <typename T, eBorderType BorderType, eInterpolationType InterpType>
 std::vector<detail::BaseType<T>> GoldenWarpAffine(std::vector<detail::BaseType<T>>& input,
                                                   const std::array<float, 6>& mat, bool isInverted, int batchSize,
@@ -73,6 +89,22 @@ std::vector<detail::BaseType<T>> GoldenWarpAffine(std::vector<detail::BaseType<T
     return output;
 }
 
+/**
+ * @brief Tests correctness for the warp affine operator by comparing roccv::WarpAffine results with the defined golden
+ * model.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border mode to use.
+ * @tparam InterpType Interpolation mode to use.
+ * @param batchSize Number of images within the batch.
+ * @param inputSize Width and height of the input images.
+ * @param outputSize Width and height of the requested output images.
+ * @param format Format of the images (must match with T).
+ * @param isInverted Whether the given matrix is inverted or not.
+ * @param mat The affine 2x3 transformation matrix in row-major order.
+ * @param borderValue Border value to use as a fallback when going out of bounds.
+ * @param device The device to run the roccv::WarpAffine operator on.
+ */
 template <typename T, eBorderType BorderType, eInterpolationType InterpType>
 void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, bool isInverted,
                      std::array<float, 6> mat, float4 borderValue, eDeviceType device) {
