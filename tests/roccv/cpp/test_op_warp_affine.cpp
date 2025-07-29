@@ -33,7 +33,9 @@ using namespace roccv::tests;
 namespace {
 
 /**
- * @brief Golden model for applying an affine transformation to an image.
+ * @brief Golden model for applying an affine transformation to an image. This is based on the golden model for a
+ * perspective transformation, as an affine transformation is essentially a perspective transform with the last row
+ * always set to [0, 0, 1].
  *
  * @tparam T Image datatype.
  * @tparam BorderType Border mode to use.
@@ -160,6 +162,7 @@ eTestStatusType test_op_warp_affine(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
+    // GPU Tests
     // U8
     TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB8,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
@@ -201,6 +204,49 @@ eTestStatusType test_op_warp_affine(int argc, char** argv) {
     TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf64,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf64,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F64,         true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::GPU)));
+
+    // CPU Tests
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB8,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA8,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U8,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // S8
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S8,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S8,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // U16
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U16,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB16,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA16,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U16,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // S16
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S16,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S16,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // U32
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U32,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGB32,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBA32,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_U32,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // S32
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S32,        false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_S32,        true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F32,       false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf32,    true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf32,   false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F32,       true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+
+    // F64
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F64,         false, MAT_IDENTITY,            make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {20, 30}, {56, 85}, FMT_RGBf64,      true,  MAT_TRANSLATE,           make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {40, 10}, {34, 86}, FMT_RGBAf64,     false, MAT_SCALE,               make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 30}, {20, 30}, FMT_F64,         true,  MAT_REFLECT,             make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU)));
     // clang-format on
 
     TEST_CASES_END();
