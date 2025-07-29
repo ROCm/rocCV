@@ -76,24 +76,28 @@ class InterpolationWrapper {
             // -     -
             // v3 -- v4
 
-            // Intermediate values should be float vectors to avoid overflow
-            using WorkType = detail::MakeType<float, detail::NumElements<T>>;
+            // Determine the intermediate work type required for calculations. We should be using floats for performance
+            // reasons, but we can switch the work type to double if the base type of the data is already double. This
+            // is all determined at compile time based on template parameters.
+            using WorkType = std::conditional_t<std::is_same_v<detail::BaseType<T>, double>,
+                                                detail::MakeType<double, detail::NumElements<T>>,
+                                                detail::MakeType<float, detail::NumElements<T>>>;
 
-            int64_t x0 = static_cast<int64_t>(floor(w));
+            int64_t x0 = static_cast<int64_t>(floorf(w));
             int64_t x1 = x0 + 1;
-            int64_t y0 = static_cast<int64_t>(floor(h));
+            int64_t y0 = static_cast<int64_t>(floorf(h));
             int64_t y1 = y0 + 1;
 
-            auto v1 = detail::StaticCast<WorkType>(m_desc.at(n, y0, x0, c));
-            auto v2 = detail::StaticCast<WorkType>(m_desc.at(n, y0, x1, c));
-            auto v3 = detail::StaticCast<WorkType>(m_desc.at(n, y1, x0, c));
-            auto v4 = detail::StaticCast<WorkType>(m_desc.at(n, y1, x1, c));
+            auto v1 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x0, c));
+            auto v2 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x1, c));
+            auto v3 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x0, c));
+            auto v4 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x1, c));
 
             auto q1 = v1 * (x1 - w) + v2 * (w - x0);
             auto q2 = v3 * (x1 - w) + v4 * (w - x0);
             auto q = q1 * (y1 - h) + q2 * (h - y0);
 
-            return detail::SaturateCast<T>(q);
+            return detail::RangeCast<T>(q);
         }
 
         // TODO: Support other interpolation methods.
