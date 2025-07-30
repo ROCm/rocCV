@@ -22,6 +22,7 @@ THE SOFTWARE.
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
 #include <op_rotate.hpp>
+#include <opencv2/opencv.hpp>
 
 #include "math_utils.hpp"
 #include "test_helpers.hpp"
@@ -50,37 +51,27 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
                                                             borderVal));
 
     /**
-     * Affine warp for a combined rotation and translate looks like the following:
-     * [[cos(angle), -sin(angle), shiftX],
-     *  [sin(angle), cos(angle) , shiftY]]
+     * Affine warp for a combined rotation and translate looks like the following when in its inverse representation:
+     * [[cos(angle), sin(angle), shiftX],
+     *  [-sin(angle), cos(angle) , shiftY]]
      *
      * To perform a rotation, we must map from our output space to our input space by multiplying each point by the
-     * inverted form of the above matrix. We will represent our affine transformation as a 3x3 perspective
-     * transformation matrix with the bottom row set to [0, 0, 1].
+     * inverted form of the matrix (which is displayed above). We will represent our affine transformation as a 3x3
+     * perspective transformation matrix with the bottom row set to [0, 0, 1].
      */
 
     float angleRad = static_cast<float>(angle) * (M_PI / 180.0f);
     // clang-format off
     std::array<float, 9> mat = {
-        cosf(angleRad), -sinf(angleRad), static_cast<float>(shift.x),
-        sin(angleRad),  cos(angleRad),   static_cast<float>(shift.y),
+        cosf(angleRad), sinf(angleRad), static_cast<float>(shift.x),
+        -sin(angleRad),  cos(angleRad),   static_cast<float>(shift.y),
         0,              0,               1
     };
-
-    for (float f : mat) {
-        printf("%f\n", f);
-    }
-    // clang-format on
-
-    std::optional<std::array<float, 9>> matInv = MatInv(mat);
-    if (!matInv.has_value()) {
-        throw std::runtime_error("Unable to invert given matrix");
-    }
 
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < imageSize.h; y++) {
             for (int x = 0; x < imageSize.w; x++) {
-                Point2D inputCoord = MatTransform({static_cast<float>(x), static_cast<float>(y)}, matInv.value());
+                Point2D inputCoord = MatTransform({static_cast<float>(x), static_cast<float>(y)}, mat);
                 outputWrapper.at(b, y, x, 0) = inputWrapper.at(b, inputCoord.y, inputCoord.x, 0);
             }
         }
@@ -122,6 +113,13 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     std::vector<detail::BaseType<T>> goldenResults =
         GoldenRotate<T, InterpType>(input, batchSize, imageSize, angle, shift);
 
+    printf("Got here.\n");
+    cv::Mat actualMat(imageSize.h, imageSize.w, CV_8UC3, actualResults.data());
+    cv::imwrite("actual.png", actualMat);
+
+    cv::Mat expectedMat(imageSize.h, imageSize.w, CV_8UC3, goldenResults.data());
+    cv::imwrite("expected.png", expectedMat);
+
     // Compare actual and golden results
     CompareVectorsNear(actualResults, goldenResults);
 }
@@ -132,7 +130,7 @@ eTestStatusType test_op_rotate(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
-    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_RGB8, 0.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_RGB8, 54.0, eDeviceType::GPU)));
     // clang-format on
 
     TEST_CASES_END();
