@@ -43,7 +43,7 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
     size_t numElements = batchSize * imageSize.w * imageSize.h * detail::NumElements<T>;
     std::vector<detail::BaseType<T>> output(numElements);
 
-    T borderVal = detail::RangeCast<T>(make_float4(0.0f, 0.0f, 0.0f, 1.0f));
+    T borderVal = detail::RangeCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
 
     ImageWrapper<T> outputWrapper(output, batchSize, imageSize.w, imageSize.h);
     InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType> inputWrapper(
@@ -94,9 +94,6 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     int centerX = (imageSize.w + 1) / 2;
     int centerY = (imageSize.h + 1) / 2;
     double2 shift = ComputeCenterShift(centerX, centerY, angle);
-    printf("%f %f\n", shift.x, shift.y);
-
-    printf("%i\n", input[0]);
 
     // Compute actual results using roccv::Rotate
     hipStream_t stream;
@@ -113,12 +110,12 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     std::vector<detail::BaseType<T>> goldenResults =
         GoldenRotate<T, InterpType>(input, batchSize, imageSize, angle, shift);
 
-    printf("Got here.\n");
-    cv::Mat actualMat(imageSize.h, imageSize.w, CV_8UC3, actualResults.data());
-    cv::imwrite("actual.png", actualMat);
+    // printf("Got here.\n");
+    // cv::Mat actualMat(imageSize.h, imageSize.w, CV_8UC4, actualResults.data());
+    // cv::imwrite("actual.png", actualMat);
 
-    cv::Mat expectedMat(imageSize.h, imageSize.w, CV_8UC3, goldenResults.data());
-    cv::imwrite("expected.png", expectedMat);
+    // cv::Mat expectedMat(imageSize.h, imageSize.w, CV_8UC4, goldenResults.data());
+    // cv::imwrite("expected.png", expectedMat);
 
     // Compare actual and golden results
     CompareVectorsNear(actualResults, goldenResults);
@@ -130,7 +127,14 @@ eTestStatusType test_op_rotate(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
-    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_RGB8, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::GPU)));
+
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::CPU)));
+
     // clang-format on
 
     TEST_CASES_END();
