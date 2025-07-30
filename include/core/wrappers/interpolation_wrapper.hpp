@@ -51,6 +51,14 @@ class InterpolationWrapper {
     InterpolationWrapper(const Tensor& tensor, T border_value) : m_desc(tensor, border_value) {}
 
     /**
+     * @brief Wraps a BorderWrapper in an Interpolation wrapper. Extends capabilities to interpolate pixel values when
+     * given non-integer coordinates.
+     *
+     * @param borderWrapper The BorderWrapper to wrap.
+     */
+    InterpolationWrapper(BorderWrapper<T, B> borderWrapper) : m_desc(borderWrapper) {}
+
+    /**
      * @brief Retrieves an interpolated value at given image batch coordinates.
      *
      * @param n Batch index.
@@ -61,7 +69,7 @@ class InterpolationWrapper {
     inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
             // Nearest neighbor interpolation implementation
-            return m_desc.at(n, static_cast<int64_t>(std::round(h)), static_cast<int64_t>(std::round(w)), c);
+            return m_desc.at(n, lroundf(h), lroundf(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
             // v1 -- v2
