@@ -138,7 +138,7 @@ void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFo
     std::vector<BT> goldenOutput = GoldenWarpPerspective<T, BorderType, InterpType>(input, mat, isInverted, batchSize,
                                                                                     inputSize, outputSize, borderValue);
 
-    // Compare output results
+    // Compare output results. Results are only accurate up to 1E-5 with perspective warp.
     CompareVectorsNear(actualOutput, goldenOutput, 1E-5);
 }
 
