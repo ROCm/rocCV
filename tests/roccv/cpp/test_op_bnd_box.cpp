@@ -34,40 +34,35 @@ using namespace roccv::tests;
 
 namespace {
 
-template <typename _T>
-uint8_t u8cast(_T value) {
-    return value < 0 ? 0 : (value > 255 ? 255 : value);
-}
-
 bool pixel_in_box(float ix, float iy, float left, float right, float top, float bottom) {
     return (ix > left) && (ix < right) && (iy > top) && (iy < bottom);
 }
 
-void blend_single_color(uchar4 &color, const uchar4 &color_in) {
-    int foreground_alpha = color_in.w;
-    int background_alpha = color.w;
-    int blend_alpha = ((background_alpha * (255 - foreground_alpha)) >> 8) + foreground_alpha;
-    color.x =
-        u8cast((((color.x * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.x * foreground_alpha)) /
-               blend_alpha);
-    color.y =
-        u8cast((((color.y * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.y * foreground_alpha)) /
-               blend_alpha);
-    color.z =
-        u8cast((((color.z * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.z * foreground_alpha)) /
-               blend_alpha);
-    color.w = blend_alpha;
+template <typename T>
+void blend_single_color(T &color, const T &color_in) {
+    // Working type for internal pixel format, which is float and has 4 channels.
+    using WorkType = float4; //detail::MakeType<float, 4>;
+    WorkType fgColor = detail::RangeCast<WorkType>(color_in);
+    WorkType bgColor = detail::RangeCast<WorkType>(color);
+    float fgAlpha = fgColor.w;
+    float bgAlpha = bgColor.w;
+    float blendAlpha = fgAlpha + bgAlpha * (1 - fgAlpha);
+
+    WorkType blendColor = (fgColor * fgAlpha + bgColor * bgAlpha * (1 - fgAlpha)) / blendAlpha;
+    blendColor.w = blendAlpha;
+    color = detail::RangeCast<T>(blendColor);
 }
 
-void shade_rectangle(const Rect_t &rect, int ix, int iy, uchar4 *out_color) {
+template <typename T>
+void shade_rectangle(const Rect_t &rect, int ix, int iy, T *out_color) {
     if (rect.bordered) {
         if (!pixel_in_box(ix, iy, rect.i_left, rect.i_right, rect.i_top, rect.i_bottom) &&
             pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color(out_color[0], rect.color);
+            blend_single_color<T>(out_color[0], rect.color);
         }
     } else {
         if (pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color(out_color[0], rect.color);
+            blend_single_color<T>(out_color[0], rect.color);
         }
     }
 }
@@ -98,7 +93,12 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
     BndBox op;
     op.generateRects(rects, bboxes, height, width);
 
-    bool has_alpha = detail::NumElements<T> == 4 ? true : false;
+    bool has_alpha;
+    if constexpr (detail::NumElements<T> == 4) {
+        has_alpha = true;
+    } else {
+        has_alpha = false;
+    }
 
     for (int b_idx = 0; b_idx < batchSize; b_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
@@ -108,14 +108,14 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
                 for (size_t i = 0; i < rects.size(); i++) {
                     Rect_t curr_rect = rects[i];
                     if (curr_rect.batch <= b_idx)
-                        shade_rectangle(curr_rect, x_idx, y_idx, &shaded_pixel);
+                        shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
                 WorkType out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));
                 out_color.w = has_alpha ? out_color.w : (std::numeric_limits<BT>::max());
 
                 if (shaded_pixel.w != 0)
-                    blend_single_color(out_color, shaded_pixel);
+                    blend_single_color<WorkType>(out_color, shaded_pixel);
 
                 MathVector::trunc(out_color, &dst.at(b_idx, y_idx, x_idx, 0));
             }
@@ -186,7 +186,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     GenerateGoldenBndBox<T>(inputData, ref, batchSize, width, height, bboxes);
 
     // Compare data in actual output versus the generated golden reference image
-    CompareVectors(result, ref);
+    CompareVectorsNear(result, ref);
 }
 
 }  // namespace

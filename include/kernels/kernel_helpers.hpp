@@ -23,47 +23,43 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-
+#include <core/detail/casting.hpp>
 #include "core/detail/type_traits.hpp"
 #include "operator_types.h"
 
+using namespace roccv;
+
 namespace Kernels {
 
-template <typename _T>
-static __host__ __device__ uint8_t u8cast(_T value) {
-    return value < 0 ? 0 : (value > 255 ? 255 : value);
-}
-
-static __host__ __device__ __forceinline__ bool pixel_in_box(float ix, float iy, float left, float right, float top,
-                                                             float bottom) {
+static __host__ __device__ __forceinline__ bool pixel_in_box(float ix, float iy, float left, float right, float top, float bottom) {
     return (ix > left) && (ix < right) && (iy > top) && (iy < bottom);
 }
 
-static __host__ __device__ void blend_single_color(uchar4 &color, const uchar4 &color_in) {
-    int foreground_alpha = color_in.w;
-    int background_alpha = color.w;
-    int blend_alpha = ((background_alpha * (255 - foreground_alpha)) >> 8) + foreground_alpha;
-    color.x =
-        u8cast((((color.x * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.x * foreground_alpha)) /
-               blend_alpha);
-    color.y =
-        u8cast((((color.y * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.y * foreground_alpha)) /
-               blend_alpha);
-    color.z =
-        u8cast((((color.z * background_alpha * (255 - foreground_alpha)) >> 8) + (color_in.z * foreground_alpha)) /
-               blend_alpha);
-    color.w = blend_alpha;
+template <typename T>
+static __host__ __device__ void blend_single_color(T &color, const T &color_in) {
+    // Working type for internal pixel format, which is float and has 4 channels.
+    using WorkType = float4; //detail::MakeType<float, 4>;
+    WorkType fgColor = detail::RangeCast<WorkType>(color_in);
+    WorkType bgColor = detail::RangeCast<WorkType>(color);
+    float fgAlpha = fgColor.w;
+    float bgAlpha = bgColor.w;
+    float blendAlpha = fgAlpha + bgAlpha * (1 - fgAlpha);
+
+    WorkType blendColor = (fgColor * fgAlpha + bgColor * bgAlpha * (1 - fgAlpha)) / blendAlpha;
+    blendColor.w = blendAlpha;
+    color = detail::RangeCast<T>(blendColor);
 }
 
-inline static __host__ __device__ void shade_rectangle(const Rect_t &rect, int ix, int iy, uchar4 *out_color) {
+template <typename T>
+inline static __host__ __device__ void shade_rectangle(const Rect_t &rect, int ix, int iy, T *out_color) {
     if (rect.bordered) {
         if (!pixel_in_box(ix, iy, rect.i_left, rect.i_right, rect.i_top, rect.i_bottom) &&
             pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color(out_color[0], rect.color);
+            blend_single_color<T>(out_color[0], rect.color);
         }
     } else {
         if (pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color(out_color[0], rect.color);
+            blend_single_color<T>(out_color[0], rect.color);
         }
     }
 }
