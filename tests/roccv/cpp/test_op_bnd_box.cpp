@@ -34,14 +34,14 @@ using namespace roccv::tests;
 
 namespace {
 
-bool pixel_in_box(float ix, float iy, float left, float right, float top, float bottom) {
+bool isPixelInBox(float ix, float iy, float left, float right, float top, float bottom) {
     return (ix > left) && (ix < right) && (iy > top) && (iy < bottom);
 }
 
 template <typename T>
-void blend_single_color(T &color, const T &color_in) {
+void alphaBlend(T &color, const T &color_in) {
     // Working type for internal pixel format, which is float and has 4 channels.
-    using WorkType = float4; //detail::MakeType<float, 4>;
+    using WorkType = float4;
     WorkType fgColor = detail::RangeCast<WorkType>(color_in);
     WorkType bgColor = detail::RangeCast<WorkType>(color);
     float fgAlpha = fgColor.w;
@@ -54,15 +54,15 @@ void blend_single_color(T &color, const T &color_in) {
 }
 
 template <typename T>
-void shade_rectangle(const Rect_t &rect, int ix, int iy, T *out_color) {
+void shadeBBRect(const Rect_t &rect, int ix, int iy, T *out_color) {
     if (rect.bordered) {
-        if (!pixel_in_box(ix, iy, rect.i_left, rect.i_right, rect.i_top, rect.i_bottom) &&
-            pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color<T>(out_color[0], rect.color);
+        if (!isPixelInBox(ix, iy, rect.i_left, rect.i_right, rect.i_top, rect.i_bottom) &&
+            isPixelInBox(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
+            alphaBlend<T>(out_color[0], detail::RangeCast<T>(rect.color));
         }
     } else {
-        if (pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color<T>(out_color[0], rect.color);
+        if (isPixelInBox(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
+            alphaBlend<T>(out_color[0], detail::RangeCast<T>(rect.color));
         }
     }
 }
@@ -108,14 +108,14 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
                 for (size_t i = 0; i < rects.size(); i++) {
                     Rect_t curr_rect = rects[i];
                     if (curr_rect.batch <= b_idx)
-                        shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
+                        shadeBBRect<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
                 WorkType out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));
                 out_color.w = has_alpha ? out_color.w : (std::numeric_limits<BT>::max());
 
                 if (shaded_pixel.w != 0)
-                    blend_single_color<WorkType>(out_color, shaded_pixel);
+                    alphaBlend<WorkType>(out_color, shaded_pixel);
 
                 MathVector::trunc(out_color, &dst.at(b_idx, y_idx, x_idx, 0));
             }
@@ -195,12 +195,30 @@ eTestStatusType test_op_bnd_box(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests
-    TEST_CASE(TestCorrectness<uchar3>(1, 720, 480, FMT_RGB8, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar4>(1, 720, 480, FMT_RGBA8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 360, 240, FMT_RGB8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 256, 256, FMT_RGB8, eDeviceType::GPU));
+
+    TEST_CASE(TestCorrectness<uchar4>(1, 360, 240, FMT_RGBA8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar4>(3, 200, 100, FMT_RGBA8, eDeviceType::GPU));
+
+    TEST_CASE(TestCorrectness<char3>(1, 360, 240, FMT_RGBs8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<char3>(4, 100, 80, FMT_RGBs8, eDeviceType::GPU));
+
+    TEST_CASE(TestCorrectness<char4>(1, 360, 240, FMT_RGBAs8, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<char4>(5, 80, 40, FMT_RGBAs8, eDeviceType::GPU));
 
     // CPU correctness tests
-    TEST_CASE(TestCorrectness<uchar3>(1, 720, 480, FMT_RGB8, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar4>(1, 720, 480, FMT_RGBA8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 360, 240, FMT_RGB8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 256, 256, FMT_RGB8, eDeviceType::CPU));
+
+    TEST_CASE(TestCorrectness<uchar4>(1, 360, 240, FMT_RGBA8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar4>(3, 200, 100, FMT_RGBA8, eDeviceType::CPU));
+
+    TEST_CASE(TestCorrectness<char3>(1, 360, 240, FMT_RGBs8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<char3>(4, 100, 80, FMT_RGBs8, eDeviceType::CPU));
+
+    TEST_CASE(TestCorrectness<char4>(1, 360, 240, FMT_RGBAs8, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<char4>(5, 80, 40, FMT_RGBAs8, eDeviceType::CPU));
 
     TEST_CASES_END();
 }

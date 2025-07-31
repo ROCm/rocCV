@@ -49,15 +49,13 @@ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
                         shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
-                WorkType out_color = MathVector::fill(
-                    input.at(b_idx, y_idx, x_idx, 0));
+                WorkType out_color = MathVector::fill(input.at(b_idx, y_idx, x_idx, 0));
                 out_color.w = has_alpha ? out_color.w : (std::numeric_limits<BT>::max());
 
                 if (shaded_pixel.w != 0)
                     blend_single_color<WorkType>(out_color, shaded_pixel);
 
-                MathVector::trunc(
-                    out_color, &output.at(b_idx, y_idx, x_idx, 0));
+                MathVector::trunc(out_color, &output.at(b_idx, y_idx, x_idx, 0));
             }
         }
     }

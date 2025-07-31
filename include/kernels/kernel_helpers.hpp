@@ -38,7 +38,7 @@ static __host__ __device__ __forceinline__ bool pixel_in_box(float ix, float iy,
 template <typename T>
 static __host__ __device__ void blend_single_color(T &color, const T &color_in) {
     // Working type for internal pixel format, which is float and has 4 channels.
-    using WorkType = float4; //detail::MakeType<float, 4>;
+    using WorkType = float4;
     WorkType fgColor = detail::RangeCast<WorkType>(color_in);
     WorkType bgColor = detail::RangeCast<WorkType>(color);
     float fgAlpha = fgColor.w;
@@ -55,11 +55,11 @@ inline static __host__ __device__ void shade_rectangle(const Rect_t &rect, int i
     if (rect.bordered) {
         if (!pixel_in_box(ix, iy, rect.i_left, rect.i_right, rect.i_top, rect.i_bottom) &&
             pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color<T>(out_color[0], rect.color);
+            blend_single_color<T>(out_color[0], detail::RangeCast<T>(rect.color));
         }
     } else {
         if (pixel_in_box(ix, iy, rect.o_left, rect.o_right, rect.o_top, rect.o_bottom)) {
-            blend_single_color<T>(out_color[0], rect.color);
+            blend_single_color<T>(out_color[0], detail::RangeCast<T>(rect.color));
         }
     }
 }

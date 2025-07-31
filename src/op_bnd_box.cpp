@@ -87,39 +87,23 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     CHECK_TENSOR_DEVICE(output, device);
 
     // Ensure all tensors are using supported datatypes
-    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
-    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8);
+    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, DATA_TYPE_S8);
+    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8, DATA_TYPE_S8);
 
     // Ensure all tensors are using supported layouts.
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
 
+    // Check tenser channels
+    CHECK_TENSOR_CHANNELS(input, 3, 4);
+    CHECK_TENSOR_CHANNELS(output, 3, 4);
+
     // Ensure the layout and shapes for the input/output tensor match
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    //const auto i_batch_i = input.shape().layout().batch_index();
-    //const auto i_batch = (i_batch_i >= 0) ? input.shape()[i_batch_i] : 1;
-    const auto i_height = input.shape()[input.shape().layout().height_index()];
-    const auto i_width = input.shape()[input.shape().layout().width_index()];
-    const auto i_channels = input.shape()[input.shape().layout().channels_index()];
-
-    if (i_channels != 3 && i_channels != 4) {
-        throw Exception("Invalid channel size: tensors must have channel size of 3 or 4.",
-                        eStatusType::NOT_IMPLEMENTED);
-    }
-
-    auto input_data = input.exportData<roccv::TensorDataStrided>();
-    auto output_data = output.exportData<roccv::TensorDataStrided>();
-
-    if (input.dtype().size() != input_data.stride(input_data.shape().layout().channels_index()) ||
-        output.dtype().size() != output_data.stride(output_data.shape().layout().channels_index())) {
-        throw Exception("Invalid channel stride: channel elements must be contiguous.", eStatusType::NOT_IMPLEMENTED);
-    }
-
-    //auto batch_size = i_batch;
-    auto height = i_height;
-    auto width = i_width;
+    const auto height = input.shape()[input.shape().layout().height_index()];
+    const auto width = input.shape()[input.shape().layout().width_index()];
 
     std::vector<Rect_t> rects;
     generateRects(rects, bnd_boxes, height, width);
@@ -131,6 +115,7 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
         funcs =
         {
             {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}},
+            {eDataType::DATA_TYPE_S8, {0, 0, dispatch_bnd_box_dtype<false, char3>, dispatch_bnd_box_dtype<true, char4>}},
         };
     // clang-format on
 

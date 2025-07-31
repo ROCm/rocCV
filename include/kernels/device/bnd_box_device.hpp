@@ -38,7 +38,7 @@ __global__ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
     // Working type for internal pixel format, which has 4 channels.
     using WorkType = detail::MakeType<BT, 4>;
 
-                                const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto b_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
