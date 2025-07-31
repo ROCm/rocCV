@@ -31,12 +31,34 @@ using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
+
+/**
+ * @brief Computes the shift required to move the resulting rotated image back to the center of the image.
+ *
+ * @param centerX The x coordinate for the center of the image.
+ * @param centerY The y coordinate for the center of the image.
+ * @param angle The angle in degrees the resulting image will be rotated.
+ * @return A double2 with the shift required to translate the image back to its center after a rotation.
+ */
 double2 ComputeCenterShift(const double centerX, const double centerY, const double angle) {
     double xShift = (1 - cos(angle * M_PI / 180)) * centerX - sin(angle * M_PI / 180) * centerY;
     double yShift = sin(angle * M_PI / 180) * centerX + (1 - cos(angle * M_PI / 180)) * centerY;
     return {xShift, yShift};
 }
 
+/**
+ * @brief Golden model to rotate an image clockwise. This will always use a constant border mode with all values set to
+ * 0.
+ *
+ * @tparam T The image datatype.
+ * @tparam InterpType The interpolation type to use.
+ * @param input Input images.
+ * @param batchSize The number of images in the batch.
+ * @param imageSize The size of each image in the batch.
+ * @param angle The angle in degrees to rotate counter-clockwise.
+ * @param shift The translation required to shift the image back to its center.
+ * @return A batch of the output images.
+ */
 template <typename T, eInterpolationType InterpType>
 std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& input, int batchSize, Size2D imageSize,
                                               double angle, double2 shift) {
@@ -83,6 +105,17 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
     return output;
 }
 
+/**
+ * @brief Tests correctness for the roccv::Rotate operator by comparing results against a golden implementation.
+ * 
+ * @tparam T The image datatype.
+ * @tparam InterpType The interpolation type to use.
+ * @param batchSize The number of images in the batch.
+ * @param imageSize The size of each image in the batch.
+ * @param format The format of the images. This must be compatible with the provided image datatype T.
+ * @param angle The angle in degrees to rotate counter clockwise.
+ * @param device The device to run this correctness test on.
+ */
 template <typename T, eInterpolationType InterpType>
 void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double angle, eDeviceType device) {
     std::vector<detail::BaseType<T>> input(batchSize * imageSize.w * imageSize.h * format.channels());
