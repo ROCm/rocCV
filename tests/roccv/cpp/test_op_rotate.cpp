@@ -118,7 +118,7 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     cv::imwrite("expected.png", expectedMat);
 
     // Compare actual and golden results
-    CompareVectorsNear(actualResults, goldenResults);
+    CompareVectorsNear(actualResults, goldenResults, 1.0E-5);
 }
 
 }  // namespace
@@ -127,13 +127,76 @@ eTestStatusType test_op_rotate(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
-    // TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::GPU)));
-    // TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(1, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::GPU)));
 
-    // TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::CPU)));
-    // TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::CPU)));
-    // TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::CPU)));
+    // GPU Tests
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::GPU)));
+
+    // S8
+    TEST_CASE((TestCorrectness<char1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S8, 54.0, eDeviceType::GPU)));
+
+    // U16
+    TEST_CASE((TestCorrectness<ushort1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U16, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB16, 90.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA16, -180.0, eDeviceType::GPU)));
+    
+    // S16
+    TEST_CASE((TestCorrectness<short1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S16, 54.0, eDeviceType::GPU)));
+
+    // U32
+    TEST_CASE((TestCorrectness<uint1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U32, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB32, 90.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA32, -180.0, eDeviceType::GPU)));
+
+    // S32
+    TEST_CASE((TestCorrectness<int1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S32, 54.0, eDeviceType::GPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_F32, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGBf32, 90.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBAf32, -180.0, eDeviceType::GPU)));
+
+    // F64
+    TEST_CASE((TestCorrectness<double1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_F64, 54.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGBf64, 90.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBAf64, -180.0, eDeviceType::GPU)));
+
+    // CPU Tests
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::CPU)));
+
+    // S8
+    TEST_CASE((TestCorrectness<char1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S8, 54.0, eDeviceType::CPU)));
+
+    // U16
+    TEST_CASE((TestCorrectness<ushort1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U16, 54.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB16, 90.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA16, -180.0, eDeviceType::CPU)));
+    
+    // S16
+    TEST_CASE((TestCorrectness<short1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S16, 54.0, eDeviceType::CPU)));
+
+    // U32
+    TEST_CASE((TestCorrectness<uint1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U32, 54.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB32, 90.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA32, -180.0, eDeviceType::CPU)));
+
+    // S32
+    TEST_CASE((TestCorrectness<int1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S32, 54.0, eDeviceType::CPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_F32, 54.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGBf32, 90.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBAf32, -180.0, eDeviceType::CPU)));
+
+    // F64
+    TEST_CASE((TestCorrectness<double1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_F64, 54.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGBf64, 90.0, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBAf64, -180.0, eDeviceType::CPU)));
 
     // clang-format on
 
