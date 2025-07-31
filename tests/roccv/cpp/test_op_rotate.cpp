@@ -110,13 +110,6 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     std::vector<detail::BaseType<T>> goldenResults =
         GoldenRotate<T, InterpType>(input, batchSize, imageSize, angle, shift);
 
-    // printf("Got here.\n");
-    cv::Mat actualMat(imageSize.h, imageSize.w, CV_8UC4, actualResults.data());
-    cv::imwrite("actual.png", actualMat);
-
-    cv::Mat expectedMat(imageSize.h, imageSize.w, CV_8UC4, goldenResults.data());
-    cv::imwrite("expected.png", expectedMat);
-
     // Compare actual and golden results
     CompareVectorsNear(actualResults, goldenResults, 1.0E-5);
 }
