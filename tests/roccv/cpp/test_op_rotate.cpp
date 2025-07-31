@@ -60,19 +60,23 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
      * perspective transformation matrix with the bottom row set to [0, 0, 1].
      */
 
-    float angleRad = static_cast<float>(angle) * (M_PI / 180.0f);
+    double angleRad = angle * (M_PI / 180.0f);
     // clang-format off
-    std::array<float, 9> mat = {
+    std::array<double, 6> mat = {
         cosf(angleRad), sinf(angleRad), static_cast<float>(shift.x),
-        -sin(angleRad),  cos(angleRad),   static_cast<float>(shift.y),
-        0,              0,               1
+        -sin(angleRad),  cos(angleRad),   static_cast<float>(shift.y)
     };
 
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < imageSize.h; y++) {
             for (int x = 0; x < imageSize.w; x++) {
-                Point2D inputCoord = MatTransform({static_cast<float>(x), static_cast<float>(y)}, mat);
-                outputWrapper.at(b, y, x, 0) = inputWrapper.at(b, inputCoord.y, inputCoord.x, 0);
+                const double shiftX = x - mat[2];
+                const double shiftY = y - mat[5];
+                
+                const float srcX = static_cast<float>(shiftX * mat[0] + shiftY * -mat[1]);
+                const float srcY = static_cast<float>(shiftX * -mat[3] + shiftY * mat[4]);
+
+                outputWrapper.at(b, y, x, 0) = inputWrapper.at(b, srcY, srcX, 0);
             }
         }
     }
@@ -110,6 +114,13 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     std::vector<detail::BaseType<T>> goldenResults =
         GoldenRotate<T, InterpType>(input, batchSize, imageSize, angle, shift);
 
+
+    // cv::Mat actualMat(imageSize.h, imageSize.w, CV_8UC4, actualResults.data());
+    // cv::imwrite("actual.png", actualMat);
+
+    // cv::Mat expectedMat(imageSize.h, imageSize.w, CV_8UC4, goldenResults.data());
+    // cv::imwrite("expected.png", expectedMat);
+
     // Compare actual and golden results
     CompareVectorsNear(actualResults, goldenResults, 1.0E-5);
 }
@@ -125,7 +136,7 @@ eTestStatusType test_op_rotate(int argc, char** argv) {
     // U8
     TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_U8, 54.0, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {34, 50}, FMT_RGB8, 90.0, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, -180.0, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {86, 23}, FMT_RGBA8, 20.0, eDeviceType::GPU)));
 
     // S8
     TEST_CASE((TestCorrectness<char1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {56, 78}, FMT_S8, 54.0, eDeviceType::GPU)));
