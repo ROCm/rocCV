@@ -76,12 +76,7 @@ class InterpolationWrapper {
             // -     -
             // v3 -- v4
 
-            // Determine the intermediate work type required for calculations. We should be using floats for performance
-            // reasons, but we can switch the work type to double if the base type of the data is already double. This
-            // is all determined at compile time based on template parameters.
-            using WorkType = std::conditional_t<std::is_same_v<detail::BaseType<T>, double>,
-                                                detail::MakeType<double, detail::NumElements<T>>,
-                                                detail::MakeType<float, detail::NumElements<T>>>;
+            using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
             int64_t x0 = static_cast<int64_t>(floorf(w));
             int64_t x1 = x0 + 1;

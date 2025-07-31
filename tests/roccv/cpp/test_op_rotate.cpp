@@ -84,7 +84,7 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
     double angleRad = angle * (M_PI / 180.0f);
     // clang-format off
     std::array<double, 6> mat = {
-        cosf(angleRad), sinf(angleRad), static_cast<float>(shift.x),
+        cos(angleRad), sin(angleRad), static_cast<float>(shift.x),
         -sin(angleRad),  cos(angleRad),   static_cast<float>(shift.y)
     };
 
@@ -147,7 +147,7 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
         GoldenRotate<T, InterpType>(input, batchSize, imageSize, angle, shift);
 
     // Compare actual and golden results
-    CompareVectorsNear(actualResults, goldenResults, 1.0E-5);
+    CompareVectorsNear(actualResults, goldenResults, 1.0E-6);
 }
 
 }  // namespace
