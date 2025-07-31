@@ -56,8 +56,7 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
      *  [-sin(angle), cos(angle) , shiftY]]
      *
      * To perform a rotation, we must map from our output space to our input space by multiplying each point by the
-     * inverted form of the matrix (which is displayed above). We will represent our affine transformation as a 3x3
-     * perspective transformation matrix with the bottom row set to [0, 0, 1].
+     * inverted form of the matrix (which is displayed above).
      */
 
     double angleRad = angle * (M_PI / 180.0f);
