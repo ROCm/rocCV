@@ -31,8 +31,8 @@ using namespace roccv;
 
 namespace Kernels {
 namespace Host {
-template <bool has_alpha, typename T, typename BT = detail::BaseType<T>, typename SRC, typename DST>
-void bndbox_kernel(SRC input, DST output, Rect_t *rects,
+template <bool has_alpha, typename T, typename BT = detail::BaseType<T>, typename SrcWrapper, typename DstWrapper>
+void bndbox_kernel(SrcWrapper input, DstWrapper output, Rect_t *rects,
                    size_t n_rects, int64_t batch, int64_t height,
                    int64_t width) {
     // Working type for internal pixel format, which has 4 channels.
