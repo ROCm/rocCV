@@ -31,7 +31,7 @@ using namespace roccv;
 
 namespace Kernels {
 namespace Device {
-template <bool has_alpha, typename T, typename BT = detail::BaseType<T>, typename SrcWrapper, typename DstWrapper>
+template <bool has_alpha, typename T, typename SrcWrapper, typename DstWrapper, typename BT = detail::BaseType<T>>
 __global__ void bndbox_kernel(SrcWrapper input, DstWrapper output, Rect_t *rects,
                               size_t n_rects, int64_t batch, int64_t height,
                               int64_t width) {
