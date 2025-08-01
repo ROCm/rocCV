@@ -28,9 +28,7 @@ The rocCV public repository is located at `https://github.com/ROCm/rocCV <https:
   .. grid-item-card:: Reference
 
     * :doc:`rocCV supported operators <./reference/rocCV-supported-operators>`
-    * :doc:`API <./doxygen/html/annotated>`
-    * :doc:`API Namespace <./doxygen/html/namespaceroccv>`
-
+    * :doc:`rocCV API reference <./doxygen/html/annotated>`
 
 To contribute to the documentation, refer to
 `Contributing to ROCm <https://rocm.docs.amd.com/en/latest/contribute/contributing.html>`_.
