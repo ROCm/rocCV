@@ -21,6 +21,9 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
+#include <core/detail/casting.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/interpolation_wrapper.hpp>
 #include <filesystem>
 #include <iostream>
 #include <op_resize.hpp>
@@ -31,47 +34,77 @@ THE SOFTWARE.
 using namespace roccv;
 using namespace roccv::tests;
 
-eTestStatusType TestCorrectness(const std::string &input_file, const std::string &expected_file, float x_scale,
-                                float y_scale, eInterpolationType interpolation, float error_threshold,
-                                eDeviceType device) {
-    Tensor input = createTensorFromImage(input_file, DataType(eDataType::DATA_TYPE_U8), device);
-    auto input_data = input.exportData<TensorDataStrided>();
+namespace {
+template <typename T, eInterpolationType InterpType, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchSize, Size2D inputSize,
+                             Size2D outputSize) {
+    size_t numOutputElements = batchSize * outputSize.w * outputSize.h * detail::NumElements<T>;
 
-    int64_t output_width = input_data.shape(input.layout().width_index()) * x_scale;
-    int64_t output_height = input_data.shape(input.layout().height_index()) * y_scale;
-    TensorShape output_shape(input.layout(), {1, output_height, output_width, 3});
+    std::vector<detail::BaseType<T>> output(numOutputElements);
+    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
-    Tensor output(output_shape, DataType(eDataType::DATA_TYPE_U8), device);
+    InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType> inputWrap(
+        BorderWrapper<T, eBorderType::BORDER_TYPE_CONSTANT>(ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h),
+                                                            T{}));
 
-    Resize op;
-    op(nullptr, input, output, interpolation, device);
-    hipDeviceSynchronize();
+    float2 scaleRatio =
+        make_float2(inputSize.w / static_cast<float>(outputSize.w), inputSize.h / static_cast<float>(outputSize.h));
 
-    return compareImage(output, expected_file, error_threshold);
+    for (int b = 0; b < batchSize; b++) {
+        for (int y = 0; y < outputSize.h; y++) {
+            for (int x = 0; x < outputSize.w; x++) {
+                int srcX =
+                    std::min(static_cast<int>(std::floor((((x + 0.5f) * scaleRatio.x) - 0.5f))), inputSize.w - 1);
+                int srcY =
+                    std::min(static_cast<int>(std::floor((((y + 0.5f) * scaleRatio.y) - 0.5f))), inputSize.h - 1);
+
+                outputWrap.at(b, y, x, 0) = inputWrap.at(b, srcY, srcX, 0);
+            }
+        }
+    }
+
+    return output;
 }
 
+template <typename T, eInterpolationType InterpType, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, eDeviceType device) {
+    // Prepare tensors for roccv::Resize
+    Tensor inputTensor(batchSize, inputSize, format, device);
+    Tensor outputTensor(batchSize, outputSize, format, device);
+
+    // Generate random input data and move into input tensor
+    std::vector<BT> input(inputTensor.shape().size());
+    FillVector(input);
+
+    CopyVectorIntoTensor(inputTensor, input);
+
+    // Run roccv::Resize
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    Resize op;
+    op(stream, inputTensor, outputTensor, InterpType, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Move output tensor into host allocated output vector containing actual results
+    std::vector<BT> actualOutput(outputTensor.shape().size());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Get golden results
+    std::vector<BT> goldenOutput = GoldenResize<T, InterpType>(input, batchSize, inputSize, outputSize);
+
+    CompareVectorsNear(actualOutput, goldenOutput);
+}
+
+}  // namespace
+
 eTestStatusType test_op_resize(int argc, char **argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    std::filesystem::path base_path = std::filesystem::path(argv[1]) / "tests" / "ops";
+    TEST_CASES_BEGIN();
 
-    try {
-        // Test GPU correctness
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp", base_path / "expected_resize.bmp", 3.0f, 4.0f,
-                                           eInterpolationType::INTERP_TYPE_NEAREST, 0.0f, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
+    // clang-format off
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::GPU)));
+    // clang-format on
 
-        // Test CPU correctness
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp", base_path / "expected_resize.bmp", 3.0f, 4.0f,
-                                           eInterpolationType::INTERP_TYPE_NEAREST, 0.0f, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-
-    return eTestStatusType::TEST_SUCCESS;
+    TEST_CASES_END();
 }
