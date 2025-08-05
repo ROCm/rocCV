@@ -53,10 +53,8 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < outputSize.h; y++) {
             for (int x = 0; x < outputSize.w; x++) {
-                int srcX =
-                    std::min(static_cast<int>(std::floor((((x + 0.5f) * scaleRatio.x) - 0.5f))), inputSize.w - 1);
-                int srcY =
-                    std::min(static_cast<int>(std::floor((((y + 0.5f) * scaleRatio.y) - 0.5f))), inputSize.h - 1);
+                float srcX = std::min<float>(((x + 0.5f) * scaleRatio.x) - 0.5f, inputSize.w - 1);
+                float srcY = std::min<float>(((y + 0.5f) * scaleRatio.y) - 0.5f, inputSize.h - 1);
 
                 outputWrap.at(b, y, x, 0) = inputWrap.at(b, srcY, srcX, 0);
             }
