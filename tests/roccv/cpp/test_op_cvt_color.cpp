@@ -66,6 +66,7 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
             std::vector<uint8_t> resultData(output_image_size);
             HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(resultData.data(), outputTensorData.basePtr(), output_image_size,
                                                   hipMemcpyDeviceToHost, stream));
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             for (int i = 0; i < output_image_size; i++) {
                 float err = std::abs(resultData[i] - expectedData[i]);
                 if (err > 1) {
@@ -81,6 +82,7 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
             std::vector<uint8_t> resultData(output_image_size);
             HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(resultData.data(), outputTensorData.basePtr(), output_image_size,
                                                   hipMemcpyDeviceToHost, stream));
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             for (int i = 0; i < output_image_size; i++) {
                 float err = std::abs(resultData[i] - expectedData[i]);
                 if (err > 1) {
@@ -90,7 +92,7 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
                 }
             }
         }
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
     } else if (device == eDeviceType::CPU) {
         size_t image_size = input.shape().size() * input.dtype().size();
         auto inputData = input.exportData<TensorDataStrided>();
