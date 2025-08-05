@@ -23,15 +23,21 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+#include <core/detail/type_traits.hpp>
 #include "kernels/kernel_helpers.hpp"
 #include "operator_types.h"
 
+using namespace roccv;
+
 namespace Kernels {
 namespace Device {
-template <bool has_alpha, typename T, typename SRC, typename DST>
-__global__ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
+template <bool has_alpha, typename T, typename SrcWrapper, typename DstWrapper, typename BT = detail::BaseType<T>>
+__global__ void bndbox_kernel(SrcWrapper input, DstWrapper output, Rect_t *rects,
                               size_t n_rects, int64_t batch, int64_t height,
                               int64_t width) {
+    // Working type for internal pixel format, which has 4 channels.
+    using WorkType = detail::MakeType<BT, 4>;
+
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto b_idx = threadIdx.z + blockIdx.z * blockDim.z;
@@ -40,22 +46,22 @@ __global__ void bndbox_kernel(SRC input, DST output, Rect_t *rects,
         return;
     }
 
-    uchar4 shaded_pixel{0, 0, 0, 0};
+    WorkType shaded_pixel{0, 0, 0, 0};
 
     for (size_t i = 0; i < n_rects; i++) {
         Rect_t curr_rect = rects[i];
         if (curr_rect.batch <= b_idx)
-            shade_rectangle(curr_rect, x_idx, y_idx, &shaded_pixel);
+            shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
     }
 
-    uchar4 out_color =
-        MathVector::fill(input.template at<T>(b_idx, y_idx, x_idx, 0));
-    out_color.w = has_alpha ? out_color.w : 255;
+    WorkType out_color =
+        MathVector::fill(input.at(b_idx, y_idx, x_idx, 0));
+    out_color.w = has_alpha ? out_color.w : (std::numeric_limits<BT>::max());
 
-    if (shaded_pixel.w != 0) blend_single_color(out_color, shaded_pixel);
+    if (shaded_pixel.w != 0) blend_single_color<WorkType>(out_color, shaded_pixel);
 
     MathVector::trunc(out_color,
-                      &output.template at<T>(b_idx, y_idx, x_idx, 0));
+                      &output.at(b_idx, y_idx, x_idx, 0));
 }
 };  // namespace Device
 };  // namespace Kernels

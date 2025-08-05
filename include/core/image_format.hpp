@@ -73,6 +73,12 @@ constexpr ImageFormat FMT_RGB8(eDataType::DATA_TYPE_U8, 3);
 // Single plane with interleaved RGBA 8-bit channel.
 constexpr ImageFormat FMT_RGBA8(eDataType::DATA_TYPE_U8, 4);
 
+// Single plane with interleaved RGB signed 8-bit channel.
+constexpr ImageFormat FMT_RGBs8(eDataType::DATA_TYPE_S8, 3);
+
+// Single plane with interleaved RGBA signed 8-bit channel.
+constexpr ImageFormat FMT_RGBAs8(eDataType::DATA_TYPE_S8, 4);
+
 // Single plane with interleaved RGB 16-bit channel.
 constexpr ImageFormat FMT_RGB16(eDataType::DATA_TYPE_U16, 3);
 
