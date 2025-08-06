@@ -43,9 +43,9 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
     std::vector<detail::BaseType<T>> output(numOutputElements);
     ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
-    InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType> inputWrap(
-        BorderWrapper<T, eBorderType::BORDER_TYPE_CONSTANT>(ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h),
-                                                            T{}));
+    InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, InterpType> inputWrap(
+        BorderWrapper<T, eBorderType::BORDER_TYPE_REPLICATE>(
+            ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
 
     float2 scaleRatio =
         make_float2(inputSize.w / static_cast<float>(outputSize.w), inputSize.h / static_cast<float>(outputSize.h));
@@ -101,7 +101,8 @@ eTestStatusType test_op_resize(int argc, char **argv) {
 
     // clang-format off
     TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {100, 50}, {200, 50}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::GPU)));
     // clang-format on
 
     TEST_CASES_END();
