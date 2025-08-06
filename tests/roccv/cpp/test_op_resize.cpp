@@ -100,9 +100,50 @@ eTestStatusType test_op_resize(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
+
+    // GPU Tests
+
+    // U8 - Linear interpolation
     TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {100, 50}, {200, 50}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::GPU)));
+
+    // U8 - Nearest interpolation
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_NEAREST>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_NEAREST>(3, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_NEAREST>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::GPU)));
+
+    // F32 - Linear interpolation
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::GPU)));
+
+    // F32 - Nearest interpolation
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_NEAREST>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_NEAREST>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_NEAREST>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::GPU)));
+
+    // CPU Tests
+
+    // U8 - Linear interpolation
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::CPU)));
+
+    // U8 - Nearest interpolation
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_NEAREST>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_NEAREST>(3, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_NEAREST>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::CPU)));
+
+    // F32 - Linear interpolation
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_LINEAR>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_LINEAR>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_LINEAR>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::CPU)));
+
+    // F32 - Nearest interpolation
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_NEAREST>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_NEAREST>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_NEAREST>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::CPU)));
     // clang-format on
 
     TEST_CASES_END();
