@@ -31,6 +31,19 @@ using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
+
+/**
+ * @brief Golden model for the resize operator.
+ *
+ * @tparam T The image pixel's datatype (e.g. uchar3).
+ * @tparam InterpType The interpolation type to use during resizing.
+ * @tparam BT The base type of the image datatype (e.g. unsigned char).
+ * @param input An input vector containing a batch of images.
+ * @param batchSize The number of images in the batch.
+ * @param inputSize The size of the input images.
+ * @param outputSize The requested size of the output images.
+ * @return A vector containing the data for the images resized to outputSize.
+ */
 template <typename T, eInterpolationType InterpType, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchSize, Size2D inputSize,
                              Size2D outputSize) {
@@ -39,6 +52,8 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
     std::vector<detail::BaseType<T>> output(numOutputElements);
     ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
+    // Use the replicate (or clamping) border mode by default to handle out of bounds conditions with certain
+    // interpolation modes.
     InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, InterpType> inputWrap(
         BorderWrapper<T, eBorderType::BORDER_TYPE_REPLICATE>(
             ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
@@ -60,6 +75,19 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
     return output;
 }
 
+/**
+ * @brief Compares the results of roccv::Resize and the golden model implementation.
+ *
+ * @tparam T The image's pixel datatype.
+ * @tparam InterpType The interpolation type to use during resizing.
+ * @tparam BT The image's base datatype.
+ * @param batchSize The number of images in the batch.
+ * @param inputSize The size of the input images.
+ * @param outputSize The size of the output images.
+ * @param format The image format to use (must match with the given type T).
+ * @param device The device to run this correctness test on.
+ * @throws std::runtime_error on test failure.
+ */
 template <typename T, eInterpolationType InterpType, typename BT = detail::BaseType<T>>
 void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, eDeviceType device) {
     // Prepare tensors for roccv::Resize
