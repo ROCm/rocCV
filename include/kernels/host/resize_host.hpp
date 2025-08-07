@@ -30,8 +30,8 @@ void resize(SrcWrapper input, DstWrapper output, float scaleX, float scaleY) {
     for (int batch = 0; batch < output.batches(); batch++) {
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
-                float srcX = fminf(fmaf(x + 0.5f, scaleX, -0.5f), input.width() - 1);
-                float srcY = fminf(fmaf(y + 0.5f, scaleY, -0.5f), input.height() - 1);
+                float srcX = fmaf(x + 0.5f, scaleX, -0.5f);
+                float srcY = fmaf(y + 0.5f, scaleY, -0.5f);
                 output.at(batch, y, x, 0) = input.at(batch, srcY, srcX, 0);
             }
         }

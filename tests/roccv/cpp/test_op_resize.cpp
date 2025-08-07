@@ -58,15 +58,23 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
         BorderWrapper<T, eBorderType::BORDER_TYPE_REPLICATE>(
             ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
 
+    // Determine the scaling factor required to map from the output coordinates to the corresponding input coordinates
+    // on both the x and y axes.
     float2 scaleRatio =
         make_float2(inputSize.w / static_cast<float>(outputSize.w), inputSize.h / static_cast<float>(outputSize.h));
 
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < outputSize.h; y++) {
             for (int x = 0; x < outputSize.w; x++) {
-                float srcX = std::min<float>(((x + 0.5f) * scaleRatio.x) - 0.5f, inputSize.w - 1);
-                float srcY = std::min<float>(((y + 0.5f) * scaleRatio.y) - 0.5f, inputSize.h - 1);
+                // Map the destination coordinates to their corresponding source coordinates based on the calculated
+                // scaling factors. 0.5 is added before the mapping to get the center of the destination pixel
+                // coordinates. After scaling, subtract 0.5 to move the scaled input coordinates to their top-left pixel
+                // representation.
+                float srcX = ((x + 0.5f) * scaleRatio.x) - 0.5f;
+                float srcY = ((y + 0.5f) * scaleRatio.y) - 0.5f;
 
+                // Set the output value to the input value at the scaled coordinates. Since inputWrap is an
+                // InterpolationWrapper, border conditions and interpolation are handled automatically.
                 outputWrap.at(b, y, x, 0) = inputWrap.at(b, srcY, srcX, 0);
             }
         }
