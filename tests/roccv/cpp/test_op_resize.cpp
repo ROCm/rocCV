@@ -20,14 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <algorithm>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
-#include <filesystem>
-#include <iostream>
 #include <op_resize.hpp>
-#include <opencv2/opencv.hpp>
 
 #include "test_helpers.hpp"
 
