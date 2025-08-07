@@ -19,7 +19,8 @@
  * THE SOFTWARE.
  */
 
-#include <filesystem>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/border_wrapper.hpp>
 #include <op_copy_make_border.hpp>
 
 #include "test_helpers.hpp"
@@ -27,69 +28,71 @@
 using namespace roccv;
 using namespace roccv::tests;
 
-eTestStatusType TestCorrectness(const std::string& input_image, const std::string& golden_image, int32_t top,
-                                int32_t left, eBorderType border_mode, float4 border_value, eDeviceType device,
-                                float error_threshold) {
-    Tensor input = createTensorFromImage(input_image, DataType(DATA_TYPE_U8), device);
-    TensorShape o_shape(input.layout(), {1, input.shape(input.layout().height_index()) + top * 2,
-                                         input.shape(input.layout().width_index()) + left * 2, 3});
-    Tensor output(o_shape, input.dtype(), device);
+namespace {
+template <typename T, eBorderType BorderType, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenCopyMakeBorder(std::vector<BT> input, int batchSize, Size2D inputSize, Size2D outputSize, int top,
+                                     int left, float4 borderValue) {
+    int channels = detail::NumElements<T>;
 
-    CopyMakeBorder op;
-    op(nullptr, input, output, top, left, border_mode, border_value, device);
-    hipDeviceSynchronize();
+    // Convert border value into the type of the image
+    T borderVal = detail::RangeCast<T>(borderValue);
 
-    return compareImage(output, golden_image, error_threshold);
+    // Wrap the input images in a BorderWrapper to handle out of bounds image behavior. The BorderWrapper has already
+    // been tested in another test so it can be used reliably.
+    BorderWrapper<T, BorderType>(ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), borderVal);
+
+    std::vector<BT> output(batchSize * outputSize.h * outputSize.w * channels);
+    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
+
+    for (int b = 0; b < batchSize; b++) {
+        for (int y = 0; y < outputSize.h; y++) {
+            for (int x = 0; x < outputSize.w; x++) {
+                // CopyMakeBorder essentially copies the input image into the output image with a specified left and top
+                // shift on the x and y coordinates respectively. Out of bounds behavior will be handled by the
+                // BorderWrapper wrapping the input image.
+                outputWrap.at(b, y, x, 0) = inputWrap.at(b, y - top, x - left, 0);
+            }
+        }
+    }
+
+    return output;
 }
 
+template <typename T, eBorderType BorderType, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, int top, int left,
+                     float4 borderValue, eDeviceType device) {
+    Tensor inputTensor(batchSize, inputSize, format, device);
+    Tensor outputTensor(batchSize, outputSize, format, device);
+
+    // Generate random input data
+    std::vector<BT> input(batchSize * inputSize.h * inputSize.w * format.channels());
+    FillVector(input);
+
+    CopyVectorIntoTensor(inputTensor, input);
+
+    // Run roccv::CopyMakeBorder to get actual operator results
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CopyMakeBorder op;
+    op(stream, inputTensor, outputTensor, top, left, BorderType, borderValue, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy results into host output vector
+    std::vector<BT> actualOutput(batchSize * outputSize.h * outputSize.w * format.channels());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Run golden model to obtain golden vector
+    std::vector<BT> goldenOutput =
+        GoldenCopyMakeBorder<T, BorderType>(input, batchSize, inputSize, outputSize, top, left, borderValue);
+
+    // Compare actual results with golden results
+    CompareVectors(actualOutput, goldenOutput);
+}
+}  // namespace
+
 eTestStatusType test_op_copy_make_border(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    std::filesystem::path base_path = std::filesystem::path(argv[1]) / "tests" / "ops";
+    TEST_CASES_BEGIN();
 
-    try {
-        // GPU implementation tests
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_constant.bmp", 9,
-                                           9, BORDER_TYPE_CONSTANT, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(
-            TestCorrectness(base_path / "test_input.bmp",
-                            base_path / "copy_make_border" / "expected_copy_make_border_replicate.bmp", 9, 9,
-                            BORDER_TYPE_REPLICATE, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-            eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_reflect.bmp", 9,
-                                           9, BORDER_TYPE_REFLECT, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_wrap.bmp", 9, 9,
-                                           BORDER_TYPE_WRAP, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-
-        // CPU implementation tests
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_constant.bmp", 9,
-                                           9, BORDER_TYPE_CONSTANT, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(
-            TestCorrectness(base_path / "test_input.bmp",
-                            base_path / "copy_make_border" / "expected_copy_make_border_replicate.bmp", 9, 9,
-                            BORDER_TYPE_REPLICATE, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-            eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_reflect.bmp", 9,
-                                           9, BORDER_TYPE_REFLECT, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_wrap.bmp", 9, 9,
-                                           BORDER_TYPE_WRAP, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-    } catch (Exception e) {
-        printf("Exception occured: %s\n", e.what());
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    TEST_CASES_END();
 }
