@@ -87,13 +87,20 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
                                 const eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
-    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U32,
-                           eDataType::DATA_TYPE_S32, eDataType::DATA_TYPE_F32);
+    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,
+                           eDataType::DATA_TYPE_S16, eDataType::DATA_TYPE_U32, eDataType::DATA_TYPE_S32,
+                           eDataType::DATA_TYPE_F32, eDataType::DATA_TYPE_F64);
+    CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
     CHECK_TENSOR_DEVICE(output, device);
     CHECK_TENSOR_COMPARISON(output.dtype() == input.dtype());
     CHECK_TENSOR_COMPARISON(output.layout() == input.layout());
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == input.shape(input.layout().batch_index()));
+
+    // If the layout type has a batch index, ensure that the input and output tensors share the same batch size
+    if (input.layout().batch_index() != -1) {
+        CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) ==
+                                input.shape(input.layout().batch_index()));
+    }
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) ==
                             input.shape(input.layout().channels_index()));
 
@@ -101,11 +108,14 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
     // Maps kernel dispatchers according to the underlying data type and number of channels.
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, eBorderType, float4, const eDeviceType)>, 4>>
         funcs = {
-            {eDataType::DATA_TYPE_U8,  {dispatch_copy_make_border<uchar1>, 0,  dispatch_copy_make_border<uchar3>,  dispatch_copy_make_border<uchar4>}},
-            {eDataType::DATA_TYPE_S8,  {dispatch_copy_make_border<char1>,  0,  dispatch_copy_make_border<char3>,   dispatch_copy_make_border<char4>}},
-            {eDataType::DATA_TYPE_U32, {dispatch_copy_make_border<uint1>,  0,  dispatch_copy_make_border<uint3>,   dispatch_copy_make_border<uint4>}},
-            {eDataType::DATA_TYPE_S32, {dispatch_copy_make_border<int1>,   0,  dispatch_copy_make_border<int3>,    dispatch_copy_make_border<int4>}},
-            {eDataType::DATA_TYPE_F32, {dispatch_copy_make_border<float1>, 0,  dispatch_copy_make_border<float3>,  dispatch_copy_make_border<float4>}}
+            {eDataType::DATA_TYPE_U8,  {dispatch_copy_make_border<uchar1>,   0,  dispatch_copy_make_border<uchar3>,  dispatch_copy_make_border<uchar4>}},
+            {eDataType::DATA_TYPE_S8,  {dispatch_copy_make_border<char1>,    0,  dispatch_copy_make_border<char3>,   dispatch_copy_make_border<char4>}},
+            {eDataType::DATA_TYPE_U16, {dispatch_copy_make_border<ushort1>,  0,  dispatch_copy_make_border<ushort3>, dispatch_copy_make_border<ushort4>}},
+            {eDataType::DATA_TYPE_S16, {dispatch_copy_make_border<short1>,   0,  dispatch_copy_make_border<short3>,  dispatch_copy_make_border<short4>}},
+            {eDataType::DATA_TYPE_U32, {dispatch_copy_make_border<uint1>,    0,  dispatch_copy_make_border<uint3>,   dispatch_copy_make_border<uint4>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_copy_make_border<int1>,     0,  dispatch_copy_make_border<int3>,    dispatch_copy_make_border<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_copy_make_border<float1>,   0,  dispatch_copy_make_border<float3>,  dispatch_copy_make_border<float4>}},
+            {eDataType::DATA_TYPE_F64, {dispatch_copy_make_border<double1>,  0,  dispatch_copy_make_border<double3>, dispatch_copy_make_border<double4>}}
         };
     // clang-format on
 
