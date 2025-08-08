@@ -23,15 +23,12 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-
 #include "operator_types.h"
 
-namespace Kernels {
-namespace Device {
-template <typename T, typename SRC, typename DST>
-__global__ void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width,
-                                  int64_t height, int64_t batch_size,
-                                  int orderIdx, float delta) {
+namespace Kernels::Device {
+
+template <typename T, typename SrcWrapper, typename DstWrapper>
+__global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
@@ -40,23 +37,18 @@ __global__ void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width,
         T G = input.template at<T>(z_idx, y_idx, x_idx, 1);
         T B = input.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2);
 
-        float Y = R * 0.299f + G * 0.587f + B * 0.114f;
-        float Cr = (R - Y) * 0.877f + delta;
-        float Cb = (B - Y) * 0.492f + delta;
+        float Y = (float)R * 0.299f + (float)G * 0.587f + (float)B * 0.114f;
+        float Cr = ((float)R - Y) * 0.877f + delta;
+        float Cb = ((float)B - Y) * 0.492f + delta;
 
-        output.template at<T>(z_idx, y_idx, x_idx, 0) =
-            RoundImplementationsToYUV<float>(Y);
-        output.template at<T>(z_idx, y_idx, x_idx, 1) =
-            RoundImplementationsToYUV<float>(Cb);
-        output.template at<T>(z_idx, y_idx, x_idx, 2) =
-            RoundImplementationsToYUV<float>(Cr);
+        output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(Y);
+        output.template at<T>(z_idx, y_idx, x_idx, 1) = RoundImplementationsToYUV<float>(Cb);
+        output.template at<T>(z_idx, y_idx, x_idx, 2) = RoundImplementationsToYUV<float>(Cr);
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width,
-                                  int64_t height, int64_t batch_size,
-                                  int orderIdx, float delta) {
+template <typename T, typename SrcWrapper, typename DstWrapper>
+__global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
@@ -66,53 +58,42 @@ __global__ void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width,
         T Cb = input.template at<T>(z_idx, y_idx, x_idx, 1);
         T Cr = input.template at<T>(z_idx, y_idx, x_idx, 2);
 
-        float B = Y + (Cb - delta) * 2.032f;
-        float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
-        float R = Y + (Cr - delta) * 1.140f;
+        float B = (float)Y + ((float)Cb - delta) * 2.032f;
+        float G = (float)Y + ((float)Cb - delta) * -0.395f + ((float)Cr - delta) * -0.581f;
+        float R = (float)Y + ((float)Cr - delta) * 1.140f;
 
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdx) =
-            Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0, 255);
-        output.template at<T>(z_idx, y_idx, x_idx, 1) =
-            Clamp<T, float>(RoundImplementationsFromYUV<float>(G), 0, 255);
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) =
-            Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0, 255);
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdx) = Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0, 255);
+        output.template at<T>(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(RoundImplementationsFromYUV<float>(G), 0, 255);
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) = Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0, 255);
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void rgb_or_bgr_to_bgr_or_rgb(SRC input, DST output, int64_t width,
-                                         int64_t height, int64_t batch_size,
-                                         int orderIdxInput,
-                                         int orderIdxOutput) {
+template <typename T, typename SrcWrapper, typename DstWrapper>
+__global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput, int orderIdxOutput) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
 
     if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput) =
-            input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput);
-        output.template at<T>(z_idx, y_idx, x_idx, 1) =
-            input.template at<T>(z_idx, y_idx, x_idx, 1);
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) =
-            input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput) = input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput);
+        output.template at<T>(z_idx, y_idx, x_idx, 1) = input.template at<T>(z_idx, y_idx, x_idx, 1);
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void rgb_or_bgr_to_grayscale(SRC input, DST output, int64_t width,
-                                        int64_t height, int64_t batch_size,
-                                        int orderIdxInput) {
+template <typename T, typename SrcWrapper, typename DstWrapper>
+__global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
 
     if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        float grayValue = 0;
-        grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput) * 0.299;
-        grayValue += input.template at<T>(z_idx, y_idx, x_idx, 1) * 0.587;
-        grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2) * 0.114;
+        float grayValue = 0.0f;
+        grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
+        grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, 1)) * 0.587;
+        grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
         output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
     }
 }
-}  // namespace Device
-}  // namespace Kernels
+
+}  // namespace Kernels::Device

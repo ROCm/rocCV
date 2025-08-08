@@ -23,14 +23,12 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-
 #include "operator_types.h"
 
-namespace Kernels {
-namespace Host {
-template <typename T, typename SRC, typename DST>
-void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width, int64_t height,
-                       int64_t batch_size, int orderIdx, float delta) {
+namespace Kernels::Host {
+
+template <typename T, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
@@ -38,24 +36,20 @@ void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width, int64_t height,
                 T G = input.template at<T>(z_idx, y_idx, x_idx, 1);
                 T B = input.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2);
 
-                float Y = R * 0.299f + G * 0.587f + B * 0.114f;
-                float Cr = (R - Y) * 0.877f + delta;
-                float Cb = (B - Y) * 0.492f + delta;
+                float Y = (float)R * 0.299f + (float)G * 0.587f + (float)B * 0.114f;
+                float Cr = ((float)R - Y) * 0.877f + delta;
+                float Cb = ((float)B - Y) * 0.492f + delta;
 
-                output.template at<T>(z_idx, y_idx, x_idx, 0) =
-                    RoundImplementationsToYUV<float>(Y);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) =
-                    RoundImplementationsToYUV<float>(Cb);
-                output.template at<T>(z_idx, y_idx, x_idx, 2) =
-                    RoundImplementationsToYUV<float>(Cr);
+                output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(Y);
+                output.template at<T>(z_idx, y_idx, x_idx, 1) = RoundImplementationsToYUV<float>(Cb);
+                output.template at<T>(z_idx, y_idx, x_idx, 2) = RoundImplementationsToYUV<float>(Cr);
             }
         }
     }
 }
 
-template <typename T, typename SRC, typename DST>
-void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width, int64_t height,
-                       int64_t batch_size, int orderIdx, float delta) {
+template <typename T, typename SrcWrapper, typename DstWrapper>
+void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
@@ -63,27 +57,20 @@ void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width, int64_t height,
                 T Cb = input.template at<T>(z_idx, y_idx, x_idx, 1);
                 T Cr = input.template at<T>(z_idx, y_idx, x_idx, 2);
 
-                float B = Y + (Cb - delta) * 2.032f;
-                float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
-                float R = Y + (Cr - delta) * 1.140f;
+                float B = (float)Y + ((float)Cb - delta) * 2.032f;
+                float G = (float)Y + ((float)Cb - delta) * -0.395f + ((float)Cr - delta) * -0.581f;
+                float R = (float)Y + ((float)Cr - delta) * 1.140f;
 
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdx) =
-                    Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0,
-                                    255);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(
-                    RoundImplementationsFromYUV<float>(G), 0, 255);
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) =
-                    Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0,
-                                    255);
+                output.template at<T>(z_idx, y_idx, x_idx, orderIdx) = Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0, 255);
+                output.template at<T>(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(RoundImplementationsFromYUV<float>(G), 0, 255);
+                output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) = Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0, 255);
             }
         }
     }
 }
 
-template <typename T, typename SRC, typename DST>
-void rgb_or_bgr_to_bgr_or_rgb(SRC input, DST output, int64_t width,
-                              int64_t height, int64_t batch_size,
-                              int orderIdxInput, int orderIdxOutput) {
+template <typename T, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput, int orderIdxOutput) {
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
@@ -95,23 +82,21 @@ void rgb_or_bgr_to_bgr_or_rgb(SRC input, DST output, int64_t width,
     }
 }
 
-template <typename T, typename SRC, typename DST>
-void rgb_or_bgr_to_grayscale(SRC input, DST output, int64_t width,
-                             int64_t height, int64_t batch_size,
-                             int orderIdxInput) {
+template <typename T, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput) {
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
                 if (x_idx < width && y_idx < height && z_idx < batch_size) {
-                    float grayValue = 0;
-                    grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput) * 0.299;
-                    grayValue += input.template at<T>(z_idx, y_idx, x_idx, 1) * 0.587;
-                    grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2) * 0.114;
+                    float grayValue = 0.0f;
+                    grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
+                    grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, 1)) * 0.587;
+                    grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
                     output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
                 }
             }
         }
     }
 }
-}  // namespace Host
-}  // namespace Kernels
+
+}  // namespace Kernels::Host
