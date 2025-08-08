@@ -15,7 +15,7 @@ See below for a list of Computer Vision operators rocCV supports.
 |GammaContrast|Adjusts the gamma contrast of an image.|U8, U16, U32, F32|NHWC, HWC|Both|
 |Histogram|Calculates a histogram of values from a grayscale image.|U8|NHWC, HWC|Both|
 |NonMaximumSuppression|Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.|S16, 4S16|NW, NWC|Both|
-|Normalize|Normalizes an input tensor using a provided mean and standard deviation.|U8, S8, F32|NHWC, HWC|Both|
+|Normalize|Normalizes image pixels' range using the provided shift and scale parameters.|U8, S8, U16, S16, U32, S32, F32|NHWC, HWC|Both|
 |Remap|Maps pixels in an image from one projection to another projection in a new image.|U8|NHWC, HWC|Both|
 |Resize|Resizes an input tensor with interpolation.|U8, S8, F32|NHWC, HWC|Both|
 |Rotate|Rotates (and optionally shifts) an input tensor by given angle in degrees clockwise.|U8, S8, F32|NHWC, HWC|Both|
