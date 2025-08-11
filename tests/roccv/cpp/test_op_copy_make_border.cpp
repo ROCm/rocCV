@@ -37,13 +37,13 @@ namespace {
  * @tparam T Datatype of the images' pixels.
  * @tparam BorderType Border mode to use for out-of-bounds conditions.
  * @tparam BT Base datatype of the image.
- * @param input A vector containing the input image batch.
- * @param batchSize The number of images in the batch.
- * @param inputSize The size of the input images.
- * @param outputSize The size of the output images.
- * @param top The top shift to perform on the input image when copying to the output image.
- * @param left The left shift to perform on the input image when copying to the output image.
- * @param borderValue The fallback border value to use when CONSTANT border mode is specified.
+ * @param[in] input A vector containing the input image batch.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] inputSize The size of the input images.
+ * @param[in] outputSize The size of the output images.
+ * @param[in] top The top shift to perform on the input image when copying to the output image.
+ * @param[in] left The left shift to perform on the input image when copying to the output image.
+ * @param[in] borderValue The fallback border value to use when CONSTANT border mode is specified.
  * @return A vector containing the output image data.
  */
 template <typename T, eBorderType BorderType, typename BT = detail::BaseType<T>>
@@ -81,14 +81,14 @@ std::vector<BT> GoldenCopyMakeBorder(std::vector<BT> input, int batchSize, Size2
  * @tparam T Datatype of the images' pixels.
  * @tparam BorderType Border mode to use for out-of-bounds conditions.
  * @tparam BT Base datatype of the image.
- * @param batchSize The number of images in the batch.
- * @param inputSize The size of the input images.
- * @param outputSize The size of the output images.
- * @param format The image format to use. Must match the type T.
- * @param top The top shift to perform on the input image when copying to the output image.
- * @param left The left shift to perform on the input image when copying to the output image.
- * @param borderValue The fallback border value to use when CONSTANT border mode is specified.
- * @param device The device to run this correctness test on.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] inputSize The size of the input images.
+ * @param[in] outputSize The size of the output images.
+ * @param[in] format The image format to use. Must match the type T.
+ * @param[in] top The top shift to perform on the input image when copying to the output image.
+ * @param[in] left The left shift to perform on the input image when copying to the output image.
+ * @param[in] borderValue The fallback border value to use when CONSTANT border mode is specified.
+ * @param[in] device The device to run this correctness test on.
  * @throws std::runtime_error if the test fails.
  */
 template <typename T, eBorderType BorderType, typename BT = detail::BaseType<T>>
