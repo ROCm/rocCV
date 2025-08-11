@@ -35,9 +35,9 @@ def calc_center_shift(center_x, center_y, angle) -> tuple[float, float]:
 
 
 @pytest.mark.parametrize("input_path, angle, interp, device, expected_path", [
-    ("test_input.bmp", 315.0,
+    ("test_input.bmp", -315.0,
      rocpycv.NEAREST, rocpycv.GPU, "rotate/expected_rotate_nearest.bmp"),
-    ("test_input.bmp", 315.0,
+    ("test_input.bmp", -315.0,
      rocpycv.NEAREST, rocpycv.CPU, "rotate/expected_rotate_nearest.bmp")
 ])
 def test_op_rotate(pytestconfig, input_path, angle, interp, device, expected_path):
