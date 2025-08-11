@@ -107,7 +107,8 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
                                  const float4 borderValue, const eDeviceType device) const {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
-    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_F32);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_S8, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32,
+                           DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
     CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_HWC, TENSOR_LAYOUT_NHWC);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
@@ -139,7 +140,13 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const PerspectiveTransform, const eInterpolationType, const eBorderType, const float4, const eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  {dispatch_warp_perspective_dtype<uchar1>, 0, dispatch_warp_perspective_dtype<uchar3>, dispatch_warp_perspective_dtype<uchar4>}},
-            {eDataType::DATA_TYPE_F32, {dispatch_warp_perspective_dtype<float1>, 0, dispatch_warp_perspective_dtype<float3>, dispatch_warp_perspective_dtype<float4>}}
+            {eDataType::DATA_TYPE_S8,  {dispatch_warp_perspective_dtype<char1>, 0, dispatch_warp_perspective_dtype<char3>, dispatch_warp_perspective_dtype<char4>}},
+            {eDataType::DATA_TYPE_U16,  {dispatch_warp_perspective_dtype<ushort1>, 0, dispatch_warp_perspective_dtype<ushort3>, dispatch_warp_perspective_dtype<ushort4>}},
+            {eDataType::DATA_TYPE_S16,  {dispatch_warp_perspective_dtype<short1>, 0, dispatch_warp_perspective_dtype<short3>, dispatch_warp_perspective_dtype<short4>}},
+            {eDataType::DATA_TYPE_U32,  {dispatch_warp_perspective_dtype<uint1>, 0, dispatch_warp_perspective_dtype<uint3>, dispatch_warp_perspective_dtype<uint4>}},
+            {eDataType::DATA_TYPE_S32,  {dispatch_warp_perspective_dtype<int1>, 0, dispatch_warp_perspective_dtype<int3>, dispatch_warp_perspective_dtype<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_warp_perspective_dtype<float1>, 0, dispatch_warp_perspective_dtype<float3>, dispatch_warp_perspective_dtype<float4>}},
+            {eDataType::DATA_TYPE_F64, {dispatch_warp_perspective_dtype<double1>, 0, dispatch_warp_perspective_dtype<double3>, dispatch_warp_perspective_dtype<double4>}}
         };
     // clang-format on
 
