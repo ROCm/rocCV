@@ -49,21 +49,19 @@ class Rotate final : public IOperator {
     ~Rotate() {}
 
     /**
-     * @brief Rotates a batch of images by a given angle in degrees clockwise.
+     * @brief Rotates a batch of images by a given angle in degrees counter-clockwise.
      *
      * Limitations:
      *
      * Input:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_NCHW]
-     *                        Channels: 1, 3
-     *       Supported DataType(s):     [DATA_TYPE_U8, DATA_TYPE_F32,
-     *                                  DATA_TYPE_S8]
+     *       Supported TensorLayout(s): [NHWC, HWC]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Output:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_NCHW]
-     *                        Channels: 1, 3
-     *       Supported DataType(s)     [DATA_TYPE_U8, DATA_TYPE_F32,
-     *                                 DATA_TYPE_S8]
+     *       Supported TensorLayout(s): [NHWC, HWC]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s)      [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Input/Output dependency:
      *
@@ -89,8 +87,5 @@ class Rotate final : public IOperator {
     void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output, const double angle_deg,
                     const double2 shift, const eInterpolationType interpolation,
                     const eDeviceType device = eDeviceType::GPU) const;
-
-   private:
-    WarpAffine m_op;
 };
 }  // namespace roccv
