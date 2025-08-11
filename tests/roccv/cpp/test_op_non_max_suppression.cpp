@@ -32,11 +32,44 @@ namespace {
 
 // Stores information about a box/confidence score pair
 struct BoxInfo {
-    short4 boxCoords;
-    int idx;
-    float score;
-    unsigned char suppressed = 0;
+    short4 boxCoords;  // Coordinates of the box (x, y, w, h)
+    int idx;           // The global idx of this box
+    float score;       // The corresponding confidence score of this box
 };
+
+/**
+ * @brief Computes the IoU between two boxes.
+ *
+ * @param[in] a Box A.
+ * @param[in] b Box B.
+ * @return The IoU between boxes A and B.
+ */
+float ComputeIoU(const short4 &a, const short4 &b) {
+    float ax1 = a.x;
+    float ay1 = a.y;
+    float ax2 = a.x + a.z;
+    float ay2 = a.y + a.w;
+
+    float bx1 = b.x;
+    float by1 = b.y;
+    float bx2 = b.x + b.z;
+    float by2 = b.y + b.w;
+
+    float interX1 = std::max(ax1, bx1);
+    float interY1 = std::max(ay1, by1);
+    float interX2 = std::min(ax2, bx2);
+    float interY2 = std::min(ay2, by2);
+
+    float interW = std::max(0.0f, interX2 - interX1);
+    float interH = std::max(0.0f, interY2 - interY1);
+    float interA = interW * interH;
+
+    float areaA = (ax2 - ax1) * (ay2 - ay1);
+    float areaB = (bx2 - bx1) * (by2 - by1);
+    float unionA = areaA + areaB - interA;
+    if (unionA <= 0.0f) return 0.0f;
+    return interA / unionA;
+}
 
 /**
  * @brief Golden model for the non-maximum suppression operator. This calculates which boxes should be kept based on
@@ -56,6 +89,9 @@ struct BoxInfo {
 std::vector<unsigned char> GoldenNonMaximumSuppression(std::vector<short4> input, std::vector<float> scores,
                                                        float scoreThreshold, float iouThreshold, int batchSize,
                                                        int numBoxes) {
+    // Initially, all boxes are suppressed.
+    std::vector<unsigned char> output(batchSize * numBoxes, 0);
+
     for (int b = 0; b < batchSize; b++) {
         int beginIdx = b * numBoxes;
         int endIdx = b * numBoxes + numBoxes;
@@ -63,18 +99,69 @@ std::vector<unsigned char> GoldenNonMaximumSuppression(std::vector<short4> input
         // Copy boxes/scores local to this batch index into a struct which keeps track of their score/original index.
         std::vector<BoxInfo> localBoxes;
         for (int i = beginIdx; i < endIdx; i++) {
-            BoxInfo box;
-            box.boxCoords = input[i];
-            box.score = scores[i];
-            box.idx = i - beginIdx;
-            localBoxes.push_back(box);
+            if (scores[i] >= scoreThreshold) {
+                // Only include this box if its score threshold is large enough
+                BoxInfo box{input[i], i, scores[i]};
+                localBoxes.push_back(box);
+            }
         }
 
         // Sort boxes in descending order
         std::sort(localBoxes.begin(), localBoxes.end(), [](BoxInfo &a, BoxInfo &b) { return a.score > b.score; });
+        std::vector<BoxInfo> keptBoxes;
 
-        // Now, we can begin determining which boxes can be suppressed or not
+        while (!localBoxes.empty()) {
+            BoxInfo current = localBoxes.front();
+            output[current.idx] = 1;
+
+            std::vector<BoxInfo> remaining;
+            remaining.reserve(localBoxes.size());
+            for (size_t i = 1; i < localBoxes.size(); i++) {
+                // Keep the box if it is equal to or less than the iouThreshold
+                if (ComputeIoU(current.boxCoords, localBoxes[i].boxCoords) <= iouThreshold) {
+                    remaining.push_back(localBoxes[i]);
+                }
+
+                // Otherwise, we do nothing. This box will be suppressed by dropping it from the remaining list.
+            }
+
+            localBoxes.swap(remaining);
+        }
     }
+
+    return output;
+}
+
+void TestCorrectness(int batchSize, int numBoxes, std::vector<short4> boxes, std::vector<float> scores,
+                     float scoreThreshold, float iouThreshold, eDeviceType device) {
+    // Create required input/output tensors for roccv::NonMaximumSuppression
+    Tensor inputTensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {batchSize, numBoxes, 4}), DataType(DATA_TYPE_S16),
+                       device);
+    Tensor scoresTensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {batchSize, numBoxes, 1}), DataType(DATA_TYPE_F32),
+                        device);
+    Tensor outputTensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {batchSize, numBoxes, 1}), DataType(DATA_TYPE_U8),
+                        device);
+
+    // Copy host-allocated vectors into tensors
+    CopyVectorIntoTensor(inputTensor, boxes);
+    CopyVectorIntoTensor(scoresTensor, scores);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    NonMaximumSuppression op;
+    op(stream, inputTensor, outputTensor, scoresTensor, scoreThreshold, iouThreshold, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy output tensor data into host allocated tensor
+    std::vector<unsigned char> actualOutput(outputTensor.shape().size());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Generate golden output using defined model above
+    std::vector<unsigned char> goldenOutput =
+        GoldenNonMaximumSuppression(boxes, scores, scoreThreshold, iouThreshold, batchSize, numBoxes);
+
+    CompareVectors(actualOutput, goldenOutput);
 }
 
 }  // namespace
@@ -82,67 +169,17 @@ std::vector<unsigned char> GoldenNonMaximumSuppression(std::vector<short4> input
 eTestStatusType test_op_non_max_suppression(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
+    // GPU Tests
+    TEST_CASE((TestCorrectness(1, 4,
+                               {make_short4(100, 100, 200, 200), make_short4(110, 110, 210, 210),
+                                make_short4(220, 220, 320, 320), make_short4(50, 50, 150, 150)},
+                               {0.9, 0.8, 0.85, 0.7}, 0.0f, 0.5f, eDeviceType::GPU)));
+
+    // CPU Tests
+    TEST_CASE((TestCorrectness(1, 4,
+                               {make_short4(100, 100, 200, 200), make_short4(110, 110, 210, 210),
+                                make_short4(220, 220, 320, 320), make_short4(50, 50, 150, 150)},
+                               {0.9, 0.8, 0.85, 0.7}, 0.0f, 0.5f, eDeviceType::CPU)));
+
     TEST_CASES_END();
 }
-
-// eTestStatusType testCorrectness(std::vector<short4> boxes_data, std::vector<float> scores_data,
-//                                 std::vector<uint8_t> expected_data, float score_threshold, float iou_threshold,
-//                                 eDeviceType device) {
-//     int numBoxes = scores_data.size();
-//     TensorShape shape(TensorLayout(TENSOR_LAYOUT_NW), {1, numBoxes});
-//     Tensor input(shape, DataType(DATA_TYPE_4S16), device);
-//     Tensor output(shape, DataType(DATA_TYPE_U8), device);
-//     Tensor scores(shape, DataType(DATA_TYPE_F32), device);
-
-//     copyData<short4>(input, boxes_data, device);
-//     copyData<float>(scores, scores_data, device);
-
-//     NonMaximumSuppression op;
-//     op(nullptr, input, output, scores, score_threshold, iou_threshold, device);
-//     hipDeviceSynchronize();
-
-//     return compareArray<uint8_t>(output, expected_data, 0.0f);
-// }
-
-// eTestStatusType test_op_non_max_suppression(int argc, char **argv) {
-//     if (argc < 2) {
-//         std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-//         return eTestStatusType::TEST_FAILURE;
-//     }
-//     std::filesystem::path test_data = std::filesystem::path(argv[1]) / "tests" / "ops" / "expected_nms.bin";
-//     std::ifstream file(test_data, std::ios::binary);
-//     if (!file) {
-//         std::cerr << "Error opening test file: " << test_data << std::endl;
-//         return eTestStatusType::TEST_FAILURE;
-//     }
-
-//     std::vector<uint8_t> test_data_vec(std::istreambuf_iterator<char>(file), {});
-//     file.close();
-
-//     // clang-format off
-//     std::vector<short4> boxesData = {
-//         make_short4(100, 100, 200, 200),
-//         make_short4(110, 110, 210, 210),
-//         make_short4(220, 220, 320, 320),
-//         make_short4(50, 50, 150, 150)
-//     };
-//     // clang-format on
-
-//     std::vector<float> scoresData = {0.9, 0.8, 0.85, 0.7};
-//     float iouThreshold = 0.5f;
-//     float scoreThreshold = 0.0f;
-
-//     try {
-//         EXPECT_TEST_STATUS(
-//             testCorrectness(boxesData, scoresData, test_data_vec, scoreThreshold, iouThreshold, eDeviceType::GPU),
-//             eTestStatusType::TEST_SUCCESS);
-//         EXPECT_TEST_STATUS(
-//             testCorrectness(boxesData, scoresData, test_data_vec, scoreThreshold, iouThreshold, eDeviceType::CPU),
-//             eTestStatusType::TEST_SUCCESS);
-//     } catch (Exception e) {
-//         std::cerr << "Test failed with exception: " << e.what() << std::endl;
-//         return eTestStatusType::TEST_FAILURE;
-//     }
-
-//     return eTestStatusType::TEST_SUCCESS;
-// }
