@@ -32,17 +32,17 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
-                T R = input.template at<T>(z_idx, y_idx, x_idx, orderIdx);
-                T G = input.template at<T>(z_idx, y_idx, x_idx, 1);
-                T B = input.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2);
+                auto R = input.at(z_idx, y_idx, x_idx, orderIdx);
+                auto G = input.at(z_idx, y_idx, x_idx, 1);
+                auto B = input.at(z_idx, y_idx, x_idx, orderIdx ^ 2);
 
                 float Y = (float)R * 0.299f + (float)G * 0.587f + (float)B * 0.114f;
                 float Cr = ((float)R - Y) * 0.877f + delta;
                 float Cb = ((float)B - Y) * 0.492f + delta;
 
-                output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(Y);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) = RoundImplementationsToYUV<float>(Cb);
-                output.template at<T>(z_idx, y_idx, x_idx, 2) = RoundImplementationsToYUV<float>(Cr);
+                output.at(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(Y);
+                output.at(z_idx, y_idx, x_idx, 1) = RoundImplementationsToYUV<float>(Cb);
+                output.at(z_idx, y_idx, x_idx, 2) = RoundImplementationsToYUV<float>(Cr);
             }
         }
     }
@@ -50,20 +50,24 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
 void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
+
+    T max_type_value = std::numeric_limits<T>::max();
+    T min_type_value = std::numeric_limits<T>::min();
+
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
-                T Y = input.template at<T>(z_idx, y_idx, x_idx, 0);
-                T Cb = input.template at<T>(z_idx, y_idx, x_idx, 1);
-                T Cr = input.template at<T>(z_idx, y_idx, x_idx, 2);
+                auto Y  = input.at(z_idx, y_idx, x_idx, 0);
+                auto Cb = input.at(z_idx, y_idx, x_idx, 1);
+                auto Cr = input.at(z_idx, y_idx, x_idx, 2);
 
                 float B = (float)Y + ((float)Cb - delta) * 2.032f;
                 float G = (float)Y + ((float)Cb - delta) * -0.395f + ((float)Cr - delta) * -0.581f;
                 float R = (float)Y + ((float)Cr - delta) * 1.140f;
 
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdx) = Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0, 255);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(RoundImplementationsFromYUV<float>(G), 0, 255);
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) = Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0, 255);
+                output.at(z_idx, y_idx, x_idx, orderIdx) = Clamp<T, float>(RoundImplementationsFromYUV<float>(R), min_type_value, max_type_value);
+                output.at(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(RoundImplementationsFromYUV<float>(G), min_type_value, max_type_value);
+                output.at(z_idx, y_idx, x_idx, orderIdx ^ 2) = Clamp<T, float>(RoundImplementationsFromYUV<float>(B), min_type_value, max_type_value);
             }
         }
     }
@@ -74,9 +78,9 @@ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int64_t width
     for (int z_idx = 0; z_idx < batch_size; z_idx++) {
         for (int y_idx = 0; y_idx < height; y_idx++) {
             for (int x_idx = 0; x_idx < width; x_idx++) {
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput) = input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) = input.template at<T>(z_idx, y_idx, x_idx, 1);
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
+                output.at(z_idx, y_idx, x_idx, orderIdxOutput) = input.at(z_idx, y_idx, x_idx, orderIdxInput);
+                output.at(z_idx, y_idx, x_idx, 1) = input.at(z_idx, y_idx, x_idx, 1);
+                output.at(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
             }
         }
     }
@@ -89,10 +93,10 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int64_t width,
             for (int x_idx = 0; x_idx < width; x_idx++) {
                 if (x_idx < width && y_idx < height && z_idx < batch_size) {
                     float grayValue = 0.0f;
-                    grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
-                    grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, 1)) * 0.587;
-                    grayValue += (float)(input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
-                    output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
+                    grayValue += (float)(input.at(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
+                    grayValue += (float)(input.at(z_idx, y_idx, x_idx, 1)) * 0.587;
+                    grayValue += (float)(input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
+                    output.at(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
                 }
             }
         }
