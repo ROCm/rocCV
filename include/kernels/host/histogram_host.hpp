@@ -35,7 +35,7 @@ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram
         for (int y = 0; y < input.height(); y++) {
             for (int x = 0; x < input.width(); x++) {
                 auto hist_idx = input.at(b, y, x, 0);
-                histogram.at(b, hist_idx.x, 0).x += 1;
+                histogram.at(b, hist_idx.x, 0) += 1;
             }
         }
     }
@@ -49,7 +49,7 @@ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::GenericTensorWr
             for (int x = 0; x < input.width(); x++) {
                 if (mask.at(b, y, x, 0) != 0) {
                     auto hist_idx = input.at(b, y, x, 0);
-                    histogram.at(b, hist_idx.x, 0).x += 1;
+                    histogram.at(b, hist_idx.x, 0) += 1;
                 }
             }
         }

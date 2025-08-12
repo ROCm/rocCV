@@ -148,8 +148,8 @@ void Histogram::operator()(hipStream_t stream, const Tensor& input, std::optiona
     // clang-format off
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, std::optional<std::reference_wrapper<const Tensor>>, const Tensor&, const eDeviceType)>, 1>>
         funcs = {
-            {eDataType::DATA_TYPE_U32, {dispatch_histogram_dtype<uint1>}},
-            {eDataType::DATA_TYPE_S32, {dispatch_histogram_dtype<int1>}}
+            {eDataType::DATA_TYPE_U32, {dispatch_histogram_dtype<uint>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_histogram_dtype<int>}}
         };
     // clang-format on
 

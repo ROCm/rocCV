@@ -42,20 +42,20 @@ __global__ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
 
-    local_histogram[tid].x = 0;  // initialize the histogram
+    local_histogram[tid] = 0;  // initialize the histogram
 
     __syncthreads();
 
     if (gid < input.height() * input.width()) {
-        atomicAdd(&local_histogram[input.at(z_idx, y_idx, x_idx, 0).x].x, 1);
+        atomicAdd(&local_histogram[input.at(z_idx, y_idx, x_idx, 0).x], 1);
     }
     __syncthreads();  // wait for all of the threads in this block to finish
 
-    const auto hist_val = local_histogram[tid].x;  // get local value for this thread
+    const auto hist_val = local_histogram[tid];  // get local value for this thread
 
     // this is the output histogram must be init to and atomically added to.
     if (hist_val > 0) {
-        atomicAdd(&histogram.at(z_idx, tid, 0).x, hist_val);
+        atomicAdd(&histogram.at(z_idx, tid, 0), hist_val);
     }
 }
 
@@ -72,24 +72,24 @@ __global__ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::Gene
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
 
-    local_histogram[tid].x = 0;  // initialize the histogram
+    local_histogram[tid] = 0;  // initialize the histogram
 
     __syncthreads();
 
     if (gid < input.height() * input.width()) {
         if (mask.at(z_idx, y_idx, x_idx, 0) != 0) {
             atomicAdd(
-                &local_histogram[input.at(z_idx, y_idx, x_idx, 0).x].x,
+                &local_histogram[input.at(z_idx, y_idx, x_idx, 0).x],
                 1);
         }
     }
     __syncthreads();  // wait for all of the threads in this block to finish
 
-    const auto hist_val = local_histogram[tid].x;  // get local value for this thread
+    const auto hist_val = local_histogram[tid];  // get local value for this thread
 
     // this is the output histogram must be init to and atomically added to.
     if (hist_val > 0) {
-        atomicAdd(&histogram.at(z_idx, tid, 0).x, hist_val);
+        atomicAdd(&histogram.at(z_idx, tid, 0), hist_val);
     }
 }
 }  // namespace Device
