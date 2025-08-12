@@ -64,7 +64,7 @@ void GenerateGoldenNormalize(std::vector<BT>& input, std::vector<BT>& output, Si
             for (int c = 0; c < imgFormat.channels(); c++) {
                 int base_c = (baseFormat.channels() == 1 ? 0 : c);
                 int scale_c = (scaleFormat.channels() == 1 ? 0 : c);
-                float scaleFactor = scale.at(scale_y * scaleSize.w * scaleFormat.channels() + scale_x * scaleFormat.channels() + scale_c);;
+                float scaleFactor = scale.at(scale_y * scaleSize.w * scaleFormat.channels() + scale_x * scaleFormat.channels() + scale_c);
                 if (scaleIsStdDev) {
                     scaleFactor = 1.0 / std::sqrt(scaleFactor * scaleFactor + epsilon);
                 }
