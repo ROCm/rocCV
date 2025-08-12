@@ -31,31 +31,30 @@ namespace {
 
 template <typename T, typename BT = detail::BaseType<T>>
 void TestCorrectness(int numImages, Size2D size) {
-    int numElements = numImages * size.w * size.h;
     const int channels = detail::NumElements<T>;
+    int numElements = numImages * size.w * size.h * channels;
 
     std::vector<BT> ref(numElements);
     FillVector(ref);
 
     ImageWrapper<T> input(ref, numImages, size.w, size.h);
+    std::vector<BT> actual;
 
     // To determine if coordinates are pointing to the proper values in memory, iterate through the reference vector
     // element-by-element and iterate through the ImageWrapper coordinate-wise. All values should be the same if
     // everything lines up.
 
-    int i = 0;
-
     for (int b = 0; b < numImages; ++b) {
         for (int y = 0; y < size.h; ++y) {
             for (int x = 0; x < size.w; ++x) {
                 for (int c = 0; c < channels; ++c) {
-                    BT wrapperVal = detail::GetElement(input.at(b, y, x, 0), c);
-                    EXPECT_EQ(wrapperVal, ref[i]);
-                    i++;
+                    actual.push_back(detail::GetElement(input.at(b, y, x, 0), c));
                 }
             }
         }
     }
+
+    CompareVectors(actual, ref);
 }
 
 template <typename T>
