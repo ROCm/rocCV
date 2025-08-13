@@ -48,7 +48,7 @@ float GoldenArea(const short4 &box) { return box.z * box.w; }
 float GoldenIoU(const short4 &a, const short4 &b) {
     int aInterLeft = std::max(a.x, b.x);
     int bInterTop = std::max(a.y, b.y);
-    int aInterRight = std::min(a.x + a.z, b.z + b.z);
+    int aInterRight = std::min(a.x + a.z, b.x + b.z);
     int bInterBottom = std::min(a.y + a.w, b.y + b.w);
     int widthInter = aInterRight - aInterLeft;
     int heightInter = bInterBottom - bInterTop;
