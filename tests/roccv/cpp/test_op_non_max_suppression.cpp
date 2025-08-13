@@ -30,12 +30,13 @@ using namespace roccv::tests;
 
 namespace {
 
-// Stores information about a box/confidence score pair
-struct BoxInfo {
-    short4 boxCoords;  // Coordinates of the box (x, y, w, h)
-    int idx;           // The global idx of this box
-    float score;       // The corresponding confidence score of this box
-};
+/**
+ * @brief Computes the area for a given box.
+ *
+ * @param[in] box The short4 representation of the box (x, y, width, height)
+ * @return The computed area of the box.
+ */
+float GoldenArea(const short4 &box) { return box.z * box.w; }
 
 /**
  * @brief Computes the IoU between two boxes.
@@ -44,31 +45,24 @@ struct BoxInfo {
  * @param[in] b Box B.
  * @return The IoU between boxes A and B.
  */
-float ComputeIoU(const short4 &a, const short4 &b) {
-    float ax1 = a.x;
-    float ay1 = a.y;
-    float ax2 = a.x + a.z;
-    float ay2 = a.y + a.w;
+float GoldenIoU(const short4 &a, const short4 &b) {
+    int aInterLeft = std::max(a.x, b.x);
+    int bInterTop = std::max(a.y, b.y);
+    int aInterRight = std::min(a.x + a.z, b.z + b.z);
+    int bInterBottom = std::min(a.y + a.w, b.y + b.w);
+    int widthInter = aInterRight - aInterLeft;
+    int heightInter = bInterBottom - bInterTop;
+    float interArea = widthInter * heightInter;
+    float iou = 0.0f;
 
-    float bx1 = b.x;
-    float by1 = b.y;
-    float bx2 = b.x + b.z;
-    float by2 = b.y + b.w;
+    if (widthInter > 0.0f && heightInter > 0.0f) {
+        float unionArea = GoldenArea(a) + GoldenArea(b) - interArea;
+        if (unionArea > 0.0f) {
+            iou = interArea / unionArea;
+        }
+    }
 
-    float interX1 = std::max(ax1, bx1);
-    float interY1 = std::max(ay1, by1);
-    float interX2 = std::min(ax2, bx2);
-    float interY2 = std::min(ay2, by2);
-
-    float interW = std::max(0.0f, interX2 - interX1);
-    float interH = std::max(0.0f, interY2 - interY1);
-    float interA = interW * interH;
-
-    float areaA = (ax2 - ax1) * (ay2 - ay1);
-    float areaB = (bx2 - bx1) * (by2 - by1);
-    float unionA = areaA + areaB - interA;
-    if (unionA <= 0.0f) return 0.0f;
-    return interA / unionA;
+    return iou;
 }
 
 /**
@@ -89,51 +83,81 @@ float ComputeIoU(const short4 &a, const short4 &b) {
 std::vector<unsigned char> GoldenNonMaximumSuppression(std::vector<short4> input, std::vector<float> scores,
                                                        float scoreThreshold, float iouThreshold, int batchSize,
                                                        int numBoxes) {
-    // Initially, all boxes are suppressed.
-    std::vector<unsigned char> output(batchSize * numBoxes, 0);
+    std::vector<unsigned char> output(batchSize * numBoxes);
 
-    for (int b = 0; b < batchSize; b++) {
-        int beginIdx = b * numBoxes;
-        int endIdx = b * numBoxes + numBoxes;
+    for (int batchIdx = 0; batchIdx < batchSize; batchIdx++) {
+        for (int a = 0; a < numBoxes; a++) {
+            // Starting index for this particular sample
+            size_t beginIdx = batchIdx * numBoxes;
 
-        // Copy boxes/scores local to this batch index into a struct which keeps track of their score/original index.
-        std::vector<BoxInfo> localBoxes;
-        for (int i = beginIdx; i < endIdx; i++) {
-            if (scores[i] >= scoreThreshold) {
-                // Only include this box if its score threshold is large enough
-                BoxInfo box{input[i], i, scores[i]};
-                localBoxes.push_back(box);
+            const float &scoreA = scores.at(beginIdx + a);
+            unsigned char &dst = output.at(beginIdx + a);
+
+            // Discard this box immediately if its score is below the score threshold
+            if (scoreA < scoreThreshold) {
+                dst = 0u;
+                continue;
             }
-        }
 
-        // Sort boxes in descending order
-        std::sort(localBoxes.begin(), localBoxes.end(), [](BoxInfo &a, BoxInfo &b) { return a.score > b.score; });
-        std::vector<BoxInfo> keptBoxes;
+            const short4 &boxA = input.at(beginIdx + a);
+            bool discard = false;
 
-        while (!localBoxes.empty()) {
-            BoxInfo current = localBoxes.front();
-            output[current.idx] = 1;
-
-            std::vector<BoxInfo> remaining;
-            remaining.reserve(localBoxes.size());
-            for (size_t i = 1; i < localBoxes.size(); i++) {
-                // Keep the box if it is equal to or less than the iouThreshold
-                if (ComputeIoU(current.boxCoords, localBoxes[i].boxCoords) <= iouThreshold) {
-                    remaining.push_back(localBoxes[i]);
+            // Compare this box to all other boxes to determine if it should be suppressed or not
+            for (int b = 0; b < numBoxes; b++) {
+                if (a == b) {
+                    continue;
                 }
 
-                // Otherwise, we do nothing. This box will be suppressed by dropping it from the remaining list.
+                // For a box to be suppressed, the following conditions must be met
+                // 1. Its intersection over union with another box must be greater than iouThreshold. If the IoU is over
+                // the threshold, then check:
+                //    - If its confidence score is less than the box being compared against, suppress it.
+                //    - In the case of a tie breaker (scores are the same), suppress it if its area is less than the box
+                //      being compared with.
+                const short4 &boxB = input.at(beginIdx + b);
+                if (GoldenIoU(boxA, boxB) > iouThreshold) {
+                    const float &scoreB = scores.at(beginIdx + b);
+                    if (scoreA < scoreB || (scoreA == scoreB && GoldenArea(boxA) < GoldenArea(boxB))) {
+                        discard = true;
+                        break;
+                    }
+                }
             }
 
-            localBoxes.swap(remaining);
+            dst = discard ? 0u : 1u;
         }
     }
 
     return output;
 }
 
-void TestCorrectness(int batchSize, int numBoxes, std::vector<short4> boxes, std::vector<float> scores,
-                     float scoreThreshold, float iouThreshold, eDeviceType device) {
+/**
+ * @brief Generate input boxes for NMS in a way that's more likely for them to intersect with each other.
+ *
+ * @param batchSize The number of samples in the batch.
+ * @param numBoxes The number of boxes per sample.
+ * @param seed A seed for random generation. Defaults to 12345.
+ * @return A vector containing data for the generated boxes.
+ */
+std::vector<short4> GenerateBoxes(int batchSize, int numBoxes, int seed = 12345) {
+    std::vector<short4> output;
+    output.reserve(batchSize * numBoxes);
+
+    std::mt19937 eng(seed);
+    std::uniform_int_distribution<short> pos(0, 300);
+    std::uniform_int_distribution<short> size(50, 100);
+
+    for (int b = 0; b < batchSize; b++) {
+        for (int i = 0; i < numBoxes; i++) {
+            // Insert a randomly generated box (format is x, y, width, height)
+            output.push_back(make_short4(pos(eng), pos(eng), size(eng), size(eng)));
+        }
+    }
+
+    return output;
+}
+
+void TestCorrectness(int batchSize, int numBoxes, float scoreThreshold, float iouThreshold, eDeviceType device) {
     // Create required input/output tensors for roccv::NonMaximumSuppression
     Tensor inputTensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {batchSize, numBoxes, 4}), DataType(DATA_TYPE_S16),
                        device);
@@ -141,6 +165,11 @@ void TestCorrectness(int batchSize, int numBoxes, std::vector<short4> boxes, std
                         device);
     Tensor outputTensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {batchSize, numBoxes, 1}), DataType(DATA_TYPE_U8),
                         device);
+
+    // Generate data for input boxes and their associated scores
+    std::vector<short4> boxes = GenerateBoxes(batchSize, numBoxes);
+    std::vector<float> scores(batchSize * numBoxes);
+    FillVector(scores);
 
     // Copy host-allocated vectors into tensors
     CopyVectorIntoTensor(inputTensor, boxes);
@@ -170,16 +199,14 @@ eTestStatusType test_op_non_max_suppression(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // GPU Tests
-    TEST_CASE((TestCorrectness(1, 4,
-                               {make_short4(100, 100, 200, 200), make_short4(110, 110, 210, 210),
-                                make_short4(220, 220, 320, 320), make_short4(50, 50, 150, 150)},
-                               {0.9, 0.8, 0.85, 0.7}, 0.0f, 0.5f, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness(1, 4, 0.0f, 0.5f, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness(3, 64, 0.25f, 0.5f, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness(20, 837, 0.5f, 0.45f, eDeviceType::GPU)));
 
     // CPU Tests
-    TEST_CASE((TestCorrectness(1, 4,
-                               {make_short4(100, 100, 200, 200), make_short4(110, 110, 210, 210),
-                                make_short4(220, 220, 320, 320), make_short4(50, 50, 150, 150)},
-                               {0.9, 0.8, 0.85, 0.7}, 0.0f, 0.5f, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness(1, 4, 0.0f, 0.5f, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness(3, 64, 0.25f, 0.5f, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness(20, 837, 0.5f, 0.45f, eDeviceType::CPU)));
 
     TEST_CASES_END();
 }
