@@ -198,15 +198,17 @@ void TestCorrectness(int batchSize, int numBoxes, float scoreThreshold, float io
 eTestStatusType test_op_non_max_suppression(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
-    // GPU Tests
+    // GPU conformance tests
     TEST_CASE((TestCorrectness(1, 4, 0.0f, 0.5f, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness(3, 64, 0.25f, 0.5f, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness(20, 837, 0.5f, 0.45f, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness(1000, 34, 0.24f, 0.8f, eDeviceType::GPU)));
 
-    // CPU Tests
+    // CPU conformance tests
     TEST_CASE((TestCorrectness(1, 4, 0.0f, 0.5f, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness(3, 64, 0.25f, 0.5f, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness(20, 837, 0.5f, 0.45f, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness(1000, 34, 0.24f, 0.8f, eDeviceType::CPU)));
 
     TEST_CASES_END();
 }
