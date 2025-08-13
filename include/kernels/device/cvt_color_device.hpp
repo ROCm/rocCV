@@ -28,11 +28,11 @@ THE SOFTWARE.
 namespace Kernels::Device {
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
+__global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
         auto R = input.at(z_idx, y_idx, x_idx, orderIdx);
         auto G = input.at(z_idx, y_idx, x_idx, 1);
         auto B = input.at(z_idx, y_idx, x_idx, orderIdx ^ 2);
@@ -48,7 +48,7 @@ __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t w
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
+__global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
@@ -56,7 +56,7 @@ __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t w
     T max_type_value = std::numeric_limits<T>::max();
     T min_type_value = std::numeric_limits<T>::min();
 
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
         auto Y  = input.at(z_idx, y_idx, x_idx, 0);
         auto Cb = input.at(z_idx, y_idx, x_idx, 1);
         auto Cr = input.at(z_idx, y_idx, x_idx, 2);
@@ -72,12 +72,12 @@ __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t w
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput, int orderIdxOutput) {
+__global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int orderIdxInput, int orderIdxOutput) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
 
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
         output.at(z_idx, y_idx, x_idx, orderIdxOutput) = input.at(z_idx, y_idx, x_idx, orderIdxInput);
         output.at(z_idx, y_idx, x_idx, 1) = input.at(z_idx, y_idx, x_idx, 1);
         output.at(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
@@ -85,12 +85,12 @@ __global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, in
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput) {
+__global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxInput) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
 
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
         float grayValue = 0.0f;
         grayValue += (float)(input.at(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
         grayValue += (float)(input.at(z_idx, y_idx, x_idx, 1)) * 0.587;

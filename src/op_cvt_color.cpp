@@ -41,58 +41,54 @@ CvtColor::CvtColor() {}
 CvtColor::~CvtColor() {}
 
 template <typename T>
-void dispatch_rgb_or_bgr_to_yuv(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height, int64_t batch_size, int index, float delta, eDeviceType device) {
+void dispatch_cvt_color(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height, int64_t batch_size, int index, float delta, const eColorConversionCode conversionCode, const eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
     if (device == eDeviceType::GPU) {
         dim3 blockSize(64, 16);
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
-        Kernels::Device::rgb_or_bgr_to_yuv<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, width, height, batch_size, index, delta);
+        switch (conversionCode) {
+        case COLOR_RGB2YUV:
+        case COLOR_BGR2YUV:
+            Kernels::Device::rgb_or_bgr_to_yuv<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
+            break;
+        case COLOR_YUV2RGB:
+        case COLOR_YUV2BGR:
+            Kernels::Device::yuv_to_rgb_or_bgr<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
+            break;
+        case COLOR_RGB2BGR:
+        case COLOR_BGR2RGB:
+            Kernels::Device::rgb_or_bgr_to_bgr_or_rgb<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
+            break;
+        case COLOR_RGB2GRAY:
+        case COLOR_BGR2GRAY:
+            Kernels::Device::rgb_or_bgr_to_grayscale<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index);
+            break;
+        default:
+            break;
+        }
     }
     else if (device == eDeviceType::CPU) {
-        Kernels::Host::rgb_or_bgr_to_yuv<T>(inputWrapper, outputWrapper, width, height, batch_size, index, delta);
-    }
-}
-
-template <typename T>
-void dispatch_yuv_to_rgb_or_bgr(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height, int64_t batch_size, int index, float delta, eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
-    if (device == eDeviceType::GPU) {
-        dim3 blockSize(64, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
-        Kernels::Device::yuv_to_rgb_or_bgr<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, width, height, batch_size, index, delta);
-    }
-    else if (device == eDeviceType::CPU) {
-        Kernels::Host::yuv_to_rgb_or_bgr<T>(inputWrapper, outputWrapper, width, height, batch_size, index, delta);
-    }
-}
-
-template <typename T>
-void dispatch_rgb_or_bgr_to_bgr_or_rgb(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height, int64_t batch_size, int index, float delta, eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
-    if (device == eDeviceType::GPU) {
-        dim3 blockSize(64, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
-        Kernels::Device::rgb_or_bgr_to_bgr_or_rgb<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, width, height, batch_size, index, delta);
-    }
-    else if (device == eDeviceType::CPU) {
-        Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<T>(inputWrapper, outputWrapper, width, height, batch_size, index, delta);
-    }
-}
-
-template <typename T>
-void dispatch_rgb_or_bgr_to_grayscale(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height, int64_t batch_size, int index, float delta, eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
-    if (device == eDeviceType::GPU) {
-        dim3 blockSize(64, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
-        Kernels::Device::rgb_or_bgr_to_grayscale<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, width, height, batch_size, index);
-    }
-    else if (device == eDeviceType::CPU) {
-        Kernels::Host::rgb_or_bgr_to_grayscale<T>(inputWrapper, outputWrapper, width, height, batch_size, index);
+        switch (conversionCode) {
+        case COLOR_RGB2YUV:
+        case COLOR_BGR2YUV:
+            Kernels::Host::rgb_or_bgr_to_yuv<T>(inputWrapper, outputWrapper, index, delta);
+            break;
+        case COLOR_YUV2RGB:
+        case COLOR_YUV2BGR:
+            Kernels::Host::yuv_to_rgb_or_bgr<T>(inputWrapper, outputWrapper, index, delta);
+            break;
+        case COLOR_RGB2BGR:
+        case COLOR_BGR2RGB:
+            Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<T>(inputWrapper, outputWrapper, index, delta);
+            break;
+        case COLOR_RGB2GRAY:
+        case COLOR_BGR2GRAY:
+            Kernels::Host::rgb_or_bgr_to_grayscale<T>(inputWrapper, outputWrapper, index);
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -117,6 +113,9 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     const auto i_height = input.shape()[input.shape().layout().height_index()];
     const auto i_width = input.shape()[input.shape().layout().width_index()];
     const auto i_channels = input.shape()[input.shape().layout().channels_index()];
+    auto batch_size = i_batch;
+    auto height = i_height;
+    auto width = i_width;
     // check valid
     CHECK_TENSOR_COMPARISON(input.shape().layout() == output.shape().layout());
     CHECK_TENSOR_COMPARISON(o_batch == i_batch);
@@ -129,28 +128,23 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     if(o_channels != i_channels) // allowed only in gray
         CHECK_TENSOR_COMPARISON((conversionCode == COLOR_RGB2GRAY) || (conversionCode == COLOR_BGR2GRAY));
 
-    auto batch_size = i_batch;
-    auto height = i_height;
-    auto width = i_width;
-
     // Select kernel dispatcher based on conversionCode
     // clang-format off
-    using ColorConvFn = void(*)(hipStream_t, const Tensor&, const Tensor&, int64_t, int64_t, int64_t, int, float, const eDeviceType);
+    using ColorConvFn = void(*)(hipStream_t, const Tensor&, const Tensor&, int64_t, int64_t, int64_t, int, float, const eColorConversionCode, const eDeviceType);
     using FuncEntry = std::tuple<ColorConvFn, int, float>;
     static const std::unordered_map<eColorConversionCode, FuncEntry> funcs = {
-        { COLOR_RGB2YUV , { dispatch_rgb_or_bgr_to_yuv<uint8_t>,        0, 128.0f } },
-        { COLOR_BGR2YUV , { dispatch_rgb_or_bgr_to_yuv<uint8_t>,        2, 128.0f } },
-        { COLOR_YUV2RGB , { dispatch_yuv_to_rgb_or_bgr<uint8_t>,        0, 128.0f } },
-        { COLOR_YUV2BGR , { dispatch_yuv_to_rgb_or_bgr<uint8_t>,        2, 128.0f } },
-        { COLOR_RGB2BGR , { dispatch_rgb_or_bgr_to_bgr_or_rgb<uint8_t>, 0,   2.0f } },
-        { COLOR_BGR2RGB , { dispatch_rgb_or_bgr_to_bgr_or_rgb<uint8_t>, 2,   0.0f } },
-        { COLOR_RGB2GRAY, { dispatch_rgb_or_bgr_to_grayscale<uint8_t>,  0,   0.0f } },
-        { COLOR_BGR2GRAY, { dispatch_rgb_or_bgr_to_grayscale<uint8_t>,  2,   0.0f } }
+        { COLOR_RGB2YUV , {dispatch_cvt_color<uint8_t>, 0, 128.0f}},
+        { COLOR_BGR2YUV , {dispatch_cvt_color<uint8_t>, 2, 128.0f}},
+        { COLOR_YUV2RGB , {dispatch_cvt_color<uint8_t>, 0, 128.0f}},
+        { COLOR_YUV2BGR , {dispatch_cvt_color<uint8_t>, 2, 128.0f}},
+        { COLOR_RGB2BGR , {dispatch_cvt_color<uint8_t>, 0,   2.0f}},
+        { COLOR_BGR2RGB , {dispatch_cvt_color<uint8_t>, 2,   0.0f}},
+        { COLOR_RGB2GRAY, {dispatch_cvt_color<uint8_t>, 0,   0.0f}},
+        { COLOR_BGR2GRAY, {dispatch_cvt_color<uint8_t>, 2,   0.0f}}
     };
     // clang-format on
-
     auto [func, orderIdx, delta] = funcs.at(conversionCode);
-    func(stream, input, output, width, height, batch_size, orderIdx, delta, device);
+    func(stream, input, output, width, height, batch_size, orderIdx, delta, conversionCode, device);
 }
 
 }  // namespace roccv

@@ -28,10 +28,11 @@ THE SOFTWARE.
 namespace Kernels::Host {
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
+void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
                 auto R = input.at(z_idx, y_idx, x_idx, orderIdx);
                 auto G = input.at(z_idx, y_idx, x_idx, 1);
                 auto B = input.at(z_idx, y_idx, x_idx, orderIdx ^ 2);
@@ -49,14 +50,13 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int64_t width, int64
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdx, float delta) {
-
+void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
     T max_type_value = std::numeric_limits<T>::max();
     T min_type_value = std::numeric_limits<T>::min();
-
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
                 auto Y  = input.at(z_idx, y_idx, x_idx, 0);
                 auto Cb = input.at(z_idx, y_idx, x_idx, 1);
                 auto Cr = input.at(z_idx, y_idx, x_idx, 2);
@@ -74,10 +74,11 @@ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int64_t width, int64
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput, int orderIdxOutput) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
+void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int orderIdxInput, int orderIdxOutput) {
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
                 output.at(z_idx, y_idx, x_idx, orderIdxOutput) = input.at(z_idx, y_idx, x_idx, orderIdxInput);
                 output.at(z_idx, y_idx, x_idx, 1) = input.at(z_idx, y_idx, x_idx, 1);
                 output.at(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
@@ -87,11 +88,12 @@ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int64_t width
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
-void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int64_t width, int64_t height, int64_t batch_size, int orderIdxInput) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
-                if (x_idx < width && y_idx < height && z_idx < batch_size) {
+void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxInput) {
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+                if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
                     float grayValue = 0.0f;
                     grayValue += (float)(input.at(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
                     grayValue += (float)(input.at(z_idx, y_idx, x_idx, 1)) * 0.587;
