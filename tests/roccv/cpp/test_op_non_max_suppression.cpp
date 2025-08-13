@@ -68,7 +68,8 @@ float GoldenIoU(const short4 &a, const short4 &b) {
 /**
  * @brief Golden model for the non-maximum suppression operator. This calculates which boxes should be kept based on
  * input boxes, scores for each box, and a global score/iou threshold. Non-maximum suppression for each batch index is
- * calculated independently.
+ * calculated independently. This is a single-pass, naive parallel algorithm which tends to over suppress, not
+ * equivalent to the greedy NMS algorithm.
  *
  * @param[in] input A list of input boxes to check. Each short4 corresponds to the coordinates of a single box (x = x, y
  * = y, z = width, w = height).
