@@ -33,13 +33,13 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float 
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-                auto R = input.at(z_idx, y_idx, x_idx, orderIdx);
-                auto G = input.at(z_idx, y_idx, x_idx, 1);
-                auto B = input.at(z_idx, y_idx, x_idx, orderIdx ^ 2);
+                float R = static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdx));
+                float G = static_cast<float>(input.at(z_idx, y_idx, x_idx, 1));
+                float B = static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdx ^ 2));
 
-                float Y = (float)R * 0.299f + (float)G * 0.587f + (float)B * 0.114f;
-                float Cr = ((float)R - Y) * 0.877f + delta;
-                float Cb = ((float)B - Y) * 0.492f + delta;
+                float Y = R * 0.299f + G * 0.587f + B * 0.114f;
+                float Cr = (R - Y) * 0.877f + delta;
+                float Cb = (B - Y) * 0.492f + delta;
 
                 output.at(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(Y);
                 output.at(z_idx, y_idx, x_idx, 1) = RoundImplementationsToYUV<float>(Cb);
@@ -57,13 +57,13 @@ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float 
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-                auto Y  = input.at(z_idx, y_idx, x_idx, 0);
-                auto Cb = input.at(z_idx, y_idx, x_idx, 1);
-                auto Cr = input.at(z_idx, y_idx, x_idx, 2);
+                float Y  = static_cast<float>(input.at(z_idx, y_idx, x_idx, 0));
+                float Cb = static_cast<float>(input.at(z_idx, y_idx, x_idx, 1));
+                float Cr = static_cast<float>(input.at(z_idx, y_idx, x_idx, 2));
 
-                float B = (float)Y + ((float)Cb - delta) * 2.032f;
-                float G = (float)Y + ((float)Cb - delta) * -0.395f + ((float)Cr - delta) * -0.581f;
-                float R = (float)Y + ((float)Cr - delta) * 1.140f;
+                float B = Y + (Cb - delta) * 2.032f;
+                float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
+                float R = Y + (Cr - delta) * 1.140f;
 
                 output.at(z_idx, y_idx, x_idx, orderIdx) = Clamp<T, float>(RoundImplementationsFromYUV<float>(R), min_type_value, max_type_value);
                 output.at(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(RoundImplementationsFromYUV<float>(G), min_type_value, max_type_value);
@@ -95,9 +95,9 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxIn
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
                 if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
                     float grayValue = 0.0f;
-                    grayValue += (float)(input.at(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
-                    grayValue += (float)(input.at(z_idx, y_idx, x_idx, 1)) * 0.587;
-                    grayValue += (float)(input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
+                    grayValue += static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
+                    grayValue += static_cast<float>(input.at(z_idx, y_idx, x_idx, 1)) * 0.587;
+                    grayValue += static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
                     output.at(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
                 }
             }
