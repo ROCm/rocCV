@@ -24,7 +24,7 @@
 namespace roccv {  // namespace roccv
 eDataType ImageFormat::dtype() const noexcept { return m_dtype; }
 
-int32_t ImageFormat::channels() const noexcept { return m_num_channels; }
+int32_t ImageFormat::channels() const noexcept { return m_numChannels; }
 
 Swizzle ImageFormat::swizzle() const noexcept { return m_swizzle; }
 }  // namespace roccv

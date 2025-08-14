@@ -42,8 +42,8 @@ enum class Swizzle {
 class ImageFormat {
    public:
     explicit ImageFormat() {}
-    explicit constexpr ImageFormat(eDataType dtype, int32_t num_channels, Swizzle swizzle)
-        : m_dtype(dtype), m_num_channels(num_channels), m_swizzle(swizzle) {}
+    explicit constexpr ImageFormat(eDataType dtype, int32_t numChannels, Swizzle swizzle)
+        : m_dtype(dtype), m_numChannels(numChannels), m_swizzle(swizzle) {}
 
     eDataType dtype() const noexcept;
     int32_t channels() const noexcept;
@@ -51,7 +51,7 @@ class ImageFormat {
 
    private:
     eDataType m_dtype;
-    int32_t m_num_channels;
+    int32_t m_numChannels;
     Swizzle m_swizzle;
 };
 
