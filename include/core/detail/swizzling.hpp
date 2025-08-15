@@ -31,6 +31,14 @@ __host__ __device__ constexpr T Swizzle(T &v) {
     return T{v.data[Indices]...};
 }
 
+/**
+ * @brief Rearranges the components of a vector according to a given swizzle pattern.
+ *
+ * @tparam SwizzlePattern The pattern used to rearrange vector components.
+ * @tparam T The vector type.
+ * @param v The vector to swizzle.
+ * @return \p v with its components rearranged according to \p SwizzlePattern.
+ */
 template <eSwizzle SwizzlePattern, typename T>
 __host__ __device__ constexpr T Swizzle(T &v) {
     if constexpr (SwizzlePattern == eSwizzle::XYZW) {
@@ -42,6 +50,10 @@ __host__ __device__ constexpr T Swizzle(T &v) {
             return Swizzle<T, 2, 1, 0>(v);
         else if constexpr (detail::NumElements<T> == 4)
             return Swizzle<T, 2, 1, 0, 3>(v);
+        else
+            static_assert(false, "Unsupported swizzle pattern/type combination");
+    } else {
+        static_assert(false, "Unsupported swizzle pattern");
     }
 }
 
