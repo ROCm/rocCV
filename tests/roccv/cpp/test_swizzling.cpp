@@ -40,29 +40,41 @@ void TestCorrectness(T input, T expected) {
 eTestStatusType test_swizzling(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
+    // ZYXW swizzling
     TEST_CASE((TestCorrectness<uchar3, eSwizzle::ZYXW>({1, 2, 3}, {3, 2, 1})));
     TEST_CASE((TestCorrectness<uchar4, eSwizzle::ZYXW>({1, 2, 3, 4}, {3, 2, 1, 4})));
-
     TEST_CASE((TestCorrectness<char3, eSwizzle::ZYXW>({1, 2, 3}, {3, 2, 1})));
     TEST_CASE((TestCorrectness<char4, eSwizzle::ZYXW>({1, 2, 3, 4}, {3, 2, 1, 4})));
-
     TEST_CASE((TestCorrectness<ushort3, eSwizzle::ZYXW>({1, 2, 3}, {3, 2, 1})));
     TEST_CASE((TestCorrectness<ushort4, eSwizzle::ZYXW>({1, 2, 3, 4}, {3, 2, 1, 4})));
-
     TEST_CASE((TestCorrectness<short3, eSwizzle::ZYXW>({1, 2, 3}, {3, 2, 1})));
     TEST_CASE((TestCorrectness<short4, eSwizzle::ZYXW>({1, 2, 3, 4}, {3, 2, 1, 4})));
-
     TEST_CASE((TestCorrectness<uint3, eSwizzle::ZYXW>({1, 2, 3}, {3, 2, 1})));
     TEST_CASE((TestCorrectness<uint4, eSwizzle::ZYXW>({1, 2, 3, 4}, {3, 2, 1, 4})));
-
     TEST_CASE((TestCorrectness<int3, eSwizzle::ZYXW>({1, 2, 3}, {3, 2, 1})));
     TEST_CASE((TestCorrectness<int4, eSwizzle::ZYXW>({1, 2, 3, 4}, {3, 2, 1, 4})));
-
     TEST_CASE((TestCorrectness<float3, eSwizzle::ZYXW>({1.0f, 2.0f, 3.0f}, {3.0f, 2.0f, 1.0f})));
     TEST_CASE((TestCorrectness<float4, eSwizzle::ZYXW>({1.0f, 2.0f, 3.0f, 4.0f}, {3.0f, 2.0f, 1.0f, 4.0f})));
-
     TEST_CASE((TestCorrectness<double3, eSwizzle::ZYXW>({1.0, 2.0, 3.0}, {3.0, 2.0, 1.0})));
     TEST_CASE((TestCorrectness<double4, eSwizzle::ZYXW>({1.0, 2.0, 3.0, 4.0}, {3.0, 2.0, 1.0, 4.0})));
+
+    // XYZW swizzling (identity function)
+    TEST_CASE((TestCorrectness<uchar3, eSwizzle::XYZW>({1, 2, 3}, {1, 2, 3})));
+    TEST_CASE((TestCorrectness<uchar4, eSwizzle::XYZW>({1, 2, 3, 4}, {1, 2, 3, 4})));
+    TEST_CASE((TestCorrectness<char3, eSwizzle::XYZW>({1, 2, 3}, {1, 2, 3})));
+    TEST_CASE((TestCorrectness<char4, eSwizzle::XYZW>({1, 2, 3, 4}, {1, 2, 3, 4})));
+    TEST_CASE((TestCorrectness<ushort3, eSwizzle::XYZW>({1, 2, 3}, {1, 2, 3})));
+    TEST_CASE((TestCorrectness<ushort4, eSwizzle::XYZW>({1, 2, 3, 4}, {1, 2, 3, 4})));
+    TEST_CASE((TestCorrectness<short3, eSwizzle::XYZW>({1, 2, 3}, {1, 2, 3})));
+    TEST_CASE((TestCorrectness<short4, eSwizzle::XYZW>({1, 2, 3, 4}, {1, 2, 3, 4})));
+    TEST_CASE((TestCorrectness<uint3, eSwizzle::XYZW>({1, 2, 3}, {1, 2, 3})));
+    TEST_CASE((TestCorrectness<uint4, eSwizzle::XYZW>({1, 2, 3, 4}, {1, 2, 3, 4})));
+    TEST_CASE((TestCorrectness<int3, eSwizzle::XYZW>({1, 2, 3}, {1, 2, 3})));
+    TEST_CASE((TestCorrectness<int4, eSwizzle::XYZW>({1, 2, 3, 4}, {1, 2, 3, 4})));
+    TEST_CASE((TestCorrectness<float3, eSwizzle::XYZW>({1.0f, 2.0f, 3.0f}, {1.0f, 2.0f, 3.0f})));
+    TEST_CASE((TestCorrectness<float4, eSwizzle::XYZW>({1.0f, 2.0f, 3.0f, 4.0f}, {1.0f, 2.0f, 3.0f, 4.0f})));
+    TEST_CASE((TestCorrectness<double3, eSwizzle::XYZW>({1.0, 2.0, 3.0}, {1.0, 2.0, 3.0})));
+    TEST_CASE((TestCorrectness<double4, eSwizzle::XYZW>({1.0, 2.0, 3.0, 4.0}, {1.0, 2.0, 3.0, 4.0})));
 
     TEST_CASES_END();
 }
