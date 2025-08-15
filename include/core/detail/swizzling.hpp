@@ -19,12 +19,30 @@
  * THE SOFTWARE.
  */
 
+#include <hip/hip_runtime.h>
+
+#include "core/detail/type_traits.hpp"
 #include "core/image_format.hpp"
 
-namespace roccv {  // namespace roccv
-eDataType ImageFormat::dtype() const noexcept { return m_dtype; }
+namespace roccv::detail {
 
-int32_t ImageFormat::channels() const noexcept { return m_numChannels; }
+template <typename T, uint8_t... Indices>
+__host__ __device__ constexpr T Swizzle(T &v) {
+    return T{v.data[Indices]...};
+}
 
-eSwizzle ImageFormat::swizzle() const noexcept { return m_swizzle; }
-}  // namespace roccv
+template <eSwizzle SwizzlePattern, typename T>
+__host__ __device__ constexpr T Swizzle(T &v) {
+    if constexpr (SwizzlePattern == eSwizzle::XYZW) {
+        return v;
+    } else if constexpr (SwizzlePattern == eSwizzle::ZYXW) {
+        if constexpr (detail::NumElements<T> == 1)
+            return Swizzle<T, 0>(v);
+        else if constexpr (detail::NumElements<T> == 3)
+            return Swizzle<T, 2, 1, 0>(v);
+        else if constexpr (detail::NumElements<T> == 4)
+            return Swizzle<T, 2, 1, 0, 3>(v);
+    }
+}
+
+}  // namespace roccv::detail
