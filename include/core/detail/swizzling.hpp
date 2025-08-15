@@ -26,35 +26,53 @@
 
 namespace roccv::detail {
 
-template <typename T, uint8_t... Indices>
-__host__ __device__ constexpr T Swizzle(T &v) {
+template <eSwizzle Pattern, int N>
+struct SwizzleIndexMap;
+
+// clang-format off
+
+// This section defines compile-time index mapping for all defined eSwizzle patterns using template specialization.
+
+// XYZW
+template <int N>
+struct SwizzleIndexMap<eSwizzle::XYZW, N> {
+    using Seq = std::make_integer_sequence<size_t, N>;
+};
+
+// ZYXW
+template <> struct SwizzleIndexMap<eSwizzle::ZYXW, 1> { using Seq = std::integer_sequence<size_t, 0>; };
+template <> struct SwizzleIndexMap<eSwizzle::ZYXW, 3> { using Seq = std::integer_sequence<size_t, 2, 1, 0>; };
+template <> struct SwizzleIndexMap<eSwizzle::ZYXW, 4> { using Seq = std::integer_sequence<size_t, 2, 1, 0, 3>; };
+// clang-format on
+
+template <typename T, size_t... Indices>
+__host__ __device__ constexpr T SwizzleIndicesImpl(const T &v) {
     return T{v.data[Indices]...};
+}
+
+template <typename T, size_t... I>
+__host__ __device__ constexpr T ExpandSwizzle(const T &v, std::integer_sequence<size_t, I...>) {
+    static_assert(((I < NumElements<T>) && ...), "Swizzle index out of range");
+    return SwizzleIndicesImpl<T, I...>(v);
 }
 
 /**
  * @brief Rearranges the components of a vector according to a given swizzle pattern.
  *
- * @tparam SwizzlePattern The pattern used to rearrange vector components.
+ * @tparam Pattern The pattern used to rearrange vector components.
  * @tparam T The vector type.
  * @param v The vector to swizzle.
- * @return \p v with its components rearranged according to \p SwizzlePattern.
+ * @return \p v with its components rearranged according to \p Pattern.
  */
-template <eSwizzle SwizzlePattern, typename T>
-__host__ __device__ constexpr T Swizzle(T &v) {
-    if constexpr (SwizzlePattern == eSwizzle::XYZW) {
-        return v;
-    } else if constexpr (SwizzlePattern == eSwizzle::ZYXW) {
-        if constexpr (detail::NumElements<T> == 1)
-            return Swizzle<T, 0>(v);
-        else if constexpr (detail::NumElements<T> == 3)
-            return Swizzle<T, 2, 1, 0>(v);
-        else if constexpr (detail::NumElements<T> == 4)
-            return Swizzle<T, 2, 1, 0, 3>(v);
-        else
-            static_assert(false, "Unsupported swizzle pattern/type combination");
-    } else {
-        static_assert(false, "Unsupported swizzle pattern");
-    }
+template <eSwizzle Pattern, typename T>
+__host__ __device__ constexpr T Swizzle(const T &v) {
+    static_assert(HasTypeTraits<T> && IsCompound<T>, "Type must have type traits and be a compound type");
+
+    constexpr int N = NumElements<T>;
+    static_assert(N >= 1 && N <= 4, "Unsupported element count");
+
+    using Seq = typename SwizzleIndexMap<Pattern, N>::Seq;
+    return ExpandSwizzle<T>(v, Seq{});
 }
 
 }  // namespace roccv::detail
