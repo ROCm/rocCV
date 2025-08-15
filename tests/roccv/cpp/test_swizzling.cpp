@@ -28,6 +28,15 @@ using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
+
+/**
+ * @brief Tests correctness for the Swizzle helper function.
+ *
+ * @tparam T The type of the vector to swizzle.
+ * @tparam SwizzlePattern The swizzling pattern to test.
+ * @param input The input vector to swizzle.
+ * @param expected The expected vector to compare against after input has been rearranged.
+ */
 template <typename T, eSwizzle SwizzlePattern>
 void TestCorrectness(T input, T expected) {
     T output = detail::Swizzle<SwizzlePattern>(input);

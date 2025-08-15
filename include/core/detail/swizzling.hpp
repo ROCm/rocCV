@@ -63,6 +63,14 @@ __host__ __device__ constexpr T ExpandSwizzle(const T &v, std::integer_sequence<
  * @tparam T The vector type.
  * @param v The vector to swizzle.
  * @return \p v with its components rearranged according to \p Pattern.
+ *
+ * @par Example:
+ * @code
+ * uchar3 vec = make_uchar3(1, 2, 3);
+ * uchar3 vecSwizzled = Swizzle<eSwizzle::ZYXW>(vec);
+ * // vecSwizzled = {3, 2, 1}
+ * @endcode
+ *
  */
 template <eSwizzle Pattern, typename T>
 __host__ __device__ constexpr T Swizzle(const T &v) {
