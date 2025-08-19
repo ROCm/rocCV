@@ -69,6 +69,7 @@ eTestStatusType testCorrectness(const std::string &inputFile, int32_t *expectedD
                                          output.shape().size() * output.dtype().size(), hipMemcpyDeviceToHost));
 
         HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
         for (int i = 0; i < output.shape().size(); i++) {
             float err = std::abs(static_cast<int32_t>(resultData[i] - expectedData[i]));

@@ -498,6 +498,7 @@ eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedD
             hipMemcpyAsync(d_output.data(), outputTensorData.basePtr(), image_size, hipMemcpyDeviceToHost, stream));
 
         HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
         for (int i = 0; i < output.shape().size(); i++) {
             float err = std::abs(d_output.data()[i] - expectedData[i]);
