@@ -57,12 +57,12 @@ class Threshold final : public IOperator {
      * Input:
      *       Supported TensorLayout(s): [HWC, NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [U8]
+     *       Supported DataType(s):     [U8, U16, S16, F32, F64]
      *
      * Output:
      *       Supported TensorLayout(s): [HWC, NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [U8]
+     *       Supported DataType(s):     [U8, U16, S16, F32, F64]
      *
      * Input/Output dependency
      *
@@ -105,8 +105,8 @@ class Threshold final : public IOperator {
      * @param[in] device The device which this operation should run on.
      * (Default: eDeviceType::GPU)
      */
-    void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output,
-                    const roccv::Tensor& thresh, const roccv::Tensor& maxVal, eDeviceType device = eDeviceType::GPU);
+    void operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
+                    const Tensor& thresh, const Tensor& maxVal, eDeviceType device = eDeviceType::GPU);
 
    private:
     eThresholdType m_threshType;
