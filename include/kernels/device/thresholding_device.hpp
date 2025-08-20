@@ -155,18 +155,18 @@ __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output,
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
 
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < maxBatchSize) {
-        double th = thresh.at(z_idx);
-        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
-        dst_type outputVal;
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+    
+    double th = thresh.at(z_idx);
+    src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+    dst_type outputVal;
 #pragma unroll
-        for (int i = 0; i < output.channels(); i++) {
-            double ip = StaticCast<double>(GetElement(inputVal, i));
-            double outVal = ip > th ? 0 : ip;
-            GetElement(outputVal, i) = StaticCast<base_type>(outVal);
-        }
-        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
+    for (int i = 0; i < output.channels(); i++) {
+        double ip = StaticCast<double>(GetElement(inputVal, i));
+        double outVal = ip > th ? 0 : ip;
+        GetElement(outputVal, i) = StaticCast<base_type>(outVal);
     }
+    output.at(z_idx, y_idx, x_idx, 0) = outputVal;
 }
 }   // namespace Device
 }   // namespace Kernels
