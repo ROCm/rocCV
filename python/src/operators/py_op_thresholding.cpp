@@ -57,7 +57,7 @@ void PyOpThreshold::Export(py::module& m) {
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
                 thresh (rocpycv.Tensor): thresh an array of size maxBatch that gives the threshold value of each image.
-                maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, using with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
+                maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, used with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
                 maxBatchSize (uint32_t): The maximum batch size.
                 threshType (eThresholdType): Threshold type
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
@@ -77,7 +77,7 @@ void PyOpThreshold::Export(py::module& m) {
                 dst (rocpycv.Tensor): The output tensor which results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
                 thresh (rocpycv.Tensor): thresh an array of size maxBatch that gives the threshold value of each image.
-                maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, using with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
+                maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, used with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
                 maxBatchSize (uint32_t): The maximum batch size.
                 threshType (eThresholdType): Threshold type
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
