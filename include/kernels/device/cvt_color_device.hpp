@@ -33,17 +33,25 @@ __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int order
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
     if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        float R = static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdx));
-        float G = static_cast<float>(input.at(z_idx, y_idx, x_idx, 1));
-        float B = static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdx ^ 2));
-
-        float Y = R * 0.299f + G * 0.587f + B * 0.114f;
+        // one read
+        T pixel = input.at(z_idx, y_idx, x_idx, 0);
+        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
+        // order
+        float R = RGB[orderIdx];
+        float G = RGB[1];
+        float B = RGB[orderIdx ^ 2];
+        // convert
+        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
         float Cr = (R - Y) * 0.877f + delta;
         float Cb = (B - Y) * 0.492f + delta;
-
-        output.at(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(Y);
-        output.at(z_idx, y_idx, x_idx, 1) = RoundImplementationsToYUV<float>(Cb);
-        output.at(z_idx, y_idx, x_idx, 2) = RoundImplementationsToYUV<float>(Cr);
+        // round
+        T YCbCr = {
+            RoundImplementationsToYUV<float>(Y),
+            RoundImplementationsToYUV<float>(Cb),
+            RoundImplementationsToYUV<float>(Cr)
+        };
+        // output
+        output.at(z_idx, y_idx, x_idx, 0) = YCbCr;
     }
 }
 
@@ -52,35 +60,52 @@ __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int order
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-
-    T max_type_value = std::numeric_limits<T>::max();
-    T min_type_value = std::numeric_limits<T>::min();
+    using base_type = roccv::detail::BaseType<T>;
+    base_type mn = std::numeric_limits<base_type>::max();
+    base_type mx = std::numeric_limits<base_type>::min();
 
     if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        float Y  = static_cast<float>(input.at(z_idx, y_idx, x_idx, 0));
-        float Cb = static_cast<float>(input.at(z_idx, y_idx, x_idx, 1));
-        float Cr = static_cast<float>(input.at(z_idx, y_idx, x_idx, 2));
-
+        // one read
+        T pixel = input.at(z_idx, y_idx, x_idx, 0);
+        float YCbCr[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
+        // split
+        auto [Y, Cb, Cr] = YCbCr;
+        // convert
         float B = Y + (Cb - delta) * 2.032f;
         float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
         float R = Y + (Cr - delta) * 1.140f;
-
-        output.at(z_idx, y_idx, x_idx, orderIdx) = Clamp<T, float>(RoundImplementationsFromYUV<float>(R), min_type_value, max_type_value);
-        output.at(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(RoundImplementationsFromYUV<float>(G), min_type_value, max_type_value);
-        output.at(z_idx, y_idx, x_idx, orderIdx ^ 2) = Clamp<T, float>(RoundImplementationsFromYUV<float>(B), min_type_value, max_type_value);
+        // Round
+        T RGB = {
+            RoundImplementationsFromYUV<float>(R),
+            RoundImplementationsFromYUV<float>(G),
+            RoundImplementationsFromYUV<float>(B)
+        };
+        // Clamp
+        RGB.x = Clamp<base_type, float>(RGB.x, mn, mx);
+        RGB.y = Clamp<base_type, float>(RGB.y, mn, mx);
+        RGB.z = Clamp<base_type, float>(RGB.x, mn, mx);
+        // out order
+        T pixOut;
+        pixOut.x = RGB[orderIdx];
+        pixOut.y = RGB[1];
+        pixOut.z = RGB[orderIdx ^ 2];
+        // output
+        output.at(z_idx, y_idx, x_idx, 0) = pixOut;
     }
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
 __global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int orderIdxInput, int orderIdxOutput) {
+    using base_type = roccv::detail::BaseType<T>;
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-
     if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        output.at(z_idx, y_idx, x_idx, orderIdxOutput) = input.at(z_idx, y_idx, x_idx, orderIdxInput);
-        output.at(z_idx, y_idx, x_idx, 1) = input.at(z_idx, y_idx, x_idx, 1);
-        output.at(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
+        T pixel = input.at(z_idx, y_idx, x_idx, 0);
+        base_type in[3] = {pixel.x, pixel.y, pixel.z};
+        T ot = {in[orderIdxInput], in[1], in[orderIdxInput ^ 2]};
+        T pixOut = {ot[orderIdxOutput], ot[1], ot[orderIdxOutput ^ 2]};
+        output.at(z_idx, y_idx, x_idx, 0) = pixOut;
     }
 }
 
@@ -89,13 +114,14 @@ __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-
     if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        float grayValue = 0.0f;
-        grayValue += static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdxInput)) * 0.299;
-        grayValue += static_cast<float>(input.at(z_idx, y_idx, x_idx, 1)) * 0.587;
-        grayValue += static_cast<float>(input.at(z_idx, y_idx, x_idx, orderIdxInput ^ 2)) * 0.114;
-        output.at(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
+        T pixel = input.at(z_idx, y_idx, x_idx, 0);
+        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
+        float R = RGB[orderIdxInput];
+        float G = RGB[1];
+        float B = RGB[orderIdxInput ^ 2];
+        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
+        output.at(z_idx, y_idx, x_idx, 0).x = RoundImplementationsToYUV<float>(Y);
     }
 }
 

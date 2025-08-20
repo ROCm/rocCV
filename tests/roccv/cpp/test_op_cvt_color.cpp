@@ -179,24 +179,24 @@ eTestStatusType test_op_cvt_color(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::GPU));
 
     // CPU correctness tests
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uint8_t>(1, 180, 60, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::CPU));
 
     TEST_CASES_END();
 }

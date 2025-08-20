@@ -133,14 +133,14 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     using ColorConvFn = void(*)(hipStream_t, const Tensor&, const Tensor&, int64_t, int64_t, int64_t, int, float, const eColorConversionCode, const eDeviceType);
     using FuncEntry = std::tuple<ColorConvFn, int, float>;
     static const std::unordered_map<eColorConversionCode, FuncEntry> funcs = {
-        { COLOR_RGB2YUV , {dispatch_cvt_color<uint8_t>, 0, 128.0f}},
-        { COLOR_BGR2YUV , {dispatch_cvt_color<uint8_t>, 2, 128.0f}},
-        { COLOR_YUV2RGB , {dispatch_cvt_color<uint8_t>, 0, 128.0f}},
-        { COLOR_YUV2BGR , {dispatch_cvt_color<uint8_t>, 2, 128.0f}},
-        { COLOR_RGB2BGR , {dispatch_cvt_color<uint8_t>, 0,   2.0f}},
-        { COLOR_BGR2RGB , {dispatch_cvt_color<uint8_t>, 2,   0.0f}},
-        { COLOR_RGB2GRAY, {dispatch_cvt_color<uint8_t>, 0,   0.0f}},
-        { COLOR_BGR2GRAY, {dispatch_cvt_color<uint8_t>, 2,   0.0f}}
+        { COLOR_RGB2YUV , {dispatch_cvt_color<uchar3>, 0, 128.0f}},
+        { COLOR_BGR2YUV , {dispatch_cvt_color<uchar3>, 2, 128.0f}},
+        { COLOR_YUV2RGB , {dispatch_cvt_color<uchar3>, 0, 128.0f}},
+        { COLOR_YUV2BGR , {dispatch_cvt_color<uchar3>, 2, 128.0f}},
+        { COLOR_RGB2BGR , {dispatch_cvt_color<uchar3>, 0,   2.0f}},
+        { COLOR_BGR2RGB , {dispatch_cvt_color<uchar3>, 2,   0.0f}},
+        { COLOR_RGB2GRAY, {dispatch_cvt_color<uchar3>, 0,   0.0f}},
+        { COLOR_BGR2GRAY, {dispatch_cvt_color<uchar3>, 2,   0.0f}}
     };
     // clang-format on
     auto [func, orderIdx, delta] = funcs.at(conversionCode);
