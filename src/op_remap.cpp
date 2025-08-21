@@ -52,12 +52,12 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
             dim3 block(64, 16);
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
-            Kernels::Device::remap<T><<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor);
+            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor);
             break;
         }
 
         case eDeviceType::CPU: {
-            Kernels::Host::remap<T>(inputWrapper, outputWrapper, wrappedMapTensor);
+            Kernels::Host::remap(inputWrapper, outputWrapper, wrappedMapTensor);
             break;
         }
     }
