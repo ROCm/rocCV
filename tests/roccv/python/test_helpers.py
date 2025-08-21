@@ -110,10 +110,10 @@ def rocpycv_type_to_np_type(type: rocpycv.eDataType) -> type:
         rocpycv.eDataType.S32: np.int32,
     }
 
-    if type not in type_map.keys():
+    if type not in type_map:
         raise RuntimeError("Cannot convert from specified rocpycv type to numpy type")
 
-    return type_map.get(type)
+    return type_map[type]
 
 
 def generate_tensor(samples: int, width: int, height: int, channels: int, type: rocpycv.eDataType, device: rocpycv.eDeviceType) -> rocpycv.Tensor:
