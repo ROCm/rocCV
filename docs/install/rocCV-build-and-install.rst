@@ -7,7 +7,7 @@
 Building and installing rocCV from source code
 ********************************************************************
 
-`ROCm must be installed <https://rocm.docs.amd.com/projects/install-on-linux/en/latest/>`_ before building and installing rocCV from source code.
+ROCm must be `installed <https://rocm.docs.amd.com/projects/install-on-linux/en/latest/>`_ before building and installing rocCV from source code.
 
 The rocCV source code is available from `https://github.com/ROCm/rocCV <https://github.com/ROCm/rocCV>`_. Use the rocCV version that corresponds to the installed version of ROCm.
 

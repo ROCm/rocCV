@@ -17,7 +17,7 @@ See below for a list of Computer Vision operators rocCV supports.
 |NonMaximumSuppression|Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.|S16, 4S16|NW, NWC|Both|
 |Normalize|Normalizes an input tensor using a provided mean and standard deviation.|U8, S8, F32|NHWC, HWC|Both|
 |Remap|Maps pixels in an image from one projection to another projection in a new image.|U8|NHWC, HWC|Both|
-|Resize|Resizes an input tensor with interpolation.|U8, S8, F32|NHWC, HWC|Both|
+|Resize|Resizes input images using an interpolation mode for upscaling/downscaling.|U8, F32|NHWC, HWC|Both|
 |Rotate|Rotates (and optionally shifts) an input tensor by given angle in degrees counter-clockwise.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
 |Threshold|Clamps values in an image to a global threshold value.|U8|NHWC, HWC|Both|
 |WarpAffine|Performs an affine warp on an input tensor.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
