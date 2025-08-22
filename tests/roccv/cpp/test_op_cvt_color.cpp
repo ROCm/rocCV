@@ -54,8 +54,8 @@ namespace {
  */
 template <typename T, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenGammaColorCvt(const Tensor &input, const Tensor &output, int batch, int width, int height, const eColorConversionCode conversionCode) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
+    ImageWrapper<T> inW(input);
+    ImageWrapper<T> outW(output);
     using PairNdxDlta = std::tuple<int, float>;
     static const std::unordered_map<eColorConversionCode, PairNdxDlta> ndx_dlt = {
         { COLOR_RGB2YUV , {0, 128.0f}},
@@ -73,25 +73,107 @@ std::vector<BT> GoldenGammaColorCvt(const Tensor &input, const Tensor &output, i
     case COLOR_RGB2YUV:
     case COLOR_BGR2YUV:
         {
-            Kernels::Host::rgb_or_bgr_to_yuv<T>(inputWrapper, outputWrapper, orderIdx, delta);
+            for (int z_idx = 0; z_idx < batch; z_idx++) {
+                for (int y_idx = 0; y_idx < height; y_idx++) {
+                    for (int x_idx = 0; x_idx < width; x_idx++) {
+                        // one read
+                        T pixel = inW.at(z_idx, y_idx, x_idx, 0);
+                        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
+                        // order
+                        float R = RGB[orderIdx];
+                        float G = RGB[1];
+                        float B = RGB[orderIdx ^ 2];
+                        // convert
+                        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
+                        float Cr = (R - Y) * 0.877f + delta;
+                        float Cb = (B - Y) * 0.492f + delta;
+                        // round
+                        T YCbCr = {
+                            RoundImplementationsToYUV<float>(Y),
+                            RoundImplementationsToYUV<float>(Cb),
+                            RoundImplementationsToYUV<float>(Cr)
+                        };
+                        // output
+                        outW.at(z_idx, y_idx, x_idx, 0) = YCbCr;
+                    }
+                }
+            }
         }
         break;
     case COLOR_YUV2RGB:
     case COLOR_YUV2BGR:
         {
-            Kernels::Host::yuv_to_rgb_or_bgr<T>(inputWrapper, outputWrapper, orderIdx, delta);
+            BT mn = std::numeric_limits<BT>::max();
+            BT mx = std::numeric_limits<BT>::min();
+            for (int z_idx = 0; z_idx < batch; z_idx++) {
+                for (int y_idx = 0; y_idx < height; y_idx++) {
+                    for (int x_idx = 0; x_idx < width; x_idx++) {
+                        // one read
+                        T pixel = inW.at(z_idx, y_idx, x_idx, 0);
+                        float YCbCr[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
+                        // split
+                        auto [Y, Cb, Cr] = YCbCr;
+                        // convert
+                        float B = Y + (Cb - delta) * 2.032f;
+                        float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
+                        float R = Y + (Cr - delta) * 1.140f;
+                        // Round
+                        T RGB = {
+                            RoundImplementationsFromYUV<float>(R),
+                            RoundImplementationsFromYUV<float>(G),
+                            RoundImplementationsFromYUV<float>(B)
+                        };
+                        // Clamp
+                        RGB.x = Clamp<BT, float>(RGB.x, mn, mx);
+                        RGB.y = Clamp<BT, float>(RGB.y, mn, mx);
+                        RGB.z = Clamp<BT, float>(RGB.x, mn, mx);
+                        // out order
+                        T pixOut;
+                        pixOut.x = RGB[orderIdx];
+                        pixOut.y = RGB[1];
+                        pixOut.z = RGB[orderIdx ^ 2];
+                        // output
+                        outW.at(z_idx, y_idx, x_idx, 0) = pixOut;
+                    }
+                }
+            }
         }
         break;
     case COLOR_RGB2BGR:
     case COLOR_BGR2RGB:
         {
-            Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<T>(inputWrapper, outputWrapper, orderIdx, delta);
+            int orderIdxOutput = static_cast<int>(delta);
+            for (int z_idx = 0; z_idx < batch; z_idx++) {
+                for (int y_idx = 0; y_idx < height; y_idx++) {
+                    for (int x_idx = 0; x_idx < width; x_idx++) {
+                        T pixel = inW.at(z_idx, y_idx, x_idx, 0);
+                        BT in[3] = {pixel.x, pixel.y, pixel.z};
+                        T ot = {in[orderIdx], in[1], in[orderIdx ^ 2]};
+                        T pixOut = {ot[orderIdxOutput], ot[1], ot[orderIdxOutput ^ 2]};
+                        outW.at(z_idx, y_idx, x_idx, 0) = pixOut;
+                    }
+                }
+            }
         }
         break;
     case COLOR_RGB2GRAY:
     case COLOR_BGR2GRAY:
         {
-            Kernels::Host::rgb_or_bgr_to_grayscale<T>(inputWrapper, outputWrapper, orderIdx);
+            for (int z_idx = 0; z_idx < batch; z_idx++) {
+                for (int y_idx = 0; y_idx < height; y_idx++) {
+                    for (int x_idx = 0; x_idx < width; x_idx++) {
+                        if (x_idx < width && y_idx < height && z_idx < batch) {
+                            T pixel = inW.at(z_idx, y_idx, x_idx, 0);
+                            float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
+                            float R = RGB[orderIdx];
+                            float G = RGB[1];
+                            float B = RGB[orderIdx ^ 2];
+                            float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
+                            outW.at(z_idx, y_idx, x_idx, 0).x = RoundImplementationsToYUV<float>(Y);
+                        }
+                    }
+                }
+            }
         }
         break;
     default:
@@ -116,8 +198,8 @@ std::vector<BT> GoldenGammaColorCvt(const Tensor &input, const Tensor &output, i
  */
 template <typename T, typename BT = detail::BaseType<T>>
 void TestCorrectness(int batch, int width, int height, ImageFormat format, eColorConversionCode conversionCode, eDeviceType device) {
-    TensorShape shape_clr(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, height, width, 3});
-    TensorShape shape_gry(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, height, width, 1});
+    TensorShape shape_clr(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {batch, height, width, 3});
+    TensorShape shape_gry(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {batch, height, width, 1});
     DataType dtype(eDataType::DATA_TYPE_U8);
     Tensor  input_clr(shape_clr, dtype, device);
     Tensor output_clr(shape_clr, input_clr.dtype(), input_clr.device());
@@ -179,24 +261,24 @@ eTestStatusType test_op_cvt_color(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(8, 134, 360, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::GPU));
 
     // CPU correctness tests
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(1, 180, 60, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(8, 480, 360, FMT_RGB8, COLOR_RGB2YUV , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, COLOR_BGR2YUV , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, COLOR_YUV2RGB , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, COLOR_YUV2BGR , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, COLOR_RGB2BGR , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, COLOR_BGR2RGB , eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::CPU));
 
     TEST_CASES_END();
 }
