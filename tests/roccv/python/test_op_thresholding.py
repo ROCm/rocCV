@@ -28,22 +28,22 @@ import numpy as np
 from test_helpers import load_image, compare_image
 
 @pytest.mark.parametrize("input_path, thresh, mvdata, maxBatchSize, threshType, device, expected_path, err", [
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.BINARY, rocpycv.GPU, "expected_thresholding_binary.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.BINARY_INV, rocpycv.GPU, "expected_thresholding_binary_inv.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.TOZERO_INV, rocpycv.GPU, "expected_thresholding_to_zero_inv.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.TOZERO, rocpycv.GPU, "expected_thresholding_to_zero.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.TRUNC, rocpycv.GPU, "expected_thresholding_trunc.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.BINARY, rocpycv.CPU, "expected_thresholding_binary.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.BINARY_INV, rocpycv.CPU, "expected_thresholding_binary_inv.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.TOZERO_INV, rocpycv.CPU, "expected_thresholding_to_zero_inv.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.TOZERO, rocpycv.CPU, "expected_thresholding_to_zero.bmp", 1.0),
-    ("test_input.bmp", [[100], [100]], [[255], [255]], 1, rocpycv.TRUNC, rocpycv.CPU, "expected_thresholding_trunc.bmp", 1.0)
+    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY, rocpycv.GPU, "expected_thresholding_binary.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY_INV, rocpycv.GPU, "expected_thresholding_binary_inv.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO_INV, rocpycv.GPU, "expected_thresholding_to_zero_inv.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO, rocpycv.GPU, "expected_thresholding_to_zero.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.TRUNC, rocpycv.GPU, "expected_thresholding_trunc.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY, rocpycv.CPU, "expected_thresholding_binary.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY_INV, rocpycv.CPU, "expected_thresholding_binary_inv.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO_INV, rocpycv.CPU, "expected_thresholding_to_zero_inv.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO, rocpycv.CPU, "expected_thresholding_to_zero.bmp", 1.0),
+    ("test_input.bmp", [100], [255], 1, rocpycv.TRUNC, rocpycv.CPU, "expected_thresholding_trunc.bmp", 1.0)
 ])
 
 def test_op_thresholding(pytestconfig, input_path, thresh, mvdata, maxBatchSize, threshType, device, expected_path, err):
     input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-    thresh_tensor = rocpycv.from_dlpack(np.array(thresh, np.uint8), rocpycv.NW).copy_to(device)
-    maxval_tensor = rocpycv.from_dlpack(np.array(mvdata, np.uint8), rocpycv.NW).copy_to(device)
+    thresh_tensor = rocpycv.from_dlpack(np.array(thresh, np.float64), rocpycv.N).copy_to(device)
+    maxval_tensor = rocpycv.from_dlpack(np.array(mvdata, np.float64), rocpycv.N).copy_to(device)
 
     stream = rocpycv.Stream()
 

@@ -102,6 +102,12 @@ constexpr ImageFormat FMT_RGB16(eDataType::DATA_TYPE_U16, 3, eSwizzle::XYZW);
 // Single plane with interleaved RGBA 16-bit channel.
 constexpr ImageFormat FMT_RGBA16(eDataType::DATA_TYPE_U16, 4, eSwizzle::XYZW);
 
+// Single plane with interleaved RGB signed 16-bit channel.
+constexpr ImageFormat FMT_RGBs16(eDataType::DATA_TYPE_S16, 3);
+
+// Single plane with interleaved RGBA signed 16-bit channel.
+constexpr ImageFormat FMT_RGBAs16(eDataType::DATA_TYPE_S16, 4);
+
 // Single plane with interleaved RGB 32-bit channel.
 constexpr ImageFormat FMT_RGB32(eDataType::DATA_TYPE_U32, 3, eSwizzle::XYZW);
 
