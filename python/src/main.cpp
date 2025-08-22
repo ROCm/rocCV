@@ -69,11 +69,11 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpBilateralFilter::Export(m);
     PyOpThreshold::Export(m);
     PyOpRemap::Export(m);
-    PyOpHistogram::Export(m);
     PyOpCvtColor::Export(m);
     PyOpBndBox::Export(m);
     PyOpGammaContrast::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
     PyOpCenterCrop::Export(m);
+    PyOpHistogram::Export(m);
 }
