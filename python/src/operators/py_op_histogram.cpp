@@ -24,15 +24,13 @@ THE SOFTWARE.
 
 #include <op_histogram.hpp>
 
-PyTensor PyOpHistogram::Execute(PyTensor& input, PyTensor* mask,
+PyTensor PyOpHistogram::Execute(PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> mask,
                                         std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
 
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     auto inputTensor = input.getTensor();
-    roccv::Tensor *maskTensor = nullptr;
+    auto maskTensor = mask.has_value() ? std::optional<std::reference_wrapper<roccv::Tensor>>(*mask.value().get().getTensor()) : std::nullopt;
 
-    if (mask != nullptr)
-        maskTensor = mask->getTensor().get();
     
     auto outputTensor = std::make_shared<roccv::Tensor>(roccv::TensorShape(roccv::TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC),
                                                            {1, 256, 1}), roccv::DataType(eDataType::DATA_TYPE_S32), device);
@@ -42,14 +40,11 @@ PyTensor PyOpHistogram::Execute(PyTensor& input, PyTensor* mask,
     return PyTensor(outputTensor);
 }
 
-void PyOpHistogram::ExecuteInto(PyTensor& output, PyTensor& input, PyTensor* mask,
+void PyOpHistogram::ExecuteInto(PyTensor& output, PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> mask,
                                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
 
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
-    roccv::Tensor *maskTensor = nullptr;
-
-    if (mask != nullptr)
-        maskTensor = mask->getTensor().get();
+    auto maskTensor = mask.has_value() ? std::optional<std::reference_wrapper<roccv::Tensor>>(*mask.value().get().getTensor()) : std::nullopt;
 
     roccv::Histogram op;
     op(hipStream, *input.getTensor(), maskTensor, *output.getTensor(), device);

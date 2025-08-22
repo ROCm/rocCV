@@ -33,8 +33,8 @@ namespace py = pybind11;
 class PyOpHistogram {
    public:
     static void Export(py::module& m);
-    static PyTensor Execute(PyTensor& input, PyTensor* mask,
+    static PyTensor Execute(PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> mask,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
-    static void ExecuteInto(PyTensor& output, PyTensor& input, PyTensor* mask,
+    static void ExecuteInto(PyTensor& output, PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> mask,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
 };

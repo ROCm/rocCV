@@ -10,7 +10,7 @@ Three rocCV packages are available:
 
 | ``roccv``: The rocCV runtime package. This is the basic rocCV package that only provides dynamic libraries. It must always be installed.
 | ``roccv-dev``: The rocCV development package. This package installs a full suite of libraries, header files, and samples. This package needs to be installed to use samples.
-* ``roccv-test``: A test package that provides CTests to verify the installation. 
+| ``roccv-test``: A test package that provides CTests to verify the installation. 
 
 All the required prerequisites except for OpenCV and DLPack on RHEL and SLES are installed with the rocCV packages. OpenCV and DLPack must be installed manually on RHEL and SLES.
 
