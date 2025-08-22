@@ -47,12 +47,12 @@ class CopyMakeBorder final : public IOperator {
      * Input:
      *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [U8, S8, U32, S32, F32]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Output:
      *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [U8, S8, U32, S32, F32]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Input/Output dependency:
      *

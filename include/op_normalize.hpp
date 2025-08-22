@@ -67,11 +67,11 @@ class Normalize final : public IOperator {
      *
      * Input:
      *       Supported TensorLayout(s): [NHWC, HWC]
-     *       Supported DataType(s):     [U8, S8, S16, U32, S32, F32]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32]
      *
      * Output:
      *       Supported TensorLayout(s): [NHWC, HWC]
-     *       Supported DataType(s):     [U8, S8, S16, U32, S32, F32]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32]
      *
      * base:
      *      Supported TensorLayout(s): [NHWC, HWC]

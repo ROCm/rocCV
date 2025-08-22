@@ -19,7 +19,8 @@
  * THE SOFTWARE.
  */
 
-#include <filesystem>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/border_wrapper.hpp>
 #include <op_copy_make_border.hpp>
 
 #include "test_helpers.hpp"
@@ -27,69 +28,197 @@
 using namespace roccv;
 using namespace roccv::tests;
 
-eTestStatusType TestCorrectness(const std::string& input_image, const std::string& golden_image, int32_t top,
-                                int32_t left, eBorderType border_mode, float4 border_value, eDeviceType device,
-                                float error_threshold) {
-    Tensor input = createTensorFromImage(input_image, DataType(DATA_TYPE_U8), device);
-    TensorShape o_shape(input.layout(), {1, input.shape(input.layout().height_index()) + top * 2,
-                                         input.shape(input.layout().width_index()) + left * 2, 3});
-    Tensor output(o_shape, input.dtype(), device);
+namespace {
 
-    CopyMakeBorder op;
-    op(nullptr, input, output, top, left, border_mode, border_value, device);
-    hipDeviceSynchronize();
+/**
+ * @brief Golden model for CopyMakeBorder. This operator copies the input image batch into the output image batch with
+ * left/top shifts and out of bounds handling to create a border around the copied image.
+ *
+ * @tparam T Datatype of the images' pixels.
+ * @tparam BorderType Border mode to use for out-of-bounds conditions.
+ * @tparam BT Base datatype of the image.
+ * @param[in] input A vector containing the input image batch.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] inputSize The size of the input images.
+ * @param[in] outputSize The size of the output images.
+ * @param[in] top The top shift to perform on the input image when copying to the output image.
+ * @param[in] left The left shift to perform on the input image when copying to the output image.
+ * @param[in] borderValue The fallback border value to use when CONSTANT border mode is specified.
+ * @return A vector containing the output image data.
+ */
+template <typename T, eBorderType BorderType, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenCopyMakeBorder(std::vector<BT> input, int batchSize, Size2D inputSize, Size2D outputSize, int top,
+                                     int left, float4 borderValue) {
+    int channels = detail::NumElements<T>;
 
-    return compareImage(output, golden_image, error_threshold);
+    // Convert border value into the type of the image
+    T borderVal = detail::RangeCast<T>(borderValue);
+
+    // Wrap the input images in a BorderWrapper to handle out of bounds image behavior. The BorderWrapper has already
+    // been tested in another test so it can be used reliably.
+    BorderWrapper<T, BorderType> inputWrap(ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), borderVal);
+
+    std::vector<BT> output(batchSize * outputSize.h * outputSize.w * channels);
+    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
+
+    for (int b = 0; b < batchSize; b++) {
+        for (int y = 0; y < outputSize.h; y++) {
+            for (int x = 0; x < outputSize.w; x++) {
+                // CopyMakeBorder essentially copies the input image into the output image with a specified left and top
+                // shift on the x and y coordinates respectively. Out of bounds behavior will be handled by the
+                // BorderWrapper wrapping the input image.
+                outputWrap.at(b, y, x, 0) = inputWrap.at(b, y - top, x - left, 0);
+            }
+        }
+    }
+
+    return output;
 }
 
+/**
+ * @brief Tests correctness for roccv::CopyMakeBorder by comparing results against the verified golden model.
+ *
+ * @tparam T Datatype of the images' pixels.
+ * @tparam BorderType Border mode to use for out-of-bounds conditions.
+ * @tparam BT Base datatype of the image.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] inputSize The size of the input images.
+ * @param[in] outputSize The size of the output images.
+ * @param[in] format The image format to use. Must match the type T.
+ * @param[in] top The top shift to perform on the input image when copying to the output image.
+ * @param[in] left The left shift to perform on the input image when copying to the output image.
+ * @param[in] borderValue The fallback border value to use when CONSTANT border mode is specified.
+ * @param[in] device The device to run this correctness test on.
+ * @throws std::runtime_error if the test fails.
+ */
+template <typename T, eBorderType BorderType, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFormat format, int top, int left,
+                     float4 borderValue, eDeviceType device) {
+    Tensor inputTensor(batchSize, inputSize, format, device);
+    Tensor outputTensor(batchSize, outputSize, format, device);
+
+    // Generate random input data
+    std::vector<BT> input(batchSize * inputSize.h * inputSize.w * format.channels());
+    FillVector(input);
+
+    CopyVectorIntoTensor(inputTensor, input);
+
+    // Run roccv::CopyMakeBorder to get actual operator results
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CopyMakeBorder op;
+    op(stream, inputTensor, outputTensor, top, left, BorderType, borderValue, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy results into host output vector
+    std::vector<BT> actualOutput(batchSize * outputSize.h * outputSize.w * format.channels());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Run golden model to obtain golden vector
+    std::vector<BT> goldenOutput =
+        GoldenCopyMakeBorder<T, BorderType>(input, batchSize, inputSize, outputSize, top, left, borderValue);
+
+    // Compare actual results with golden results
+    CompareVectors(actualOutput, goldenOutput);
+}
+}  // namespace
+
 eTestStatusType test_op_copy_make_border(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    std::filesystem::path base_path = std::filesystem::path(argv[1]) / "tests" / "ops";
+    TEST_CASES_BEGIN();
 
-    try {
-        // GPU implementation tests
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_constant.bmp", 9,
-                                           9, BORDER_TYPE_CONSTANT, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(
-            TestCorrectness(base_path / "test_input.bmp",
-                            base_path / "copy_make_border" / "expected_copy_make_border_replicate.bmp", 9, 9,
-                            BORDER_TYPE_REPLICATE, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-            eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_reflect.bmp", 9,
-                                           9, BORDER_TYPE_REFLECT, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_wrap.bmp", 9, 9,
-                                           BORDER_TYPE_WRAP, make_float4(0, 0, 1.0, 0), eDeviceType::GPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
+    // clang-format off
 
-        // CPU implementation tests
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_constant.bmp", 9,
-                                           9, BORDER_TYPE_CONSTANT, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(
-            TestCorrectness(base_path / "test_input.bmp",
-                            base_path / "copy_make_border" / "expected_copy_make_border_replicate.bmp", 9, 9,
-                            BORDER_TYPE_REPLICATE, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-            eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_reflect.bmp", 9,
-                                           9, BORDER_TYPE_REFLECT, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(TestCorrectness(base_path / "test_input.bmp",
-                                           base_path / "copy_make_border" / "expected_copy_make_border_wrap.bmp", 9, 9,
-                                           BORDER_TYPE_WRAP, make_float4(0, 0, 1.0, 0), eDeviceType::CPU, 0.0f),
-                           eTestStatusType::TEST_SUCCESS);
-    } catch (Exception e) {
-        printf("Exception occured: %s\n", e.what());
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    // GPU Tests
+
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_U8, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGB8, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGB8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBA8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // S8
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_S8, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGBs8, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGBs8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBAs8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // U16
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_U16, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGB16, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGB16, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBA16, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // S16
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_S16, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // U32
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_U32, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGB32, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGB32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBA32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // S32
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_S32, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_F32, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGBf32, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGBf32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBAf32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+    // F64
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_F64, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGBf64, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGBf64, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBAf64, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::GPU)));
+
+
+    // CPU Tests
+
+    // U8
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_U8, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGB8, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGB8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBA8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // S8
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_S8, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGBs8, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGBs8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBAs8, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // U16
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_U16, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGB16, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGB16, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBA16, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // S16
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_S16, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // U32
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_U32, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGB32, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGB32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBA32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // S32
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_S32, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // F32
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_F32, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGBf32, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGBf32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBAf32, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // F64
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT>(1, {40, 10}, {60, 20}, FMT_F64, 5, 10, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REFLECT>(3, {40, 10}, {80, 25}, FMT_RGBf64, 0, 5, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REPLICATE>(5, {10, 5}, {10, 25}, FMT_RGBf64, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_WRAP>(5, {10, 5}, {10, 25}, FMT_RGBAf64, 10, 0, make_float4(1.0f, 0.5f, 0.5f, 1.0f), eDeviceType::CPU)));
+
+    // clang-format on
+
+    TEST_CASES_END();
 }
