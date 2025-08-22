@@ -310,6 +310,24 @@ void FillVector(std::vector<T>& vec, uint32_t seed = 12345) {
 }
 
 /**
+ * @brief Fills a vector with randomly generated 0s and 1s based on a provided seed.
+ *
+ * @tparam T The underlying type of the vector data.
+ * @param[out] vec The vector to fill with random data.
+ * @param[in] seed A random seed. (Defaults to 12345)
+ */
+template <typename T>
+void FillVectorMask(std::vector<T>& vec, uint32_t seed = 12345) {
+    // Create random number generator with seed and distribution.
+    std::mt19937 eng(seed);
+
+    std::uniform_int_distribution<T> dist(0, 1);
+    for (int i = 0; i < vec.size(); i++) {
+        vec[i] = dist(eng);
+    }
+}
+
+/**
  * @brief Compares a vector to a reference vector.
  *
  * @tparam T The base type of the vector data.

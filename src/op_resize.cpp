@@ -37,9 +37,8 @@ namespace roccv {
 template <typename T, eInterpolationType I>
 void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
-    // Interpolation wrapper uses a constant border mode with all black as the constant value.
-    T borderValue = detail::RangeCast<T>(make_float4(0, 0, 0, 1.0f));
-    InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, I> inputWrapper(input, borderValue);
+    // Resize operation should clamp values at the border (REPLICATE border mode)
+    InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, I> inputWrapper(input, T{});
 
     float scaleX = inputWrapper.width() / static_cast<float>(outputWrapper.width());
     float scaleY = inputWrapper.height() / static_cast<float>(outputWrapper.height());

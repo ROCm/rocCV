@@ -6,7 +6,7 @@
 rocCV documentation
 ********************************************************************
 
-rocCV is an efficient GPU-accelerated library for image pre- and post-processing, powered by AMD's HIP platform.
+rocCV is an efficient GPU-accelerated library for image pre- and post-processing, powered by the `ROCm HIP runtime API <https://rocm.docs.amd.com/projects/HIP/en/latest/index.html>`_.
 
 The rocCV public repository is located at `https://github.com/ROCm/rocCV <https://github.com/ROCm/rocCV>`_.
 
