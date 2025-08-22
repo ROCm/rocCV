@@ -24,6 +24,7 @@
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
 #include <op_histogram.hpp>
+#include <optional>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
@@ -43,7 +44,7 @@ BENCHMARK(Histogram, GPU) {
     roccvbench::FillTensor(input);
 
     Histogram op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, nullptr, output), results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, std::nullopt, output), results.execution_time, config.runs);
 
     return results;
 }
@@ -64,8 +65,8 @@ BENCHMARK(Histogram, CPU) {
     roccvbench::FillTensor(input);
 
     Histogram op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, nullptr, output, eDeviceType::CPU), results.execution_time,
-                                      config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, std::nullopt, output, eDeviceType::CPU),
+                                      results.execution_time, config.runs);
 
     return results;
 }
