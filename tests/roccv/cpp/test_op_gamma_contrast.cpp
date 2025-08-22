@@ -80,7 +80,7 @@ std::vector<BT> GoldenGammaContrast(std::vector<BT>& input, int32_t batchSize, i
 
 
 /**
- * @brief Tests correctness of the Flip operator, comparing it against a generated golden result.
+ * @brief Tests correctness of the Gamma Contrast operator, comparing it against a generated golden result.
  *
  * @tparam T Underlying datatype of the image's pixels.
  * @tparam BT Base type of the image data.
