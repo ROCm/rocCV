@@ -24,6 +24,7 @@
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
 #include <op_histogram.hpp>
+#include <optional>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
