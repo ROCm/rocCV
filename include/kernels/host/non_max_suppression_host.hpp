@@ -38,8 +38,8 @@ inline void non_maximum_suppression(roccv::GenericTensorWrapper<short4> input,
             uint8_t& dst = output.at(batchIdx, boxAIdx);
 
             if (scoreA < scoresThreshold) {
-                dst = 0;
-                return;
+                dst = 0u;
+                continue;
             }
 
             const short4 boxA = input.at(batchIdx, boxAIdx);
@@ -53,11 +53,12 @@ inline void non_maximum_suppression(roccv::GenericTensorWrapper<short4> input,
                     const float scoreB = scores.at(batchIdx, boxBIdx);
                     if (scoreA < scoreB || (scoreA == scoreB && ComputeArea(boxA) < ComputeArea(boxB))) {
                         discard = true;
+                        break;
                     }
                 }
             }
 
-            dst = !discard;
+            dst = discard ? 0u : 1u;
         }
     }
 }

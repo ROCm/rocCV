@@ -41,7 +41,7 @@ __global__ void non_maximum_suppression(roccv::GenericTensorWrapper<short4> inpu
     uint8_t& dst = output.at(batchIdx, boxAIdx);
 
     if (scoreA < scoresThreshold) {
-        dst = 0;
+        dst = 0u;
         return;
     }
 
@@ -56,11 +56,12 @@ __global__ void non_maximum_suppression(roccv::GenericTensorWrapper<short4> inpu
             const float scoreB = scores.at(batchIdx, boxBIdx);
             if (scoreA < scoreB || (scoreA == scoreB && ComputeArea(boxA) < ComputeArea(boxB))) {
                 discard = true;
+                break;
             }
         }
     }
 
-    dst = !discard;
+    dst = discard ? 0u : 1u;
 }
 }  // namespace Device
 }  // namespace Kernels
