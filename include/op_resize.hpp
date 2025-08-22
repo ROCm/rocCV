@@ -44,7 +44,8 @@ class Resize final : public IOperator {
     ~Resize() {}
 
     /**
-     * @brief Executes the Resize operation on the given HIP stream.
+     * @brief Resizes input images to the shape of the output images using an interpolation mode for
+     * upscaling/downscaling.
      *
      * Limitations:
      *
@@ -68,6 +69,8 @@ class Resize final : public IOperator {
      *       Width         | No
      *       Height        | No
      *       Batch         | Yes
+     *
+     * Supported interpolation modes: [NEAREST, LINEAR]
      *
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image batch data.
