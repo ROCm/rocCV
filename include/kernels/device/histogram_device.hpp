@@ -28,16 +28,16 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Device {
-template <typename T, typename OUT, typename SRC, typename DST>
-__global__ void histogram_kernel(SRC input, DST output, int64_t batch,
-                                 int64_t height, int64_t width) {
-    extern __shared__ __align__(sizeof(OUT)) unsigned char smem[];
-    OUT *local_histogram = reinterpret_cast<OUT *>(smem);
+
+template<typename T, typename SrcWrapper>
+__global__ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram) {
+    extern __shared__ __align__(sizeof(T)) unsigned char smem[];
+    T *local_histogram = reinterpret_cast<T *>(smem);
 
     const auto z_idx = blockIdx.z;
     const auto gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const auto x_idx = gid % width;
-    const auto y_idx = gid / width;
+    const auto x_idx = gid % input.width();
+    const auto y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
@@ -46,31 +46,28 @@ __global__ void histogram_kernel(SRC input, DST output, int64_t batch,
 
     __syncthreads();
 
-    if (gid < height * width) {
-        atomicAdd(
-            &local_histogram[input.template at<T>(z_idx, y_idx, x_idx, 0)], 1);
+    if (gid < input.height() * input.width()) {
+        atomicAdd(&local_histogram[input.at(z_idx, y_idx, x_idx, 0).x], 1);
     }
     __syncthreads();  // wait for all of the threads in this block to finish
 
-    const auto hist_val =
-        local_histogram[tid];  // get local value for this thread
+    const auto hist_val = local_histogram[tid];  // get local value for this thread
 
-    // this is the output histogram must be init to and atomicly added to.
+    // this is the output histogram must be init to and atomically added to.
     if (hist_val > 0) {
-        atomicAdd(&output.template at<OUT>(0, z_idx, tid, 0), hist_val);
+        atomicAdd(&histogram.at(z_idx, tid, 0), hist_val);
     }
 }
 
-template <typename T, typename OUT, typename SRC, typename DST, typename MASK>
-__global__ void histogram_kernel(SRC input, DST output, MASK mask,
-                                 int64_t batch, int64_t height, int64_t width) {
-    extern __shared__ __align__(sizeof(OUT)) unsigned char smem[];
-    OUT *local_histogram = reinterpret_cast<OUT *>(smem);
+template <typename T, typename SrcWrapper, typename MaskWrapper>
+__global__ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::GenericTensorWrapper<T> histogram) {
+    extern __shared__ __align__(sizeof(T)) unsigned char smem[];
+    T *local_histogram = reinterpret_cast<T *>(smem);
 
     const auto z_idx = blockIdx.z;
     const auto gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const auto x_idx = gid % width;
-    const auto y_idx = gid / width;
+    const auto x_idx = gid % input.width();
+    const auto y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
@@ -79,21 +76,20 @@ __global__ void histogram_kernel(SRC input, DST output, MASK mask,
 
     __syncthreads();
 
-    if (gid < height * width) {
-        if (mask.template at<T>(z_idx, y_idx, x_idx, 0)) {
+    if (gid < input.height() * input.width()) {
+        if (mask.at(z_idx, y_idx, x_idx, 0) != 0) {
             atomicAdd(
-                &local_histogram[input.template at<T>(z_idx, y_idx, x_idx, 0)],
+                &local_histogram[input.at(z_idx, y_idx, x_idx, 0).x],
                 1);
         }
     }
     __syncthreads();  // wait for all of the threads in this block to finish
 
-    const auto hist_val =
-        local_histogram[tid];  // get local value for this thread
+    const auto hist_val = local_histogram[tid];  // get local value for this thread
 
-    // this is the output histogram must be init to and atomicly added to.
+    // this is the output histogram must be init to and atomically added to.
     if (hist_val > 0) {
-        atomicAdd(&output.template at<OUT>(0, z_idx, tid, 0), hist_val);
+        atomicAdd(&histogram.at(z_idx, tid, 0), hist_val);
     }
 }
 }  // namespace Device
