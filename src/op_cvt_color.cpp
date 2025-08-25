@@ -36,8 +36,8 @@ THE SOFTWARE.
 #include "kernels/host/cvt_color_host.hpp"
 
 namespace roccv {
-
 CvtColor::CvtColor() {}
+
 CvtColor::~CvtColor() {}
 
 template <typename T>
@@ -107,23 +107,61 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
-    // Ensure all tensors are using supported datatypes
-    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
-    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8);
+
+    CHECK_TENSOR_COMPARISON(input.shape().layout() == output.shape().layout());
+
     // Ensure all tensors are using supported layouts.
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
-    // Prepare params
+
+    // Ensure all tensors are using supported datatypes
+    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
+    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8);
+
     const auto o_batch_i = output.shape().layout().batch_index();
     const auto o_batch = (o_batch_i >= 0) ? output.shape()[o_batch_i] : 1;
     const auto o_height = output.shape()[output.shape().layout().height_index()];
     const auto o_width = output.shape()[output.shape().layout().width_index()];
     const auto o_channels = output.shape()[output.shape().layout().channels_index()];
+
     const auto i_batch_i = input.shape().layout().batch_index();
     const auto i_batch = (i_batch_i >= 0) ? input.shape()[i_batch_i] : 1;
     const auto i_height = input.shape()[input.shape().layout().height_index()];
     const auto i_width = input.shape()[input.shape().layout().width_index()];
     const auto i_channels = input.shape()[input.shape().layout().channels_index()];
+
+    if (o_batch != i_batch) {
+        throw Exception("Invalid batch size: input != output", eStatusType::INVALID_COMBINATION);
+    }
+
+    eChannelType outputChannelType;
+    if (conversionCode == COLOR_RGB2GRAY || conversionCode == COLOR_BGR2GRAY) {
+        outputChannelType = eChannelType::Grayscale;
+    }
+    if (o_channels != i_channels) {
+        if (outputChannelType != eChannelType::Grayscale)
+            throw Exception("Invalid channel size: input != output", eStatusType::INVALID_COMBINATION);
+    }
+    if (o_batch <= 0) {
+        throw Exception("Invalid batch size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
+    }
+    if (o_channels <= 0 || o_channels > 4) {
+        throw Exception("Invalid channel size: must be greater than 0 and less than or equal to 4",
+                        eStatusType::OUT_OF_BOUNDS);
+    }
+    if (o_height <= 0) {
+        throw Exception("Invalid output height size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
+    }
+    if (o_width <= 0) {
+        throw Exception("Invalid output width size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
+    }
+    if (i_height <= 0) {
+        throw Exception("Invalid input height size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
+    }
+    if (i_width <= 0) {
+        throw Exception("Invalid input width size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
+    }
+
     auto batch_size = i_batch;
     auto height = i_height;
     auto width = i_width;

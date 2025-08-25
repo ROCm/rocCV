@@ -143,5 +143,5 @@ __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int
 
     output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
 }
-
-}  // namespace Kernels::Device
+}  // namespace Device
+}  // namespace Kernels

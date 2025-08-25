@@ -146,5 +146,5 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxIn
         }
     }
 }
-
-}  // namespace Kernels::Host
+}  // namespace Host
+}  // namespace Kernels
