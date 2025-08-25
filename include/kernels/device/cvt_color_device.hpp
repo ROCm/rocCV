@@ -23,106 +23,96 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+
 #include "operator_types.h"
 
-namespace Kernels::Device {
-
-template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+namespace Kernels {
+namespace Device {
+template <typename T, typename SRC, typename DST>
+__global__ void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width,
+                                  int64_t height, int64_t batch_size,
+                                  int orderIdx, float delta) {
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        // one read
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
-        // order
-        float R = RGB[orderIdx];
-        float G = RGB[1];
-        float B = RGB[orderIdx ^ 2];
-        // convert
-        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
+    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+        T R = input.template at<T>(z_idx, y_idx, x_idx, orderIdx);
+        T G = input.template at<T>(z_idx, y_idx, x_idx, 1);
+        T B = input.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2);
+
+        float Y = R * 0.299f + G * 0.587f + B * 0.114f;
         float Cr = (R - Y) * 0.877f + delta;
         float Cb = (B - Y) * 0.492f + delta;
-        // round
-        T YCbCr = {
-            RoundImplementationsToYUV<float>(Y),
-            RoundImplementationsToYUV<float>(Cb),
-            RoundImplementationsToYUV<float>(Cr)
-        };
-        // output
-        output.at(z_idx, y_idx, x_idx, 0) = YCbCr;
+
+        output.template at<T>(z_idx, y_idx, x_idx, 0) =
+            RoundImplementationsToYUV<float>(Y);
+        output.template at<T>(z_idx, y_idx, x_idx, 1) =
+            RoundImplementationsToYUV<float>(Cb);
+        output.template at<T>(z_idx, y_idx, x_idx, 2) =
+            RoundImplementationsToYUV<float>(Cr);
     }
 }
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+template <typename T, typename SRC, typename DST>
+__global__ void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width,
+                                  int64_t height, int64_t batch_size,
+                                  int orderIdx, float delta) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-    using base_type = roccv::detail::BaseType<T>;
-    base_type mn = std::numeric_limits<base_type>::max();
-    base_type mx = std::numeric_limits<base_type>::min();
 
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        // one read
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        float YCbCr[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
-        // split
-        auto [Y, Cb, Cr] = YCbCr;
-        // convert
+    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+        T Y = input.template at<T>(z_idx, y_idx, x_idx, 0);
+        T Cb = input.template at<T>(z_idx, y_idx, x_idx, 1);
+        T Cr = input.template at<T>(z_idx, y_idx, x_idx, 2);
+
         float B = Y + (Cb - delta) * 2.032f;
         float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
         float R = Y + (Cr - delta) * 1.140f;
-        // Round
-        T RGB = {
-            RoundImplementationsFromYUV<float>(R),
-            RoundImplementationsFromYUV<float>(G),
-            RoundImplementationsFromYUV<float>(B)
-        };
-        // Clamp
-        RGB.x = Clamp<base_type, float>(RGB.x, mn, mx);
-        RGB.y = Clamp<base_type, float>(RGB.y, mn, mx);
-        RGB.z = Clamp<base_type, float>(RGB.x, mn, mx);
-        // out order
-        T pixOut;
-        pixOut.x = RGB[orderIdx];
-        pixOut.y = RGB[1];
-        pixOut.z = RGB[orderIdx ^ 2];
-        // output
-        output.at(z_idx, y_idx, x_idx, 0) = pixOut;
+
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdx) =
+            Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0, 255);
+        output.template at<T>(z_idx, y_idx, x_idx, 1) =
+            Clamp<T, float>(RoundImplementationsFromYUV<float>(G), 0, 255);
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) =
+            Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0, 255);
     }
 }
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int orderIdxInput, int orderIdxOutput) {
-    using base_type = roccv::detail::BaseType<T>;
+template <typename T, typename SRC, typename DST>
+__global__ void rgb_or_bgr_to_bgr_or_rgb(SRC input, DST output, int64_t width,
+                                         int64_t height, int64_t batch_size,
+                                         int orderIdxInput,
+                                         int orderIdxOutput) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        base_type in[3] = {pixel.x, pixel.y, pixel.z};
-        T ot = {in[orderIdxInput], in[1], in[orderIdxInput ^ 2]};
-        T pixOut = {ot[orderIdxOutput], ot[1], ot[orderIdxOutput ^ 2]};
-        output.at(z_idx, y_idx, x_idx, 0) = pixOut;
+
+    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput) =
+            input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput);
+        output.template at<T>(z_idx, y_idx, x_idx, 1) =
+            input.template at<T>(z_idx, y_idx, x_idx, 1);
+        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) =
+            input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
     }
 }
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxInput) {
+template <typename T, typename SRC, typename DST>
+__global__ void rgb_or_bgr_to_grayscale(SRC input, DST output, int64_t width,
+                                        int64_t height, int64_t batch_size,
+                                        int orderIdxInput) {
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
-        float R = RGB[orderIdxInput];
-        float G = RGB[1];
-        float B = RGB[orderIdxInput ^ 2];
-        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
-        output.at(z_idx, y_idx, x_idx, 0).x = RoundImplementationsToYUV<float>(Y);
+
+    if (x_idx < width && y_idx < height && z_idx < batch_size) {
+        float grayValue = 0;
+        grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput) * 0.299;
+        grayValue += input.template at<T>(z_idx, y_idx, x_idx, 1) * 0.587;
+        grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2) * 0.114;
+        output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
     }
 }
-
-}  // namespace Kernels::Device
+}  // namespace Device
+}  // namespace Kernels
