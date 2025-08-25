@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include <functional>
 #include <iostream>
-
+#include <numeric>
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
@@ -80,8 +80,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         Kernels::Device::bilateral_filter<T><<<grid, block, 0, stream>>>(
             inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
-        int divisor = 4;
-        int dividend = numThreads / divisor;
+        int divisor = std::gcd(4, outputWrapper.height()); // greatest common divisor
+        int dividend = std::gcd((numThreads / divisor), outputWrapper.width());
 
         int factorW = outputWrapper.width() / dividend;
         int factorH = outputWrapper.height() / divisor;
@@ -104,7 +104,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
             prevHeight = rollingHeight;
             rollingHeight += factorH;
         }
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i < threads.size(); i++) {
             threads[i].join();
         }
     }
@@ -141,12 +141,12 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     CHECK_TENSOR_DEVICE(output, device);
 
     // Ensure all tensors are using supported datatypes
-    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
-    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
+    CHECK_TENSOR_DATATYPES(output, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
 
     // Ensure all tensors are using supported layouts.
-    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
-    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
+    CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC);
+    CHECK_TENSOR_LAYOUT(output, TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC);
 
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
@@ -163,7 +163,14 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
         eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float,
                                                  eBorderType, const float4, const eDeviceType)>, 4>>
         funcs = {
-            {eDataType::DATA_TYPE_U8, {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>}}
+            {eDataType::DATA_TYPE_U8, {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_S8, {dispatch_bilateral_filter_dtype<char1>, 0, dispatch_bilateral_filter_dtype<char3>, dispatch_bilateral_filter_dtype<char4>}},
+            {eDataType::DATA_TYPE_U16, {dispatch_bilateral_filter_dtype<ushort1>, 0, dispatch_bilateral_filter_dtype<ushort3>, dispatch_bilateral_filter_dtype<ushort4>}},
+            {eDataType::DATA_TYPE_S16, {dispatch_bilateral_filter_dtype<short1>, 0, dispatch_bilateral_filter_dtype<short3>, dispatch_bilateral_filter_dtype<short4>}},
+            {eDataType::DATA_TYPE_U32, {dispatch_bilateral_filter_dtype<uint1>, 0, dispatch_bilateral_filter_dtype<uint3>, dispatch_bilateral_filter_dtype<uint4>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_bilateral_filter_dtype<int1>, 0, dispatch_bilateral_filter_dtype<int3>, dispatch_bilateral_filter_dtype<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_bilateral_filter_dtype<float1>, 0, dispatch_bilateral_filter_dtype<float3>, dispatch_bilateral_filter_dtype<float4>}},
+            {eDataType::DATA_TYPE_F64, {dispatch_bilateral_filter_dtype<double1>, 0, dispatch_bilateral_filter_dtype<double3>, dispatch_bilateral_filter_dtype<double4>}}
         };
     // clang-format on
 

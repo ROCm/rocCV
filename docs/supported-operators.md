@@ -4,7 +4,7 @@ See below for a list of Computer Vision operators rocCV supports.
 
 |Name|Description|Datatypes|Layouts|CPU/GPU Support|
 |-|-|-|-|-|
-|BilateralFilter|Applies a bilateral filter.|U8|NHWC, HWC|Both|
+|BilateralFilter|Applies a bilateral filter to reduce image noise while preserving strong edges.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
 |BndBox|Draws rectangular borders using the specified locations, dimensions and colors, in order to show the locations and sizes of objects in an image.|U8, S8|NHWC, HWC|Both|
 |CenterCrop|Crops an image at its center with a given rectangular region.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
 |Composite|Composites two input tensors using a provided alpha mask.|U8, S8, U32, S32, F32|NHWC, HWC|Both|
@@ -19,6 +19,6 @@ See below for a list of Computer Vision operators rocCV supports.
 |Remap|Maps pixels in an image from one projection to another projection in a new image.|U8|NHWC, HWC|Both|
 |Resize|Resizes input images using an interpolation mode for upscaling/downscaling.|U8, F32|NHWC, HWC|Both|
 |Rotate|Rotates (and optionally shifts) an input tensor by given angle in degrees counter-clockwise.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
-|Threshold|Clamps values in an image to a global threshold value.|U8|NHWC, HWC|Both|
+|Threshold|Clamps values in an image to a global threshold value.|U8, U16, S16, F32, F64|NHWC, HWC|Both|
 |WarpAffine|Performs an affine warp on an input tensor.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
 |WarpPerspective|Performs a perspective warp on an input image.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|

@@ -23,106 +23,150 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-
+#include <core/wrappers/generic_tensor_wrapper.hpp>
+#include "core/detail/type_traits.hpp"
+#include "core/detail/casting.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
 namespace Device {
-template <typename T, typename SRC, typename DST>
-__global__ void binary_generic_kernel(SRC input, DST output, int64_t height,
-                                      int64_t width, int64_t channels,
-                                      const uint8_t *thresh,
-                                      const uint8_t *maxVal,
-                                      const int64_t batch_size) {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void binary_generic(SrcWrapper input, DstWrapper output,
+                                roccv::GenericTensorWrapper<double> thresh,
+                                roccv::GenericTensorWrapper<double> maxVal,
+                                const int32_t maxBatchSize) {
+    using namespace roccv::detail;
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        uint8_t th = thresh[z_idx];
-        uint8_t mv = maxVal[z_idx];
+    
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using base_type = BaseType<dst_type>;
+
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < maxBatchSize) {
+        double th = thresh.at(z_idx);
+        double mv = maxVal.at(z_idx);
+        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+        dst_type outputVal;
 #pragma unroll
-        for (int i = 0; i < channels; i++) {
-            auto ip = input.template at<T>(z_idx, y_idx, x_idx, i);
-            output.template at<T>(z_idx, y_idx, x_idx, i) = ip > th ? mv : 0;
+        for (int i = 0; i < output.channels(); i++) {
+            double ip = StaticCast<double>(GetElement(inputVal, i));
+            double outVal = ip > th ? mv : 0;
+            GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
+        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void binary_inv_generic_kernel(SRC input, DST output, int64_t height,
-                                          int64_t width, int64_t channels,
-                                          const uint8_t *thresh,
-                                          const uint8_t *maxVal,
-                                          const int64_t batch_size) {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void binary_inv_generic(SrcWrapper input, DstWrapper output,
+                                    roccv::GenericTensorWrapper<double> thresh,
+                                    roccv::GenericTensorWrapper<double> maxVal,
+                                    const int32_t maxBatchSize) {
+    using namespace roccv::detail;
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        uint8_t th = thresh[z_idx];
-        uint8_t mv = maxVal[z_idx];
+    
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using base_type = BaseType<dst_type>;
+
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < maxBatchSize) {
+        double th = thresh.at(z_idx);
+        double mv = maxVal.at(z_idx);
+        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+        dst_type outputVal;
 #pragma unroll
-        for (int i = 0; i < channels; i++) {
-            auto ip = input.template at<T>(z_idx, y_idx, x_idx, i);
-            output.template at<T>(z_idx, y_idx, x_idx, i) = ip > th ? 0 : mv;
+        for (int i = 0; i < output.channels(); i++) {
+            double ip = StaticCast<double>(GetElement(inputVal, i));
+            double outVal = ip > th ? 0 : mv;
+            GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
+        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void trunc_generic_kernel(SRC input, DST output, int64_t height,
-                                     int64_t width, int64_t channels,
-                                     const uint8_t *thresh,
-                                     const uint8_t *maxVal,
-                                     const int64_t batch_size) {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void trunc_generic(SrcWrapper input, DstWrapper output,
+                                roccv::GenericTensorWrapper<double> thresh,
+                                const int32_t maxBatchSize) {
+    using namespace roccv::detail;
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        uint8_t th = thresh[z_idx];
+    
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using base_type = BaseType<dst_type>;
+
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < maxBatchSize) {
+        double th = thresh.at(z_idx);
+        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+        dst_type outputVal;
 #pragma unroll
-        for (int i = 0; i < channels; i++) {
-            auto ip = input.template at<T>(z_idx, y_idx, x_idx, i);
-            output.template at<T>(z_idx, y_idx, x_idx, i) = ip > th ? th : ip;
+        for (int i = 0; i < output.channels(); i++) {
+            double ip = StaticCast<double>(GetElement(inputVal, i));
+            double outVal = ip > th ? th : ip;
+            GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
+        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void tozero_generic_kernel(SRC input, DST output, int64_t height,
-                                      int64_t width, int64_t channels,
-                                      const uint8_t *thresh,
-                                      const uint8_t *maxVal,
-                                      const int64_t batch_size) {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void tozero_generic(SrcWrapper input, DstWrapper output,
+                                roccv::GenericTensorWrapper<double> thresh,
+                                const int32_t maxBatchSize) {
+    using namespace roccv::detail;
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx >= width || y_idx >= height || z_idx >= batch_size)
-        return;
-    uint8_t th = thresh[z_idx];
+    
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using base_type = BaseType<dst_type>;
+
+    if (x_idx < output.width() && y_idx < output.height() && z_idx < maxBatchSize) {
+        double th = thresh.at(z_idx);
+        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+        dst_type outputVal;
 #pragma unroll
-    for (int i = 0; i < channels; i++) {
-        auto ip = input.template at<T>(z_idx, y_idx, x_idx, i);
-        output.template at<T>(z_idx, y_idx, x_idx, i) = ip > th ? ip : 0;
+        for (int i = 0; i < output.channels(); i++) {
+            double ip = StaticCast<double>(GetElement(inputVal, i));
+            double outVal = ip > th ? ip : 0;
+            GetElement(outputVal, i) = StaticCast<base_type>(outVal);
+        }
+        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
     }
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void tozeroinv_generic_kernel(SRC input, DST output, int64_t height,
-                                         int64_t width, int64_t channels,
-                                         const uint8_t *thresh,
-                                         const uint8_t *maxVal,
-                                         const int64_t batch_size) {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output,
+                                    roccv::GenericTensorWrapper<double> thresh,
+                                    const int32_t maxBatchSize) {
+    using namespace roccv::detail;
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx >= width || y_idx >= height || z_idx >= batch_size)
-        return;
-    uint8_t th = thresh[z_idx];
+    
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using base_type = BaseType<dst_type>;
+
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+    
+    double th = thresh.at(z_idx);
+    src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+    dst_type outputVal;
 #pragma unroll
-    for (int i = 0; i < channels; i++) {
-        auto ip = input.template at<T>(z_idx, y_idx, x_idx, i);
-        output.template at<T>(z_idx, y_idx, x_idx, i) = ip > th ? 0 : ip;
+    for (int i = 0; i < output.channels(); i++) {
+        double ip = StaticCast<double>(GetElement(inputVal, i));
+        double outVal = ip > th ? 0 : ip;
+        GetElement(outputVal, i) = StaticCast<base_type>(outVal);
     }
+    output.at(z_idx, y_idx, x_idx, 0) = outputVal;
 }
-}  // namespace Device
+}   // namespace Device
 }   // namespace Kernels
