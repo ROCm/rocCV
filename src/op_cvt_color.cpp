@@ -26,12 +26,12 @@ THE SOFTWARE.
 #include <iostream>
 
 #include "common/array_wrapper.hpp"
+#include "common/conversion_helpers.hpp"
 #include "common/math_vector.hpp"
 #include "common/strided_data_wrap.hpp"
-#include "core/wrappers/image_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/tensor.hpp"
-#include "common/conversion_helpers.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/cvt_color_device.hpp"
 #include "kernels/host/cvt_color_host.hpp"
 
@@ -41,58 +41,69 @@ CvtColor::CvtColor() {}
 CvtColor::~CvtColor() {}
 
 template <typename T>
-void dispatch_cvt_color(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height, int64_t batch_size, int index, float delta, const eColorConversionCode conversionCode, const eDeviceType device) {
+void dispatch_cvt_color(hipStream_t stream, const Tensor &input, const Tensor &output, int64_t width, int64_t height,
+                        int64_t batch_size, int index, float delta, const eColorConversionCode conversionCode,
+                        const eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
+
     if (device == eDeviceType::GPU) {
         dim3 blockSize(64, 16);
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
         switch (conversionCode) {
-        case COLOR_RGB2YUV:
-        case COLOR_BGR2YUV:
-            Kernels::Device::rgb_or_bgr_to_yuv<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
-            break;
-        case COLOR_YUV2RGB:
-        case COLOR_YUV2BGR:
-            Kernels::Device::yuv_to_rgb_or_bgr<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
-            break;
-        case COLOR_RGB2BGR:
-        case COLOR_BGR2RGB:
-            Kernels::Device::rgb_or_bgr_to_bgr_or_rgb<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
-            break;
-        case COLOR_RGB2GRAY:
-        case COLOR_BGR2GRAY:
-            Kernels::Device::rgb_or_bgr_to_grayscale<T><<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index);
-            break;
-        default:
-            break;
+            case COLOR_RGB2YUV:
+            case COLOR_BGR2YUV:
+                Kernels::Device::rgb_or_bgr_to_yuv<T>
+                    <<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
+                break;
+            case COLOR_YUV2RGB:
+            case COLOR_YUV2BGR:
+                Kernels::Device::yuv_to_rgb_or_bgr<T>
+                    <<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
+                break;
+            case COLOR_RGB2BGR:
+            case COLOR_BGR2RGB:
+                Kernels::Device::rgb_or_bgr_to_bgr_or_rgb<T>
+                    <<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapper, index, delta);
+                break;
+            case COLOR_RGB2GRAY:
+            case COLOR_BGR2GRAY: {
+                ImageWrapper<uchar1> outputWrapperGrayscale(output);
+                Kernels::Device::rgb_or_bgr_to_grayscale<T>
+                    <<<gridSize, blockSize, 0, stream>>>(inputWrapper, outputWrapperGrayscale, index);
+                break;
+            }
+            default:
+                break;
         }
-    }
-    else if (device == eDeviceType::CPU) {
+    } else if (device == eDeviceType::CPU) {
         switch (conversionCode) {
-        case COLOR_RGB2YUV:
-        case COLOR_BGR2YUV:
-            Kernels::Host::rgb_or_bgr_to_yuv<T>(inputWrapper, outputWrapper, index, delta);
-            break;
-        case COLOR_YUV2RGB:
-        case COLOR_YUV2BGR:
-            Kernels::Host::yuv_to_rgb_or_bgr<T>(inputWrapper, outputWrapper, index, delta);
-            break;
-        case COLOR_RGB2BGR:
-        case COLOR_BGR2RGB:
-            Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<T>(inputWrapper, outputWrapper, index, delta);
-            break;
-        case COLOR_RGB2GRAY:
-        case COLOR_BGR2GRAY:
-            Kernels::Host::rgb_or_bgr_to_grayscale<T>(inputWrapper, outputWrapper, index);
-            break;
-        default:
-            break;
+            case COLOR_RGB2YUV:
+            case COLOR_BGR2YUV:
+                Kernels::Host::rgb_or_bgr_to_yuv<T>(inputWrapper, outputWrapper, index, delta);
+                break;
+            case COLOR_YUV2RGB:
+            case COLOR_YUV2BGR:
+                Kernels::Host::yuv_to_rgb_or_bgr<T>(inputWrapper, outputWrapper, index, delta);
+                break;
+            case COLOR_RGB2BGR:
+            case COLOR_BGR2RGB:
+                Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<T>(inputWrapper, outputWrapper, index, delta);
+                break;
+            case COLOR_RGB2GRAY:
+            case COLOR_BGR2GRAY: {
+                ImageWrapper<uchar1> outputWrapperGrayscale(output);
+                Kernels::Host::rgb_or_bgr_to_grayscale<T>(inputWrapper, outputWrapperGrayscale, index);
+                break;
+            }
+            default:
+                break;
         }
     }
 }
 
-void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &output, eColorConversionCode conversionCode, eDeviceType device) {
+void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &output, eColorConversionCode conversionCode,
+                          eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -125,7 +136,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     CHECK_TENSOR_COMPARISON(o_width > 0);
     CHECK_TENSOR_COMPARISON(i_height > 0);
     CHECK_TENSOR_COMPARISON(i_width > 0);
-    if(o_channels != i_channels) // allowed only in gray
+    if (o_channels != i_channels)  // allowed only in gray
         CHECK_TENSOR_COMPARISON((conversionCode == COLOR_RGB2GRAY) || (conversionCode == COLOR_BGR2GRAY));
 
     // Select kernel dispatcher based on conversionCode

@@ -23,106 +23,125 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+
+#include <core/detail/casting.hpp>
+#include <core/detail/swizzling.hpp>
+#include <core/detail/type_traits.hpp>
+
 #include "operator_types.h"
 
 namespace Kernels::Device {
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
 __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+    using namespace roccv;
+    using namespace roccv::detail;
+
+    // Working type will always be a 3-channel floating point since input/output is always RGB/BGR
+    using work_type_t = MakeType<float, 3>;
+
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        // one read
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
-        // order
-        float R = RGB[orderIdx];
-        float G = RGB[1];
-        float B = RGB[orderIdx ^ 2];
-        // convert
-        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
-        float Cr = (R - Y) * 0.877f + delta;
-        float Cb = (B - Y) * 0.492f + delta;
-        // round
-        T YCbCr = {
-            RoundImplementationsToYUV<float>(Y),
-            RoundImplementationsToYUV<float>(Cb),
-            RoundImplementationsToYUV<float>(Cr)
-        };
-        // output
-        output.at(z_idx, y_idx, x_idx, 0) = YCbCr;
-    }
+    const auto z_idx = blockIdx.z;
+
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+
+    T val = input.at(z_idx, y_idx, x_idx, 0);
+    work_type_t valF = StaticCast<work_type_t>(val);
+
+    float r = GetElement(valF, orderIdx);
+    float g = GetElement(valF, 1);
+    float b = GetElement(valF, orderIdx ^ 2);
+
+    float y = r * 0.299f + g * 0.587f + b * 0.114f;
+    float cr = (r - y) * 0.877f + delta;
+    float cb = (b - y) * 0.492f + delta;
+
+    T out = make_uchar3(RoundImplementationsToYUV<float>(y), RoundImplementationsToYUV<float>(cb),
+                        RoundImplementationsToYUV<float>(cr));
+
+    output.at(z_idx, y_idx, x_idx, 0) = out;
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
 __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+    using namespace roccv;
+    using namespace roccv::detail;
+    using work_type_t = MakeType<float, 3>;
+
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
-    const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-    using base_type = roccv::detail::BaseType<T>;
-    base_type mn = std::numeric_limits<base_type>::max();
-    base_type mx = std::numeric_limits<base_type>::min();
+    const int z_idx = blockIdx.z;
 
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        // one read
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        float YCbCr[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
-        // split
-        auto [Y, Cb, Cr] = YCbCr;
-        // convert
-        float B = Y + (Cb - delta) * 2.032f;
-        float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
-        float R = Y + (Cr - delta) * 1.140f;
-        // Round
-        T RGB = {
-            RoundImplementationsFromYUV<float>(R),
-            RoundImplementationsFromYUV<float>(G),
-            RoundImplementationsFromYUV<float>(B)
-        };
-        // Clamp
-        RGB.x = Clamp<base_type, float>(RGB.x, mn, mx);
-        RGB.y = Clamp<base_type, float>(RGB.y, mn, mx);
-        RGB.z = Clamp<base_type, float>(RGB.x, mn, mx);
-        // out order
-        T pixOut;
-        pixOut.x = RGB[orderIdx];
-        pixOut.y = RGB[1];
-        pixOut.z = RGB[orderIdx ^ 2];
-        // output
-        output.at(z_idx, y_idx, x_idx, 0) = pixOut;
-    }
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+
+    T val = input.at(z_idx, y_idx, x_idx, 0);
+    work_type_t valF = StaticCast<work_type_t>(val);
+
+    // Y = valF.x
+    // Cr = valF.y
+    // Cb = valF.z
+
+    // Convert from YUV to RGB
+    work_type_t rgb = make_float3(
+        RoundImplementationsFromYUV<float>(valF.x + (valF.z - delta) * 1.140f),                                // R
+        RoundImplementationsFromYUV<float>(valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f),  // G
+        RoundImplementationsFromYUV<float>(valF.x + (valF.y - delta) * 2.032f));                               // B
+
+    // Reorder to proper layout (RGB or BGR, depending on orderIdx)
+    work_type_t out;
+    out.x = GetElement(rgb, orderIdx);
+    out.y = GetElement(rgb, 1);
+    out.z = GetElement(rgb, orderIdx ^ 2);
+
+    // Saturate cast to type T (this clamps to proper ranges)
+    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
 __global__ void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int orderIdxInput, int orderIdxOutput) {
-    using base_type = roccv::detail::BaseType<T>;
+    using namespace roccv::detail;
+
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
-    const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        base_type in[3] = {pixel.x, pixel.y, pixel.z};
-        T ot = {in[orderIdxInput], in[1], in[orderIdxInput ^ 2]};
-        T pixOut = {ot[orderIdxOutput], ot[1], ot[orderIdxOutput ^ 2]};
-        output.at(z_idx, y_idx, x_idx, 0) = pixOut;
-    }
+    const int z_idx = blockIdx.z;
+
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+
+    T inVal = input.at(z_idx, y_idx, x_idx, 0);
+
+    // Convert inVal into RGB format, depends on orderIdxInput
+    T inValRGB{GetElement(inVal, orderIdxInput), GetElement(inVal, 1), GetElement(inVal, orderIdxInput ^ 2)};
+
+    // Convert from inValRGB to requested final format, depends on orderIdxOutput
+    T outVal{GetElement(inValRGB, orderIdxOutput), GetElement(inValRGB, 1), GetElement(inValRGB, orderIdxOutput ^ 2)};
+
+    output.at(z_idx, y_idx, x_idx, 0) = outVal;
 }
 
 template <typename T, typename SrcWrapper, typename DstWrapper>
 __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxInput) {
+    using namespace roccv::detail;
+    using work_type_t = MakeType<float, 3>;
+
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
-    const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
-    if (x_idx < output.width() && y_idx < output.height() && z_idx < output.batches()) {
-        T pixel = input.at(z_idx, y_idx, x_idx, 0);
-        float RGB[3] = {static_cast<float>(pixel.x), static_cast<float>(pixel.y), static_cast<float>(pixel.z)};
-        float R = RGB[orderIdxInput];
-        float G = RGB[1];
-        float B = RGB[orderIdxInput ^ 2];
-        float Y  = R * 0.299f + G * 0.587f + B * 0.114f;
-        output.at(z_idx, y_idx, x_idx, 0).x = RoundImplementationsToYUV<float>(Y);
-    }
+    const int z_idx = blockIdx.z;
+
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+
+    T inVal = input.at(z_idx, y_idx, x_idx, 0);
+    work_type_t inValF = StaticCast<work_type_t>(inVal);
+
+    // Get RGB elements (input order defined by orderIdxInput)
+    float r = GetElement(inValF, orderIdxInput);
+    float g = GetElement(inValF, 1);
+    float b = GetElement(inValF, orderIdxInput ^ 2);
+
+    // Calculate luminance
+    float y = RoundImplementationsToYUV<float>(r * 0.299f + g * 0.587f + b * 0.114f);
+
+    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
 }
 
 }  // namespace Kernels::Device
