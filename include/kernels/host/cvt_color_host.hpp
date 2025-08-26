@@ -34,8 +34,7 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float delta) {
     using namespace roccv;
     using namespace roccv::detail;
 
-    // Working type will always be a 3-channel floating point since input/output is always RGB/BGR
-    using work_type_t = MakeType<float, 3>;
+    using work_type_t = MakeType<float, NumElements<T>>;
 
 #pragma omp parallel for
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
@@ -60,7 +59,7 @@ template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrappe
 void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float delta) {
     using namespace roccv;
     using namespace roccv::detail;
-    using work_type_t = MakeType<float, 3>;
+    using work_type_t = MakeType<float, NumElements<T>>;
 
 #pragma omp parallel for
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
@@ -98,7 +97,8 @@ void reorder(SrcWrapper input, DstWrapper output) {
 template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
 void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     using namespace roccv::detail;
-    using work_type_t = MakeType<float, 3>;
+    using work_type_t = MakeType<float, NumElements<T>>;
+    using out_type_t = MakeType<BaseType<T>, 1>;
 
 #pragma omp parallel for
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
@@ -110,7 +110,7 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
                 // Calculate luminance
                 float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
 
-                output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
+                output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<out_type_t>(y);
             }
         }
     }

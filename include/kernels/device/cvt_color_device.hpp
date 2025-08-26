@@ -37,8 +37,7 @@ __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float del
     using namespace roccv;
     using namespace roccv::detail;
 
-    // Working type will always be a 3-channel floating point since input/output is always RGB/BGR
-    using work_type_t = MakeType<float, 3>;
+    using work_type_t = MakeType<float, NumElements<T>>;
 
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
@@ -62,7 +61,7 @@ template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrappe
 __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float delta) {
     using namespace roccv;
     using namespace roccv::detail;
-    using work_type_t = MakeType<float, 3>;
+    using work_type_t = MakeType<float, NumElements<T>>;
 
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
@@ -98,7 +97,8 @@ __global__ void reorder(SrcWrapper input, DstWrapper output) {
 template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
 __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     using namespace roccv::detail;
-    using work_type_t = MakeType<float, 3>;
+    using work_type_t = MakeType<float, NumElements<T>>;
+    using out_type_t = MakeType<BaseType<T>, 1>;  // Output must be single channel grayscale
 
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
@@ -112,6 +112,6 @@ __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     // Calculate luminance
     float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
 
-    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
+    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<out_type_t>(y);
 }
 }  // namespace Kernels::Device
