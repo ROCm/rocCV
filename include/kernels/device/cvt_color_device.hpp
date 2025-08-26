@@ -83,7 +83,7 @@ __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int order
         // Clamp
         RGB.x = Clamp<base_type, float>(RGB.x, mn, mx);
         RGB.y = Clamp<base_type, float>(RGB.y, mn, mx);
-        RGB.z = Clamp<base_type, float>(RGB.x, mn, mx);
+        RGB.z = Clamp<base_type, float>(RGB.z, mn, mx);
         // out order
         T pixOut;
         pixOut.x = RGB[orderIdx];
