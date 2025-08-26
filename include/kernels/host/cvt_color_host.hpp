@@ -51,10 +51,9 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float 
                 float cr = (r - y) * 0.877f + delta;
                 float cb = (b - y) * 0.492f + delta;
 
-                T out = make_uchar3(RoundImplementationsToYUV<float>(y), RoundImplementationsToYUV<float>(cb),
-                                    RoundImplementationsToYUV<float>(cr));
+                float3 out = make_float3(y, cb, cr);
 
-                output.at(z_idx, y_idx, x_idx, 0) = out;
+                output.at(z_idx, y_idx, x_idx, 0) = detail::SaturateCast<T>(out);
             }
         }
     }
@@ -78,17 +77,15 @@ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float 
                 // Cb = valF.z
 
                 // Convert from YUV to RGB
-                work_type_t rgb =
-                    make_float3(RoundImplementationsFromYUV<float>(valF.x + (valF.z - delta) * 1.140f),  // R
-                                RoundImplementationsFromYUV<float>(valF.x + (valF.y - delta) * -0.395f +
-                                                                   (valF.z - delta) * -0.581f),           // G
-                                RoundImplementationsFromYUV<float>(valF.x + (valF.y - delta) * 2.032f));  // B
+                work_type_t rgb = make_float3(valF.x + (valF.y - delta) * 1.140f,                                // R
+                                              valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
+                                              valF.x + (valF.z - delta) * 2.032f);                               // B
 
                 // Reorder to proper layout (RGB or BGR, depending on orderIdx)
                 work_type_t out;
-                out.x = GetElement(rgb, orderIdx);
-                out.y = GetElement(rgb, 1);
-                out.z = GetElement(rgb, orderIdx ^ 2);
+                out.x = rgb[orderIdx];
+                out.y = rgb[1];
+                out.z = rgb[orderIdx ^ 2];
 
                 // Saturate cast to type T (this clamps to proper ranges)
                 output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
@@ -139,12 +136,11 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxIn
                 float b = GetElement(inValF, orderIdxInput ^ 2);
 
                 // Calculate luminance
-                float y = RoundImplementationsToYUV<float>(r * 0.299f + g * 0.587f + b * 0.114f);
+                float y = r * 0.299f + g * 0.587f + b * 0.114f;
 
                 output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
             }
         }
     }
 }
-}  // namespace Host
-}  // namespace Kernels
+}  // namespace Kernels::Host

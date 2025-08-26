@@ -48,7 +48,7 @@ void dispatch_cvt_color(hipStream_t stream, const Tensor &input, const Tensor &o
     ImageWrapper<T> outputWrapper(output);
 
     if (device == eDeviceType::GPU) {
-        dim3 blockSize(64, 16);
+        dim3 blockSize(32, 8);
         dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
         switch (conversionCode) {
             case COLOR_RGB2YUV:

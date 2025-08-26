@@ -20,277 +20,179 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-// #include <hip/hip_runtime.h>
+#include <common/conversion_helpers.hpp>
+#include <core/detail/swizzling.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/image_wrapper.hpp>
+#include <op_cvt_color.hpp>
 
-// #include <iostream>
-
-// #include "common/array_wrapper.hpp"
-// #include "common/conversion_helpers.hpp"
-// #include "common/math_vector.hpp"
-// #include "common/strided_data_wrap.hpp"
-// #include "common/validation_helpers.hpp"
-// #include "core/tensor.hpp"
-// #include "core/wrappers/image_wrapper.hpp"
-// #include "kernels/device/cvt_color_device.hpp"
-// #include "kernels/host/cvt_color_host.hpp"
-// #include "op_cvt_color.hpp"
 #include "test_helpers.hpp"
 
-// using namespace roccv;
-// using namespace roccv::tests;
-
-// namespace fs = std::filesystem;
-
-// // Keep all non-entrypoint functions in an anonymous namespace to prevent redefinition errors across translation
-// units. namespace {
-
-// /**
-//  * @brief Verified golden C++ model for the Regular Color Convert operation.
-//  *
-//  * @tparam T Vectorized datatype of the image's pixels.
-//  * @tparam BT Base type of the image's data.
-//  * @param[in] input An input vector containing image data.
-//  * @param[in] output An output vector containing result image data, to be filled.
-//  * @param[in] conversionCode the conversion code, from enum eColorConversionCode.
-//  * @return Vector containing the results of the operation.
-//  */
-// template <typename T, typename BT = detail::BaseType<T>>
-// std::vector<BT> GoldenGammaColorCvt(const Tensor &input, const Tensor &output, int batch, int width, int height,
-//                                     const eColorConversionCode conversionCode) {
-//     ImageWrapper<T> inW(input);
-//     ImageWrapper<T> outW(output);
-
-//     using PairNdxDlta = std::tuple<int, float>;
-//     static const std::unordered_map<eColorConversionCode, PairNdxDlta> ndx_dlt = {
-//         {COLOR_RGB2YUV, {0, 128.0f}}, {COLOR_BGR2YUV, {2, 128.0f}}, {COLOR_YUV2RGB, {0, 128.0f}},
-//         {COLOR_YUV2BGR, {2, 128.0f}}, {COLOR_RGB2BGR, {0, 2.0f}},   {COLOR_BGR2RGB, {2, 0.0f}},
-//         {COLOR_RGB2GRAY, {0, 0.0f}},  {COLOR_BGR2GRAY, {2, 0.0f}}};
-//     auto [orderIdx, delta] = ndx_dlt.at(conversionCode);
-
-//     switch (conversionCode) {
-//         case COLOR_RGB2YUV:
-//         case COLOR_BGR2YUV: {
-//             using namespace roccv;
-//             using namespace roccv::detail;
-
-//             // Working type will always be a 3-channel floating point since input/output is always RGB/BGR
-//             using work_type_t = MakeType<float, 3>;
-
-//             for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-//                 for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-//                     for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-//                         T val = input.at(z_idx, y_idx, x_idx, 0);
-//                         work_type_t valF = StaticCast<work_type_t>(val);
-
-//                         float r = GetElement(valF, orderIdx);
-//                         float g = GetElement(valF, 1);
-//                         float b = GetElement(valF, orderIdx ^ 2);
-
-//                         float y = r * 0.299f + g * 0.587f + b * 0.114f;
-//                         float cr = (r - y) * 0.877f + delta;
-//                         float cb = (b - y) * 0.492f + delta;
-
-//                         T out = make_uchar3(RoundImplementationsToYUV<float>(y),
-//                         RoundImplementationsToYUV<float>(cb),
-//                                             RoundImplementationsToYUV<float>(cr));
-
-//                         output.at(z_idx, y_idx, x_idx, 0) = out;
-//                     }
-//                 }
-//             }
-//             break;
-//         }
-
-//         case COLOR_YUV2RGB:
-//         case COLOR_YUV2BGR: {
-//             using namespace roccv;
-//             using namespace roccv::detail;
-//             using work_type_t = MakeType<float, 3>;
-
-//             for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-//                 for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-//                     for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-//                         T val = input.at(z_idx, y_idx, x_idx, 0);
-//                         work_type_t valF = StaticCast<work_type_t>(val);
-
-//                         // Y = valF.x
-//                         // Cr = valF.y
-//                         // Cb = valF.z
-
-//                         // Convert from YUV to RGB
-//                         work_type_t rgb =
-//                             make_float3(RoundImplementationsFromYUV<float>(valF.x + (valF.z - delta) * 1.140f),  // R
-//                                         RoundImplementationsFromYUV<float>(valF.x + (valF.y - delta) * -0.395f +
-//                                                                            (valF.z - delta) * -0.581f),           //
-//                                                                            G
-//                                         RoundImplementationsFromYUV<float>(valF.x + (valF.y - delta) * 2.032f));  //
-//                                         B
-
-//                         // Reorder to proper layout (RGB or BGR, depending on orderIdx)
-//                         work_type_t out;
-//                         out.x = GetElement(rgb, orderIdx);
-//                         out.y = GetElement(rgb, 1);
-//                         out.z = GetElement(rgb, orderIdx ^ 2);
-
-//                         // Saturate cast to type T (this clamps to proper ranges)
-//                         output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
-//                     }
-//                 }
-//             }
-//             break;
-//         }
-
-//         case COLOR_RGB2BGR:
-//         case COLOR_BGR2RGB: {
-//             using namespace roccv::detail;
-
-//             for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-//                 for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-//                     for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-//                         T inVal = input.at(z_idx, y_idx, x_idx, 0);
-
-//                         // Convert inVal into RGB format, depends on orderIdxInput
-//                         T inValRGB{GetElement(inVal, orderIdxInput), GetElement(inVal, 1),
-//                                    GetElement(inVal, orderIdxInput ^ 2)};
-
-//                         // Convert from inValRGB to requested final format, depends on orderIdxOutput
-//                         T outVal{GetElement(inValRGB, orderIdxOutput), GetElement(inValRGB, 1),
-//                                  GetElement(inValRGB, orderIdxOutput ^ 2)};
-
-//                         output.at(z_idx, y_idx, x_idx, 0) = outVal;
-//                     }
-//                 }
-//             }
-//             break;
-//         }
-
-//         case COLOR_RGB2GRAY:
-//         case COLOR_BGR2GRAY: {
-//             using namespace roccv::detail;
-//             using work_type_t = MakeType<float, 3>;
-
-//             for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-//                 for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-//                     for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-//                         T inVal = input.at(z_idx, y_idx, x_idx, 0);
-//                         work_type_t inValF = StaticCast<work_type_t>(inVal);
-
-//                         // Get RGB elements (input order defined by orderIdxInput)
-//                         float r = GetElement(inValF, orderIdxInput);
-//                         float g = GetElement(inValF, 1);
-//                         float b = GetElement(inValF, orderIdxInput ^ 2);
-
-//                         // Calculate luminance
-//                         float y = RoundImplementationsToYUV<float>(r * 0.299f + g * 0.587f + b * 0.114f);
-
-//                         output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
-//                     }
-//                 }
-//             }
-//             break;
-//         }
-//         default:
-//             break;
-//     }
-//     std::vector<BT> result;
-//     result.resize(output.shape().size());
-//     CopyTensorIntoVector(result, output);
-//     return result;
-// }
-
-// /**
-//  * @brief Tests correctness of the CVT Color operator, comparing it against a generated golden result.
-//  *
-//  * @tparam T Underlying datatype of the image's pixels.
-//  * @tparam BT Base type of the image data.
-//  * @param[in] width The width of each image in the batch.
-//  * @param[in] height The height of each image in the batch.
-//  * @param[in] format The image format.
-//  * @param[in] conversionCode the conversion code, from enum eColorConversionCode.
-//  * @param[in] device The device this correctness test should be run on.
-//  */
-// template <typename T, typename BT = detail::BaseType<T>>
-// void TestCorrectness(int batch, int width, int height, ImageFormat format, eColorConversionCode conversionCode,
-//                      eDeviceType device) {
-//     TensorShape shape_clr(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {batch, height, width, 3});
-//     TensorShape shape_gry(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {batch, height, width, 1});
-//     DataType dtype(eDataType::DATA_TYPE_U8);
-//     Tensor input_clr(shape_clr, dtype, device);
-//     Tensor output_clr(shape_clr, input_clr.dtype(), input_clr.device());
-//     Tensor output_gry(shape_gry, input_clr.dtype(), input_clr.device());
-//     size_t image_size = input_clr.shape().size() * input_clr.dtype().size();
-
-//     // Create a vector and fill it with random data.
-//     std::vector<BT> inputData(image_size);
-//     FillVector(inputData);
-
-//     // Copy generated input data into input tensor
-//     CopyVectorIntoTensor(input_clr, inputData);
-
-//     // Calculate golden output reference
-//     std::vector<BT> ref;
-//     CvtColor op;
-
-//     hipStream_t stream = static_cast<hipStream_t>(nullptr);
-//     if (device == eDeviceType::GPU) HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-//     size_t output_image_size = 0;
-//     switch (conversionCode) {
-//         case eColorConversionCode::COLOR_RGB2GRAY:
-//         case eColorConversionCode::COLOR_BGR2GRAY: {
-//             ref = GoldenGammaColorCvt<T>(input_clr, output_gry, batch, width, height, conversionCode);
-//             op(stream, input_clr, output_gry, conversionCode, device);
-//             output_image_size = output_gry.shape().size() * output_clr.dtype().size();
-//         } break;
-//         default:  // COLOR = any other than GRAY
-//         {
-//             ref = GoldenGammaColorCvt<T>(input_clr, output_clr, batch, width, height, conversionCode);
-//             op(stream, input_clr, output_clr, conversionCode, device);
-//             output_image_size = output_clr.shape().size() * output_clr.dtype().size();
-//         } break;
-//     }
-//     // results vector
-//     std::vector<BT> result;
-//     result.resize(output_image_size);
-//     // Copy data from output tensor into a host allocated results vector
-//     switch (conversionCode) {
-//         case eColorConversionCode::COLOR_RGB2GRAY:
-//         case eColorConversionCode::COLOR_BGR2GRAY:
-//             CopyTensorIntoVector(result, output_gry);
-//             break;
-//         default:
-//             CopyTensorIntoVector(result, output_clr);
-//             break;
-//     }
-//     // Compare data in actual output versus the generated golden reference image
-//     CompareVectorsNear(result, ref);
-// }
-// }  // namespace
-
 using namespace roccv;
+using namespace roccv::tests;
 
-eTestStatusType test_op_cvt_color(int argc, char **argv) {
+namespace {
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenReorder(std::vector<BT>& input, int samples, int width, int height) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                outputWrap.at(b, y, x, 0) = detail::Swizzle<S>(inputWrap.at(b, y, x, 0));
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenYUVToRGB(std::vector<BT>& input, int samples, int width, int height, float delta) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                T val = inputWrap.at(b, y, x, 0);
+                float3 valF = detail::StaticCast<float3>(val);
+
+                // Convert from YUV to RGB
+                float3 rgb = make_float3(valF.x + (valF.y - delta) * 1.140f,                                // R
+                                         valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
+                                         valF.x + (valF.z - delta) * 2.032f);                               // B
+
+                // Saturate cast to type T (this clamps to proper ranges) and swizzle to either RGB/BGR
+                outputWrap.at(b, y, x, 0) = detail::Swizzle<S>(detail::SaturateCast<T>(rgb));
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenRGBToYUV(std::vector<BT>& input, int samples, int width, int height, float delta) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // Ensure input order is grabbed in RGB layout
+                T val = detail::Swizzle<S>(inputWrap.at(b, y, x, 0));
+                float3 valF = detail::StaticCast<float3>(val);
+
+                float luminance = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
+                float cr = (valF.x - luminance) * 0.877f + delta;
+                float cb = (valF.z - luminance) * 0.492f + delta;
+
+                float3 yuv = make_float3(luminance, cb, cr);
+
+                outputWrap.at(b, y, x, 0) = detail::SaturateCast<T>(yuv);
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenRGBToGrayscale(std::vector<BT>& input, int samples, int width, int height) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height);
+
+    // Output must always be uchar1 for grayscale
+    ImageWrapper<uchar1> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // Grab input and Swizzle to ensure it is in RGB order
+                T inVal = detail::Swizzle<S>(inputWrap.at(b, y, x, 0));
+                float3 inValF = detail::StaticCast<float3>(inVal);
+
+                // Calculate luminance
+                float luminance = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
+
+                outputWrap.at(b, y, x, 0) = detail::SaturateCast<uchar1>(luminance);
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenCvtColor(std::vector<BT>& input, int samples, int width, int height, eColorConversionCode code) {
+    // clang-format off
+    switch (code) {
+        case COLOR_RGB2YUV:  return GoldenRGBToYUV<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
+        case COLOR_BGR2YUV:  return GoldenRGBToYUV<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
+        case COLOR_YUV2RGB:  return GoldenYUVToRGB<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
+        case COLOR_YUV2BGR:  return GoldenYUVToRGB<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
+        case COLOR_RGB2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::XYZW>(input, samples, width, height);
+        case COLOR_BGR2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::ZYXW>(input, samples, width, height);
+        case COLOR_RGB2BGR:
+        case COLOR_BGR2RGB:  return GoldenReorder<T, eSwizzle::ZYXW>(input, samples, width, height);
+        default: throw std::runtime_error("Unsupported color conversion code");
+    }
+    // clang-format on
+}
+
+template <typename T, typename BT = detail::BaseType<T>>
+void TestCorrectness(int samples, int width, int height, ImageFormat inFmt, ImageFormat outFmt,
+                     eColorConversionCode code, eDeviceType device) {
+    Tensor inputTensor(samples, {width, height}, inFmt, device);
+    Tensor outputTensor(samples, {width, height}, outFmt, device);
+
+    std::vector<BT> inputData(samples * width * height * inFmt.channels());
+    FillVector(inputData);
+    CopyVectorIntoTensor(inputTensor, inputData);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CvtColor op;
+    op(stream, inputTensor, outputTensor, code, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+    std::vector<BT> outputActual(outputTensor.shape().size());
+    CopyTensorIntoVector(outputActual, outputTensor);
+
+    std::vector<BT> outputGolden = GoldenCvtColor<T>(inputData, samples, width, height, code);
+
+    CompareVectorsNear(outputActual, outputGolden);
+}
+}  // namespace
+
+eTestStatusType test_op_cvt_color(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // // GPU correctness tests
-    // TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, FMT_RGB8, COLOR_RGB2YUV, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, COLOR_BGR2YUV, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, COLOR_YUV2RGB, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, COLOR_YUV2BGR, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, COLOR_RGB2BGR, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, COLOR_BGR2RGB, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::GPU));
-    // TEST_CASE(TestCorrectness<uchar3>(8, 134, 360, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2YUV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, FMT_RGB8, COLOR_BGR2YUV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2RGB, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2BGR, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2BGR, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_BGR2RGB, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(8, 134, 360, FMT_RGB8, FMT_U8, COLOR_BGR2GRAY, eDeviceType::GPU));
 
     // // CPU correctness tests
-    // TEST_CASE(TestCorrectness<uchar3>(8, 480, 360, FMT_RGB8, COLOR_RGB2YUV, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, COLOR_BGR2YUV, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, COLOR_YUV2RGB, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, COLOR_YUV2BGR, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, COLOR_RGB2BGR, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, COLOR_BGR2RGB, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, COLOR_RGB2GRAY, eDeviceType::CPU));
-    // TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, COLOR_BGR2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(8, 480, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2YUV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, FMT_RGB8, COLOR_BGR2YUV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2RGB, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2BGR, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2BGR, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_BGR2RGB, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, FMT_U8, COLOR_BGR2GRAY, eDeviceType::CPU));
 
     TEST_CASES_END();
 }
