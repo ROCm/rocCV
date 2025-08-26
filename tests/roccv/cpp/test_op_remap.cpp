@@ -20,37 +20,97 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <core/hip_assert.h>
-
-#include <filesystem>
+#include <algorithm>
+#include "core/detail/casting.hpp"
+#include "core/detail/type_traits.hpp"
+#include "core/detail/math/vectorized_type_math.hpp"
+#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/interpolation_wrapper.hpp>
 #include <iostream>
 #include <op_remap.hpp>
-#include <opencv2/opencv.hpp>
-#include <tuple>
-#include <vector>
+#include "operator_types.h"
 
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
-namespace fs = std::filesystem;
+using namespace roccv::detail;
 
+// Keep all non-entrypoint functions in an anonymous namespace to prevent redefinition errors across translation units.
 namespace {
-void TestCorrectness(const std::string& input_image, const std::string& expected_image, eDeviceType device) {
-    eBorderType border_type = BORDER_TYPE_CONSTANT;
-    const float4 border_value = {0, 0, 0, 0};
-    eRemapType remap_type = REMAP_ABSOLUTE;
-    eInterpolationType interp_type = INTERP_TYPE_NEAREST;
+/**
+ * @brief Verified golden C++ model for the Remap operation.
+ *
+ * @tparam T Vectorized datatype of the image's pixels.
+ * @tparam BorderType Border mode to use.
+ * @tparam InterpType Interpolation mode to use.
+ * @tparam MapInterpType Interpolation mode to use for the map
+ * @tparam BT Base type of the image's data.
+ * @param[in] input An input vector containing image data.
+ * @param[in] batchSize The number of images in the batch.
+ * @param[in] width Image width.
+ * @param[in] height Image height.
+ * @param[in] map Tensor containing the remap coordinates.
+ * @param[in] borderValue Border value to use as a fallback when going out of bounds.
+ * @return Vector containing the results of the operation.
+ */
+template <typename T, eBorderType BorderType, eInterpolationType InterpType, eInterpolationType MapInterpType, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenRemapAbsolute(std::vector<BT>& input, int32_t batchSize, int32_t width, int32_t height, Tensor& map, float4 borderValue) {
 
-    Tensor input = createTensorFromImage(input_image, DataType(eDataType::DATA_TYPE_U8), device);
-    Tensor output(input.shape(), input.dtype(), input.device());
+    // Create an output vector the same size as the input vector
+    std::vector<BT> output(input.size());
 
-    auto height = input.shape()[input.shape().layout().height_index()];
-    auto width = input.shape()[input.shape().layout().width_index()];
+    // Create interpolation wrapper for input vector
+    InterpolationWrapper<T, BorderType, InterpType> src((BorderWrapper<T, BorderType>(
+        ImageWrapper<T>(input, batchSize, width, height), detail::RangeCast<T>(borderValue))));
 
-    TensorShape map_shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), {height, width, 2});
-    DataType map_dtype(eDataType::DATA_TYPE_F32);
-    Tensor mapTensor(map_shape, map_dtype, device);
+    // Wrap the output vector for simplified data access
+    ImageWrapper<T> dst(output, batchSize, width, height);
+    
+    // Create an interpolation wrapper for the map tensor
+    InterpolationWrapper<float2, BorderType, MapInterpType> wrappedMapTensor(map, make_float2(0, 0));
+
+    for (int b = 0; b < batchSize; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                float2 mapCoordinates = wrappedMapTensor.at(b, y, x, 0);
+                dst.at(b, y, x, 0) = src.at(b, mapCoordinates.y, mapCoordinates.x, 0);
+            }
+        }
+    }
+    return output;
+}
+
+/**
+ * @brief Tests correctness for the Remap operator by comparing roccv::Remap results with the
+ * defined golden model.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border mode to use.
+ * @tparam InterpType Interpolation mode to use.
+ * @tparam MapInterpType Interpolation mode to use for the map
+ * @tparam BT Base type of the image's data.
+ * @param batchSize Number of images within the batch.
+ * @param width Width of the input image.
+ * @param height Height of the input image.
+ * @param format Format of the images (must match with T).
+ * @param borderValue Border value to use as a fallback when going out of bounds.
+ * @param mapType Type of remap to do, REMAP_ABSOLUTE, REMAP_ABSOLUTE_NORMALIZED, REMAP_RELATIVE_NORMALIZED
+ * @param device The device to run the roccv::WarpPerspective operator on.
+ */
+template <typename T, eBorderType BorderType, eInterpolationType InterpType, eInterpolationType MapInterpType, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, int width, int height, ImageFormat format, float4 borderValue, eRemapType mapType, eDeviceType device) {
+    
+    // Create input and output tensor based on test parameters
+    Tensor input(batchSize, {width, height}, format, device);
+    Tensor output(batchSize, {width, height}, format, device);
+    
+    // Create a vector and fill it with random data.
+    std::vector<BT> inputData(input.shape().size());
+    FillVector(inputData);
+
+    // Copy generated input data into input tensor
+    CopyVectorIntoTensor(input, inputData);
 
     std::vector<float> colRemapTable;
     std::vector<float> rowRemapTable;
@@ -73,48 +133,53 @@ void TestCorrectness(const std::string& input_image, const std::string& expected
         mapData[i] = make_float2(colRemapTable[i], rowRemapTable[i]);
     }
 
-    auto mapTensor_data = mapTensor.exportData<TensorDataStrided>();
+    // Create map tensor and fill it with mapData
+    TensorShape map_shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), {height, width, 2});
+    DataType map_dtype(eDataType::DATA_TYPE_F32);
+    Tensor mapTensor(map_shape, map_dtype, device);
 
-    if (device == eDeviceType::GPU) {
-        hipStream_t stream;
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CopyVectorIntoTensor(mapTensor, mapData);
 
-        HIP_VALIDATE_NO_ERRORS(hipMemcpy(mapTensor_data.basePtr(), mapData.data(),
-                                         rowRemapTable.size() * sizeof(float2), hipMemcpyHostToDevice));
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    Remap op;
+    op(stream, input, output, mapTensor, InterpType, MapInterpType, mapType, false, BorderType, borderValue, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
-        Remap op;
-        op(stream, input, output, mapTensor, interp_type, interp_type, remap_type, false, border_type, border_value,
-           device);
+    // Copy data from output tensor into a host allocated vector
+    std::vector<BT> result(output.shape().size());
+    CopyTensorIntoVector(result, output);
 
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-    } else if (device == eDeviceType::CPU) {
-        memcpy(mapTensor_data.basePtr(), mapData.data(), rowRemapTable.size() * sizeof(float2));
+    std::vector<BT> ref = GoldenRemapAbsolute<T, BorderType, InterpType, MapInterpType>(inputData, batchSize, width, height, mapTensor, borderValue);
 
-        Remap op;
-        op(nullptr, input, output, mapTensor, interp_type, interp_type, remap_type, false, border_type, border_value,
-           device);
-    }
-
-    EXPECT_TEST_STATUS(compareImage(output, expected_image, 1.0f), eTestStatusType::TEST_SUCCESS);
+    // Compare data in actual output versus the generated golden reference image
+    CompareVectors(result, ref);
 }
 }  // namespace
 
 eTestStatusType test_op_remap(int argc, char** argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    fs::path test_data_path = fs::path(argv[1]) / "tests" / "ops";
-    fs::path test_image_filepath = test_data_path / "test_input.bmp";
-    fs::path expected_image_filepath = test_data_path / "expected_remap.bmp";
+    TEST_CASES_BEGIN();
 
-    try {
-        TestCorrectness(test_image_filepath, expected_image_filepath, eDeviceType::GPU);
-        TestCorrectness(test_image_filepath, expected_image_filepath, eDeviceType::CPU);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(3, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(5, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(3, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(5, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+
+    TEST_CASES_END();
 }
