@@ -63,9 +63,9 @@ std::vector<BT> GoldenYUVToRGB(std::vector<BT>& input, int samples, int width, i
                 float3 valF = detail::StaticCast<float3>(val);
 
                 // Convert from YUV to RGB
-                float3 rgb = make_float3(valF.x + (valF.y - delta) * 1.140f,                                // R
+                float3 rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
                                          valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
-                                         valF.x + (valF.z - delta) * 2.032f);                               // B
+                                         valF.x + (valF.y - delta) * 2.032f);                               // B
 
                 // Saturate cast to type T (this clamps to proper ranges) and swizzle to either RGB/BGR
                 outputWrap.at(b, y, x, 0) = detail::Swizzle<S>(detail::SaturateCast<T>(rgb));
@@ -158,6 +158,19 @@ std::vector<BT> GoldenCvtColor(std::vector<BT>& input, int samples, int width, i
     // clang-format on
 }
 
+/**
+ * @brief Compares the Golden model against the CPU/GPU implementations of roccv::CvtColor.
+ *
+ * @tparam T Image pixel dtype.
+ * @tparam BT Image base dtype.
+ * @param samples Number of images in the batch.
+ * @param width Image width.
+ * @param height Image height.
+ * @param inFmt Image input format.
+ * @param outFmt Image output format.
+ * @param code Color conversion code.
+ * @param device The device to run conformance tests on.
+ */
 template <typename T, typename BT = detail::BaseType<T>>
 void TestCorrectness(int samples, int width, int height, ImageFormat inFmt, ImageFormat outFmt,
                      eColorConversionCode code, eDeviceType device) {
