@@ -24,12 +24,13 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include "core/detail/swizzling.hpp"
 #include "operator_types.h"
 
 namespace Kernels::Host {
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float delta) {
     using namespace roccv;
     using namespace roccv::detail;
 
@@ -40,27 +41,23 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, int orderIdx, float 
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-                T val = input.at(z_idx, y_idx, x_idx, 0);
+                T val = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
                 work_type_t valF = StaticCast<work_type_t>(val);
 
-                float r = valF[orderIdx];
-                float g = valF[1];
-                float b = valF[orderIdx ^ 2];
+                float y = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
+                float cr = (valF.x - y) * 0.877f + delta;
+                float cb = (valF.z - y) * 0.492f + delta;
 
-                float y = r * 0.299f + g * 0.587f + b * 0.114f;
-                float cr = (r - y) * 0.877f + delta;
-                float cb = (b - y) * 0.492f + delta;
+                work_type_t out = make_float3(y, cb, cr);
 
-                float3 out = make_float3(y, cb, cr);
-
-                output.at(z_idx, y_idx, x_idx, 0) = detail::SaturateCast<T>(out);
+                output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
             }
         }
     }
 }
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float delta) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float delta) {
     using namespace roccv;
     using namespace roccv::detail;
     using work_type_t = MakeType<float, 3>;
@@ -72,52 +69,34 @@ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, int orderIdx, float 
                 T val = input.at(z_idx, y_idx, x_idx, 0);
                 work_type_t valF = StaticCast<work_type_t>(val);
 
-                // Y = valF.x
-                // Cr = valF.y
-                // Cb = valF.z
-
                 // Convert from YUV to RGB
                 work_type_t rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
                                               valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
                                               valF.x + (valF.y - delta) * 2.032f);                               // B
 
-                // Reorder to proper layout (RGB or BGR, depending on orderIdx)
-                work_type_t out;
-                out.x = rgb[orderIdx];
-                out.y = rgb[1];
-                out.z = rgb[orderIdx ^ 2];
-
                 // Saturate cast to type T (this clamps to proper ranges)
-                output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
+                output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(SaturateCast<T>(rgb));
             }
         }
     }
 }
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-void rgb_or_bgr_to_bgr_or_rgb(SrcWrapper input, DstWrapper output, int orderIdxInput, int orderIdxOutput) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void reorder(SrcWrapper input, DstWrapper output) {
     using namespace roccv::detail;
 
 #pragma omp parallel for
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-                T inVal = input.at(z_idx, y_idx, x_idx, 0);
-
-                // Convert inVal into RGB format, depends on orderIdxInput
-                T inValRGB{inVal[orderIdxInput], inVal[1], inVal[orderIdxInput ^ 2]};
-
-                // Convert from inValRGB to requested final format, depends on orderIdxOutput
-                T outVal{inValRGB[orderIdxOutput], inValRGB[1], inValRGB[orderIdxOutput ^ 2]};
-
-                output.at(z_idx, y_idx, x_idx, 0) = outVal;
+                output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
             }
         }
     }
 }
 
-template <typename T, typename SrcWrapper, typename DstWrapper>
-void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxInput) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     using namespace roccv::detail;
     using work_type_t = MakeType<float, 3>;
 
@@ -125,16 +104,11 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output, int orderIdxIn
     for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
-                T inVal = input.at(z_idx, y_idx, x_idx, 0);
+                T inVal = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
                 work_type_t inValF = StaticCast<work_type_t>(inVal);
 
-                // Get RGB elements (input order defined by orderIdxInput)
-                float r = inValF[orderIdxInput];
-                float g = inValF[1];
-                float b = inValF[orderIdxInput ^ 2];
-
                 // Calculate luminance
-                float y = r * 0.299f + g * 0.587f + b * 0.114f;
+                float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
 
                 output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y);
             }
