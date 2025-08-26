@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <common/conversion_helpers.hpp>
 #include <core/detail/swizzling.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/image_wrapper.hpp>
