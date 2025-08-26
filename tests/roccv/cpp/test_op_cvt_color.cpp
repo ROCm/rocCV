@@ -129,18 +129,30 @@ std::vector<BT> GoldenRGBToGrayscale(std::vector<BT>& input, int samples, int wi
     return output;
 }
 
+/**
+ * @brief Golden model for the Cvt Color operator.
+ *
+ * @tparam T The image's pixel datatype.
+ * @tparam BT The image's base datatype.
+ * @param input Input image data.
+ * @param samples Number of samples in the batch.
+ * @param width Width of each image in the batch.
+ * @param height Height of each image in the batch.
+ * @param code Color conversion code to use.
+ * @return A vector containing the results of the convert color operator.
+ */
 template <typename T, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenCvtColor(std::vector<BT>& input, int samples, int width, int height, eColorConversionCode code) {
     // clang-format off
     switch (code) {
-        case COLOR_RGB2YUV:  return GoldenRGBToYUV<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
-        case COLOR_BGR2YUV:  return GoldenRGBToYUV<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
-        case COLOR_YUV2RGB:  return GoldenYUVToRGB<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
-        case COLOR_YUV2BGR:  return GoldenYUVToRGB<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
-        case COLOR_RGB2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::XYZW>(input, samples, width, height);
-        case COLOR_BGR2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::ZYXW>(input, samples, width, height);
-        case COLOR_RGB2BGR:
-        case COLOR_BGR2RGB:  return GoldenReorder<T, eSwizzle::ZYXW>(input, samples, width, height);
+        case eColorConversionCode::COLOR_RGB2YUV:  return GoldenRGBToYUV<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_BGR2YUV:  return GoldenRGBToYUV<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_YUV2RGB:  return GoldenYUVToRGB<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_YUV2BGR:  return GoldenYUVToRGB<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_RGB2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::XYZW>(input, samples, width, height);
+        case eColorConversionCode::COLOR_BGR2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::ZYXW>(input, samples, width, height);
+        case eColorConversionCode::COLOR_RGB2BGR:
+        case eColorConversionCode::COLOR_BGR2RGB:  return GoldenReorder<T, eSwizzle::ZYXW>(input, samples, width, height);
         default: throw std::runtime_error("Unsupported color conversion code");
     }
     // clang-format on
