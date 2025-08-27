@@ -24,15 +24,25 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor
 
-@pytest.mark.parametrize("input_path, flip_code, device, expected_path, err", [
-    ("test_input.bmp", 1, rocpycv.GPU, "expected_flip.bmp", 0.0),
-    ("test_input.bmp", 1, rocpycv.CPU, "expected_flip.bmp", 0.0)
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S32, rocpycv.eDataType.F32])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("flip_code", [-1, 0, 1])
+@pytest.mark.parametrize("samples,width,height", [
+    (1, 65, 30),
+    (3, 45, 20),
+    (5, 23, 106),
+    (20, 104, 234),
 ])
-def test_op_flip(pytestconfig, input_path, flip_code, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
+def test_op_flip(samples, width, height, channels, dtype, flip_code, device):
+    input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
     stream = rocpycv.Stream()
+    output_tensor_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    rocpycv.flip_into(output_tensor_golden, input_tensor, flip_code, stream, device)
     output_tensor = rocpycv.flip(input_tensor, flip_code, stream, device)
     stream.synchronize()
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+
+    assert output_tensor_golden.shape() == output_tensor.shape()

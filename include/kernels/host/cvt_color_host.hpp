@@ -24,94 +24,95 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include "core/detail/swizzling.hpp"
 #include "operator_types.h"
 
-namespace Kernels {
-namespace Host {
-template <typename T, typename SRC, typename DST>
-void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width, int64_t height,
-                       int64_t batch_size, int orderIdx, float delta) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
-                T R = input.template at<T>(z_idx, y_idx, x_idx, orderIdx);
-                T G = input.template at<T>(z_idx, y_idx, x_idx, 1);
-                T B = input.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2);
+namespace Kernels::Host {
 
-                float Y = R * 0.299f + G * 0.587f + B * 0.114f;
-                float Cr = (R - Y) * 0.877f + delta;
-                float Cb = (B - Y) * 0.492f + delta;
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float delta) {
+    using namespace roccv;
+    using namespace roccv::detail;
 
-                output.template at<T>(z_idx, y_idx, x_idx, 0) =
-                    RoundImplementationsToYUV<float>(Y);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) =
-                    RoundImplementationsToYUV<float>(Cb);
-                output.template at<T>(z_idx, y_idx, x_idx, 2) =
-                    RoundImplementationsToYUV<float>(Cr);
+    using work_type_t = MakeType<float, NumElements<T>>;
+
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+                T val = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
+                work_type_t valF = StaticCast<work_type_t>(val);
+
+                float y = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
+                float cr = (valF.x - y) * 0.877f + delta;
+                float cb = (valF.z - y) * 0.492f + delta;
+
+                work_type_t out = make_float3(y, cb, cr);
+
+                output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
             }
         }
     }
 }
 
-template <typename T, typename SRC, typename DST>
-void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width, int64_t height,
-                       int64_t batch_size, int orderIdx, float delta) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
-                T Y = input.template at<T>(z_idx, y_idx, x_idx, 0);
-                T Cb = input.template at<T>(z_idx, y_idx, x_idx, 1);
-                T Cr = input.template at<T>(z_idx, y_idx, x_idx, 2);
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float delta) {
+    using namespace roccv;
+    using namespace roccv::detail;
+    using work_type_t = MakeType<float, NumElements<T>>;
 
-                float B = Y + (Cb - delta) * 2.032f;
-                float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
-                float R = Y + (Cr - delta) * 1.140f;
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+                T val = input.at(z_idx, y_idx, x_idx, 0);
+                work_type_t valF = StaticCast<work_type_t>(val);
 
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdx) =
-                    Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0,
-                                    255);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) = Clamp<T, float>(
-                    RoundImplementationsFromYUV<float>(G), 0, 255);
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) =
-                    Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0,
-                                    255);
+                // Convert from YUV to RGB
+                work_type_t rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
+                                              valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
+                                              valF.x + (valF.y - delta) * 2.032f);                               // B
+
+                // Saturate cast to type T (this clamps to proper ranges)
+                output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(SaturateCast<T>(rgb));
             }
         }
     }
 }
 
-template <typename T, typename SRC, typename DST>
-void rgb_or_bgr_to_bgr_or_rgb(SRC input, DST output, int64_t width,
-                              int64_t height, int64_t batch_size,
-                              int orderIdxInput, int orderIdxOutput) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput) = input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput);
-                output.template at<T>(z_idx, y_idx, x_idx, 1) = input.template at<T>(z_idx, y_idx, x_idx, 1);
-                output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) = input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void reorder(SrcWrapper input, DstWrapper output) {
+    using namespace roccv::detail;
+
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+                output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
             }
         }
     }
 }
 
-template <typename T, typename SRC, typename DST>
-void rgb_or_bgr_to_grayscale(SRC input, DST output, int64_t width,
-                             int64_t height, int64_t batch_size,
-                             int orderIdxInput) {
-    for (int z_idx = 0; z_idx < batch_size; z_idx++) {
-        for (int y_idx = 0; y_idx < height; y_idx++) {
-            for (int x_idx = 0; x_idx < width; x_idx++) {
-                if (x_idx < width && y_idx < height && z_idx < batch_size) {
-                    float grayValue = 0;
-                    grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput) * 0.299;
-                    grayValue += input.template at<T>(z_idx, y_idx, x_idx, 1) * 0.587;
-                    grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2) * 0.114;
-                    output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
-                }
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
+    using namespace roccv::detail;
+    using work_type_t = MakeType<float, NumElements<T>>;
+    using out_type_t = MakeType<BaseType<T>, 1>;
+
+#pragma omp parallel for
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+                T inVal = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
+                work_type_t inValF = StaticCast<work_type_t>(inVal);
+
+                // Calculate luminance
+                float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
+
+                output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<out_type_t>(y);
             }
         }
     }
 }
-}  // namespace Host
-}  // namespace Kernels
+}  // namespace Kernels::Host

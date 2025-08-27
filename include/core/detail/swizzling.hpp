@@ -19,6 +19,8 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
 #include <hip/hip_runtime.h>
 
 #include "core/detail/type_traits.hpp"
