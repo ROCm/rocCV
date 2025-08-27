@@ -51,7 +51,8 @@ def test_op_remap(pytestconfig, input_path, inInterpolation, mapInterpolation, m
             x += 1
         map_list.append(row_list)
 
-    remap_tensor = rocpycv.from_dlpack(np.array(map_list, np.float32), rocpycv.HWC).copy_to(device)
+    map_np_array = np.expand_dims(np.array(map_list, np.float32), axis=0)
+    remap_tensor = rocpycv.from_dlpack(map_np_array, rocpycv.NHWC).copy_to(device)
 
     stream = rocpycv.Stream()
 
