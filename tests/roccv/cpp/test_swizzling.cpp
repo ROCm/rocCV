@@ -41,7 +41,7 @@ template <typename T, eSwizzle SwizzlePattern>
 void TestCorrectness(T input, T expected) {
     T output = detail::Swizzle<SwizzlePattern>(input);
     for (int i = 0; i < detail::NumElements<T>; i++) {
-        EXPECT_EQ(output.data[i], expected.data[i]);
+        EXPECT_EQ(output[i], expected[i]);
     }
 }
 }  // namespace

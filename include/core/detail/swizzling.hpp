@@ -47,7 +47,7 @@ template <> struct SwizzleIndexMap<eSwizzle::ZYXW, 4> { using Seq = std::integer
 
 template <typename T, size_t... Indices>
 __host__ __device__ constexpr T SwizzleIndicesImpl(const T &v) {
-    return T{v.data[Indices]...};
+    return T{v[Indices]...};
 }
 
 template <typename T, size_t... I>

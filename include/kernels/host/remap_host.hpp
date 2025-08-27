@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Host {
-template <typename T, typename SrcWrapper, typename DstWrapper, typename MapWrapper>
+template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
 void remap(SrcWrapper input, DstWrapper output, MapWrapper map) {
     for (int b = 0; b < output.batches(); b++) {
         for (int y = 0; y < output.height(); y++) {
