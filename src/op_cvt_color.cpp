@@ -25,9 +25,9 @@ THE SOFTWARE.
 
 #include <iostream>
 
-#include "common/conversion_helpers.hpp"
-#include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/tensor.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/cvt_color_device.hpp"
 #include "kernels/host/cvt_color_host.hpp"
 
@@ -42,155 +42,132 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
 
-    CHECK_TENSOR_COMPARISON(input.shape().layout() == output.shape().layout());
-
     // Ensure all tensors are using supported layouts.
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
 
-    // Ensure all tensors are using supported datatypes
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
     CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8);
 
-    const auto o_batch_i = output.shape().layout().batch_index();
-    const auto o_batch = (o_batch_i >= 0) ? output.shape()[o_batch_i] : 1;
-    const auto o_height = output.shape()[output.shape().layout().height_index()];
-    const auto o_width = output.shape()[output.shape().layout().width_index()];
-    const auto o_channels = output.shape()[output.shape().layout().channels_index()];
+    CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
 
-    const auto i_batch_i = input.shape().layout().batch_index();
-    const auto i_batch = (i_batch_i >= 0) ? input.shape()[i_batch_i] : 1;
-    const auto i_height = input.shape()[input.shape().layout().height_index()];
-    const auto i_width = input.shape()[input.shape().layout().width_index()];
-    const auto i_channels = input.shape()[input.shape().layout().channels_index()];
+    CHECK_TENSOR_CHANNELS(input, 3);
 
-    if (o_batch != i_batch) {
-        throw Exception("Invalid batch size: input != output", eStatusType::INVALID_COMBINATION);
-    }
+    bool grayscaleConversion = conversionCode == eColorConversionCode::COLOR_BGR2GRAY ||
+                               conversionCode == eColorConversionCode::COLOR_RGB2GRAY;
+    if (grayscaleConversion) {
+        // Verification for grayscale conversions must be done differently
+        CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) ==
+                                output.shape(output.layout().width_index()));
+        CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) ==
+                                output.shape(output.layout().height_index()));
 
-    eChannelType outputChannelType;
-    if (conversionCode == COLOR_RGB2GRAY || conversionCode == COLOR_BGR2GRAY) {
-        outputChannelType = eChannelType::Grayscale;
-    }
-    if (o_channels != i_channels) {
-        if (outputChannelType != eChannelType::Grayscale)
-            throw Exception("Invalid channel size: input != output", eStatusType::INVALID_COMBINATION);
-    }
-    if (o_batch <= 0) {
-        throw Exception("Invalid batch size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
-    }
-    if (o_channels <= 0 || o_channels > 4) {
-        throw Exception("Invalid channel size: must be greater than 0 and less than or equal to 4",
-                        eStatusType::OUT_OF_BOUNDS);
-    }
-    if (o_height <= 0) {
-        throw Exception("Invalid output height size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
-    }
-    if (o_width <= 0) {
-        throw Exception("Invalid output width size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
-    }
-    if (i_height <= 0) {
-        throw Exception("Invalid input height size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
-    }
-    if (i_width <= 0) {
-        throw Exception("Invalid input width size: must be greater than 0", eStatusType::OUT_OF_BOUNDS);
-    }
-
-    auto batch_size = i_batch;
-    auto height = i_height;
-    auto width = i_width;
-
-    if (device == eDeviceType::CPU) {
-        eDataType inType = input.dtype().etype();
-
-        switch (inType) {
-            case eDataType::DATA_TYPE_U8: {
-                if (conversionCode == COLOR_RGB2YUV) {
-                    Kernels::Host::rgb_or_bgr_to_yuv<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                              detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width,
-                                                              height, batch_size, 0, 128);
-                } else if (conversionCode == COLOR_BGR2YUV) {
-                    Kernels::Host::rgb_or_bgr_to_yuv<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                              detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width,
-                                                              height, batch_size, 2, 128);
-                } else if (conversionCode == COLOR_YUV2RGB) {
-                    Kernels::Host::yuv_to_rgb_or_bgr<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                              detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width,
-                                                              height, batch_size, 0, 128);
-                } else if (conversionCode == COLOR_YUV2BGR) {
-                    Kernels::Host::yuv_to_rgb_or_bgr<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                              detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width,
-                                                              height, batch_size, 2, 128);
-                } else if (conversionCode == COLOR_RGB2BGR) {
-                    Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                                     detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-                                                                     width, height, batch_size, 0, 2);
-                } else if (conversionCode == COLOR_BGR2RGB) {
-                    Kernels::Host::rgb_or_bgr_to_bgr_or_rgb<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                                     detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-                                                                     width, height, batch_size, 2, 0);
-                } else if (conversionCode == COLOR_RGB2GRAY) {
-                    Kernels::Host::rgb_or_bgr_to_grayscale<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                                    detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-                                                                    width, height, batch_size, 0);
-                } else if (conversionCode == COLOR_BGR2GRAY) {
-                    Kernels::Host::rgb_or_bgr_to_grayscale<uint8_t>(detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                                                                    detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output),
-                                                                    width, height, batch_size, 2);
-                } else {
-                    throw Exception("Invalid input channel types", eStatusType::INVALID_COMBINATION);
-                }
-            } break;
-            default:
-                throw Exception("Invalid tensor data type", eStatusType::INVALID_VALUE);
+        if (input.layout().batch_index() >= 0) {
+            CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
+                                    output.shape(output.layout().batch_index()));
         }
-    } else if (device == eDeviceType::GPU) {
-        dim3 blockSize(64, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batch_size);
 
-        eDataType inType = input.dtype().etype();
+        CHECK_TENSOR_CHANNELS(output, 1);
+    } else {
+        CHECK_TENSOR_CHANNELS(output, 3);
+    }
 
-        switch (inType) {
-            case eDataType::DATA_TYPE_U8: {
-                if (conversionCode == COLOR_RGB2YUV) {
-                    Kernels::Device::rgb_or_bgr_to_yuv<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 0, 128);
-                } else if (conversionCode == COLOR_BGR2YUV) {
-                    Kernels::Device::rgb_or_bgr_to_yuv<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 2, 128);
-                } else if (conversionCode == COLOR_YUV2RGB) {
-                    Kernels::Device::yuv_to_rgb_or_bgr<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 0, 128);
-                } else if (conversionCode == COLOR_YUV2BGR) {
-                    Kernels::Device::yuv_to_rgb_or_bgr<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 2, 128);
-                } else if (conversionCode == COLOR_RGB2BGR) {
-                    Kernels::Device::rgb_or_bgr_to_bgr_or_rgb<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 0, 2);
-                } else if (conversionCode == COLOR_BGR2RGB) {
-                    Kernels::Device::rgb_or_bgr_to_bgr_or_rgb<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 2, 0);
-                } else if (conversionCode == COLOR_RGB2GRAY) {
-                    Kernels::Device::rgb_or_bgr_to_grayscale<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 0);
-                } else if (conversionCode == COLOR_BGR2GRAY) {
-                    Kernels::Device::rgb_or_bgr_to_grayscale<uint8_t><<<gridSize, blockSize, 0, stream>>>(
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(input),
-                        detail::get_sdwrapper<TENSOR_LAYOUT_NHWC>(output), width, height, batch_size, 2);
-                } else {
-                    throw Exception("Invalid input channel types", eStatusType::INVALID_COMBINATION);
-                }
-            } break;
+    // Launch kernel
+
+    int64_t width = input.shape(input.layout().width_index());
+    int64_t height = input.shape(input.layout().height_index());
+    int64_t samples = input.shape(input.layout().batch_index());
+
+    if (device == eDeviceType::GPU) {
+        // Dispatch appropriate device kernel based on given conversion code
+
+        dim3 blockSize(32, 16);
+        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, samples);
+
+        switch (conversionCode) {
+            case eColorConversionCode::COLOR_BGR2GRAY:
+                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
+                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+                break;
+
+            case eColorConversionCode::COLOR_RGB2GRAY:
+                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
+                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2RGB:
+            case eColorConversionCode::COLOR_RGB2BGR:
+                Kernels::Device::reorder<uchar3, eSwizzle::ZYXW>
+                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2YUV:
+                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_RGB2YUV:
+                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2BGR:
+                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2RGB:
+                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
             default:
-                throw Exception("Invalid tensors data type", eStatusType::INVALID_VALUE);
+                throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
+        }
+    } else {
+        // Dispatch appropriate host kernel based on conversion code
+
+        switch (conversionCode) {
+            case eColorConversionCode::COLOR_BGR2GRAY:
+                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
+                                                                               ImageWrapper<uchar1>(output));
+                break;
+
+            case eColorConversionCode::COLOR_RGB2GRAY:
+                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
+                                                                               ImageWrapper<uchar1>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2RGB:
+            case eColorConversionCode::COLOR_RGB2BGR:
+                Kernels::Host::reorder<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
+                                                               ImageWrapper<uchar3>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2YUV:
+                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
+                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_RGB2YUV:
+                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
+                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2BGR:
+                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
+                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2RGB:
+                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
+                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            default:
+                throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
         }
     }
 }
+
 }  // namespace roccv
