@@ -22,7 +22,6 @@ THE SOFTWARE.
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
 #include <op_rotate.hpp>
-#include <opencv2/opencv.hpp>
 
 #include "math_utils.hpp"
 #include "test_helpers.hpp"
