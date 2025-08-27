@@ -20,6 +20,7 @@ CONSTANT: eBorderType
 CPU: eDeviceType
 CUBIC: eInterpolationType
 F32: eDataType
+F64: eDataType
 GPU: eDeviceType
 Grayscale: eChannelType
 HWC: eTensorLayout
@@ -43,6 +44,7 @@ S8: eDataType
 TOZERO: eThresholdType
 TOZERO_INV: eThresholdType
 TRUNC: eThresholdType
+U16: eDataType
 U32: eDataType
 U8: eDataType
 WRAP: eBorderType
@@ -168,6 +170,28 @@ class NormalizeFlags:
     def name(self) -> str: ...
     @property
     def value(self) -> int: ...
+
+class Size2D:
+    h: int
+    w: int
+    @overload
+    def __init__(self) -> None:
+        """__init__(*args, **kwargs)
+        Overloaded function.
+
+        1. __init__(self: rocpycv.rocpycv.Size2D) -> None
+
+        2. __init__(self: rocpycv.rocpycv.Size2D, w: int, h: int) -> None
+        """
+    @overload
+    def __init__(self, w: int, h: int) -> None:
+        """__init__(*args, **kwargs)
+        Overloaded function.
+
+        1. __init__(self: rocpycv.rocpycv.Size2D) -> None
+
+        2. __init__(self: rocpycv.rocpycv.Size2D, w: int, h: int) -> None
+        """
 
 class Stream:
     def __init__(self) -> None:
@@ -365,9 +389,11 @@ class eDataType:
     __members__: ClassVar[dict] = ...  # read-only
     4S16: ClassVar[eDataType] = ...
     F32: ClassVar[eDataType] = ...
+    F64: ClassVar[eDataType] = ...
     S16: ClassVar[eDataType] = ...
     S32: ClassVar[eDataType] = ...
     S8: ClassVar[eDataType] = ...
+    U16: ClassVar[eDataType] = ...
     U32: ClassVar[eDataType] = ...
     U8: ClassVar[eDataType] = ...
     __entries: ClassVar[dict] = ...
@@ -600,6 +626,48 @@ def bndbox_into(dst: Tensor, src: Tensor, bnd_boxes: BndBoxes, stream: Stream | 
                     None
             
     """
+def center_crop(src: Tensor, crop_size: tuple, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
+    """center_crop(src: rocpycv.rocpycv.Tensor, crop_size: tuple, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
+
+
+          
+                Executes the Center Crop operation on the given HIP stream.
+
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+        
+                Args:
+                    dst (rocpycv.Tensor): Output tensor which image results are written to.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    crop_size (Tuple[int]): The crop rectangle width and height.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+            
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+          
+    """
+def center_crop_into(dst: Tensor, src: Tensor, crop_size: tuple, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
+    """center_crop_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, crop_size: tuple, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
+
+
+          
+                Executes the Center Crop operation on the given HIP stream.
+
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+        
+                Args:
+                    dst (rocpycv.Tensor): Output tensor which image results are written to.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    crop_size (Tuple[int]): The crop rectangle width and height.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+            
+                Returns:
+                    None
+          
+    """
 def composite(foreground: Tensor, background: Tensor, fgmask: Tensor, outchannels: int, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
     """composite(foreground: rocpycv.rocpycv.Tensor, background: rocpycv.rocpycv.Tensor, fgmask: rocpycv.rocpycv.Tensor, outchannels: int, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
 
@@ -821,8 +889,8 @@ def from_dlpack(buffer: object, layout: eTensorLayout) -> Tensor:
 
     Wraps a DLPack supported tensor in a rocpycv tensor.
     """
-def gamma_contrast(src: Tensor, gamma: Tensor, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
-    """gamma_contrast(src: rocpycv.rocpycv.Tensor, gamma: rocpycv.rocpycv.Tensor, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
+def gamma_contrast(src: Tensor, gamma: float, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
+    """gamma_contrast(src: rocpycv.rocpycv.Tensor, gamma: float, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
 
 
             
@@ -833,7 +901,7 @@ def gamma_contrast(src: Tensor, gamma: Tensor, stream: Stream | None = ..., devi
             
                 Args:
                     src (rocpycv.Tensor): Input tensor containing one or more images.
-                    gamma (rocpycv.Tensor): One dimensional tensor containing the gamma correction values for each image in the batch.
+                    gamma (float): Gamma correction value to apply to the images.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 
@@ -841,8 +909,8 @@ def gamma_contrast(src: Tensor, gamma: Tensor, stream: Stream | None = ..., devi
                     rocpycv.Tensor: The output tensor.
         
     """
-def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: Tensor, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
-    """gamma_contrast_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, gamma: rocpycv.rocpycv.Tensor, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
+def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: float, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
+    """gamma_contrast_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, gamma: float, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
 
 
             
@@ -854,7 +922,7 @@ def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: Tensor, stream: Stream 
                 Args:
                     dst (rocpycv.Tensor): The output tensor with gamma correction applied.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
-                    gamma (rocpycv.Tensor): One dimensional tensor containing the gamma correction values for each image in the batch.
+                    gamma (float): Gamma correction value to apply to the images.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 

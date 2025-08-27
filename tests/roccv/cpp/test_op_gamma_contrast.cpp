@@ -25,10 +25,8 @@ THE SOFTWARE.
 #include "core/detail/type_traits.hpp"
 #include "core/detail/math/vectorized_type_math.hpp"
 #include <core/wrappers/image_wrapper.hpp>
-#include <filesystem>
 #include <iostream>
 #include <op_gamma_contrast.hpp>
-#include <opencv2/opencv.hpp>
 #include "operator_types.h"
 
 #include "test_helpers.hpp"
