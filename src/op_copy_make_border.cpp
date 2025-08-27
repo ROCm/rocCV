@@ -23,7 +23,6 @@
 
 #include <functional>
 
-#include "common/conversion_helpers.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"

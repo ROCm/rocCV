@@ -47,10 +47,10 @@ namespace {
  * @param[in] borderValue Color for constant border mode
  * @return None.
  */
-template <typename T, eBorderType borderMode>
-void GenerateGoldenBilateral(Tensor &input, Tensor &output, int diameter, float sigmaColor, float sigmaSpace, T borderValue) {
-    BorderWrapper<T, borderMode> src(input, borderValue);
-    ImageWrapper<T> dst(output);
+template <typename T, eBorderType borderMode, typename BT = detail::BaseType<T>>
+void GenerateGoldenBilateral(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, Size2D imageSize, int diameter, float sigmaColor, float sigmaSpace, T borderValue) {
+    BorderWrapper<T, borderMode> src(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
+    ImageWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
     using namespace roccv::detail;
     using Worktype = MakeType<float, NumElements<T>>;
 
@@ -151,10 +151,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
     CopyTensorIntoVector(outputData, output);
 
     // Calculate golden reference
-    Tensor ref(batchSize, {width, height}, format, device);
-    GenerateGoldenBilateral<T, BorderMode>(input, ref, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderColor));
-    std::vector<BT> refData(ref.shape().size());
-    CopyTensorIntoVector(refData, ref);
+    std::vector<BT> refData(output.shape().size());
+    GenerateGoldenBilateral<T, BorderMode>(inputData, refData, batchSize, {width, height}, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderColor));
 
     // Compare data in actual output versus the generated golden reference image
     CompareVectorsNear(outputData, refData, 1);

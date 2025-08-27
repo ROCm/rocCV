@@ -24,95 +24,94 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <core/detail/casting.hpp>
+#include <core/detail/swizzling.hpp>
+#include <core/detail/type_traits.hpp>
+
 #include "operator_types.h"
 
-namespace Kernels {
-namespace Device {
-template <typename T, typename SRC, typename DST>
-__global__ void rgb_or_bgr_to_yuv(SRC input, DST output, int64_t width,
-                                  int64_t height, int64_t batch_size,
-                                  int orderIdx, float delta) {
+namespace Kernels::Device {
+
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+__global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float delta) {
+    using namespace roccv;
+    using namespace roccv::detail;
+
+    using work_type_t = MakeType<float, NumElements<T>>;
+
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        T R = input.template at<T>(z_idx, y_idx, x_idx, orderIdx);
-        T G = input.template at<T>(z_idx, y_idx, x_idx, 1);
-        T B = input.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2);
+    const auto z_idx = blockIdx.z;
 
-        float Y = R * 0.299f + G * 0.587f + B * 0.114f;
-        float Cr = (R - Y) * 0.877f + delta;
-        float Cb = (B - Y) * 0.492f + delta;
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
 
-        output.template at<T>(z_idx, y_idx, x_idx, 0) =
-            RoundImplementationsToYUV<float>(Y);
-        output.template at<T>(z_idx, y_idx, x_idx, 1) =
-            RoundImplementationsToYUV<float>(Cb);
-        output.template at<T>(z_idx, y_idx, x_idx, 2) =
-            RoundImplementationsToYUV<float>(Cr);
-    }
+    T val = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
+    work_type_t valF = StaticCast<work_type_t>(val);
+
+    float y = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
+    float cr = (valF.x - y) * 0.877f + delta;
+    float cb = (valF.z - y) * 0.492f + delta;
+
+    work_type_t out = make_float3(y, cb, cr);
+
+    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void yuv_to_rgb_or_bgr(SRC input, DST output, int64_t width,
-                                  int64_t height, int64_t batch_size,
-                                  int orderIdx, float delta) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+__global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float delta) {
+    using namespace roccv;
+    using namespace roccv::detail;
+    using work_type_t = MakeType<float, NumElements<T>>;
+
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
-    const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
+    const int z_idx = blockIdx.z;
 
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        T Y = input.template at<T>(z_idx, y_idx, x_idx, 0);
-        T Cb = input.template at<T>(z_idx, y_idx, x_idx, 1);
-        T Cr = input.template at<T>(z_idx, y_idx, x_idx, 2);
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
 
-        float B = Y + (Cb - delta) * 2.032f;
-        float G = Y + (Cb - delta) * -0.395f + (Cr - delta) * -0.581f;
-        float R = Y + (Cr - delta) * 1.140f;
+    T val = input.at(z_idx, y_idx, x_idx, 0);
+    work_type_t valF = StaticCast<work_type_t>(val);
 
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdx) =
-            Clamp<T, float>(RoundImplementationsFromYUV<float>(R), 0, 255);
-        output.template at<T>(z_idx, y_idx, x_idx, 1) =
-            Clamp<T, float>(RoundImplementationsFromYUV<float>(G), 0, 255);
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdx ^ 2) =
-            Clamp<T, float>(RoundImplementationsFromYUV<float>(B), 0, 255);
-    }
+    // Convert from YUV to RGB
+    work_type_t rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
+                                  valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
+                                  valF.x + (valF.y - delta) * 2.032f);                               // B
+
+    // Saturate cast to type T (this clamps to proper ranges)
+    output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(SaturateCast<T>(rgb));
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void rgb_or_bgr_to_bgr_or_rgb(SRC input, DST output, int64_t width,
-                                         int64_t height, int64_t batch_size,
-                                         int orderIdxInput,
-                                         int orderIdxOutput) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+__global__ void reorder(SrcWrapper input, DstWrapper output) {
+    using namespace roccv::detail;
+
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
-    const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
+    const int z_idx = blockIdx.z;
 
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput) =
-            input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput);
-        output.template at<T>(z_idx, y_idx, x_idx, 1) =
-            input.template at<T>(z_idx, y_idx, x_idx, 1);
-        output.template at<T>(z_idx, y_idx, x_idx, orderIdxOutput ^ 2) =
-            input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2);
-    }
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+
+    output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
 }
 
-template <typename T, typename SRC, typename DST>
-__global__ void rgb_or_bgr_to_grayscale(SRC input, DST output, int64_t width,
-                                        int64_t height, int64_t batch_size,
-                                        int orderIdxInput) {
+template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
+__global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
+    using namespace roccv::detail;
+    using work_type_t = MakeType<float, NumElements<T>>;
+    using out_type_t = MakeType<BaseType<T>, 1>;  // Output must be single channel grayscale
+
     const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
-    const int z_idx = threadIdx.z + blockDim.z * blockIdx.z;
+    const int z_idx = blockIdx.z;
 
-    if (x_idx < width && y_idx < height && z_idx < batch_size) {
-        float grayValue = 0;
-        grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput) * 0.299;
-        grayValue += input.template at<T>(z_idx, y_idx, x_idx, 1) * 0.587;
-        grayValue += input.template at<T>(z_idx, y_idx, x_idx, orderIdxInput ^ 2) * 0.114;
-        output.template at<T>(z_idx, y_idx, x_idx, 0) = RoundImplementationsToYUV<float>(grayValue);
-    }
+    if (x_idx >= output.width() || y_idx >= output.height()) return;
+
+    T inVal = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
+    work_type_t inValF = StaticCast<work_type_t>(inVal);
+
+    // Calculate luminance
+    float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
+
+    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<out_type_t>(y);
 }
-}  // namespace Device
-}  // namespace Kernels
+}  // namespace Kernels::Device
