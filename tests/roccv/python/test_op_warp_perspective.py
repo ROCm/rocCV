@@ -36,12 +36,13 @@ from test_helpers import generate_tensor
 @pytest.mark.parametrize("mat", [[1, 0, 0, 0, 1, 0, -0.001, 0, 1]])
 @pytest.mark.parametrize("channels", [1, 3, 4])
 @pytest.mark.parametrize("samples, width, height", [
-    {1, 56, 106},
-    {3, 68, 34}
+    (1, 56, 106),
+    (3, 68, 34)
 ])
-def test_op_resize(samples, width, height, channels, dtype, mat, inverted, interp, border_mode, border_val, device):
+def test_op_warp_perspective(samples, width, height, channels, dtype, mat, inverted, interp, border_mode, border_val, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
     output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    print(output_golden.shape())
 
     stream = rocpycv.Stream()
     rocpycv.warp_perspective_into(output_golden, input, mat, inverted, interp, border_mode, border_val, stream, device)
