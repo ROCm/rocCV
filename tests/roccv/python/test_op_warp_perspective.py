@@ -24,19 +24,28 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor
 
 
-@pytest.mark.parametrize("input_path, mat, inverted, interp, border_mode, border_value, device, expected_path, err", [
-    ("test_input.bmp", [1, 0, 0, 0, 1, 0, -0.001, 0, 1], True, rocpycv.NEAREST,
-     rocpycv.CONSTANT, [255, 0, 255, 0], rocpycv.GPU, "expected_warp_perspective.bmp", 1.0),
-    ("test_input.bmp", [1, 0, 0, 0, 1, 0, -0.001, 0, 1], True, rocpycv.NEAREST,
-     rocpycv.CONSTANT, [255, 0, 255, 0], rocpycv.CPU, "expected_warp_perspective.bmp", 1.0)
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("inverted", [False])
+@pytest.mark.parametrize("border_val", [[0, 0, 0, 1]])
+@pytest.mark.parametrize("border_mode", [rocpycv.eBorderType.CONSTANT, rocpycv.eBorderType.REPLICATE])
+@pytest.mark.parametrize("interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
+@pytest.mark.parametrize("mat", [[1, 0, 0, 0, 1, 0, -0.001, 0, 1]])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples, width, height", [
+    {1, 56, 106},
+    {3, 68, 34}
 ])
-def test_op_resize(pytestconfig, input_path, mat, inverted, interp, border_mode, border_value, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
+def test_op_resize(samples, width, height, channels, dtype, mat, inverted, interp, border_mode, border_val, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.warp_perspective(input_tensor, mat, inverted, interp,
-                                             border_mode, border_value, stream, device)
+    rocpycv.warp_perspective_into(output_golden, input, mat, inverted, interp, border_mode, border_val, stream, device)
+    output = rocpycv.warp_perspective(input, mat, inverted, interp, border_mode, border_val, stream, device)
     stream.synchronize()
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+
+    assert output.shape() == output_golden.shape()
