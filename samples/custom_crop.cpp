@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
     }
 
     CustomCrop op;
-    op(nullptr, input, output, cropRect, device);
+    op(stream, input, output, cropRect, device);
 
     // Move image data back to host
     size_t outputSize = output.shape().size() * output.dtype().size();
