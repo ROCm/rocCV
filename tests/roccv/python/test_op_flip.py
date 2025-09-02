@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
@@ -45,4 +45,4 @@ def test_op_flip(samples, width, height, channels, dtype, flip_code, device):
     output_tensor = rocpycv.flip(input_tensor, flip_code, stream, device)
     stream.synchronize()
 
-    assert output_tensor_golden.shape() == output_tensor.shape()
+    compare_tensors(output_tensor, output_tensor_golden)

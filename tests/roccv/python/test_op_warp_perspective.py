@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
@@ -49,4 +49,4 @@ def test_op_warp_perspective(samples, width, height, channels, dtype, mat, inver
     output = rocpycv.warp_perspective(input, mat, inverted, interp, border_mode, border_val, stream, device)
     stream.synchronize()
 
-    assert output.shape() == output_golden.shape()
+    compare_tensors(output, output_golden)
