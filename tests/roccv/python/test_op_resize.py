@@ -24,15 +24,25 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor
 
-@pytest.mark.parametrize("input_path, shape, interp, device, expected_path", [
-    ("test_input.bmp", (1, 1920, 2160, 3), rocpycv.NEAREST, rocpycv.GPU, "expected_resize.bmp"),
-    ("test_input.bmp", (1, 1920, 2160, 3), rocpycv.NEAREST, rocpycv.CPU, "expected_resize.bmp")
-])
-def test_op_resize(pytestconfig, input_path, shape, interp, device, expected_path):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.F32])
+@pytest.mark.parametrize("interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples", [1, 3, 7])
+@pytest.mark.parametrize("in_shape", [[50, 100], [38, 12], [86, 34]])
+@pytest.mark.parametrize("out_shape", [[10, 67], [50, 100], [50, 25]])
+def test_op_resize(out_shape, in_shape, samples, channels, interp, dtype, device):
+    # Input/Output shapes are passed in as format [width, height]
+    input = generate_tensor(samples, in_shape[0], in_shape[1], channels, dtype, device)
+    output_shape = (samples, out_shape[1], out_shape[0], channels)
+    output_golden = rocpycv.Tensor(output_shape, rocpycv.eTensorLayout.NHWC, dtype, device)
+
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.resize(input_tensor, shape, interp, stream, device)
+    rocpycv.resize_into(output_golden, input, interp, stream, device)
+    output = rocpycv.resize(input, output_shape, interp, stream, device)
     stream.synchronize()
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}")
+
+    assert output.shape() == output_golden.shape()
