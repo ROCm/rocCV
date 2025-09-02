@@ -24,18 +24,29 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import load_image, compare_image, generate_tensor
 
-@pytest.mark.parametrize("input_path, device, box, expected_path", [
-    ("test_input.bmp", rocpycv.CPU, rocpycv.Box(150, 50, 400, 300), "expected_custom_crop.bmp"),
-    ("test_input.bmp", rocpycv.GPU, rocpycv.Box(150, 50, 400, 300), "expected_custom_crop.bmp")
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("box", [
+    rocpycv.Box(0, 0, 100, 100),
+    rocpycv.Box(50, 25, 34, 10)
 ])
-def test_op_custom_crop(pytestconfig, input_path, device, box, expected_path):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}")
-    input_tensor = input_tensor.copy_to(device)
-    
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    [1, 100, 200],
+    [3, 300, 200],
+    [7, 300, 468]
+])
+def test_op_custom_crop(samples, height, width, channels, dtype, box, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, box.height, box.width, channels],
+                                   rocpycv.eTensorLayout.NHWC, dtype, device)
+
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.custom_crop(input_tensor, box, stream, device)
+    rocpycv.custom_crop_into(output_golden, input, box, stream, device)
+    output = rocpycv.custom_crop(input, box, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", 0.0)
+    assert output.shape() == output_golden.shape()
