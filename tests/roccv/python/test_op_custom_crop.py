@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image, generate_tensor
+from test_helpers import generate_tensor
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
