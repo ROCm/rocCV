@@ -23,21 +23,31 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+#include "core/detail/math/vectorized_type_math.hpp"
+#include "core/detail/casting.hpp"
 
 #include "operator_types.h"
 
 namespace Kernels {
 namespace Host {
-template <typename T, typename SRC, typename DST>
-void gamma_contrast_wrapped_u8(SRC input, DST output, int batch, int width,
-                              int height, float *gamma) {
-    for (int b = 0; b < batch; b++) {
-        float gamma_val = gamma[b];
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                output.template at<T>(b, i, j, 0) =
-                    MathVector::convert_base<uchar>(
-                        MathVector::pow(MathVector::convert_base<double>(input.template at<T>(b, i, j, 0)) / 255.0, gamma_val) * 255.0);
+template <typename SrcWrapper, typename DstWrapper>
+void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma) {
+    using namespace roccv::detail;  // For RangeCast, NumElements, etc.
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using work_type = MakeType<float, NumElements<src_type>>;
+    
+    for (int batch = 0; batch < output.batches(); batch++) {
+#pragma omp parallel for
+        for (int y = 0; y < output.height(); y++) {
+            for (int x = 0; x < output.width(); x++) {
+                auto inVal = (RangeCast<work_type>(input.at(batch, y, x, 0)));
+                work_type result = math::vpowf(inVal, gamma);
+                if constexpr (NumElements<dst_type> == 4) {
+                    output.at(batch, y, x, 0) = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
+                } else {
+                    output.at(batch, y, x, 0) = RangeCast<dst_type>(result);
+                }
             }
         }
     }

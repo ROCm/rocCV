@@ -74,6 +74,7 @@ void dispatch_normalize_dtype(hipStream_t stream, const Tensor& input, const Ten
         funcs[2] = {dispatch_normalize_stddev<T, false>, dispatch_normalize_stddev<T, true>};
 
     auto func = funcs[(flags & ROCCV_NORMALIZE_SCALE_IS_STDDEV) != 0];
+    if (func == 0) throw Exception("Not mapped to defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, base, scale, output, global_scale, shift, epsilon, device);
 }
 
@@ -88,7 +89,7 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
 
     // Check tensor metadata to ensure supported types, layout, and channel count
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32,
-                           DATA_TYPE_S16);
+                           DATA_TYPE_U16, DATA_TYPE_S16);
     CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_HWC, TENSOR_LAYOUT_NHWC);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_DATATYPES(scale, DATA_TYPE_F32);
@@ -111,27 +112,24 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
     // TODO: Need to support scalar base/scale tensors at some point. Will require some extra handling on the kernel
     // level. Once in place, this check can be removed.
     CHECK_TENSOR_COMPARISON(base.shape(base.layout().channels_index()) == input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) ==
-                            input.shape(input.layout().channels_index()));
+    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) == input.shape(input.layout().channels_index()));
 
     // Create kernel dispatching table based on input/output datatype and number of channels.
     // clang-format off
-    static const std::unordered_map<
-        eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&,
-                                      const Tensor&, float, float, float,
-                                      uint32_t, const eDeviceType)>, 4>>
-        funcs =
-    {
-        {eDataType::DATA_TYPE_U8, {dispatch_normalize_dtype<uchar1>, nullptr, dispatch_normalize_dtype<uchar3>, dispatch_normalize_dtype<uchar4>}},
-        {eDataType::DATA_TYPE_S8, {dispatch_normalize_dtype<char1>, nullptr, dispatch_normalize_dtype<char3>, dispatch_normalize_dtype<char4>}},
-        {eDataType::DATA_TYPE_U32, {dispatch_normalize_dtype<uint1>, nullptr, dispatch_normalize_dtype<uint3>, dispatch_normalize_dtype<uint4>}},
-        {eDataType::DATA_TYPE_S32, {dispatch_normalize_dtype<int1>, nullptr, dispatch_normalize_dtype<int3>, dispatch_normalize_dtype<int4>}},
-        {eDataType::DATA_TYPE_F32, {dispatch_normalize_dtype<float1>, nullptr, dispatch_normalize_dtype<float3>, dispatch_normalize_dtype<float4>}},
-        {eDataType::DATA_TYPE_S16, {dispatch_normalize_dtype<short1>, nullptr, dispatch_normalize_dtype<short3>, dispatch_normalize_dtype<short4>}}
-    };
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float, uint32_t, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8, {dispatch_normalize_dtype<uchar1>, 0, dispatch_normalize_dtype<uchar3>, dispatch_normalize_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_S8, {dispatch_normalize_dtype<char1>, 0, dispatch_normalize_dtype<char3>, dispatch_normalize_dtype<char4>}},
+            {eDataType::DATA_TYPE_U16, {dispatch_normalize_dtype<ushort1>, 0, dispatch_normalize_dtype<ushort3>, dispatch_normalize_dtype<ushort4>}},
+            {eDataType::DATA_TYPE_S16, {dispatch_normalize_dtype<short1>, 0, dispatch_normalize_dtype<short3>, dispatch_normalize_dtype<short4>}},
+            {eDataType::DATA_TYPE_U32, {dispatch_normalize_dtype<uint1>, 0, dispatch_normalize_dtype<uint3>, dispatch_normalize_dtype<uint4>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_normalize_dtype<int1>, 0, dispatch_normalize_dtype<int3>, dispatch_normalize_dtype<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_normalize_dtype<float1>, 0, dispatch_normalize_dtype<float3>, dispatch_normalize_dtype<float4>}}
+        };
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
+    if (func == 0) throw Exception("Not mapped to defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, base, scale, output, global_scale, shift, epsilon, flags, device);
 }
 }  // namespace roccv

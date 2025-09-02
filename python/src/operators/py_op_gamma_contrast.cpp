@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #include <op_gamma_contrast.hpp>
 
-PyTensor PyOpGammaContrast::Execute(PyTensor& input, PyTensor& gamma,
+PyTensor PyOpGammaContrast::Execute(PyTensor& input, float gamma,
                                         std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
@@ -32,16 +32,16 @@ PyTensor PyOpGammaContrast::Execute(PyTensor& input, PyTensor& gamma,
     auto outputTensor = std::make_shared<roccv::Tensor>(inputTensor->shape(), inputTensor->dtype(), device);
 
     roccv::GammaContrast op;
-    op(hipStream, *inputTensor, *outputTensor, *gamma.getTensor(), device);
+    op(hipStream, *inputTensor, *outputTensor, gamma, device);
     return PyTensor(outputTensor);
 }
 
-void PyOpGammaContrast::ExecuteInto(PyTensor& output, PyTensor& input, PyTensor& gamma,
+void PyOpGammaContrast::ExecuteInto(PyTensor& output, PyTensor& input, float gamma,
                                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
 
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     roccv::GammaContrast op;
-    op(hipStream, *input.getTensor(), *output.getTensor(), *gamma.getTensor(), device);
+    op(hipStream, *input.getTensor(), *output.getTensor(), gamma, device);
 }
 
 void PyOpGammaContrast::Export(py::module& m) {
@@ -56,7 +56,7 @@ void PyOpGammaContrast::Export(py::module& m) {
             
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                gamma (rocpycv.Tensor): One dimensional tensor containing the gamma correction values for each image in the batch.
+                gamma (float): Gamma correction value to apply to the images.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 
@@ -74,7 +74,7 @@ void PyOpGammaContrast::Export(py::module& m) {
             Args:
                 dst (rocpycv.Tensor): The output tensor with gamma correction applied.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                gamma (rocpycv.Tensor): One dimensional tensor containing the gamma correction values for each image in the batch.
+                gamma (float): Gamma correction value to apply to the images.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 

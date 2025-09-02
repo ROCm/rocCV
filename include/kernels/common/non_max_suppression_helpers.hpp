@@ -29,7 +29,7 @@ inline __device__ __host__ float ComputeArea(const short4 &box) { return box.z *
 inline __device__ __host__ float ComputeIoU(const short4 &boxA, const short4 &boxB) {
     int aInterLeft = std::max(boxA.x, boxB.x);
     int bInterTop = std::max(boxA.y, boxB.y);
-    int aInterRight = std::min(boxA.x + boxA.z, boxB.z + boxB.z);
+    int aInterRight = std::min(boxA.x + boxA.z, boxB.x + boxB.z);
     int bInterBottom = std::min(boxA.y + boxA.w, boxB.y + boxB.w);
     int widthInter = aInterRight - aInterLeft;
     int heightInter = bInterBottom - bInterTop;

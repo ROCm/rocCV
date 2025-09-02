@@ -1,0 +1,32 @@
+defaults:
+  numbered: False
+  maxdepth: 6
+root: index
+subtrees:
+ 
+- caption: Install
+  entries:
+  - file: install/rocCV-prerequisites
+    title: Prerequisites
+  - file: install/rocCV-package-install
+    title: Package installation
+  - file: install/rocCV-build-and-install.rst
+    title: Build from source
+
+- caption: How to
+  entries:
+  - file: how-to/using-rocCV-cpp
+    title: Run an operator in C++
+  - file: how-to/using-rocCV-python
+    title: Run an operator in Python
+
+- caption: Reference
+  entries:
+  - file: reference/rocCV-supported-operators
+    title: Supported operators
+  - file: doxygen/html/annotated
+    title: API reference
+    
+- caption: About
+  entries:
+  - file: license

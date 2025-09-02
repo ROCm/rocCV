@@ -68,13 +68,7 @@ __global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius
     float4 den{0, 0, 0, 0};
 
     for (int c = idx - radius; c < idx + radius + 2; c++) {
-        if (c < 0 || c >= output.width()) {
-            continue;
-        }
         for (int r = idy - radius; r < idy + radius + 2; r++) {
-            if (r < 0 || r >= output.height()) {
-                continue;
-            }
             int t0 = abs(c - idx), t1 = abs(r - idy);
             int t2 = abs(c - (idx + 1)), t3 = abs(r - (idy + 1));
             float4 sqrD{t0 * t0 + t1 * t1, t2 * t2 + t1 * t1, t0 * t0 + t3 * t3, t3 * t3 + t2 * t2};

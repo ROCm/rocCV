@@ -26,13 +26,27 @@ THE SOFTWARE.
 #include "core/tensor.hpp"
 #include "operator_types.h"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Custom Crop operator.
  *
  */
-namespace roccv {
 class CustomCrop final : public IOperator {
    public:
+    /**
+     * @brief Construct a new Op CustomCrop object
+     *
+     */
+    CustomCrop() {}
+
+    /**
+     * @brief Destroy the Op CustomCrop object
+     *
+     */
+    ~CustomCrop() {}
+
+
     /**
      * @brief Construct a new Op Custom Crop object. The object can be used to
      * crop a region of interest from an image.
@@ -40,14 +54,14 @@ class CustomCrop final : public IOperator {
      * Limitations:
      *
      * Input:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
-     *                        Channels: > 0 && <= 4
-     *       Supported DataType(s):     [DATA_TYPE_U8]
+     *       Supported TensorLayout(s): [NHWC, HWC]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Output:
-     *       Supported TensorLayout(s): [TENSOR_LAYOUT_NHWC]
-     *                        Channels: > 0 && <= 4
-     *       Supported TensorLayout(s)     [DATA_TYPE_U8]
+     *       Supported TensorLayout(s): [NHWC, HWC]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Input/Output dependency:
      *

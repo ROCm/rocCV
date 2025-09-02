@@ -20,158 +20,203 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <filesystem>
-#include <iostream>
+#include <core/detail/swizzling.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/image_wrapper.hpp>
 #include <op_cvt_color.hpp>
-#include <opencv2/opencv.hpp>
-#include <test_helpers.hpp>
-#include <vector>
+
+#include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
-namespace fs = std::filesystem;
 
 namespace {
-eTestStatusType testCorrectness(const std::string &inputFile, uint8_t *expectedData,
-                                eColorConversionCode conversionCode, eDeviceType device) {
-    cv::Mat image_data = cv::imread(inputFile);
 
-    TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                      {1, image_data.rows, image_data.cols, image_data.channels()});
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenReorder(std::vector<BT>& input, int samples, int width, int height) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, samples, width, height);
 
-    TensorShape shape_grayscale(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                                {1, image_data.rows, image_data.cols, 1});
-
-    DataType dtype(eDataType::DATA_TYPE_U8);
-
-    Tensor input(shape, dtype, device);
-    Tensor output(shape, input.dtype(), input.device());
-    Tensor output_grayscale(shape_grayscale, input.dtype(), input.device());
-
-    if (device == eDeviceType::GPU) {
-        hipStream_t stream;
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-        size_t image_size = input.shape().size() * input.dtype().size();
-        auto inputData = input.exportData<TensorDataStrided>();
-        HIP_VALIDATE_NO_ERRORS(
-            hipMemcpyAsync(inputData.basePtr(), image_data.data, image_size, hipMemcpyHostToDevice, stream));
-
-        CvtColor op;
-        if (conversionCode == eColorConversionCode::COLOR_RGB2GRAY ||
-            conversionCode == eColorConversionCode::COLOR_BGR2GRAY) {
-            op(stream, input, output_grayscale, conversionCode, device);
-            size_t output_image_size = output_grayscale.shape().size() * output.dtype().size();
-            auto outputTensorData = output_grayscale.exportData<TensorDataStrided>();
-            std::vector<uint8_t> resultData(output_image_size);
-            HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(resultData.data(), outputTensorData.basePtr(), output_image_size,
-                                                  hipMemcpyDeviceToHost, stream));
-            for (int i = 0; i < output_image_size; i++) {
-                float err = std::abs(resultData[i] - expectedData[i]);
-                if (err > 1) {
-                    std::cout << "CvtColor (DEVICE) failed at index: " << i << " with an error of: " << err
-                              << std::endl;
-                    return eTestStatusType::UNEXPECTED_VALUE;
-                }
-            }
-        } else {
-            op(stream, input, output, conversionCode, device);
-            size_t output_image_size = output.shape().size() * output.dtype().size();
-            auto outputTensorData = output.exportData<TensorDataStrided>();
-            std::vector<uint8_t> resultData(output_image_size);
-            HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(resultData.data(), outputTensorData.basePtr(), output_image_size,
-                                                  hipMemcpyDeviceToHost, stream));
-            for (int i = 0; i < output_image_size; i++) {
-                float err = std::abs(resultData[i] - expectedData[i]);
-                if (err > 1) {
-                    std::cout << "CvtColor (DEVICE) failed at index: " << i << " with an error of: " << err
-                              << std::endl;
-                    return eTestStatusType::UNEXPECTED_VALUE;
-                }
-            }
-        }
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-    } else if (device == eDeviceType::CPU) {
-        size_t image_size = input.shape().size() * input.dtype().size();
-        auto inputData = input.exportData<TensorDataStrided>();
-        memcpy(inputData.basePtr(), image_data.data, image_size);
-
-        CvtColor op;
-        if (conversionCode == eColorConversionCode::COLOR_RGB2GRAY ||
-            conversionCode == eColorConversionCode::COLOR_BGR2GRAY) {
-            op(nullptr, input, output_grayscale, conversionCode, device);
-            size_t output_image_size = output_grayscale.shape().size() * output.dtype().size();
-            auto outputTensorData = output_grayscale.exportData<TensorDataStrided>();
-            std::vector<uint8_t> resultData(output_image_size);
-            memcpy(resultData.data(), outputTensorData.basePtr(),
-                   output_grayscale.shape().size() * output_grayscale.dtype().size());
-            for (int i = 0; i < output_grayscale.shape().size(); i++) {
-                float err = std::abs(resultData[i] - expectedData[i]);
-                if (err > 1) {
-                    std::cout << "CvtColor (HOST) failed at index: " << i << " with an error of: " << err << std::endl;
-                    return eTestStatusType::UNEXPECTED_VALUE;
-                }
-            }
-        } else {
-            op(nullptr, input, output, conversionCode, device);
-            size_t output_image_size = output.shape().size() * output.dtype().size();
-            auto outputTensorData = output.exportData<TensorDataStrided>();
-            std::vector<uint8_t> resultData(output_image_size);
-            memcpy(resultData.data(), outputTensorData.basePtr(), output.shape().size() * output.dtype().size());
-            for (int i = 0; i < output.shape().size(); i++) {
-                float err = std::abs(resultData[i] - expectedData[i]);
-                if (err > 1) {
-                    std::cout << "CvtColor (HOST) failed at index: " << i << " with an error of: " << err << std::endl;
-                    return eTestStatusType::UNEXPECTED_VALUE;
-                }
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                outputWrap.at(b, y, x, 0) = detail::Swizzle<S>(inputWrap.at(b, y, x, 0));
             }
         }
     }
-    return eTestStatusType::TEST_SUCCESS;
+
+    return output;
+}
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenYUVToRGB(std::vector<BT>& input, int samples, int width, int height, float delta) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                T val = inputWrap.at(b, y, x, 0);
+                float3 valF = detail::StaticCast<float3>(val);
+
+                // Convert from YUV to RGB
+                float3 rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
+                                         valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
+                                         valF.x + (valF.y - delta) * 2.032f);                               // B
+
+                // Saturate cast to type T (this clamps to proper ranges) and swizzle to either RGB/BGR
+                outputWrap.at(b, y, x, 0) = detail::Swizzle<S>(detail::SaturateCast<T>(rgb));
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenRGBToYUV(std::vector<BT>& input, int samples, int width, int height, float delta) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height * detail::NumElements<T>);
+    ImageWrapper<T> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // Ensure input order is grabbed in RGB layout
+                T val = detail::Swizzle<S>(inputWrap.at(b, y, x, 0));
+                float3 valF = detail::StaticCast<float3>(val);
+
+                float luminance = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
+                float cr = (valF.x - luminance) * 0.877f + delta;
+                float cb = (valF.z - luminance) * 0.492f + delta;
+
+                float3 yuv = make_float3(luminance, cb, cr);
+
+                outputWrap.at(b, y, x, 0) = detail::SaturateCast<T>(yuv);
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenRGBToGrayscale(std::vector<BT>& input, int samples, int width, int height) {
+    ImageWrapper<T> inputWrap(input, samples, width, height);
+    std::vector<BT> output(samples * width * height);
+
+    // Output must always be uchar1 for grayscale
+    ImageWrapper<uchar1> outputWrap(output, samples, width, height);
+
+    for (int b = 0; b < samples; b++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                // Grab input and Swizzle to ensure it is in RGB order
+                T inVal = detail::Swizzle<S>(inputWrap.at(b, y, x, 0));
+                float3 inValF = detail::StaticCast<float3>(inVal);
+
+                // Calculate luminance
+                float luminance = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
+
+                outputWrap.at(b, y, x, 0) = detail::SaturateCast<uchar1>(luminance);
+            }
+        }
+    }
+
+    return output;
+}
+
+/**
+ * @brief Golden model for the Cvt Color operator.
+ *
+ * @tparam T The image's pixel datatype.
+ * @tparam BT The image's base datatype.
+ * @param input Input image data.
+ * @param samples Number of samples in the batch.
+ * @param width Width of each image in the batch.
+ * @param height Height of each image in the batch.
+ * @param code Color conversion code to use.
+ * @return A vector containing the results of the convert color operator.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenCvtColor(std::vector<BT>& input, int samples, int width, int height, eColorConversionCode code) {
+    // clang-format off
+    switch (code) {
+        case eColorConversionCode::COLOR_RGB2YUV:  return GoldenRGBToYUV<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_BGR2YUV:  return GoldenRGBToYUV<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_YUV2RGB:  return GoldenYUVToRGB<T, eSwizzle::XYZW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_YUV2BGR:  return GoldenYUVToRGB<T, eSwizzle::ZYXW>(input, samples, width, height, 128.0f);
+        case eColorConversionCode::COLOR_RGB2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::XYZW>(input, samples, width, height);
+        case eColorConversionCode::COLOR_BGR2GRAY: return GoldenRGBToGrayscale<T, eSwizzle::ZYXW>(input, samples, width, height);
+        case eColorConversionCode::COLOR_RGB2BGR:
+        case eColorConversionCode::COLOR_BGR2RGB:  return GoldenReorder<T, eSwizzle::ZYXW>(input, samples, width, height);
+        default: throw std::runtime_error("Unsupported color conversion code");
+    }
+    // clang-format on
+}
+
+/**
+ * @brief Compares the Golden model against the CPU/GPU implementations of roccv::CvtColor.
+ *
+ * @tparam T Image pixel dtype.
+ * @tparam BT Image base dtype.
+ * @param samples Number of images in the batch.
+ * @param width Image width.
+ * @param height Image height.
+ * @param inFmt Image input format.
+ * @param outFmt Image output format.
+ * @param code Color conversion code.
+ * @param device The device to run conformance tests on.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+void TestCorrectness(int samples, int width, int height, ImageFormat inFmt, ImageFormat outFmt,
+                     eColorConversionCode code, eDeviceType device) {
+    Tensor inputTensor(samples, {width, height}, inFmt, device);
+    Tensor outputTensor(samples, {width, height}, outFmt, device);
+
+    std::vector<BT> inputData(samples * width * height * inFmt.channels());
+    FillVector(inputData);
+    CopyVectorIntoTensor(inputTensor, inputData);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CvtColor op;
+    op(stream, inputTensor, outputTensor, code, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+    std::vector<BT> outputActual(outputTensor.shape().size());
+    CopyTensorIntoVector(outputActual, outputTensor);
+
+    std::vector<BT> outputGolden = GoldenCvtColor<T>(inputData, samples, width, height, code);
+
+    CompareVectorsNear(outputActual, outputGolden);
 }
 }  // namespace
 
-eTestStatusType test_op_cvt_color(int argc, char **argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    fs::path testDataPath = fs::path(argv[1]) / "tests" / "ops";
+eTestStatusType test_op_cvt_color(int argc, char** argv) {
+    TEST_CASES_BEGIN();
 
-    try {
-        cv::Mat expectedDataYUV = cv::imread(testDataPath / "expected_color_cvt_yuv.bmp");
-        cv::Mat expectedDataBGR = cv::imread(testDataPath / "expected_color_cvt_bgr.bmp");
-        cv::Mat expectedDataRGB = cv::imread(testDataPath / "expected_color_cvt_rgb.bmp");
-        cv::Mat expectedDataGrayscale =
-            cv::imread(testDataPath / "expected_color_cvt_grayscale.bmp", cv::IMREAD_UNCHANGED);
+    // // GPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(1, 480, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2YUV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, FMT_RGB8, COLOR_BGR2YUV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2RGB, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2BGR, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2BGR, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_BGR2RGB, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar3>(8, 134, 360, FMT_RGB8, FMT_U8, COLOR_BGR2GRAY, eDeviceType::GPU));
 
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedDataYUV.data,
-                                           eColorConversionCode::COLOR_BGR2YUV, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "expected_color_cvt_yuv.bmp", expectedDataBGR.data,
-                                           eColorConversionCode::COLOR_YUV2BGR, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedDataRGB.data,
-                                           eColorConversionCode::COLOR_BGR2RGB, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedDataGrayscale.data,
-                                           eColorConversionCode::COLOR_BGR2GRAY, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedDataYUV.data,
-                                           eColorConversionCode::COLOR_BGR2YUV, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "expected_color_cvt_yuv.bmp", expectedDataBGR.data,
-                                           eColorConversionCode::COLOR_YUV2BGR, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedDataRGB.data,
-                                           eColorConversionCode::COLOR_BGR2RGB, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedDataGrayscale.data,
-                                           eColorConversionCode::COLOR_BGR2GRAY, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
+    // // CPU correctness tests
+    TEST_CASE(TestCorrectness<uchar3>(8, 480, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2YUV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(2, 480, 120, FMT_RGB8, FMT_RGB8, COLOR_BGR2YUV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(5, 360, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2RGB, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_YUV2BGR, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(7, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_RGB2BGR, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(6, 134, 360, FMT_RGB8, FMT_RGB8, COLOR_BGR2RGB, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(9, 480, 120, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar3>(3, 134, 360, FMT_RGB8, FMT_U8, COLOR_BGR2GRAY, eDeviceType::CPU));
+
+    TEST_CASES_END();
 }

@@ -36,10 +36,6 @@ add_executable(normalize normalize.cpp)
 target_link_libraries(normalize PRIVATE roccv ${OpenCV_LIBS})
 target_include_directories(normalize PRIVATE ${Open_CV_INCLUDE_DIRS})
 
-add_executable(gamma_contrast gamma_contrast.cpp)
-target_link_libraries(gamma_contrast PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(gamma_contrast PRIVATE ${Open_CV_INCLUDE_DIRS})
-
 add_executable(bnd_box bnd_box.cpp)
 target_link_libraries(bnd_box PRIVATE roccv ${OpenCV_LIBS})
 target_include_directories(bnd_box PRIVATE ${Open_CV_INCLUDE_DIRS})
@@ -55,5 +51,9 @@ target_include_directories(warp_perspective PRIVATE ${Open_CV_INCLUDE_DIRS})
 add_executable(composite composite.cpp)
 target_link_libraries(composite PRIVATE roccv ${OpenCV_LIBS})
 target_include_directories(composite PRIVATE ${Open_CV_INCLUDE_DIRS})
+
+add_executable(gamma_contrast gamma_contrast.cpp)
+target_link_libraries(gamma_contrast PRIVATE roccv ${OpenCV_LIBS})
+target_include_directories(gamma_contrast PRIVATE ${Open_CV_INCLUDE_DIRS})
 
 add_subdirectory(cropandresize/cpp)

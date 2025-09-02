@@ -28,29 +28,28 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Host {
-template <typename T, typename OUT, typename SRC, typename DST>
-void histogram_kernel(SRC input, DST output, int64_t batch, int64_t height,
-                      int64_t width) {
-    for (int64_t b_idx = 0; b_idx < batch; b_idx++) {
-        for (int64_t y_idx = 0; y_idx < height; y_idx++) {
-            for (int64_t x_idx = 0; x_idx < width; x_idx++) {
-                auto hist_idx = input.template at<T>(b_idx, y_idx, x_idx, 0);
-                output.template at<OUT>(0, b_idx, hist_idx, 0) += 1;
+template <typename T, typename SrcWrapper>
+void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram) {
+#pragma omp parallel for
+    for (int b = 0; b < input.batches(); b++) {
+        for (int y = 0; y < input.height(); y++) {
+            for (int x = 0; x < input.width(); x++) {
+                auto hist_idx = input.at(b, y, x, 0);
+                histogram.at(b, hist_idx.x, 0) += 1;
             }
         }
     }
 }
 
-template <typename T, typename OUT, typename SRC, typename DST, typename MASK>
-void histogram_kernel(SRC input, DST output, MASK mask, int64_t batch,
-                      int64_t height, int64_t width) {
-    for (int64_t b_idx = 0; b_idx < batch; b_idx++) {
-        for (int64_t y_idx = 0; y_idx < height; y_idx++) {
-            for (int64_t x_idx = 0; x_idx < width; x_idx++) {
-                if (mask.template at<T>(b_idx, y_idx, x_idx, 0)) {
-                    auto hist_idx =
-                        input.template at<T>(b_idx, y_idx, x_idx, 0);
-                    output.template at<OUT>(0, b_idx, hist_idx, 0) += 1;
+template <typename T, typename SrcWrapper, typename MaskWrapper>
+void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::GenericTensorWrapper<T> histogram) {
+#pragma omp parallel for
+    for (int b = 0; b < input.batches(); b++) {
+        for (int y = 0; y < input.height(); y++) {
+            for (int x = 0; x < input.width(); x++) {
+                if (mask.at(b, y, x, 0) != 0) {
+                    auto hist_idx = input.at(b, y, x, 0);
+                    histogram.at(b, hist_idx.x, 0) += 1;
                 }
             }
         }

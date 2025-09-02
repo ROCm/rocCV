@@ -28,26 +28,20 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Device {
-template <typename T, typename SourceWrapper, typename DestWrapper>
-__global__ void custom_crop(SourceWrapper input, DestWrapper output,
-                            Box_t cropRect, size_t channels, size_t batches) {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void custom_crop(SrcWrapper input, DstWrapper output, Box_t cropRect) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
-    const int c = threadIdx.z;
     const int b = blockIdx.z;
 
-    if (x >= cropRect.width || y >= cropRect.height || c >= channels ||
-        b >= batches) {
-        return;
-    }
+    if (x >= cropRect.width || y >= cropRect.height || b >= output.batches()) return;
 
     const int srcX = x + cropRect.x;
     const int srcY = y + cropRect.y;
     const int dstX = x;
     const int dstY = y;
 
-    output.template at<T>(b, dstY, dstX, c) =
-        input.template at<T>(b, srcY, srcX, c);
+    output.at(b, dstY, dstX, 0) = input.at(b, srcY, srcX, 0);
 }
 }  // namespace Device
 }  // namespace Kernels

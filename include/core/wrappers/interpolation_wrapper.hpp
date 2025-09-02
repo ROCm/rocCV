@@ -51,6 +51,14 @@ class InterpolationWrapper {
     InterpolationWrapper(const Tensor& tensor, T border_value) : m_desc(tensor, border_value) {}
 
     /**
+     * @brief Wraps a BorderWrapper in an Interpolation wrapper. Extends capabilities to interpolate pixel values when
+     * given non-integer coordinates.
+     *
+     * @param borderWrapper The BorderWrapper to wrap.
+     */
+    InterpolationWrapper(BorderWrapper<T, B> borderWrapper) : m_desc(borderWrapper) {}
+
+    /**
      * @brief Retrieves an interpolated value at given image batch coordinates.
      *
      * @param n Batch index.
@@ -61,31 +69,30 @@ class InterpolationWrapper {
     inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
             // Nearest neighbor interpolation implementation
-            return m_desc.at(n, static_cast<int64_t>(std::round(h)), static_cast<int64_t>(std::round(w)), c);
+            return m_desc.at(n, lroundf(h), lroundf(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
             // v1 -- v2
             // -     -
             // v3 -- v4
 
-            // Intermediate values should be float vectors to avoid overflow
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            int64_t x0 = static_cast<int64_t>(floor(w));
+            int64_t x0 = static_cast<int64_t>(floorf(w));
             int64_t x1 = x0 + 1;
-            int64_t y0 = static_cast<int64_t>(floor(h));
+            int64_t y0 = static_cast<int64_t>(floorf(h));
             int64_t y1 = y0 + 1;
 
-            auto v1 = detail::StaticCast<WorkType>(m_desc.at(n, y0, x0, c));
-            auto v2 = detail::StaticCast<WorkType>(m_desc.at(n, y0, x1, c));
-            auto v3 = detail::StaticCast<WorkType>(m_desc.at(n, y1, x0, c));
-            auto v4 = detail::StaticCast<WorkType>(m_desc.at(n, y1, x1, c));
+            auto v1 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x0, c));
+            auto v2 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x1, c));
+            auto v3 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x0, c));
+            auto v4 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x1, c));
 
             auto q1 = v1 * (x1 - w) + v2 * (w - x0);
             auto q2 = v3 * (x1 - w) + v4 * (w - x0);
             auto q = q1 * (y1 - h) + q2 * (h - y0);
 
-            return detail::SaturateCast<T>(q);
+            return detail::RangeCast<T>(q);
         }
 
         // TODO: Support other interpolation methods.

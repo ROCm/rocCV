@@ -36,7 +36,7 @@ class Exception : public std::exception {
    public:
     Exception(std::string message, eStatusType customStatus);
     Exception(eStatusType customStatus);
-    eStatusType getStatusEnum();
+    eStatusType getStatusEnum() const;
     const char *what() const throw() override;
 };
 

@@ -23,25 +23,34 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+#include "core/detail/math/vectorized_type_math.hpp"
+#include "core/detail/casting.hpp"
 
 #include "operator_types.h"
 
 namespace Kernels {
 namespace Device {
-template <typename T, typename SRC, typename DST>
-__global__ void gamma_contrast_wrapped_u8(SRC input, DST output, int batch, int width,
-                                         int height, float *gamma) {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    int idy = threadIdx.y + blockIdx.y * blockDim.y;
-    int idz = threadIdx.z + blockIdx.z * blockDim.z;
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma) {
+    using namespace roccv::detail;  // For RangeCast, NumElements, etc.
+    using src_type = typename SrcWrapper::ValueType;
+    using dst_type = typename DstWrapper::ValueType;
+    using work_type = MakeType<float, NumElements<src_type>>;
+    
+    const int x = threadIdx.x + blockIdx.x * blockDim.x;
+    const int y = threadIdx.y + blockIdx.y * blockDim.y;
+    const int batch = blockIdx.z;
 
-    if (idx < width && idy < height && idz < batch) {
-        float gamma_val = gamma[idz];
-        output.template at<T>(idz, idy, idx, 0) =
-            MathVector::convert_base<uchar>(
-                MathVector::pow(MathVector::convert_base<double>(
-                                    input.template at<T>(idz, idy, idx, 0)) / 255.0, gamma_val) * 255.0);
+    if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
+    
+    auto inVal = (RangeCast<work_type>(input.at(batch, y, x, 0)));
+    work_type result = math::vpowf(inVal, gamma);
+    if constexpr (NumElements<dst_type> == 4) {
+        output.at(batch, y, x, 0) = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
+    } else {
+        output.at(batch, y, x, 0) = RangeCast<dst_type>(result);
     }
+    
 }
 }  // namespace Device
 }  // namespace Kernels

@@ -27,12 +27,13 @@ THE SOFTWARE.
 #include <vector>
 
 #include "core/tensor.hpp"
+
+namespace roccv {
 /**
  * @brief Class for managing the BndBox Operator
  *
  *
  */
-namespace roccv {
 class BndBox final : public IOperator {
    public:
     /**
@@ -86,7 +87,6 @@ class BndBox final : public IOperator {
     void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output,
                     const BndBoxes_t bnd_boxes, eDeviceType device = eDeviceType::GPU);
 
-   private:
     void generateRects(std::vector<Rect_t>& rects, const BndBoxes_t& bnd_boxes, int64_t height, int64_t width);
 };
 }  // namespace roccv

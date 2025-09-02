@@ -41,10 +41,12 @@ void PyEnums::Export(py::module& m) {
     py::enum_<eDataType>(m, "eDataType")
         .value("U8", DATA_TYPE_U8)
         .value("S8", DATA_TYPE_S8)
+        .value("U16", DATA_TYPE_U16)
+        .value("S16", DATA_TYPE_S16)
         .value("U32", DATA_TYPE_U32)
         .value("S32", DATA_TYPE_S32)
         .value("F32", DATA_TYPE_F32)
-        .value("S16", DATA_TYPE_S16)
+        .value("F64", DATA_TYPE_F64)
         .value("4S16", DATA_TYPE_4S16)
         .export_values();
 

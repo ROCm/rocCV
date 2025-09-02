@@ -37,9 +37,8 @@ namespace roccv {
 template <typename T, eInterpolationType I>
 void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
-    // Interpolation wrapper uses a constant border mode with all black as the constant value.
-    T borderValue = detail::RangeCast<T>(make_float4(0, 0, 0, 1.0f));
-    InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, I> inputWrapper(input, borderValue);
+    // Resize operation should clamp values at the border (REPLICATE border mode)
+    InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, I> inputWrapper(input, T{});
 
     float scaleX = inputWrapper.width() / static_cast<float>(outputWrapper.width());
     float scaleY = inputWrapper.height() / static_cast<float>(outputWrapper.height());
@@ -71,6 +70,10 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
                  {eInterpolationType::INTERP_TYPE_LINEAR,
                   dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>}};
 
+    if (!funcs.contains(interpolation)) {
+        throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
     auto func = funcs.at(interpolation);
     func(stream, input, output, device);
 }
@@ -87,10 +90,10 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().channels_index()) ==
-                             output.shape(output.layout().channels_index()));
+                            output.shape(output.layout().channels_index()));
     if (input.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
-                                 output.shape(output.layout().batch_index()));
+                                output.shape(output.layout().batch_index()));
     }
 
     // clang-format off
@@ -103,7 +106,7 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    assert(func != 0);
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, interpolation, device);
 }
 }  // namespace roccv

@@ -19,31 +19,32 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#pragma once
+#include "op_center_crop.hpp"
 
-#include <hip/hip_runtime.h>
+#include "op_custom_crop.hpp"
+#include "operator_types.h"
 
-#include <limits>
+namespace roccv {
+void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Size2D cropSize,
+                            const eDeviceType device) const {
 
-template <typename U>
-inline __device__ __host__ U RoundImplementationsToYUV(U u) {
-    U rounded = std::round(u);
-    if (std::abs(rounded - u) == U(0.5) && (static_cast<int64_t>(rounded) & 1)) {
-        rounded -= std::copysign(U(1.0), u);
-    }
-    return rounded;
+    auto i_height = input.shape()[input.shape().layout().height_index()];
+    auto i_width = input.shape()[input.shape().layout().width_index()];
+
+    auto half_height = i_height >> 1;
+    auto half_width = i_width >> 1;
+
+    int32_t cropWidth = cropSize.w;
+    int32_t cropHeight = cropSize.h;
+
+    int32_t half_cropWidth = cropWidth >> 1;
+    int32_t half_cropHeight = cropHeight >> 1;
+
+    int64_t upper_left_corner_x = half_width - half_cropWidth;
+    int64_t upper_left_corner_y = half_height - half_cropHeight;
+
+    Box_t cropRect{upper_left_corner_x, upper_left_corner_y, cropWidth, cropHeight};
+
+    m_op(stream, input, output, cropRect, device);
 }
-
-template <typename U>
-inline __device__ __host__ U RoundImplementationsFromYUV(U u) {
-    U rounded = std::round(u);
-    if (std::abs(rounded - u) <= U(0.5) && (static_cast<int64_t>(rounded) & 1)) {
-        rounded -= std::copysign(U(1.0), u);
-    }
-    return rounded;
-}
-
-template <typename T, typename U>
-inline __device__ __host__ T Clamp(U value, T lo, T hi) {
-    return value < lo ? lo : value > hi ? hi : static_cast<T>(value);
-}
+}  // namespace roccv

@@ -28,17 +28,16 @@ import numpy as np
 from test_helpers import load_image, compare_image
 
 @pytest.mark.parametrize("input_path, gamma, device, expected_path, err", [
-    ("test_input.bmp", [2.2], rocpycv.GPU, "expected_gamma_contrast.bmp", 1.0),
-    ("test_input.bmp", [2.2], rocpycv.CPU, "expected_gamma_contrast.bmp", 1.0)
+    ("test_input.bmp", 2.2, rocpycv.GPU, "expected_gamma_contrast.bmp", 1.0),
+    ("test_input.bmp", 2.2, rocpycv.CPU, "expected_gamma_contrast.bmp", 1.0)
 ])
 
 def test_op_GammaContrast(pytestconfig, input_path, gamma, device, expected_path, err):
     input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-    gamma_tensor = rocpycv.from_dlpack(np.array(gamma, np.float32), rocpycv.N).copy_to(device)
-
+    
     stream = rocpycv.Stream()
 
-    output_tensor = rocpycv.gamma_contrast(input_tensor, gamma_tensor, stream, device)
+    output_tensor = rocpycv.gamma_contrast(input_tensor, gamma, stream, device)
     stream.synchronize()
 
     compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)

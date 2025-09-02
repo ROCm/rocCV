@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "operators/py_op_composite.hpp"
 #include "operators/py_op_copy_make_border.hpp"
 #include "operators/py_op_custom_crop.hpp"
+#include "operators/py_op_center_crop.hpp"
 #include "operators/py_op_cvt_color.hpp"
 #include "operators/py_op_flip.hpp"
 #include "operators/py_op_gamma_contrast.hpp"
@@ -68,10 +69,11 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpBilateralFilter::Export(m);
     PyOpThreshold::Export(m);
     PyOpRemap::Export(m);
-    PyOpHistogram::Export(m);
     PyOpCvtColor::Export(m);
     PyOpBndBox::Export(m);
     PyOpGammaContrast::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
+    PyOpCenterCrop::Export(m);
+    PyOpHistogram::Export(m);
 }

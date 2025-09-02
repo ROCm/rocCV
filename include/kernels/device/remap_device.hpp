@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Device {
-template <typename T, typename SrcWrapper, typename DstWrapper, typename MapWrapper>
+template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
 __global__ void remap(SrcWrapper input, DstWrapper output, MapWrapper map) {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;

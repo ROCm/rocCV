@@ -27,11 +27,12 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+
+namespace roccv {
 /**
  * @brief Class for managing the Histogram operator.
  *
  */
-namespace roccv {
 class Histogram final : public IOperator {
    public:
     /**
@@ -60,7 +61,7 @@ class Histogram final : public IOperator {
      * Output:
      *       Supported TensorLayout(s): [HWC]
      *                        Channels: [1]
-     *       Supported DataTypes(s)     [S32]
+     *       Supported DataTypes(s)     [U32, S32]
      *
      * Mask:
      *       Supported TensorLayout(s): [NHWC, HWC]
@@ -88,7 +89,7 @@ class Histogram final : public IOperator {
      * (Default: eDeviceType::GPU)
      *
      */
-    void operator()(hipStream_t stream, const Tensor& input, const Tensor* mask, const Tensor& histogram,
-                    eDeviceType device = eDeviceType::GPU);
+    void operator()(hipStream_t stream, const Tensor& input, std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
+                    const eDeviceType device = eDeviceType::GPU);
 };
 }  // namespace roccv

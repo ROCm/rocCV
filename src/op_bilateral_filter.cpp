@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 #include <functional>
 #include <iostream>
-
+#include <numeric>
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
@@ -80,8 +80,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         Kernels::Device::bilateral_filter<T><<<grid, block, 0, stream>>>(
             inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
-        int divisor = 4;
-        int dividend = numThreads / divisor;
+        int divisor = std::gcd(4, outputWrapper.height()); // greatest common divisor
+        int dividend = std::gcd((numThreads / divisor), outputWrapper.width());
 
         int factorW = outputWrapper.width() / dividend;
         int factorH = outputWrapper.height() / divisor;
@@ -104,7 +104,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
             prevHeight = rollingHeight;
             rollingHeight += factorH;
         }
-        for (int i = 0; i < numThreads; i++) {
+        for (int i = 0; i < threads.size(); i++) {
             threads[i].join();
         }
     }
@@ -116,17 +116,20 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
                                      const float4 borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, const eDeviceType)>
-        funcs[4] = {
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>,
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>,
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>,
-            dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_WRAP>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, const eDeviceType)>>
+        funcs = {
+            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_WRAP,        dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
 
-    auto func = funcs[borderMode];
-    assert(func != 0);
+    if (!funcs.contains(borderMode)) {
+        throw Exception("BilateralFilter does not support the given border mode.", eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(borderMode);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderValue), device);
 }
 
@@ -138,12 +141,12 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     CHECK_TENSOR_DEVICE(output, device);
 
     // Ensure all tensors are using supported datatypes
-    CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8);
-    CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
+    CHECK_TENSOR_DATATYPES(output, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
 
     // Ensure all tensors are using supported layouts.
-    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
-    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
+    CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC);
+    CHECK_TENSOR_LAYOUT(output, TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC);
 
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
@@ -156,13 +159,23 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    const std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float, eBorderType, const float4, const eDeviceType)>
-        funcs[1][4] = {
-            {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>},
+    static const std::unordered_map<
+        eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float,
+                                                 eBorderType, const float4, const eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8, {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>}},
+            {eDataType::DATA_TYPE_S8, {dispatch_bilateral_filter_dtype<char1>, 0, dispatch_bilateral_filter_dtype<char3>, dispatch_bilateral_filter_dtype<char4>}},
+            {eDataType::DATA_TYPE_U16, {dispatch_bilateral_filter_dtype<ushort1>, 0, dispatch_bilateral_filter_dtype<ushort3>, dispatch_bilateral_filter_dtype<ushort4>}},
+            {eDataType::DATA_TYPE_S16, {dispatch_bilateral_filter_dtype<short1>, 0, dispatch_bilateral_filter_dtype<short3>, dispatch_bilateral_filter_dtype<short4>}},
+            {eDataType::DATA_TYPE_U32, {dispatch_bilateral_filter_dtype<uint1>, 0, dispatch_bilateral_filter_dtype<uint3>, dispatch_bilateral_filter_dtype<uint4>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_bilateral_filter_dtype<int1>, 0, dispatch_bilateral_filter_dtype<int3>, dispatch_bilateral_filter_dtype<int4>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_bilateral_filter_dtype<float1>, 0, dispatch_bilateral_filter_dtype<float3>, dispatch_bilateral_filter_dtype<float4>}},
+            {eDataType::DATA_TYPE_F64, {dispatch_bilateral_filter_dtype<double1>, 0, dispatch_bilateral_filter_dtype<double3>, dispatch_bilateral_filter_dtype<double4>}}
         };
     // clang-format on
 
-    auto func = funcs[dtype][channels - 1];
+    auto func = funcs.at(dtype)[channels - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, borderMode, borderValue, device);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
