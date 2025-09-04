@@ -27,7 +27,7 @@ import rocpycv
 from test_helpers import generate_tensor
 
 
-@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.GPU])
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
 @pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32])
 @pytest.mark.parametrize("channels", [1, 3, 4])
 @pytest.mark.parametrize("samples,height,width", [
