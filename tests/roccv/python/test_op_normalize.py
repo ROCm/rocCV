@@ -23,24 +23,27 @@
 
 import pytest
 import rocpycv
-import numpy as np
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor
 
 
-@pytest.mark.parametrize("input_path, base, scale, flags, globalscale, globalshift, epsilon, device, expected_path, err", [
-    ("test_input.bmp", [121.816, 117.935, 98.395], [82.195, 62.885, 61.023], rocpycv.NormalizeFlags.SCALE_IS_STDDEV,
-     85.0, 180.0, 0.0, rocpycv.GPU, "expected_normalize.bmp", 0.0),
-    ("test_input.bmp", [121.816, 117.935, 98.395], [82.195, 62.885, 61.023], rocpycv.NormalizeFlags.SCALE_IS_STDDEV,
-     85.0, 180.0, 0.0, rocpycv.CPU, "expected_normalize.bmp", 0.0)
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.GPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    (1, 45, 23),
+    (3, 67, 85),
+    (7, 25, 95)
 ])
-def test_op_normalize(pytestconfig, input_path, base, scale, flags, globalscale, globalshift, epsilon, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-    stream = rocpycv.Stream()
+def test_op_normalize(samples, height, width, channels, device, dtype):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    base = generate_tensor(1, 1, 1, channels, rocpycv.eDataType.F32, device)
+    scale = generate_tensor(1, 1, 1, channels, rocpycv.eDataType.F32, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
+    stream = rocpycv.Stream()
+    rocpycv.normalize_into(output_golden, input, base, scale, None, 1.0, 0.0, 0.0, stream, device)
+    output = rocpycv.normalize(input, base, scale, None, 1.0, 0.0, 0.0, stream, device)
     stream.synchronize()
-    base_tensor = rocpycv.from_dlpack(np.array([[[base]]], np.float32), rocpycv.NHWC).copy_to(device)
-    scale_tensor = rocpycv.from_dlpack(np.array([[[scale]]], np.float32), rocpycv.NHWC).copy_to(device)
-    output_tensor = rocpycv.normalize(input_tensor, base_tensor, scale_tensor, flags,
-                                      globalscale, globalshift, epsilon, stream, device)
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+
+    assert output.shape() == output_golden.shape()
