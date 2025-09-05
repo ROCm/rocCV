@@ -25,26 +25,32 @@ import pytest
 import rocpycv
 import numpy as np
 
-from test_helpers import compare_list
+from test_helpers import compare_tensors, generate_tensor_generic
 
 
-@pytest.mark.parametrize("boxes, scores, score_threshold, iou_threshold, device, expected, err", [
-    ([[[100, 100, 200, 200], [110, 110, 210, 210], [220, 220, 320, 320], [50,  50,  150, 150]]],
-     [[0.9, 0.8, 0.85, 0.7]], 0.01, 0.5, rocpycv.GPU, "expected_nms.bin", 0.0),
-    ([[[100, 100, 200, 200], [110, 110, 210, 210], [220, 220, 320, 320], [50,  50,  150, 150]]],
-     [[0.9, 0.8, 0.85, 0.7]], 0.01, 0.5, rocpycv.CPU, "expected_nms.bin", 0.0)
-])
-def test_op_non_max_suppression(pytestconfig, boxes, scores, score_threshold, iou_threshold, device, expected, err):
-    # Use numpy/dlpack to wrap provided list data into tensors for use with the NMS operator
-    boxes_tensor = rocpycv.from_dlpack(np.array(boxes, np.short), rocpycv.NWC).copy_to(device)
-    scores_tensor = rocpycv.from_dlpack(np.array(scores, np.float32), rocpycv.NW).copy_to(device)
+def generate_boxes(samples: int, num_boxes: int, device: rocpycv.eDeviceType) -> rocpycv.Tensor:
+    np_array = np.random.randint(10, 300, size=(samples, num_boxes, 4), dtype=np.short)
+    return rocpycv.from_dlpack(np_array, rocpycv.eTensorLayout.NWC).copy_to(device)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("samples,num_boxes", [
+                         (1, 4),
+                         (3, 64),
+                         (20, 837),
+                         (1000, 34)
+                         ]
+                         )
+def test_op_non_max_suppression(samples, num_boxes, device):
+    boxes = generate_boxes(samples, num_boxes, device)
+    scores = generate_tensor_generic([samples, num_boxes, 1], rocpycv.eTensorLayout.NWC, rocpycv.eDataType.F32, device)
+    output_golden = rocpycv.Tensor([samples, num_boxes, 1], rocpycv.eTensorLayout.NWC, rocpycv.eDataType.U8, device)
 
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.nms(boxes_tensor, scores_tensor, score_threshold, iou_threshold, stream, device)
+    # Hardcoding the score and IoU threshold here. The only thing we care about is the resulting size of the
+    # output tensors to compare against.
+    output = rocpycv.nms(boxes, scores, 0.5, 0.75, stream, device)
+    rocpycv.nms_into(output_golden, boxes, scores, 0.5, 0.75, stream, device)
     stream.synchronize()
 
-    # Load binary data from expected binary file into a list
-    with open(f"{pytestconfig.getoption('data_dir')}/{expected}", "rb") as f:
-        expected_list = list(f.read())
-
-    compare_list(output_tensor, expected_list, err)
+    compare_tensors(output, output_golden)
