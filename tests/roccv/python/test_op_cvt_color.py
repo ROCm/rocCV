@@ -44,7 +44,7 @@ from test_helpers import generate_tensor, compare_tensors
     [3, 150, 50],
     [7, 15, 23]
 ])
-def test_op_ColorCvt(samples, height, width, code, dtype, device):
+def test_op_cvtcolor(samples, height, width, code, dtype, device):
     in_channels = 3
     out_channels = 3
     if code == rocpycv.eColorConversionCode.COLOR_BGR2GRAY or code == rocpycv.eColorConversionCode.COLOR_RGB2GRAY:
