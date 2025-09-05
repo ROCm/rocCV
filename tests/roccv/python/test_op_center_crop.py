@@ -24,18 +24,29 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
-@pytest.mark.parametrize("input_path, device, cropSize, expected_path", [
-    ("test_input.bmp", rocpycv.CPU, (300, 300), "expected_center_crop.bmp"),
-    ("test_input.bmp", rocpycv.GPU, (300, 300), "expected_center_crop.bmp")
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("box", [
+    (100, 100),
+    (34, 10)
 ])
-def test_op_center_crop(pytestconfig, input_path, device, cropSize, expected_path):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}")
-    input_tensor = input_tensor.copy_to(device)
-    
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    [1, 100, 200],
+    [3, 300, 200],
+    [7, 300, 468]
+])
+def test_op_center_crop(samples, height, width, channels, dtype, box, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, box[1], box[0], channels],
+                                   rocpycv.eTensorLayout.NHWC, dtype, device)
+
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.center_crop(input_tensor, cropSize, stream, device)
+    rocpycv.center_crop_into(output_golden, input, box, stream, device)
+    output = rocpycv.center_crop(input, box, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", 0.0)
+    compare_tensors(output, output_golden)

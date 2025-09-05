@@ -25,7 +25,7 @@ import pytest
 import rocpycv
 import math
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
 
 def calc_center_shift(center_x, center_y, angle) -> tuple[float, float]:
@@ -34,20 +34,27 @@ def calc_center_shift(center_x, center_y, angle) -> tuple[float, float]:
     return (x_shift, y_shift)
 
 
-@pytest.mark.parametrize("input_path, angle, interp, device, expected_path", [
-    ("test_input.bmp", -315.0,
-     rocpycv.NEAREST, rocpycv.GPU, "rotate/expected_rotate_nearest.bmp"),
-    ("test_input.bmp", -315.0,
-     rocpycv.NEAREST, rocpycv.CPU, "rotate/expected_rotate_nearest.bmp")
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("angle", [-10, 90, 0, 360])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,width,height", [
+    [1, 50, 100],
+    [3, 150, 50],
+    [7, 15, 23]
 ])
-def test_op_rotate(pytestconfig, input_path, angle, interp, device, expected_path):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-    stream = rocpycv.Stream()
+def test_op_rotate(samples, width, height, channels, angle, dtype, interp, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
-    center_x = math.floor((input_tensor.shape()[2] + 1) / 2)
-    center_y = math.floor((input_tensor.shape()[1] + 1) / 2)
+    center_x = math.floor((width + 1) / 2)
+    center_y = math.floor((height + 1) / 2)
     shift = calc_center_shift(center_x, center_y, angle)
-    output_tensor = rocpycv.rotate(input_tensor, angle, shift, interp, stream, device)
 
+    stream = rocpycv.Stream()
+    rocpycv.rotate_into(output_golden, input, angle, shift, interp, stream, device)
+    output = rocpycv.rotate(input, angle, shift, interp, stream, device)
     stream.synchronize()
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", 0.0)
+
+    compare_tensors(output, output_golden)
