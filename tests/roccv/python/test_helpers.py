@@ -142,3 +142,16 @@ def generate_tensor(samples: int, width: int, height: int, channels: int, type: 
 
     tensor = rocpycv.from_dlpack(np_array, rocpycv.eTensorLayout.NHWC)
     return tensor.copy_to(device)
+
+
+def compare_tensors(actual: rocpycv.Tensor, expected: rocpycv.Tensor) -> None:
+    """Asserts that two tensors have the same metadata. The underlying data of the tensors are not compared.
+
+    Args:
+        actual (rocpycv.Tensor): The actual tensor resulting from the tests.
+        expected (rocpycv.Tensor): The tensor which actual is expected to match with.
+    """
+    assert actual.shape() == expected.shape()
+    assert actual.dtype() == expected.dtype()
+    assert actual.layout() == expected.layout()
+    assert actual.device() == expected.device()
