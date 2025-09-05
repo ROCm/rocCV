@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
@@ -45,12 +45,12 @@ from test_helpers import generate_tensor
 ])
 def test_op_copy_make_border(samples, height, width, channels, top, right, bottom, left, border_mode, border_value, dtype, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    golden_output = rocpycv.Tensor([samples, height + top + bottom, width + right + left,
+    output_golden = rocpycv.Tensor([samples, height + top + bottom, width + right + left,
                                    channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.copymakeborder(input, border_mode, border_value, top, bottom, left, right, stream, device)
-    rocpycv.copymakeborder_into(golden_output, input, border_mode, border_value, top, left, stream, device)
+    rocpycv.copymakeborder_into(output_golden, input, border_mode, border_value, top, left, stream, device)
     stream.synchronize()
 
-    assert output.shape() == golden_output.shape()
+    compare_tensors(output, output_golden)

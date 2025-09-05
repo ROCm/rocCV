@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
@@ -49,4 +49,4 @@ def test_op_custom_crop(samples, height, width, channels, dtype, box, device):
     output = rocpycv.custom_crop(input, box, stream, device)
     stream.synchronize()
 
-    assert output.shape() == output_golden.shape()
+    compare_tensors(output, output_golden)

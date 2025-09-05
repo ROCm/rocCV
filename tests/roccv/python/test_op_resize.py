@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
@@ -45,4 +45,4 @@ def test_op_resize(out_shape, in_shape, samples, channels, interp, dtype, device
     output = rocpycv.resize(input, output_shape, interp, stream, device)
     stream.synchronize()
 
-    assert output.shape() == output_golden.shape()
+    compare_tensors(output, output_golden)

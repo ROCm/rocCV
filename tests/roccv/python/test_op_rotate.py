@@ -25,7 +25,7 @@ import pytest
 import rocpycv
 import math
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 def calc_center_shift(center_x, center_y, angle) -> tuple[float, float]:
@@ -57,4 +57,4 @@ def test_op_rotate(samples, width, height, channels, angle, dtype, interp, devic
     output = rocpycv.rotate(input, angle, shift, interp, stream, device)
     stream.synchronize()
 
-    assert output.shape() == output_golden.shape()
+    compare_tensors(output, output_golden)
