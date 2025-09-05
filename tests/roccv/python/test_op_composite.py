@@ -24,7 +24,7 @@
 import pytest
 import rocpycv
 
-from test_helpers import generate_tensor
+from test_helpers import generate_tensor, compare_tensors
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
@@ -46,4 +46,4 @@ def test_op_composite(samples, height, width, out_channels, dtype, device):
     rocpycv.composite_into(output_golden, foreground, background, mask, stream, device)
     stream.synchronize()
 
-    assert output.shape() == output_golden.shape()
+    compare_tensors(output, output_golden)
