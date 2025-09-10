@@ -33,7 +33,7 @@ BENCHMARK(GammaContrast, GPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8));
     Tensor input(reqs);
     Tensor output(reqs);
@@ -52,7 +52,7 @@ BENCHMARK(GammaContrast, CPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8), eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);

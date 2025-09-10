@@ -34,9 +34,9 @@ BENCHMARK(CvtColor, GPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_U8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -54,9 +54,9 @@ BENCHMARK(CvtColor, CPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
 

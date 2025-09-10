@@ -33,13 +33,13 @@ BENCHMARK(CustomCrop, GPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8));
     Tensor input(reqs);
 
     Box_t cropRect = {150, 50, 400, 300};
     Tensor output(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                              {config.batches, cropRect.height, cropRect.width, 3}),
+                              {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype());
 
     roccvbench::FillTensor(input);
@@ -55,13 +55,13 @@ BENCHMARK(CustomCrop, CPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8), eDeviceType::CPU);
     Tensor input(reqs);
 
     Box_t cropRect = {150, 50, 400, 300};
     Tensor output(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                              {config.batches, cropRect.height, cropRect.width, 3}),
+                              {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype(), eDeviceType::CPU);
 
     roccvbench::FillTensor(input);

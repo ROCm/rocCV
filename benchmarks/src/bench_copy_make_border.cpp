@@ -38,9 +38,9 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
     const eBorderType borderType = eBorderType::BORDER_TYPE_CONSTANT;
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_RGB8);
+    TensorRequirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.batches, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -63,9 +63,9 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     const eBorderType borderType = eBorderType::BORDER_TYPE_CONSTANT;
 
     TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        config.batches, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
+        config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -88,9 +88,9 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
     const eBorderType borderType = eBorderType::BORDER_TYPE_REFLECT;
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_RGB8);
+    TensorRequirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.batches, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -113,9 +113,9 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     const eBorderType borderType = eBorderType::BORDER_TYPE_REFLECT;
 
     TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        config.batches, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
+        config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
 

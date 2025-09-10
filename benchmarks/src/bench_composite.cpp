@@ -35,9 +35,9 @@ BENCHMARK(Composite, GPU) {
     results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
     Tensor::Requirements maskReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8);
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8);
 
     Tensor background(reqs);
     Tensor foreground(reqs);
@@ -60,10 +60,10 @@ BENCHMARK(Composite, CPU) {
     results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
         eDeviceType::CPU);
     Tensor::Requirements maskReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8,
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8,
         eDeviceType::CPU);
 
     Tensor background(reqs);

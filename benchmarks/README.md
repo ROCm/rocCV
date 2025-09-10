@@ -66,7 +66,7 @@ The benchmark configuration file typically looks something like this:
     {
         "width": 1920,  // Image width 1920 pixels
         "height": 1080, // Image height 1080 pixels
-        "batches": 16,  // Number of images in the batch
+        "samples": 16,  // Number of images in the batch
         "runs": 5       // Number of runs for this particular configuration to determine an average
     },
     // ... Add more benchmark configurations here

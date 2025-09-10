@@ -34,7 +34,7 @@ BENCHMARK(Flip, GPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
     Tensor input(reqs);
     Tensor output(reqs);
 
@@ -51,7 +51,7 @@ BENCHMARK(Flip, CPU) {
     results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
         eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);

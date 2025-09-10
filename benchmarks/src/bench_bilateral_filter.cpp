@@ -34,7 +34,7 @@ BENCHMARK(BilateralFilter, GPU) {
     results.executionTime = 0.0f;
 
     Tensor::Requirements reqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
     Tensor input(reqs);
     Tensor output(reqs);
 
@@ -53,7 +53,7 @@ BENCHMARK(BilateralFilter, CPU) {
     results.executionTime = 0.0f;
 
     Tensor::Requirements reqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);
 

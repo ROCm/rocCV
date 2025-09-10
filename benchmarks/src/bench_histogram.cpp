@@ -34,9 +34,9 @@ BENCHMARK(Histogram, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_U8);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.batches, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
+        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
 
     Tensor input(inReqs);
     Tensor output(outReqs);
@@ -54,9 +54,9 @@ BENCHMARK(Histogram, CPU) {
     results.executionTime = 0.0f;
 
     Tensor::Requirements inReqs =
-        Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.batches, 256, 1}),
+        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}),
                                  DataType(eDataType::DATA_TYPE_S32), eDeviceType::CPU);
 
     Tensor input(inReqs);

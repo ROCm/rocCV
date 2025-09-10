@@ -122,7 +122,7 @@ if __name__ == "__main__":
         # Gather data and plot results
         benchmark_names = []
         execution_time_data = []
-        batches = data["results"][category][0]["batches"]
+        samples = data["results"][category][0]["samples"]
         image_height = data["results"][category][0]["height"][0]
         image_width = data["results"][category][0]["width"][0]
         fps_data = []
@@ -130,11 +130,11 @@ if __name__ == "__main__":
         for benchmark in benchmarks_in_category:
             benchmark_names.append(benchmark["name"])
             execution_time_data.append(benchmark["execution_time"])
-            fps_data.append([1000 / (benchmark["execution_time"][i] / batches[i])
+            fps_data.append([1000 / (benchmark["execution_time"][i] / samples[i])
                             for i in range(len(benchmark["execution_time"]))])
 
-        plot_annotated_bars(ex_time_ax, batches, execution_time_data, benchmark_names)
-        plot_annotated_bars(fps_ax, batches, fps_data, benchmark_names)
+        plot_annotated_bars(ex_time_ax, samples, execution_time_data, benchmark_names)
+        plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names)
 
         ex_time_ax.legend()
         fps_ax.legend()
