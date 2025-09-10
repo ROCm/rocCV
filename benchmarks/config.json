@@ -23,12 +23,6 @@
             "height": 1080,
             "width": 1920,
             "runs": 5
-        },
-        {
-            "batches": 128,
-            "height": 1080,
-            "width": 1920,
-            "runs": 5
         }
     ]
 }
