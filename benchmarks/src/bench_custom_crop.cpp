@@ -30,7 +30,7 @@ using namespace roccv;
 
 BENCHMARK(CustomCrop, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
@@ -45,14 +45,14 @@ BENCHMARK(CustomCrop, GPU) {
     roccvbench::FillTensor(input);
 
     CustomCrop op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, cropRect), results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, cropRect), results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(CustomCrop, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
@@ -67,8 +67,8 @@ BENCHMARK(CustomCrop, CPU) {
     roccvbench::FillTensor(input);
 
     CustomCrop op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, cropRect, eDeviceType::CPU), results.execution_time,
-                                      config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, input, output, cropRect, eDeviceType::CPU),
+                                           results.executionTime, config.runs);
 
     return results;
 }

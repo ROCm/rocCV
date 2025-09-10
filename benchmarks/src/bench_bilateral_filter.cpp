@@ -31,7 +31,7 @@ using namespace roccv;
 
 BENCHMARK(BilateralFilter, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs =
         Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8);
@@ -41,16 +41,16 @@ BENCHMARK(BilateralFilter, GPU) {
     roccvbench::FillTensor(input);
 
     BilateralFilter op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(
         op(nullptr, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT, make_float4(1.0f, 0.0f, 1.0f, 1.0f)),
-        results.execution_time, config.runs);
+        results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(BilateralFilter, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs =
         Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
@@ -60,9 +60,9 @@ BENCHMARK(BilateralFilter, CPU) {
     roccvbench::FillTensor(input);
 
     BilateralFilter op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
-                                         make_float4(1.0f, 0.0f, 1.0f, 1.0f), eDeviceType::CPU),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
+                                              make_float4(1.0f, 0.0f, 1.0f, 1.0f), eDeviceType::CPU),
+                                           results.executionTime, config.runs);
 
     return results;
 }

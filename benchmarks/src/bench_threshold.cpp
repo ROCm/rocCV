@@ -31,7 +31,7 @@ using namespace roccv;
 
 BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -48,14 +48,15 @@ BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.batches);
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, thresh, maxVal), results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, thresh, maxVal), results.executionTime,
+                                          config.runs);
 
     return results;
 }
 
 BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -73,8 +74,8 @@ BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.batches);
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU),
+                                           results.executionTime, config.runs);
 
     return results;
 }

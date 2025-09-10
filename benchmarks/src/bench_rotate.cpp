@@ -30,7 +30,7 @@ using namespace roccv;
 
 BENCHMARK(Rotate, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
@@ -40,16 +40,16 @@ BENCHMARK(Rotate, GPU) {
     roccvbench::FillTensor(input);
 
     Rotate op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(
         op(nullptr, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR),
-        results.execution_time, config.runs);
+        results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(Rotate, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
@@ -59,9 +59,9 @@ BENCHMARK(Rotate, CPU) {
     roccvbench::FillTensor(input);
 
     Rotate op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
         op(nullptr, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU),
-        results.execution_time, config.runs);
+        results.executionTime, config.runs);
 
     return results;
 }

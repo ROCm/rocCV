@@ -31,7 +31,7 @@ using namespace roccv;
 
 BENCHMARK(Flip, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -41,14 +41,14 @@ BENCHMARK(Flip, GPU) {
     roccvbench::FillTensor(input);
 
     Flip op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, -1), results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, -1), results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(Flip, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -59,8 +59,8 @@ BENCHMARK(Flip, CPU) {
     roccvbench::FillTensor(input);
 
     Flip op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, -1, eDeviceType::CPU), results.execution_time,
-                                      config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, input, output, -1, eDeviceType::CPU), results.executionTime,
+                                           config.runs);
 
     return results;
 }

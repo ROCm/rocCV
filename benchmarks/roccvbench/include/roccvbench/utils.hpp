@@ -23,6 +23,8 @@
 
 #include <core/hip_assert.h>
 
+#include <chrono>
+
 namespace roccv {
 class Tensor;
 }
@@ -39,25 +41,41 @@ extern void FillTensor(const roccv::Tensor& tensor);
 /**
  * @brief Records execution time of a function, ensuring synchronization using HIP events.
  */
-#define ROCCV_BENCH_RECORD_EXECUTION_TIME(func, executionTime, numRuns)               \
-    {                                                                                 \
-        for (int i = 0; i < numRuns; i++) {                                           \
-            hipEvent_t begin, end;                                                    \
-            HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));                           \
-            HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));                             \
-                                                                                      \
-            HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));                            \
-            func;                                                                     \
-            HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));                              \
-            HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));                         \
-                                                                                      \
-            float execution_time;                                                     \
-            HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end)); \
-            HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));                           \
-            HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));                             \
-                                                                                      \
-            executionTime += execution_time / numRuns;                                \
-        }                                                                             \
+#define ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(func, executionTime, numRuns)                                     \
+    {                                                                                                           \
+        for (int i = 0; i < numRuns; i++) {                                                                     \
+            hipEvent_t begin, end;                                                                              \
+            hipEventCreate(&begin);                                                                             \
+            hipEventCreate(&end);                                                                               \
+                                                                                                                \
+            hipEventRecord(begin);                                                                              \
+            auto kernelBegin = std::chrono::high_resolution_clock::now();                                       \
+            func;                                                                                               \
+            hipEventRecord(end);                                                                                \
+            hipEventSynchronize(end);                                                                           \
+            auto kernelEnd = std::chrono::high_resolution_clock::now();                                         \
+                                                                                                                \
+            hipEventDestroy(begin);                                                                             \
+            hipEventDestroy(end);                                                                               \
+                                                                                                                \
+            double kernelDuration = std::chrono::duration<double, std::milli>(kernelEnd - kernelBegin).count(); \
+                                                                                                                \
+            executionTime += kernelDuration / numRuns;                                                          \
+        }                                                                                                       \
+    }
+
+/**
+ * @brief Records execution time of a host-side function call.
+ */
+#define ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(func, executionTime, numRuns)                      \
+    {                                                                                             \
+        for (int i = 0; i < numRuns; i++) {                                                       \
+            auto begin = std::chrono::high_resolution_clock::now();                               \
+            func;                                                                                 \
+            auto end = std::chrono::high_resolution_clock::now();                                 \
+            double funcDuration = std::chrono::duration<double, std::milli>(end - begin).count(); \
+            executionTime += funcDuration / numRuns;                                              \
+        }                                                                                         \
     }
 
 }  // namespace roccvbench

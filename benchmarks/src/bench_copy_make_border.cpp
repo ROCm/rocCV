@@ -31,7 +31,7 @@ using namespace roccv;
 
 BENCHMARK(CopyMakeBorder, GPU_Constant) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -47,15 +47,15 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, top, left, borderType, borderVal),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, top, left, borderType, borderVal),
+                                          results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(CopyMakeBorder, CPU_Constant) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -72,15 +72,16 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
+        op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU), results.executionTime,
+        config.runs);
 
     return results;
 }
 
 BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -96,15 +97,15 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, top, left, borderType, borderVal),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, top, left, borderType, borderVal),
+                                          results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -121,8 +122,9 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
+        op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU), results.executionTime,
+        config.runs);
 
     return results;
 }

@@ -301,7 +301,7 @@ int main(int argc, char** argv) {
                     runResultsJson["width"].push_back(config.width);
                     runResultsJson["height"].push_back(config.height);
                     runResultsJson["runs"].push_back(config.runs);
-                    runResultsJson["execution_time"].push_back(result.execution_time);
+                    runResultsJson["execution_time"].push_back(result.executionTime);
                     runResultsJson["batches"].push_back(config.batches);
                 }
                 std::cout << std::endl;

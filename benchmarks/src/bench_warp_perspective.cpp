@@ -31,7 +31,7 @@ using namespace roccv;
 
 BENCHMARK(WarpPerspective, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -43,17 +43,17 @@ BENCHMARK(WarpPerspective, GPU) {
     roccvbench::FillTensor(input);
 
     WarpPerspective op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(
         op(nullptr, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
            eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f)),
-        results.execution_time, config.runs);
+        results.executionTime, config.runs);
 
     return results;
 }
 
 BENCHMARK(WarpPerspective, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -66,10 +66,10 @@ BENCHMARK(WarpPerspective, CPU) {
     roccvbench::FillTensor(input);
 
     WarpPerspective op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
+    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
         op(nullptr, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
            eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU),
-        results.execution_time, config.runs);
+        results.executionTime, config.runs);
 
     return results;
 }
