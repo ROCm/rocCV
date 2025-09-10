@@ -43,6 +43,7 @@ extern void FillTensor(const roccv::Tensor& tensor);
  */
 #define ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(func, executionTime, numRuns)                                     \
     {                                                                                                           \
+        double totalExecutionTime = 0.0;                                                                        \
         for (int i = 0; i < numRuns; i++) {                                                                     \
             hipEvent_t begin, end;                                                                              \
             hipEventCreate(&begin);                                                                             \
@@ -59,9 +60,9 @@ extern void FillTensor(const roccv::Tensor& tensor);
             hipEventDestroy(end);                                                                               \
                                                                                                                 \
             double kernelDuration = std::chrono::duration<double, std::milli>(kernelEnd - kernelBegin).count(); \
-                                                                                                                \
-            executionTime += kernelDuration / numRuns;                                                          \
+            totalExecutionTime += kernelDuration;                                                               \
         }                                                                                                       \
+        executionTime = totalExecutionTime / numRuns;                                                           \
     }
 
 /**
@@ -69,13 +70,15 @@ extern void FillTensor(const roccv::Tensor& tensor);
  */
 #define ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(func, executionTime, numRuns)                      \
     {                                                                                             \
+        double totalExecutionTime = 0.0;                                                          \
         for (int i = 0; i < numRuns; i++) {                                                       \
             auto begin = std::chrono::high_resolution_clock::now();                               \
             func;                                                                                 \
             auto end = std::chrono::high_resolution_clock::now();                                 \
             double funcDuration = std::chrono::duration<double, std::milli>(end - begin).count(); \
-            executionTime += funcDuration / numRuns;                                              \
+            totalExecutionTime += funcDuration;                                                   \
         }                                                                                         \
+        executionTime = totalExecutionTime / numRuns;                                             \
     }
 
 }  // namespace roccvbench

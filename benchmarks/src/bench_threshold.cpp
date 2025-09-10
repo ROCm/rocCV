@@ -38,8 +38,8 @@ BENCHMARK(ThresholdBinary, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    Tensor::Requirements paramReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {config.samples, 1}), DataType(DATA_TYPE_U8));
+    Tensor::Requirements paramReqs =
+        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64));
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
@@ -65,7 +65,7 @@ BENCHMARK(ThresholdBinary, CPU) {
     Tensor output(reqs);
 
     Tensor::Requirements paramReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {config.samples, 1}), DataType(DATA_TYPE_U8), eDeviceType::CPU);
+        TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64), eDeviceType::CPU);
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
