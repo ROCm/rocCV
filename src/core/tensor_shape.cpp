@@ -27,6 +27,23 @@ THE SOFTWARE.
 #include "core/tensor_layout.hpp"
 
 namespace roccv {
+
+static const std::unordered_map<std::string, eTensorLayout> layoutDescToEnum = {
+    {"N", eTensorLayout::TENSOR_LAYOUT_N},       {"NC", eTensorLayout::TENSOR_LAYOUT_NC},
+    {"NW", eTensorLayout::TENSOR_LAYOUT_NW},     {"NWC", eTensorLayout::TENSOR_LAYOUT_NWC},
+    {"HWC", eTensorLayout::TENSOR_LAYOUT_HWC},   {"NMC", eTensorLayout::TENSOR_LAYOUT_NMC},
+    {"NMD", eTensorLayout::TENSOR_LAYOUT_NMD},   {"NHWC", eTensorLayout::TENSOR_LAYOUT_NHWC},
+    {"NCHW", eTensorLayout::TENSOR_LAYOUT_NCHW}, {"LNHWC", eTensorLayout::TENSOR_LAYOUT_LNHWC},
+};
+
+const TensorLayout GetLayoutFromString(const std::string &desc) {
+    if (!layoutDescToEnum.contains(desc)) {
+        throw Exception("Invalid string descriptor for tensor layout.", eStatusType::INVALID_VALUE);
+    }
+
+    return TensorLayout(layoutDescToEnum.at(desc));
+}
+
 TensorShape::TensorShape(const TensorLayout &layout, const std::span<const int64_t> shape) : m_layout(layout) {
     if (shape.size() != layout.rank()) {
         throw Exception(
@@ -56,6 +73,12 @@ TensorShape::TensorShape(const TensorLayout &layout, const std::span<const int64
 
 TensorShape::TensorShape(const TensorLayout &layout, const std::initializer_list<const int64_t> shape)
     : TensorShape(layout, std::span<const int64_t>(shape.begin(), shape.end())) {}
+
+TensorShape::TensorShape(const std::initializer_list<const int64_t> shape, const std::string &layoutDesc)
+    : TensorShape(GetLayoutFromString(layoutDesc), shape) {}
+
+TensorShape::TensorShape(const std::span<const int64_t> shape, const std::string &layoutDesc)
+    : TensorShape(GetLayoutFromString(layoutDesc), shape) {}
 
 TensorShape &TensorShape::operator=(const TensorShape &other) {
     if (this != &other) {

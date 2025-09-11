@@ -46,10 +46,11 @@ class TensorShape {
      * TensorLayout; for example, TENSOR_LAYOUT_HWC would have a shape array of
      * size 3.
      */
-    TensorShape(const TensorLayout &layout,
-                const std::span<const int64_t> shape);
-    TensorShape(const TensorLayout &layout,
-                const std::initializer_list<const int64_t> shape);
+    TensorShape(const TensorLayout &layout, const std::span<const int64_t> shape);
+    TensorShape(const TensorLayout &layout, const std::initializer_list<const int64_t> shape);
+
+    TensorShape(const std::initializer_list<const int64_t> shape, const std::string &layoutDesc);
+    TensorShape(const std::span<const int64_t> shape, const std::string &layoutDesc);
 
     /**
      * @brief Retrieves the layout of the tensor.
