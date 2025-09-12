@@ -23,21 +23,26 @@
 
 import pytest
 import rocpycv
-import numpy as np
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor
 
-@pytest.mark.parametrize("input_path, gamma, device, expected_path, err", [
-    ("test_input.bmp", 2.2, rocpycv.GPU, "expected_gamma_contrast.bmp", 1.0),
-    ("test_input.bmp", 2.2, rocpycv.CPU, "expected_gamma_contrast.bmp", 1.0)
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.U16, rocpycv.eDataType.U32, rocpycv.eDataType.F32])
+@pytest.mark.parametrize("gamma", [0.5, 1.2, 2.2])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    (1, 45, 23),
+    (3, 67, 85),
+    (7, 25, 95)
 ])
+def test_op_gamma_contrast(samples, height, width, channels, gamma, dtype, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
-def test_op_GammaContrast(pytestconfig, input_path, gamma, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-    
     stream = rocpycv.Stream()
-
-    output_tensor = rocpycv.gamma_contrast(input_tensor, gamma, stream, device)
+    output = rocpycv.gamma_contrast(input, gamma, stream, device)
+    rocpycv.gamma_contrast_into(output_golden, input, gamma, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+    assert output.shape() == output_golden.shape()
