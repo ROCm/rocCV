@@ -23,59 +23,39 @@
 
 import pytest
 import rocpycv
-import numpy as np
+import random
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
-@pytest.mark.parametrize("input_path, device, expected_path, err", [
-    ("test_input.bmp", rocpycv.GPU, "expected_bnd_box.bmp", 1.0),
-    ("test_input.bmp", rocpycv.CPU, "expected_bnd_box.bmp", 1.0)
+
+def generate_boxes(samples: int, height: int, width: int) -> rocpycv.BndBoxes:
+    num_boxes = [random.randint(1, 3) for i in range(samples)]
+    boxes = []
+    for sample in range(samples):
+        for box in range(num_boxes[sample]):
+            rand_color = rocpycv.Color4(random.randint(0, 255), random.randint(0, 255),
+                                        random.randint(0, 255), random.randint(0, 255))
+            rand_box = rocpycv.Box(0, 0, random.randint(0, width - 5), random.randint(0, height - 5))
+            boxes.append(rocpycv.BndBox(rand_box, random.randint(0, 2), rand_color, rand_color))
+    return rocpycv.BndBoxes(samples, num_boxes, boxes)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("channels", [3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    (1, 50, 100),
+    (3, 150, 50),
+    (7, 15, 23)
 ])
-
-def test_op_remap(pytestconfig, input_path, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-
-    width = 720
-    height = 480
-    halfWidth = int(width/2)
-    halfHeight = int(height/2)
-    quarterWidth = int(width/4)
-    quarterHeight = int(height/4)
-    thirdWidth = int(width/3)
-    thirdHeight = int(height/3)
-    thirdDoubleHeight = int((height*2)/3)
-
-
-    bbox_array = []
-    numBoxes = []
-    numBoxes.append(int(3))
-    
-
-    box1 = rocpycv.Box(quarterWidth, quarterHeight, halfWidth, halfHeight)
-    box1_borderColor = rocpycv.Color4(0, 0, 255, 200)
-    box1_fillColor = rocpycv.Color4(0, 255, 0, 100)
-    bndbox1 = rocpycv.BndBox(box1, 5, box1_borderColor, box1_fillColor)
-
-    box2 = rocpycv.Box(thirdWidth, thirdHeight, thirdWidth*2, quarterHeight)
-    box2_borderColor = rocpycv.Color4(90, 16, 181, 50)
-    box2_fillColor = rocpycv.Color4(0, 0, 0, 0)
-    bndbox2 = rocpycv.BndBox(box2, -1, box2_borderColor, box2_fillColor)
-
-    box3 = rocpycv.Box(-50, thirdDoubleHeight, width + 50, thirdHeight + 50)
-    box3_borderColor = rocpycv.Color4(0, 0, 0, 50)
-    box3_fillColor = rocpycv.Color4(111, 159, 232, 150)
-    bndbox3 = rocpycv.BndBox(box3, 0, box3_borderColor, box3_fillColor)
-
-    bbox_array.append(bndbox1)
-    bbox_array.append(bndbox2)
-    bbox_array.append(bndbox3)
-
-    bnd_boxes = rocpycv.BndBoxes(1, numBoxes, bbox_array)
-
+def test_op_remap(samples, height, width, channels, device):
+    input = generate_tensor(samples, width, height, channels, rocpycv.eDataType.U8, device)
+    boxes = generate_boxes(samples, height, width)
+    output_golden = rocpycv.Tensor([samples, height, width, channels],
+                                   rocpycv.eTensorLayout.NHWC, rocpycv.eDataType.U8, device)
 
     stream = rocpycv.Stream()
-
-    output_tensor = rocpycv.bndbox(input_tensor, bnd_boxes, stream, device)
+    output = rocpycv.bndbox(input, boxes, stream, device)
+    rocpycv.bndbox_into(output_golden, input, boxes, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+    compare_tensors(output, output_golden)

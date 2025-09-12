@@ -25,15 +25,19 @@ THE SOFTWARE.
 #include <op_histogram.hpp>
 
 PyTensor PyOpHistogram::Execute(PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> mask,
-                                        std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
-
+                                std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     auto inputTensor = input.getTensor();
-    auto maskTensor = mask.has_value() ? std::optional<std::reference_wrapper<roccv::Tensor>>(*mask.value().get().getTensor()) : std::nullopt;
+    auto maskTensor = mask.has_value()
+                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*mask.value().get().getTensor())
+                          : std::nullopt;
 
-    
-    auto outputTensor = std::make_shared<roccv::Tensor>(roccv::TensorShape(roccv::TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC),
-                                                           {1, 256, 1}), roccv::DataType(eDataType::DATA_TYPE_S32), device);
+    int batchIndex = inputTensor->layout().batch_index();
+    int64_t batchSize = batchIndex != -1 ? inputTensor->shape(batchIndex) : 1;
+
+    auto outputTensor = std::make_shared<roccv::Tensor>(
+        roccv::TensorShape(roccv::TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), {batchSize, 256, 1}),
+        roccv::DataType(eDataType::DATA_TYPE_S32), device);
 
     roccv::Histogram op;
     op(hipStream, *inputTensor, maskTensor, *outputTensor, device);
@@ -41,10 +45,11 @@ PyTensor PyOpHistogram::Execute(PyTensor& input, std::optional<std::reference_wr
 }
 
 void PyOpHistogram::ExecuteInto(PyTensor& output, PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> mask,
-                                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
-
+                                std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
-    auto maskTensor = mask.has_value() ? std::optional<std::reference_wrapper<roccv::Tensor>>(*mask.value().get().getTensor()) : std::nullopt;
+    auto maskTensor = mask.has_value()
+                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*mask.value().get().getTensor())
+                          : std::nullopt;
 
     roccv::Histogram op;
     op(hipStream, *input.getTensor(), maskTensor, *output.getTensor(), device);
@@ -52,8 +57,8 @@ void PyOpHistogram::ExecuteInto(PyTensor& output, PyTensor& input, std::optional
 
 void PyOpHistogram::Export(py::module& m) {
     using namespace py::literals;
-    m.def("histogram", &PyOpHistogram::Execute, "src"_a, "mask"_a, 
-                                                    "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("histogram", &PyOpHistogram::Execute, "src"_a, "mask"_a, "stream"_a = nullptr, "device"_a = eDeviceType::GPU,
+          R"pbdoc(
 
             Executes the Histogram operation on the given HIP stream.
 
@@ -71,8 +76,8 @@ void PyOpHistogram::Export(py::module& m) {
 
     )pbdoc");
 
-    m.def("histogram_into", &PyOpHistogram::ExecuteInto, "dst"_a, "src"_a, "mask"_a, 
-                                                    "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("histogram_into", &PyOpHistogram::ExecuteInto, "dst"_a, "src"_a, "mask"_a, "stream"_a = nullptr,
+          "device"_a = eDeviceType::GPU, R"pbdoc(
 
             Executes the Histogram operation on the given HIP stream.
 
@@ -90,4 +95,4 @@ void PyOpHistogram::Export(py::module& m) {
                 None
 
     )pbdoc");
-}                                                       
+}
