@@ -32,9 +32,17 @@ foreach(FILE ${SAMPLE_DATA_FILES})
     file(COPY ${FILE} DESTINATION ${DESTINATION_DIR})
 endforeach()
 
+add_executable(bilateral_filter bilateral_filter.cpp)
+target_link_libraries(bilateral_filter PRIVATE roccv ${OpenCV_LIBS})
+target_include_directories(bilateral_filter PRIVATE ${Open_CV_INCLUDE_DIRS})
+
 add_executable(custom_crop custom_crop.cpp)
 target_link_libraries(custom_crop PRIVATE roccv ${OpenCV_LIBS})
 target_include_directories(custom_crop PRIVATE ${Open_CV_INCLUDE_DIRS})
+
+add_executable(center_crop center_crop.cpp)
+target_link_libraries(center_crop PRIVATE roccv ${OpenCV_LIBS})
+target_include_directories(center_crop PRIVATE ${Open_CV_INCLUDE_DIRS})
 
 add_executable(normalize normalize.cpp)
 target_link_libraries(normalize PRIVATE roccv ${OpenCV_LIBS})
