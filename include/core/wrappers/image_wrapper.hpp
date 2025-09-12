@@ -95,6 +95,30 @@ class ImageWrapper {
     }
 
     /**
+     * @brief Creates an ImageWrapper from a pointer.
+     *
+     * @param input The input pointer to wrap.
+     * @param batchSize The number of images within the batch.
+     * @param width The width of each image within the batch.
+     * @param height The height of each image within the batch.
+     */
+    ImageWrapper(void* input, int32_t batchSize, int32_t width, int32_t height) {
+        // Calculate strides based on input (byte-wise strides)
+        stride.c = sizeof(BaseType);
+        stride.w = stride.c * detail::NumElements<T>;
+        stride.h = stride.w * width;
+        stride.n = stride.h * height;
+
+        // Copy shape information
+        shape.c = detail::NumElements<T>;
+        shape.w = width;
+        shape.h = height;
+        shape.n = batchSize;
+
+        data = reinterpret_cast<unsigned char*>(input);
+    }
+
+    /**
      * @brief Returns a reference to data given coordinates within an image tensor.
      *
      * @param n Batch coordinates.

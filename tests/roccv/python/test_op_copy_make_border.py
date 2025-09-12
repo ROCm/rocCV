@@ -24,34 +24,33 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
 
-@pytest.mark.parametrize("input_path, border_mode, border_value, top, bottom, left, right, device, expected_path", [
-    ("test_input.bmp", rocpycv.eBorderType.CONSTANT, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.GPU, "copy_make_border/expected_copy_make_border_constant.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.REPLICATE, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.GPU, "copy_make_border/expected_copy_make_border_replicate.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.REFLECT, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.GPU, "copy_make_border/expected_copy_make_border_reflect.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.WRAP, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.GPU, "copy_make_border/expected_copy_make_border_wrap.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.CONSTANT, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.CPU, "copy_make_border/expected_copy_make_border_constant.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.REPLICATE, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.CPU, "copy_make_border/expected_copy_make_border_replicate.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.REFLECT, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.CPU, "copy_make_border/expected_copy_make_border_reflect.bmp"),
-    ("test_input.bmp", rocpycv.eBorderType.WRAP, [0, 0, 1.0, 0], 9, 9, 9,
-     9, rocpycv.CPU, "copy_make_border/expected_copy_make_border_wrap.bmp"),
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("border_mode", [rocpycv.eBorderType.CONSTANT, rocpycv.eBorderType.REFLECT, rocpycv.eBorderType.REPLICATE, rocpycv.eBorderType.WRAP])
+@pytest.mark.parametrize("border_value", [
+    [1.0, 0.0, 0.5, 0.9]
 ])
-def test_op_copy_make_border(pytestconfig, input_path, border_mode, border_value, top, bottom, left, right, device, expected_path):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}")
-    input_tensor = input_tensor.copy_to(device)
+@pytest.mark.parametrize("top,bottom,left,right", [
+    [9, 9, 9, 9],
+    [1, 2, 3, 4]
+])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    [1, 34, 23],
+    [3, 67, 10],
+    [7, 50, 8]
+])
+def test_op_copy_make_border(samples, height, width, channels, top, right, bottom, left, border_mode, border_value, dtype, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height + top + bottom, width + right + left,
+                                   channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.copymakeborder(input_tensor, border_mode, border_value,
-                                           top, bottom, left, right, stream, device)
+    output = rocpycv.copymakeborder(input, border_mode, border_value, top, bottom, left, right, stream, device)
+    rocpycv.copymakeborder_into(output_golden, input, border_mode, border_value, top, left, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", 0.0)
+    compare_tensors(output, output_golden)

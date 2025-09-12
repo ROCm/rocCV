@@ -2,11 +2,12 @@
 
 <p align="center"><img width="70%" src="docs/data/amd_roccv_logo.png" /></p>
 
+> [!NOTE]
+> The published rocCV documentation is available [here](https://rocm.docs.amd.com/projects/rocCV/en/latest/) in an organized, easy-to-read format, with search and a table of contents. The documentation source files reside in the `docs` folder of this repository. As with all ROCm projects, the documentation is open source. For more information on contributing to the documentation, see [Contribute to ROCm documentation](https://rocm.docs.amd.com/en/latest/contribute/contributing.html).
+
 rocCV is an efficient GPU-accelerated library for image pre- and post-processing, powered by AMD's HIP platform.
 
----
-
->[!NOTE]
+> [!NOTE]
 > **rocCV is currently only available as a source install.**
 > 
 > As rocCV is in early preview with ROCm 7.0.0, pre-built packages are not yet provided.
