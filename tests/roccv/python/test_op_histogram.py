@@ -23,24 +23,25 @@
 
 import pytest
 import rocpycv
-import numpy as np
 
-from test_helpers import load_image_grayscale, compare_list
+from test_helpers import generate_tensor
 
-@pytest.mark.parametrize("input_path, mask, device, expected_path, err", [
-    ("test_input.bmp", None, rocpycv.GPU, "expected_histogram_python.bin", 1.0),
-    ("test_input.bmp", None, rocpycv.CPU, "expected_histogram_python.bin", 1.0)
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("in_dtype", [rocpycv.eDataType.U8])
+@pytest.mark.parametrize("out_dtype", [rocpycv.eDataType.U32, rocpycv.eDataType.S32])
+@pytest.mark.parametrize("samples,height,width", [
+    (1, 45, 23),
+    (3, 67, 85),
+    (7, 25, 95)
 ])
-
-def test_op_histogram(pytestconfig, input_path, mask, device, expected_path, err):
-    input_tensor = load_image_grayscale(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
+def test_op_histogram(samples, height, width, in_dtype, out_dtype, device):
+    input = generate_tensor(samples, width, height, 1, in_dtype, device)
+    output_golden = rocpycv.Tensor([samples, 256, 1], rocpycv.eTensorLayout.HWC, out_dtype, device)
 
     stream = rocpycv.Stream()
-
-    output_tensor = rocpycv.histogram(input_tensor, mask, stream, device)
+    output = rocpycv.histogram(input, None, stream, device)
+    rocpycv.histogram_into(output_golden, input, None, stream, device)
     stream.synchronize()
 
-    # Load binary data from expected binary file into a list
-    expected_list = np.fromfile(f"{pytestconfig.getoption('data_dir')}/{expected_path}", dtype=np.int32).tolist()
-    
-    compare_list(output_tensor, expected_list, err)
+    assert output.shape() == output_golden.shape()

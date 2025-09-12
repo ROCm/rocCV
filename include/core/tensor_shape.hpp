@@ -36,20 +36,40 @@ class TensorShape {
     TensorShape() = delete;
 
     /**
-     * @brief Construct a new Tensor Shape object
+     * @brief Constructs a tensor shape.
      *
-     * @param[in] layout The desired layout of the TensorShape object.
-     * @param[in] shape An int64_t array which stores information about the
-     * Tensor's shape. For example: given TensorLayout NHWC, an example of an
-     * acceptable shape array would be: [1, image.height, image.width,
-     * image.channels]. The size of the shape array must reflect the
-     * TensorLayout; for example, TENSOR_LAYOUT_HWC would have a shape array of
-     * size 3.
+     * @param[in] layout The layout type for the tensor shape. The layout type must match with the size
+     * of the list given as a shape.
+     * @param[in] shape A list describing the dimensions of the tensor.
      */
-    TensorShape(const TensorLayout &layout,
-                const std::span<const int64_t> shape);
-    TensorShape(const TensorLayout &layout,
-                const std::initializer_list<const int64_t> shape);
+    TensorShape(const TensorLayout &layout, const std::span<const int64_t> shape);
+
+    /**
+     * @brief Constructs a tensor shape.
+     *
+     * @param[in] layout The layout type for the tensor shape. The layout type must match with the size
+     * of the list given as a shape.
+     * @param[in] shape An initializer list describing the dimensions of the tensor.
+     */
+    TensorShape(const TensorLayout &layout, const std::initializer_list<const int64_t> shape);
+
+    /**
+     * @brief Constructs a tensor shape.
+     *
+     * @param[in] shape A list describing the dimensions of the tensor.
+     * @param[in] layoutDesc A string describing the layout type of the tensor. The layout type must match with the size
+     * of the list given as a shape.
+     */
+    TensorShape(const std::span<const int64_t> shape, const std::string &layoutDesc);
+
+    /**
+     * @brief Constructs a tensor shape.
+     *
+     * @param[in] shape An initializer list describing the dimensions of the tensor.
+     * @param[in] layoutDesc A string describing the layout type of the tensor. The layout type must match with the size
+     * of the list given as a shape.
+     */
+    TensorShape(const std::initializer_list<const int64_t> shape, const std::string &layoutDesc);
 
     /**
      * @brief Retrieves the layout of the tensor.
