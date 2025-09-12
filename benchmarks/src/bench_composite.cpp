@@ -49,8 +49,18 @@ BENCHMARK(Composite, GPU) {
     roccvbench::FillTensor(mask);
 
     Composite op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, foreground, background, mask, output), results.executionTime,
-                                          config.runs);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, foreground, background, mask, output);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -76,8 +86,8 @@ BENCHMARK(Composite, CPU) {
     roccvbench::FillTensor(mask);
 
     Composite op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, foreground, background, mask, output, eDeviceType::CPU),
-                                           results.executionTime, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

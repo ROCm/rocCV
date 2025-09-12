@@ -48,8 +48,17 @@ BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.samples);
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, thresh, maxVal), results.executionTime,
-                                          config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, thresh, maxVal);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -74,8 +83,8 @@ BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.samples);
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU),
-                                           results.executionTime, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

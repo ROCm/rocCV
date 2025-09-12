@@ -43,8 +43,17 @@ BENCHMARK(CvtColor, GPU) {
     roccvbench::FillTensor(input);
 
     CvtColor op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY),
-                                          results.executionTime, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, eColorConversionCode::COLOR_RGB2GRAY);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -63,8 +72,8 @@ BENCHMARK(CvtColor, CPU) {
     roccvbench::FillTensor(input);
 
     CvtColor op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
-        op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY, eDeviceType::CPU), results.executionTime,
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY, eDeviceType::CPU); }, results.executionTime,
         config.runs);
 
     return results;

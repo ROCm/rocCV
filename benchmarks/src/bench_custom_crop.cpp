@@ -45,7 +45,17 @@ BENCHMARK(CustomCrop, GPU) {
     roccvbench::FillTensor(input);
 
     CustomCrop op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, cropRect), results.executionTime, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, cropRect);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -67,8 +77,8 @@ BENCHMARK(CustomCrop, CPU) {
     roccvbench::FillTensor(input);
 
     CustomCrop op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(op(nullptr, input, output, cropRect, eDeviceType::CPU),
-                                           results.executionTime, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, cropRect, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

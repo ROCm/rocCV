@@ -48,8 +48,17 @@ BENCHMARK(Normalize, GPU) {
     roccvbench::FillTensor(base);
 
     Normalize op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0),
-                                          results.executionTime, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -75,8 +84,8 @@ BENCHMARK(Normalize, CPU) {
     roccvbench::FillTensor(base);
 
     Normalize op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
-        op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU), results.executionTime,
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU); }, results.executionTime,
         config.runs);
 
     return results;

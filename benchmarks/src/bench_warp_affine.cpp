@@ -43,10 +43,18 @@ BENCHMARK(WarpAffine, GPU) {
     roccvbench::FillTensor(input);
 
     WarpAffine op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(
-        op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-           eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f)),
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
+               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
+            hipStreamSynchronize(stream);
+        },
         results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -66,9 +74,11 @@ BENCHMARK(WarpAffine, CPU) {
     roccvbench::FillTensor(input);
 
     WarpAffine op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
-        op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-           eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU),
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
+               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
+        },
         results.executionTime, config.runs);
 
     return results;

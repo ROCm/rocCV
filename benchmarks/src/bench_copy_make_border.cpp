@@ -47,8 +47,18 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, top, left, borderType, borderVal),
-                                          results.executionTime, config.runs);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, top, left, borderType, borderVal);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -72,8 +82,8 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
-        op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU), results.executionTime,
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
         config.runs);
 
     return results;
@@ -97,8 +107,18 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HIP(op(nullptr, input, output, top, left, borderType, borderVal),
-                                          results.executionTime, config.runs);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, top, left, borderType, borderVal);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
@@ -122,8 +142,8 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     roccvbench::FillTensor(input);
 
     CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME_HOST(
-        op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU), results.executionTime,
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
         config.runs);
 
     return results;
