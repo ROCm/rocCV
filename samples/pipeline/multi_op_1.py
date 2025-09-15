@@ -148,5 +148,5 @@ if __name__ == "__main__":
 
     # Copy the final tensor back to the host (CPU) so that it can be converted back into a numpy array and write images
     # back to disk.
-    resized_tensor = np.from_dlpack(resized_tensor.copy_to(rocpycv.CPU))
-    write_image_batch(resized_tensor, args.output_dir)
+    resized_array = np.from_dlpack(resized_tensor.copy_to(rocpycv.CPU))
+    write_image_batch(resized_array, args.output_dir)
