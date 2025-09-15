@@ -32,12 +32,14 @@ def generate_boxes(samples: int, height: int, width: int) -> rocpycv.BndBoxes:
     num_boxes = [random.randint(1, 3) for i in range(samples)]
     boxes = []
     for sample in range(samples):
-        for box in range(num_boxes[sample]):
-            rand_color = rocpycv.Color4(random.randint(0, 255), random.randint(0, 255),
-                                        random.randint(0, 255), random.randint(0, 255))
+        box_list = []
+        for _ in range(num_boxes[sample]):
+            rand_color = rocpycv.ColorRGBA(random.randint(0, 255), random.randint(0, 255),
+                                           random.randint(0, 255), random.randint(0, 255))
             rand_box = rocpycv.Box(0, 0, random.randint(0, width - 5), random.randint(0, height - 5))
-            boxes.append(rocpycv.BndBox(rand_box, random.randint(0, 2), rand_color, rand_color))
-    return rocpycv.BndBoxes(samples, num_boxes, boxes)
+            box_list.append(rocpycv.BndBox(rand_box, random.randint(0, 2), rand_color, rand_color))
+        boxes.append(box_list)
+    return rocpycv.BndBoxes(boxes)
 
 
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
