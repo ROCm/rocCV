@@ -22,11 +22,11 @@
 #include "operator_types.h"
 
 namespace roccv {
-BndBoxes::BndBoxes(const std::vector<std::vector<BndBoxT>> &bndboxesVec) : m_bndboxesVec(bndboxesVec) {}
+BndBoxes::BndBoxes(const std::vector<std::vector<BndBox_t>> &bndboxesVec) : m_bndboxesVec(bndboxesVec) {}
 
 int32_t BndBoxes::batch() const { return m_bndboxesVec.size(); }
 
 int32_t BndBoxes::numBoxesAt(int32_t b) const { return m_bndboxesVec[b].size(); }
 
-BndBoxT BndBoxes::boxAt(int32_t b, int32_t i) const { return m_bndboxesVec[b][i]; }
+BndBox_t BndBoxes::boxAt(int32_t b, int32_t i) const { return m_bndboxesVec[b][i]; }
 }  // namespace roccv

@@ -80,35 +80,6 @@ typedef enum eThresholdType {
 // Column Major
 typedef float PerspectiveTransform[9];
 
-typedef struct {
-    uint8_t c0;
-    uint8_t c1;
-    uint8_t c2;
-    uint8_t c3;
-} Color4_t;
-
-typedef struct {
-    int64_t x;       ///@brief x coordinate of the top-left corner.
-    int64_t y;       ///@brief y coordinate of the top-left corner.
-    int32_t width;   ///@brief width of the box.
-    int32_t height;  ///@brief height of the box.
-} Box_t;
-
-typedef struct {
-    Box_t box;             ///@brief Bounding box definition.
-    int32_t thickness;     ///@brief Border thickness of bounding box.
-    Color4_t borderColor;  ///@brief Border color of bounding box.
-    Color4_t fillColor;    ///@brief Fill color of bounding box.
-} BndBox_t;
-
-typedef struct {
-    int64_t batch;                  ///@brief Batch size.
-    std::vector<int32_t> numBoxes;  ///@brief Vector of number of boxes in each image, must have
-                                    /// atleast \ref batch elements.
-    std::vector<BndBox_t> boxes;    ///@brief Vector of bounding boxes to draw, must have enough
-                                    /// elements to match \ref numBoxes.
-} BndBoxes_t;
-
 /**
  * The Rect_t struct is used for the bounding box rectangles for the Bounding Box operator
  */
@@ -134,7 +105,7 @@ struct Size2D {
  * @brief Describes an 8-bit RGBA color value.
  *
  */
-struct ColorRGBA {
+struct ColorRGBA_t {
     uint8_t r;
     uint8_t g;
     uint8_t b;
@@ -145,7 +116,7 @@ struct ColorRGBA {
  * @brief Describes a single box.
  *
  */
-struct BoxT {
+struct Box_t {
     int32_t x;       // top-left corner x coordinate
     int32_t y;       // top-left corner y coordinate
     int32_t width;   // width of the box
@@ -156,11 +127,11 @@ struct BoxT {
  * @brief Describes a single bounding box with a border thickness, border color, and fill color.
  *
  */
-struct BndBoxT {
-    BoxT box;               // bounding box
-    int32_t thickness;      // thickness of the box border
-    ColorRGBA borderColor;  // color of the box border
-    ColorRGBA fillColor;    // fill color of the bounding box
+struct BndBox_t {
+    Box_t box;                // bounding box
+    int32_t thickness;        // thickness of the box border
+    ColorRGBA_t borderColor;  // color of the box border
+    ColorRGBA_t fillColor;    // fill color of the bounding box
 };
 
 /**
@@ -174,7 +145,7 @@ class BndBoxes {
      *
      * @param[in] bndboxesVec A list of lists of bounding boxes corresponding to each image in the batch.
      */
-    BndBoxes(const std::vector<std::vector<BndBoxT>> &bndboxesVec);
+    BndBoxes(const std::vector<std::vector<BndBox_t>> &bndboxesVec);
     BndBoxes(const BndBoxes &) = delete;
     BndBoxes &operator=(const BndBoxes &) = delete;
 
@@ -200,10 +171,10 @@ class BndBoxes {
      * @param i The index of the box within the specified batch.
      * @return A bounding box.
      */
-    BndBoxT boxAt(int32_t b, int32_t i) const;
+    BndBox_t boxAt(int32_t b, int32_t i) const;
 
    private:
-    std::vector<std::vector<BndBoxT>> m_bndboxesVec;
+    std::vector<std::vector<BndBox_t>> m_bndboxesVec;
 };
 
 }  // namespace roccv

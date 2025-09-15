@@ -146,7 +146,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     // Copy generated input data into input tensor
     CopyVectorIntoTensor(input, inputData);
 
-    std::vector<std::vector<BndBoxT>> bboxesVec = {
+    std::vector<std::vector<BndBox_t>> bboxesVec = {
         {
             {{width / 4, height / 4, width / 2, height / 2}, 5, {0, 0, 255, 200}, {0, 255, 0, 100}},
             {{width / 3, height / 3, width / 3 * 2, height / 4}, -1, {90, 16, 181, 50}, {0, 0, 0, 0}},

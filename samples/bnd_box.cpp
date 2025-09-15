@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
     }
 
     int batchSize = 1;
-    std::vector<std::vector<BndBoxT>> bbox_vector;
+    std::vector<std::vector<BndBox_t>> bbox_vector;
     if (boxSet) {
         std::ifstream box_list_file(box_file_path);
         if (box_list_file.is_open()) {
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
                         int currBoxIdx = bbox_vector.size();
                         bbox_vector.resize(currBoxIdx + numBoxes);
                         for (int b = currBoxIdx; b < numBoxes + currBoxIdx; b++) {
-                            BndBoxT box;
+                            BndBox_t box;
                             std::getline(box_list_file, line);
                             box.box.x = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
