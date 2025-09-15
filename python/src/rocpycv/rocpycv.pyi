@@ -54,9 +54,9 @@ YUV: eChannelType
 YVU: eChannelType
 
 class BndBox:
-    borderColor: Color4
+    borderColor: ColorRGBA
     box: Box
-    fillColor: Color4
+    fillColor: ColorRGBA
     thickness: int
     @overload
     def __init__(self) -> None:
@@ -65,40 +65,21 @@ class BndBox:
 
         1. __init__(self: rocpycv.rocpycv.BndBox) -> None
 
-        2. __init__(self: rocpycv.rocpycv.BndBox, box: rocpycv.rocpycv.Box, thickness: int, borderColor: rocpycv.rocpycv.Color4, fillColor: rocpycv.rocpycv.Color4) -> None
+        2. __init__(self: rocpycv.rocpycv.BndBox, box: rocpycv.rocpycv.Box, thickness: int, borderColor: rocpycv.rocpycv.ColorRGBA, fillColor: rocpycv.rocpycv.ColorRGBA) -> None
         """
     @overload
-    def __init__(self, box: Box, thickness: int, borderColor: Color4, fillColor: Color4) -> None:
+    def __init__(self, box: Box, thickness: int, borderColor: ColorRGBA, fillColor: ColorRGBA) -> None:
         """__init__(*args, **kwargs)
         Overloaded function.
 
         1. __init__(self: rocpycv.rocpycv.BndBox) -> None
 
-        2. __init__(self: rocpycv.rocpycv.BndBox, box: rocpycv.rocpycv.Box, thickness: int, borderColor: rocpycv.rocpycv.Color4, fillColor: rocpycv.rocpycv.Color4) -> None
+        2. __init__(self: rocpycv.rocpycv.BndBox, box: rocpycv.rocpycv.Box, thickness: int, borderColor: rocpycv.rocpycv.ColorRGBA, fillColor: rocpycv.rocpycv.ColorRGBA) -> None
         """
 
 class BndBoxes:
-    batch: int
-    boxes: list[BndBox]
-    numBoxes: list[int]
-    @overload
-    def __init__(self) -> None:
-        """__init__(*args, **kwargs)
-        Overloaded function.
-
-        1. __init__(self: rocpycv.rocpycv.BndBoxes) -> None
-
-        2. __init__(self: rocpycv.rocpycv.BndBoxes, batch: int, numBoxes: list[int], boxes: list[rocpycv.rocpycv.BndBox]) -> None
-        """
-    @overload
-    def __init__(self, batch: int, numBoxes: list[int], boxes: list[BndBox]) -> None:
-        """__init__(*args, **kwargs)
-        Overloaded function.
-
-        1. __init__(self: rocpycv.rocpycv.BndBoxes) -> None
-
-        2. __init__(self: rocpycv.rocpycv.BndBoxes, batch: int, numBoxes: list[int], boxes: list[rocpycv.rocpycv.BndBox]) -> None
-        """
+    def __init__(self, bndboxes: list[list[BndBox]]) -> None:
+        """__init__(self: rocpycv.rocpycv.BndBoxes, bndboxes: list[list[rocpycv.rocpycv.BndBox]]) -> None"""
 
 class Box:
     height: int
@@ -124,7 +105,7 @@ class Box:
         2. __init__(self: rocpycv.rocpycv.Box, x: int, y: int, width: int, height: int) -> None
         """
 
-class Color4:
+class ColorRGBA:
     c0: int
     c1: int
     c2: int
@@ -134,18 +115,18 @@ class Color4:
         """__init__(*args, **kwargs)
         Overloaded function.
 
-        1. __init__(self: rocpycv.rocpycv.Color4) -> None
+        1. __init__(self: rocpycv.rocpycv.ColorRGBA) -> None
 
-        2. __init__(self: rocpycv.rocpycv.Color4, c0: int, c1: int, c2: int, c3: int) -> None
+        2. __init__(self: rocpycv.rocpycv.ColorRGBA, r: int, g: int, b: int, a: int) -> None
         """
     @overload
-    def __init__(self, c0: int, c1: int, c2: int, c3: int) -> None:
+    def __init__(self, r: int, g: int, b: int, a: int) -> None:
         """__init__(*args, **kwargs)
         Overloaded function.
 
-        1. __init__(self: rocpycv.rocpycv.Color4) -> None
+        1. __init__(self: rocpycv.rocpycv.ColorRGBA) -> None
 
-        2. __init__(self: rocpycv.rocpycv.Color4, c0: int, c1: int, c2: int, c3: int) -> None
+        2. __init__(self: rocpycv.rocpycv.ColorRGBA, r: int, g: int, b: int, a: int) -> None
         """
 
 class Exception(Exception): ...
@@ -930,8 +911,8 @@ def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: float, stream: Stream |
                     None
         
     """
-def histogram(src: Tensor, mask: Tensor, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
-    """histogram(src: rocpycv.rocpycv.Tensor, mask: rocpycv.rocpycv.Tensor, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
+def histogram(src: Tensor, mask: Tensor | None, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
+    """histogram(src: rocpycv.rocpycv.Tensor, mask: Optional[rocpycv.rocpycv.Tensor], stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
 
 
 
@@ -951,8 +932,8 @@ def histogram(src: Tensor, mask: Tensor, stream: Stream | None = ..., device: eD
 
     
     """
-def histogram_into(dst: Tensor, src: Tensor, mask: Tensor, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
-    """histogram_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, mask: rocpycv.rocpycv.Tensor, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
+def histogram_into(dst: Tensor, src: Tensor, mask: Tensor | None, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
+    """histogram_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, mask: Optional[rocpycv.rocpycv.Tensor], stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
 
 
 
@@ -1222,7 +1203,7 @@ def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: int, th
                 Args:
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     thresh (rocpycv.Tensor): thresh an array of size maxBatch that gives the threshold value of each image.
-                    maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, using with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
+                    maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, used with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
                     maxBatchSize (uint32_t): The maximum batch size.
                     threshType (eThresholdType): Threshold type
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
@@ -1244,7 +1225,7 @@ def threshold_into(dst: Tensor, src: Tensor, thresh: Tensor, maxVal: Tensor, max
                     dst (rocpycv.Tensor): The output tensor which results are written to.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     thresh (rocpycv.Tensor): thresh an array of size maxBatch that gives the threshold value of each image.
-                    maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, using with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
+                    maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, used with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
                     maxBatchSize (uint32_t): The maximum batch size.
                     threshType (eThresholdType): Threshold type
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.

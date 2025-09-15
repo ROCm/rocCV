@@ -28,36 +28,33 @@ THE SOFTWARE.
 using namespace py::literals;
 
 void PyStructs::Export(py::module& m) {
-    py::class_<Box_t>(m, "Box")
+    py::class_<roccv::Box_t>(m, "Box")
         .def(py::init<>())
         .def(py::init<int64_t, int64_t, int32_t, int32_t>(), "x"_a, "y"_a, "width"_a, "height"_a)
-        .def_readwrite("x", &Box_t::x)
-        .def_readwrite("y", &Box_t::y)
-        .def_readwrite("width", &Box_t::width)
-        .def_readwrite("height", &Box_t::height);
-    
-    py::class_<Color4_t>(m, "Color4")
-        .def(py::init<>())
-        .def(py::init<uint8_t, uint8_t, uint8_t, uint8_t>(), "c0"_a, "c1"_a, "c2"_a, "c3"_a)
-        .def_readwrite("c0", &Color4_t::c0)
-        .def_readwrite("c1", &Color4_t::c1)
-        .def_readwrite("c2", &Color4_t::c2)
-        .def_readwrite("c3", &Color4_t::c3);
-    
-    py::class_<BndBox_t>(m, "BndBox")
-        .def(py::init<>())
-        .def(py::init<Box_t, int32_t, Color4_t, Color4_t>(), "box"_a, "thickness"_a, "borderColor"_a, "fillColor"_a)
-        .def_readwrite("box", &BndBox_t::box)
-        .def_readwrite("thickness", &BndBox_t::thickness)
-        .def_readwrite("borderColor", &BndBox_t::borderColor)
-        .def_readwrite("fillColor", &BndBox_t::fillColor);
+        .def_readwrite("x", &roccv::Box_t::x)
+        .def_readwrite("y", &roccv::Box_t::y)
+        .def_readwrite("width", &roccv::Box_t::width)
+        .def_readwrite("height", &roccv::Box_t::height);
 
-    py::class_<BndBoxes_t>(m, "BndBoxes")
+    py::class_<roccv::ColorRGBA_t>(m, "ColorRGBA")
         .def(py::init<>())
-        .def(py::init<int64_t, std::vector<int32_t>, std::vector<BndBox_t>>(), "batch"_a, "numBoxes"_a, "boxes"_a)
-        .def_readwrite("batch", &BndBoxes_t::batch)
-        .def_readwrite("numBoxes", &BndBoxes_t::numBoxes)
-        .def_readwrite("boxes", &BndBoxes_t::boxes);
+        .def(py::init<uint8_t, uint8_t, uint8_t, uint8_t>(), "r"_a, "g"_a, "b"_a, "a"_a)
+        .def_readwrite("c0", &roccv::ColorRGBA_t::r)
+        .def_readwrite("c1", &roccv::ColorRGBA_t::g)
+        .def_readwrite("c2", &roccv::ColorRGBA_t::b)
+        .def_readwrite("c3", &roccv::ColorRGBA_t::a);
+
+    py::class_<roccv::BndBox_t>(m, "BndBox")
+        .def(py::init<>())
+        .def(py::init<roccv::Box_t, int32_t, roccv::ColorRGBA_t, roccv::ColorRGBA_t>(), "box"_a, "thickness"_a,
+             "borderColor"_a, "fillColor"_a)
+        .def_readwrite("box", &roccv::BndBox_t::box)
+        .def_readwrite("thickness", &roccv::BndBox_t::thickness)
+        .def_readwrite("borderColor", &roccv::BndBox_t::borderColor)
+        .def_readwrite("fillColor", &roccv::BndBox_t::fillColor);
+
+    py::class_<roccv::BndBoxes>(m, "BndBoxes")
+        .def(py::init<const std::vector<std::vector<roccv::BndBox_t>>&>(), "bndboxes"_a);
 
     py::class_<roccv::Size2D>(m, "Size2D")
         .def(py::init<>())
