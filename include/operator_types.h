@@ -41,7 +41,7 @@ typedef enum eBorderType {
 } eBorderType;
 
 typedef enum eRemapType {
-    REMAP_ABSOLUTE = 0,             
+    REMAP_ABSOLUTE = 0,
     REMAP_ABSOLUTE_NORMALIZED = 1,
     REMAP_RELATIVE_NORMALIZED = 2,
 } eRemapType;
@@ -120,7 +120,6 @@ typedef struct {
     bool bordered;
 } Rect_t;
 
-
 namespace roccv {
 
 /**
@@ -130,4 +129,81 @@ namespace roccv {
 struct Size2D {
     int w, h;
 };
+
+/**
+ * @brief Describes an 8-bit RGBA color value.
+ *
+ */
+struct ColorRGBA {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+};
+
+/**
+ * @brief Describes a single box.
+ *
+ */
+struct BoxT {
+    int32_t x;       // top-left corner x coordinate
+    int32_t y;       // top-left corner y coordinate
+    int32_t width;   // width of the box
+    int32_t height;  // height of the box
+};
+
+/**
+ * @brief Describes a single bounding box with a border thickness, border color, and fill color.
+ *
+ */
+struct BndBoxT {
+    BoxT box;               // bounding box
+    int32_t thickness;      // thickness of the box border
+    ColorRGBA borderColor;  // color of the box border
+    ColorRGBA fillColor;    // fill color of the bounding box
+};
+
+/**
+ * @brief Describes a list of bounding boxes to be used alongside the BndBox operator.
+ *
+ */
+class BndBoxes {
+   public:
+    /**
+     * @brief Construct a new BndBoxes object.
+     *
+     * @param[in] bndboxesVec A list of lists of bounding boxes corresponding to each image in the batch.
+     */
+    BndBoxes(const std::vector<std::vector<BndBoxT>> &bndboxesVec);
+    BndBoxes(const BndBoxes &) = delete;
+    BndBoxes &operator=(const BndBoxes &) = delete;
+
+    /**
+     * @brief Retrieves the batch size of this bounding box definition.
+     *
+     * @return The batch size of this bounding box definition.
+     */
+    int32_t batch() const;
+
+    /**
+     * @brief Returns the number of bounding boxes at a specific batch index.
+     *
+     * @param b
+     * @return int32_t
+     */
+    int32_t numBoxesAt(int32_t b) const;
+
+    /**
+     * @brief Returns the bounding box at the specified batch and bounding box index.
+     *
+     * @param b The batch index.
+     * @param i The index of the box within the specified batch.
+     * @return A bounding box.
+     */
+    BndBoxT boxAt(int32_t b, int32_t i) const;
+
+   private:
+    std::vector<std::vector<BndBoxT>> m_bndboxesVec;
+};
+
 }  // namespace roccv
