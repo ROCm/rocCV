@@ -149,7 +149,6 @@ int main(int argc, char** argv) {
                     int numBoxes = std::stoi(line.c_str());
                     if (numBoxes > 0) {
                         int currBoxIdx = bbox_vector.size();
-                        bbox_vector.resize(currBoxIdx + numBoxes);
                         for (int b = currBoxIdx; b < numBoxes + currBoxIdx; b++) {
                             BndBox_t box;
                             std::getline(box_list_file, line);
