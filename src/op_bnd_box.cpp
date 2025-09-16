@@ -43,8 +43,8 @@ BndBox::BndBox() {}
 BndBox::~BndBox() {}
 
 template <bool has_alpha, typename T>
-void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, std::vector<Rect_t> rects,
-                            const eDeviceType device) {
+void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
+                            const std::vector<Rect_t> &rects, const eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
@@ -114,7 +114,7 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>, const eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>&, const eDeviceType)>, 4>>
         funcs =
         {
             {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}},

@@ -29,7 +29,7 @@ from test_helpers import generate_tensor, compare_tensors
 
 
 def generate_boxes(samples: int, height: int, width: int) -> rocpycv.BndBoxes:
-    num_boxes = [random.randint(1, 3) for i in range(samples)]
+    num_boxes = [random.randint(1, 3) for _ in range(samples)]
     boxes = []
     for sample in range(samples):
         box_list = []
