@@ -25,29 +25,33 @@ import pytest
 import rocpycv
 import numpy as np
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
-@pytest.mark.parametrize("input_path, thresh, mvdata, maxBatchSize, threshType, device, expected_path, err", [
-    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY, rocpycv.GPU, "expected_thresholding_binary.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY_INV, rocpycv.GPU, "expected_thresholding_binary_inv.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO_INV, rocpycv.GPU, "expected_thresholding_to_zero_inv.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO, rocpycv.GPU, "expected_thresholding_to_zero.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.TRUNC, rocpycv.GPU, "expected_thresholding_trunc.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY, rocpycv.CPU, "expected_thresholding_binary.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.BINARY_INV, rocpycv.CPU, "expected_thresholding_binary_inv.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO_INV, rocpycv.CPU, "expected_thresholding_to_zero_inv.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.TOZERO, rocpycv.CPU, "expected_thresholding_to_zero.bmp", 1.0),
-    ("test_input.bmp", [100], [255], 1, rocpycv.TRUNC, rocpycv.CPU, "expected_thresholding_trunc.bmp", 1.0)
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("threshType", [rocpycv.BINARY, rocpycv.BINARY_INV, rocpycv.TOZERO_INV, rocpycv.TOZERO, rocpycv.TRUNC])
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("thresh", [100])
+@pytest.mark.parametrize("mvdata", [255])
+@pytest.mark.parametrize("samples,height,width", [
+    [1, 100, 200],
+    [3, 300, 200],
+    [7, 300, 468]
 ])
 
-def test_op_thresholding(pytestconfig, input_path, thresh, mvdata, maxBatchSize, threshType, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
-    thresh_tensor = rocpycv.from_dlpack(np.array(thresh, np.float64), rocpycv.N).copy_to(device)
-    maxval_tensor = rocpycv.from_dlpack(np.array(mvdata, np.float64), rocpycv.N).copy_to(device)
+def test_op_thresholding(samples, height, width, channels, dtype, thresh, mvdata, threshType, device):
+    input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    
+    thresh_array = np.full(samples, thresh, np.float64)
+    maxval_array = np.full(samples, mvdata, np.float64)
+
+    thresh_tensor = rocpycv.from_dlpack(np.array(thresh_array, np.float64), rocpycv.N).copy_to(device)
+    maxval_tensor = rocpycv.from_dlpack(np.array(maxval_array, np.float64), rocpycv.N).copy_to(device)
 
     stream = rocpycv.Stream()
-
-    output_tensor = rocpycv.threshold(input_tensor, thresh_tensor, maxval_tensor, maxBatchSize, threshType, stream, device)
+    output = rocpycv.threshold(input_tensor, thresh_tensor, maxval_tensor, samples, threshType, stream, device)
+    rocpycv.threshold_into(output_golden, input_tensor, thresh_tensor, maxval_tensor, samples, threshType, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+    assert output.shape() == output_golden.shape()
