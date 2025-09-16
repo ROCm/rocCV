@@ -90,6 +90,12 @@ void FillTensor(const roccv::Tensor& tensor) {
             break;
         }
 
+        case DATA_TYPE_F64: {
+            std::vector<double> vec = RandVector<double>(tensor.shape().size());
+            MoveToTensor<double>(tensor, vec);
+            break;
+        }
+
         case DATA_TYPE_S32: {
             std::vector<int32_t> vec = RandVector<int32_t>(tensor.shape().size());
             MoveToTensor<int32_t>(tensor, vec);

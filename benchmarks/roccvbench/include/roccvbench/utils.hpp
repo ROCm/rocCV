@@ -23,6 +23,8 @@
 
 #include <core/hip_assert.h>
 
+#include <chrono>
+
 namespace roccv {
 class Tensor;
 }
@@ -37,27 +39,20 @@ namespace roccvbench {
 extern void FillTensor(const roccv::Tensor& tensor);
 
 /**
- * @brief Records execution time of a function, ensuring synchronization using HIP events.
+ * @brief Records the execution time in milliseconds of a block of code <code> by running it <numRuns> times and taking
+ * the mean of the results. The resulting mean is written to <executionTime>.
+ *
  */
-#define ROCCV_BENCH_RECORD_EXECUTION_TIME(func, executionTime, numRuns)               \
-    {                                                                                 \
-        for (int i = 0; i < numRuns; i++) {                                           \
-            hipEvent_t begin, end;                                                    \
-            HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));                           \
-            HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));                             \
-                                                                                      \
-            HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin));                            \
-            func;                                                                     \
-            HIP_VALIDATE_NO_ERRORS(hipEventRecord(end));                              \
-            HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));                         \
-                                                                                      \
-            float execution_time;                                                     \
-            HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&execution_time, begin, end)); \
-            HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));                           \
-            HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));                             \
-                                                                                      \
-            executionTime += execution_time / numRuns;                                \
-        }                                                                             \
+#define ROCCV_BENCH_RECORD_BLOCK(code, executionTime, numRuns)                                              \
+    {                                                                                                       \
+        double totalExecutionTime = 0.0;                                                                    \
+        for (int i = 0; i < numRuns; i++) {                                                                 \
+            auto blockStart = std::chrono::high_resolution_clock::now();                                    \
+            code;                                                                                           \
+            auto blockEnd = std::chrono::high_resolution_clock::now();                                      \
+            totalExecutionTime += std::chrono::duration<double, std::milli>(blockEnd - blockStart).count(); \
+        }                                                                                                   \
+        executionTime = totalExecutionTime / numRuns;                                                       \
     }
 
 }  // namespace roccvbench

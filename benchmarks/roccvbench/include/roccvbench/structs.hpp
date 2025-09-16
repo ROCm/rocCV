@@ -30,7 +30,7 @@ namespace roccvbench {
  *
  */
 struct BenchmarkResults {
-    float execution_time;
+    double executionTime;
 };
 
 /**
@@ -38,7 +38,7 @@ struct BenchmarkResults {
  *
  */
 struct BenchmarkConfig {
-    int batches, width, height, runs;
+    int samples, width, height, runs;
 };
 
 /**

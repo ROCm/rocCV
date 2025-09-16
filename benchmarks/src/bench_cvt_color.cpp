@@ -31,40 +31,49 @@ using namespace roccv;
 
 BENCHMARK(CvtColor, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_U8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
     roccvbench::FillTensor(input);
 
     CvtColor op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY),
-                                      results.execution_time, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, eColorConversionCode::COLOR_RGB2GRAY);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
 BENCHMARK(CvtColor, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
     roccvbench::FillTensor(input);
 
     CvtColor op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
-        op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY, eDeviceType::CPU), results.execution_time,
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY, eDeviceType::CPU); }, results.executionTime,
         config.runs);
 
     return results;

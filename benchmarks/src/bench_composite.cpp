@@ -32,12 +32,12 @@ using namespace roccv;
 
 BENCHMARK(Composite, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
     Tensor::Requirements maskReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8);
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8);
 
     Tensor background(reqs);
     Tensor foreground(reqs);
@@ -49,21 +49,31 @@ BENCHMARK(Composite, GPU) {
     roccvbench::FillTensor(mask);
 
     Composite op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, foreground, background, mask, output), results.execution_time,
-                                      config.runs);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, foreground, background, mask, output);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
 BENCHMARK(Composite, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
         eDeviceType::CPU);
     Tensor::Requirements maskReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8,
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8,
         eDeviceType::CPU);
 
     Tensor background(reqs);
@@ -76,8 +86,8 @@ BENCHMARK(Composite, CPU) {
     roccvbench::FillTensor(mask);
 
     Composite op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, foreground, background, mask, output, eDeviceType::CPU),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }
