@@ -79,7 +79,7 @@ std::vector<roccvbench::BenchmarkConfig> loadConfig(const std::string& filepath)
 
     for (auto benchParams : data["params"]) {
         roccvbench::BenchmarkConfig config;
-        config.batches = benchParams["batches"];
+        config.samples = benchParams["samples"];
         config.height = benchParams["height"];
         config.width = benchParams["width"];
         config.runs = benchParams["runs"];
@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
 
                 // Iterate through each benchmark configuration
                 for (auto config : configs) {
-                    std::cout << "\tConfig [batches=" << config.batches << ", height=" << config.height
+                    std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
                               << ", width=" << config.width << ", runs=" << config.runs << "]" << std::endl;
                     auto result = benchmark.func(config);
 
@@ -301,8 +301,8 @@ int main(int argc, char** argv) {
                     runResultsJson["width"].push_back(config.width);
                     runResultsJson["height"].push_back(config.height);
                     runResultsJson["runs"].push_back(config.runs);
-                    runResultsJson["execution_time"].push_back(result.execution_time);
-                    runResultsJson["batches"].push_back(config.batches);
+                    runResultsJson["execution_time"].push_back(result.executionTime);
+                    runResultsJson["samples"].push_back(config.samples);
                 }
                 std::cout << std::endl;
 

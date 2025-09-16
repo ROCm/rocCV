@@ -23,27 +23,39 @@
 
 import pytest
 import rocpycv
-import numpy as np
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
-@pytest.mark.parametrize("input_path, conversion_code, device, expected_path, err", [
-    ("test_input.bmp", rocpycv.COLOR_BGR2YUV, rocpycv.GPU, "expected_color_cvt_yuv.bmp", 1.0),
-    ("expected_color_cvt_yuv.bmp", rocpycv.COLOR_YUV2BGR, rocpycv.GPU, "expected_color_cvt_bgr.bmp", 1.0),
-    ("test_input.bmp", rocpycv.COLOR_BGR2RGB, rocpycv.GPU, "expected_color_cvt_rgb.bmp", 1.0),
-    ("test_input.bmp", rocpycv.COLOR_BGR2GRAY, rocpycv.GPU, "expected_color_cvt_grayscale.bmp", 1.0),
-    ("test_input.bmp", rocpycv.COLOR_BGR2YUV, rocpycv.CPU, "expected_color_cvt_yuv.bmp", 1.0),
-    ("expected_color_cvt_yuv.bmp", rocpycv.COLOR_YUV2BGR, rocpycv.CPU, "expected_color_cvt_bgr.bmp", 1.0),
-    ("test_input.bmp", rocpycv.COLOR_BGR2RGB, rocpycv.CPU, "expected_color_cvt_rgb.bmp", 1.0),
-    ("test_input.bmp", rocpycv.COLOR_BGR2GRAY, rocpycv.CPU, "expected_color_cvt_grayscale.bmp", 1.0)
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8])
+@pytest.mark.parametrize("code", [
+    rocpycv.eColorConversionCode.COLOR_RGB2GRAY,
+    rocpycv.eColorConversionCode.COLOR_BGR2GRAY,
+    rocpycv.eColorConversionCode.COLOR_BGR2RGB,
+    rocpycv.eColorConversionCode.COLOR_BGR2YUV,
+    rocpycv.eColorConversionCode.COLOR_RGB2BGR,
+    rocpycv.eColorConversionCode.COLOR_RGB2YUV,
+    rocpycv.eColorConversionCode.COLOR_YUV2BGR,
+    rocpycv.eColorConversionCode.COLOR_YUV2RGB,
 ])
+@pytest.mark.parametrize("samples,width,height", [
+    [1, 50, 100],
+    [3, 150, 50],
+    [7, 15, 23]
+])
+def test_op_cvtcolor(samples, height, width, code, dtype, device):
+    in_channels = 3
+    out_channels = 3
+    if code == rocpycv.eColorConversionCode.COLOR_BGR2GRAY or code == rocpycv.eColorConversionCode.COLOR_RGB2GRAY:
+        out_channels = 1
 
-def test_op_ColorCvt(pytestconfig, input_path, conversion_code, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
+    input = generate_tensor(samples, width, height, in_channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, out_channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
     stream = rocpycv.Stream()
-
-    output_tensor = rocpycv.cvtcolor(input_tensor, conversion_code, stream, device)
+    output = rocpycv.cvtcolor(input, code, stream, device)
+    rocpycv.cvtcolor_into(output_golden, input, code, stream, device)
     stream.synchronize()
 
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+    compare_tensors(output, output_golden)

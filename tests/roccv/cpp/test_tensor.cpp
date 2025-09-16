@@ -54,8 +54,8 @@ std::vector<int64_t> CalculateStrides(const TensorShape& shape, const DataType& 
 void TestNegativeTensorShape() {
     // Ensure TensorShape errors are thrown
     {
-        EXPECT_EXCEPTION(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {1, 10}), eStatusType::OUT_OF_BOUNDS);
-        TensorShape shape(TensorLayout(TENSOR_LAYOUT_N), {10});
+        EXPECT_EXCEPTION(TensorShape({1, 10}, "N"), eStatusType::OUT_OF_BOUNDS);
+        TensorShape shape({10}, "N");
         EXPECT_EXCEPTION(shape[1], eStatusType::OUT_OF_BOUNDS);
     }
 }
@@ -67,15 +67,13 @@ void TestNegativeTensorShape() {
 void TestNegativeTensor() {
     {
         // Should not be able to reshape tensor into another view with a differing number of elements
-        Tensor tensor(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {1, 2, 3}), DataType(DATA_TYPE_U8));
-        EXPECT_EXCEPTION(tensor.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {1, 1, 2, 2})),
-                         eStatusType::INVALID_VALUE);
+        Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
+        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 2}, "NHWC")), eStatusType::INVALID_VALUE);
 
         // Should not be able to reshape tensor into another view which would result in a different number of bytes in
         // the underlying memory.
-        EXPECT_EXCEPTION(
-            tensor.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {1, 1, 2, 3}), DataType(DATA_TYPE_S16)),
-            eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC"), DataType(DATA_TYPE_S16)),
+                         eStatusType::INVALID_VALUE);
     }
 }
 
@@ -86,7 +84,7 @@ void TestNegativeTensor() {
 void TestTensorCorrectness() {
     // Regular tensor construction
     {
-        Tensor tensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {1, 720, 480, 3}), DataType(DATA_TYPE_U8));
+        Tensor tensor(TensorShape({1, 720, 480, 3}, "NHWC"), DataType(DATA_TYPE_U8));
         EXPECT_EQ(tensor.shape().size(), 1 * 720 * 480 * 3);
         EXPECT_EQ(tensor.dtype().size(), 1);
     }
@@ -102,7 +100,7 @@ void TestTensorCorrectness() {
     {
         // Reshape tensor from NHWC -> HWC layout
         Tensor tensor(1, {720, 480}, FMT_RGB8);
-        Tensor reshapedTensor = tensor.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {720, 480, 3}));
+        Tensor reshapedTensor = tensor.reshape(TensorShape({720, 480, 3}, "HWC"));
         EXPECT_EQ(reshapedTensor.rank(), 3);
         EXPECT_NE(reshapedTensor.rank(), tensor.rank());
         EXPECT_EQ(reshapedTensor.shape().size(), tensor.shape().size());
@@ -115,9 +113,8 @@ void TestTensorCorrectness() {
 
     // Tensor reshape: Change layout and datatype
     {
-        Tensor tensor(TensorShape(TensorLayout(TENSOR_LAYOUT_NWC), {1, 5, 4}), DataType(DATA_TYPE_S16));
-        Tensor reshapedTensor =
-            tensor.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {1, 5}), DataType(DATA_TYPE_4S16));
+        Tensor tensor(TensorShape({1, 5, 4}, "NWC"), DataType(DATA_TYPE_S16));
+        Tensor reshapedTensor = tensor.reshape(TensorShape({1, 5}, "NW"), DataType(DATA_TYPE_4S16));
         EXPECT_NE(reshapedTensor.shape().size(), tensor.shape().size());
         EXPECT_NE(reshapedTensor.rank(), tensor.rank());
         EXPECT_EQ(reshapedTensor.rank(), 2);
@@ -159,19 +156,19 @@ eTestStatusType test_tensor(int argc, char** argv) {
 
     // Stride calculation tests
     // clang-format off
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {1, 2, 4, 4}), DataType(DATA_TYPE_U8)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {2, 16, 4, 1}), DataType(DATA_TYPE_F32)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {3, 54, 4, 3}), DataType(DATA_TYPE_S16)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {4, 3, 4, 4}), DataType(DATA_TYPE_S8)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {6, 12, 4, 3}), DataType(DATA_TYPE_S32)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {8, 45, 4, 1}), DataType(DATA_TYPE_U32)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({1, 2, 4, 4}, "NHWC"), DataType(DATA_TYPE_U8)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({2, 16, 4, 1}, "NHWC"), DataType(DATA_TYPE_F32)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({3, 54, 4, 3}, "NHWC"), DataType(DATA_TYPE_S16)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({4, 3, 4, 4}, "NHWC"), DataType(DATA_TYPE_S8)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({6, 12, 4, 3}, "NHWC"), DataType(DATA_TYPE_S32)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({8, 45, 4, 1}, "NHWC"), DataType(DATA_TYPE_U32)));
 
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {2, 4, 4}), DataType(DATA_TYPE_U8)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {16, 4, 1}), DataType(DATA_TYPE_F32)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {54, 4, 3}), DataType(DATA_TYPE_S16)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {3, 4, 4}), DataType(DATA_TYPE_S8)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {12, 4, 3}), DataType(DATA_TYPE_S32)));
-    TEST_CASE(TestTensorStrideCalculation(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {45, 4, 1}), DataType(DATA_TYPE_U32)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({2, 4, 4}, "HWC"), DataType(DATA_TYPE_U8)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({16, 4, 1}, "HWC"), DataType(DATA_TYPE_F32)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({54, 4, 3}, "HWC"), DataType(DATA_TYPE_S16)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({3, 4, 4}, "HWC"), DataType(DATA_TYPE_S8)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({12, 4, 3}, "HWC"), DataType(DATA_TYPE_S32)));
+    TEST_CASE(TestTensorStrideCalculation(TensorShape({45, 4, 1}, "HWC"), DataType(DATA_TYPE_U32)));
     // clang-format on
 
     TEST_CASES_END();

@@ -24,18 +24,31 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import compare_tensors, generate_tensor
 
-# TODO: CPU tests do not seem to be working properly. Will have to look into this further.
 
-@pytest.mark.parametrize("input_path, diameter, sigmaColor, sigmaSpace, border_mode, border_value, device, expected_path, err", [
-    ("test_input.bmp", 30, 75, 75, rocpycv.CONSTANT, [255, 0, 255, 0], rocpycv.GPU, "expected_bilateral_filter.bmp", 12.75),
-    ("test_input.bmp", 30, 75, 75, rocpycv.CONSTANT, [255, 0, 255, 0], rocpycv.CPU, "expected_bilateral_filter.bmp", 12.75)
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
+@pytest.mark.parametrize("border_mode", [rocpycv.eBorderType.CONSTANT])
+@pytest.mark.parametrize("border_val", [[0, 0, 0, 1]])
+@pytest.mark.parametrize("diameter,sigma_color,sigma_space", [
+    (3, 1.0, 1.0)
 ])
-def test_op_bilateral_filter(pytestconfig, input_path, diameter, sigmaColor, sigmaSpace, border_mode, border_value, device, expected_path, err):
-    input_tensor = load_image(f"{pytestconfig.getoption('data_dir')}/{input_path}").copy_to(device)
+@pytest.mark.parametrize("channels", [1, 3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    (1, 56, 24),
+    (3, 14, 40),
+    (7, 45, 105)
+])
+def test_op_bilateral_filter(samples, height, width, channels, border_mode, border_val, diameter, sigma_color, sigma_space, dtype, device):
+    input = generate_tensor(samples, width, height, channels, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.bilateral_filter(input_tensor, diameter, sigmaColor,
-                                      sigmaSpace, border_mode, border_value, stream, device)
+    rocpycv.bilateral_filter_into(output_golden, input, diameter, sigma_color,
+                                  sigma_space, border_mode, border_val, stream, device)
+    output = rocpycv.bilateral_filter(input, diameter, sigma_color, sigma_space,
+                                      border_mode, border_val, stream, device)
     stream.synchronize()
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+
+    compare_tensors(output, output_golden)

@@ -24,20 +24,26 @@
 import pytest
 import rocpycv
 
-from test_helpers import load_image, compare_image
+from test_helpers import generate_tensor, compare_tensors
 
 
-@pytest.mark.parametrize("foreground_path, background_path, mask_path, out_channels, device, expected_path, err", [
-    ("composite/foreground.bmp", "composite/background.bmp", "composite/alpha_mask.bmp",
-     3, rocpycv.GPU, "composite/expected_composite.bmp", 1.0),
-    ("composite/foreground.bmp", "composite/background.bmp", "composite/alpha_mask.bmp",
-     3, rocpycv.CPU, "composite/expected_composite.bmp", 1.0)
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.F32])
+@pytest.mark.parametrize("out_channels", [3, 4])
+@pytest.mark.parametrize("samples,height,width", [
+    (1, 45, 23),
+    (3, 67, 85),
+    (7, 25, 95)
 ])
-def test_op_composite(pytestconfig, foreground_path, background_path, mask_path, out_channels, device, expected_path, err):
-    foreground = load_image(f"{pytestconfig.getoption('data_dir')}/{foreground_path}").copy_to(device)
-    background = load_image(f"{pytestconfig.getoption('data_dir')}/{background_path}").copy_to(device)
-    mask = load_image(f"{pytestconfig.getoption('data_dir')}/{mask_path}", True).copy_to(device)
+def test_op_composite(samples, height, width, out_channels, dtype, device):
+    foreground = generate_tensor(samples, width, height, 3, dtype, device)
+    background = generate_tensor(samples, width, height, 3, dtype, device)
+    mask = generate_tensor(samples, width, height, 1, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, out_channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+
     stream = rocpycv.Stream()
-    output_tensor = rocpycv.composite(foreground, background, mask, out_channels, stream, device)
+    output = rocpycv.composite(foreground, background, mask, out_channels, stream, device)
+    rocpycv.composite_into(output_golden, foreground, background, mask, stream, device)
     stream.synchronize()
-    compare_image(output_tensor, f"{pytestconfig.getoption('data_dir')}/{expected_path}", err)
+
+    compare_tensors(output, output_golden)

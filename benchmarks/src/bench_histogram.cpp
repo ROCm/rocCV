@@ -32,11 +32,11 @@ using namespace roccv;
 
 BENCHMARK(Histogram, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_U8);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.batches, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
+        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
 
     Tensor input(inReqs);
     Tensor output(outReqs);
@@ -44,19 +44,29 @@ BENCHMARK(Histogram, GPU) {
     roccvbench::FillTensor(input);
 
     Histogram op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, std::nullopt, output), results.execution_time, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, std::nullopt, output);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
 BENCHMARK(Histogram, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements inReqs =
-        Tensor::CalcRequirements(config.batches, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.batches, 256, 1}),
+        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}),
                                  DataType(eDataType::DATA_TYPE_S32), eDeviceType::CPU);
 
     Tensor input(inReqs);
@@ -65,8 +75,8 @@ BENCHMARK(Histogram, CPU) {
     roccvbench::FillTensor(input);
 
     Histogram op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, std::nullopt, output, eDeviceType::CPU),
-                                      results.execution_time, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

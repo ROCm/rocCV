@@ -116,7 +116,7 @@ def rocpycv_type_to_np_type(type: rocpycv.eDataType) -> type:
     return type_map[type]
 
 
-def generate_tensor(samples: int, width: int, height: int, channels: int, type: rocpycv.eDataType, device: rocpycv.eDeviceType) -> rocpycv.Tensor:
+def generate_tensor(samples: int, width: int, height: int, channels: int, dtype: rocpycv.eDataType, device: rocpycv.eDeviceType) -> rocpycv.Tensor:
     """Generate a rocpycv.Tensor with a NHWC layout containing random values on a specified device.
 
     Args:
@@ -124,23 +124,25 @@ def generate_tensor(samples: int, width: int, height: int, channels: int, type: 
         width (int): Width of each image in the batch.
         height (int): Height of each image in the batch.
         channels (int): Number of channels for images in the batch.
-        type (rocpycv.eDataType): Underlying datatype for the images.
+        dtype (rocpycv.eDataType): Underlying datatype for the images.
         device (rocpycv.eDeviceType): Device this rocpycv.Tensor should be allocated on.
 
     Returns:
         rocpycv.Tensor: A rocpycv.Tensor containing randomly generated data.
     """
+    return generate_tensor_generic([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
-    np_dtype = rocpycv_type_to_np_type(type)
+
+def generate_tensor_generic(shape: list[int], layout: rocpycv.eTensorLayout, dtype: rocpycv.eDataType, device: rocpycv.eDeviceType) -> rocpycv.Tensor:
+    np_dtype = rocpycv_type_to_np_type(dtype)
 
     if np_dtype == np.float32 or np_dtype == np.float64:
-        np_array = np.random.rand(samples, height, width, channels).astype(np_dtype)
+        np_array = np.random.rand(*shape).astype(np_dtype)
     else:
         type_info = np.iinfo(np_dtype)
-        np_array = np.random.randint(type_info.min, type_info.max, size=(
-            samples, height, width, channels), dtype=np_dtype)
+        np_array = np.random.randint(type_info.min, type_info.max, size=shape, dtype=np_dtype)
 
-    tensor = rocpycv.from_dlpack(np_array, rocpycv.eTensorLayout.NHWC)
+    tensor = rocpycv.from_dlpack(np_array, layout)
     return tensor.copy_to(device)
 
 

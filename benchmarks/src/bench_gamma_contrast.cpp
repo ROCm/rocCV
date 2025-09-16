@@ -30,10 +30,10 @@ using namespace roccv;
 
 BENCHMARK(GammaContrast, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8));
     Tensor input(reqs);
     Tensor output(reqs);
@@ -42,17 +42,27 @@ BENCHMARK(GammaContrast, GPU) {
     roccvbench::FillTensor(input);
 
     GammaContrast op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, gamma), results.execution_time, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, gamma);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
 BENCHMARK(GammaContrast, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.batches, config.height, config.width, 3}),
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8), eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);
@@ -61,8 +71,8 @@ BENCHMARK(GammaContrast, CPU) {
     roccvbench::FillTensor(input);
 
     GammaContrast op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, gamma, eDeviceType::CPU), results.execution_time,
-                                      config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, gamma, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

@@ -31,41 +31,50 @@ using namespace roccv;
 
 BENCHMARK(Resize, GPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
     Tensor::Requirements outputReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8);
     Tensor input(inputReqs);
     Tensor output(outputReqs);
 
     roccvbench::FillTensor(input);
 
     Resize op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR),
-                                      results.execution_time, config.runs);
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    ROCCV_BENCH_RECORD_BLOCK(
+        {
+            op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
+            hipStreamSynchronize(stream);
+        },
+        results.executionTime, config.runs);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
 BENCHMARK(Resize, CPU) {
     roccvbench::BenchmarkResults results;
-    results.execution_time = 0.0f;
+    results.executionTime = 0.0f;
 
     Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.batches, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor::Requirements outputReqs = Tensor::CalcRequirements(
-        config.batches, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8, eDeviceType::CPU);
+        config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(inputReqs);
     Tensor output(outputReqs);
 
     roccvbench::FillTensor(input);
 
     Resize op;
-    ROCCV_BENCH_RECORD_EXECUTION_TIME(
-        op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU), results.execution_time,
-        config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
+        results.executionTime, config.runs);
 
     return results;
 }

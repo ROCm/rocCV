@@ -1,31 +1,25 @@
 {
     "params": [
         {
-            "batches": 1,
+            "samples": 1,
             "height": 1080,
             "width": 1920,
             "runs": 5
         },
         {
-            "batches": 16,
+            "samples": 16,
             "height": 1080,
             "width": 1920,
             "runs": 5
         },
         {
-            "batches": 32,
+            "samples": 32,
             "height": 1080,
             "width": 1920,
             "runs": 5
         },
         {
-            "batches": 64,
-            "height": 1080,
-            "width": 1920,
-            "runs": 5
-        },
-        {
-            "batches": 128,
+            "samples": 64,
             "height": 1080,
             "width": 1920,
             "runs": 5
