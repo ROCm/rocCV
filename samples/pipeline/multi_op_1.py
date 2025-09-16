@@ -118,9 +118,9 @@ if __name__ == "__main__":
     
     box1 = rocpycv.Box((shape[2] >> 1), (shape[1] >> 1), (shape[2] >> 2), (shape[1] >> 3))
     box1_borderColor = rocpycv.Color4(0, 0, 255, 200)
-    thikness = 8
+    thickness = 8
     box1_fillColor = rocpycv.Color4(0, 0, 0, 0)
-    bndbox1 = rocpycv.BndBox(box1, thikness, box1_borderColor, box1_fillColor)
+    bndbox1 = rocpycv.BndBox(box1, thickness, box1_borderColor, box1_fillColor)
     bbox_array.append(bndbox1)
 
     bnd_boxes = rocpycv.BndBoxes(1, numBoxes, bbox_array)
