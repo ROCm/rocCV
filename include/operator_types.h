@@ -41,7 +41,7 @@ typedef enum eBorderType {
 } eBorderType;
 
 typedef enum eRemapType {
-    REMAP_ABSOLUTE = 0,             
+    REMAP_ABSOLUTE = 0,
     REMAP_ABSOLUTE_NORMALIZED = 1,
     REMAP_RELATIVE_NORMALIZED = 2,
 } eRemapType;
@@ -80,35 +80,6 @@ typedef enum eThresholdType {
 // Column Major
 typedef float PerspectiveTransform[9];
 
-typedef struct {
-    uint8_t c0;
-    uint8_t c1;
-    uint8_t c2;
-    uint8_t c3;
-} Color4_t;
-
-typedef struct {
-    int64_t x;       ///@brief x coordinate of the top-left corner.
-    int64_t y;       ///@brief y coordinate of the top-left corner.
-    int32_t width;   ///@brief width of the box.
-    int32_t height;  ///@brief height of the box.
-} Box_t;
-
-typedef struct {
-    Box_t box;             ///@brief Bounding box definition.
-    int32_t thickness;     ///@brief Border thickness of bounding box.
-    Color4_t borderColor;  ///@brief Border color of bounding box.
-    Color4_t fillColor;    ///@brief Fill color of bounding box.
-} BndBox_t;
-
-typedef struct {
-    int64_t batch;                  ///@brief Batch size.
-    std::vector<int32_t> numBoxes;  ///@brief Vector of number of boxes in each image, must have
-                                    /// atleast \ref batch elements.
-    std::vector<BndBox_t> boxes;    ///@brief Vector of bounding boxes to draw, must have enough
-                                    /// elements to match \ref numBoxes.
-} BndBoxes_t;
-
 /**
  * The Rect_t struct is used for the bounding box rectangles for the Bounding Box operator
  */
@@ -120,7 +91,6 @@ typedef struct {
     bool bordered;
 } Rect_t;
 
-
 namespace roccv {
 
 /**
@@ -130,4 +100,81 @@ namespace roccv {
 struct Size2D {
     int w, h;
 };
+
+/**
+ * @brief Describes an 8-bit RGBA color value.
+ *
+ */
+struct ColorRGBA_t {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+};
+
+/**
+ * @brief Describes a single box.
+ *
+ */
+struct Box_t {
+    int64_t x;       // top-left corner x coordinate
+    int64_t y;       // top-left corner y coordinate
+    int64_t width;   // width of the box
+    int64_t height;  // height of the box
+};
+
+/**
+ * @brief Describes a single bounding box with a border thickness, border color, and fill color.
+ *
+ */
+struct BndBox_t {
+    Box_t box;                // bounding box
+    int32_t thickness;        // thickness of the box border
+    ColorRGBA_t borderColor;  // color of the box border
+    ColorRGBA_t fillColor;    // fill color of the bounding box
+};
+
+/**
+ * @brief Describes a list of bounding boxes to be used alongside the BndBox operator.
+ *
+ */
+class BndBoxes {
+   public:
+    /**
+     * @brief Construct a new BndBoxes object.
+     *
+     * @param[in] bndboxesVec A list of lists of bounding boxes corresponding to each image in the batch.
+     */
+    BndBoxes(const std::vector<std::vector<BndBox_t>> &bndboxesVec);
+    BndBoxes(const BndBoxes &) = delete;
+    BndBoxes &operator=(const BndBoxes &) = delete;
+
+    /**
+     * @brief Retrieves the batch size of this bounding box definition.
+     *
+     * @return The batch size of this bounding box definition.
+     */
+    int64_t batch() const;
+
+    /**
+     * @brief Returns the number of bounding boxes at a specific batch index.
+     *
+     * @param b The batch index.
+     * @return The number of boxes at the specified batch index.
+     */
+    int64_t numBoxesAt(int64_t b) const;
+
+    /**
+     * @brief Returns the bounding box at the specified batch and bounding box index.
+     *
+     * @param b The batch index.
+     * @param i The index of the box within the specified batch.
+     * @return A bounding box.
+     */
+    BndBox_t boxAt(int64_t b, int64_t i) const;
+
+   private:
+    std::vector<std::vector<BndBox_t>> m_bndboxesVec;
+};
+
 }  // namespace roccv

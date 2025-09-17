@@ -32,9 +32,9 @@ namespace py = pybind11;
 
 class PyOpCustomCrop {
    public:
-    static void ExecuteInto(PyTensor& output, PyTensor& input, Box_t cropRect,
+    static void ExecuteInto(PyTensor& output, PyTensor& input, roccv::Box_t cropRect,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
-    static PyTensor Execute(PyTensor& input, Box_t cropRect, std::optional<std::reference_wrapper<PyStream>> stream,
-                            eDeviceType device);
+    static PyTensor Execute(PyTensor& input, roccv::Box_t cropRect,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
     static void Export(py::module& m);
 };

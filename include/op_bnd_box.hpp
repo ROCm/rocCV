@@ -85,8 +85,8 @@ class BndBox final : public IOperator {
      *
      */
     void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output,
-                    const BndBoxes_t bnd_boxes, eDeviceType device = eDeviceType::GPU);
+                    const BndBoxes& bndboxes, eDeviceType device = eDeviceType::GPU);
 
-    void generateRects(std::vector<Rect_t>& rects, const BndBoxes_t& bnd_boxes, int64_t height, int64_t width);
+    void generateRects(std::vector<Rect_t>& rects, const BndBoxes& bnd_boxes, int64_t height, int64_t width);
 };
 }  // namespace roccv
