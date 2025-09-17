@@ -21,10 +21,11 @@ THE SOFTWARE.
 */
 
 #include <core/hip_assert.h>
-#include <op_bnd_box.hpp>
+
 #include <core/tensor.hpp>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <op_bnd_box.hpp>
 #include <opencv2/opencv.hpp>
 
 using namespace roccv;
@@ -65,13 +66,14 @@ using namespace roccv;
  * 0 <-- alpha component of box fill color of box 2
  */
 
- void ShowHelpAndExit(const char *option = NULL) {
+void ShowHelpAndExit(const char* option = NULL) {
     std::cout << "Options: " << option << std::endl
-    << "-i Input File Path - required" << std::endl
-    << "-o Output File Path - optional; default: output.bmp" << std::endl
-    << "-cpu Select CPU instead of GPU to perform operation - optional; default choice is GPU path" << std::endl
-    << "-d GPU device ID (0 for the first device, 1 for the second, etc.) - optional; default: 0" << std::endl
-    << "-box_file Bounding box list file - optional; default: use the set value in the app" << std::endl;
+              << "-i Input File Path - required" << std::endl
+              << "-o Output File Path - optional; default: output.bmp" << std::endl
+              << "-cpu Select CPU instead of GPU to perform operation - optional; default choice is GPU path"
+              << std::endl
+              << "-d GPU device ID (0 for the first device, 1 for the second, etc.) - optional; default: 0" << std::endl
+              << "-box_file Bounding box list file - optional; default: use the set value in the app" << std::endl;
     exit(0);
 }
 
@@ -79,12 +81,12 @@ int main(int argc, char** argv) {
     std::string input_file_path;
     std::string box_file_path;
     std::string output_file_path = "output.bmp";
-    bool gpuPath = true; // use GPU by default
+    bool gpuPath = true;  // use GPU by default
     eDeviceType device = eDeviceType::GPU;
     int deviceId = 0;
-    bool boxSet = false; // User sets the bounding box list data in a text file
+    bool boxSet = false;  // User sets the bounding box list data in a text file
 
-    if(argc < 3) {
+    if (argc < 3) {
         ShowHelpAndExit("-h");
     }
     for (int i = 1; i < argc; i++) {
@@ -133,8 +135,7 @@ int main(int argc, char** argv) {
     }
 
     int batchSize = 1;
-    std::vector<int32_t> bboxes_size_vector;
-    std::vector<BndBox_t> bbox_vector;
+    std::vector<std::vector<BndBox_t>> bbox_vector;
     if (boxSet) {
         std::ifstream box_list_file(box_file_path);
         if (box_list_file.is_open()) {
@@ -142,43 +143,45 @@ int main(int argc, char** argv) {
             std::getline(box_list_file, line);
             batchSize = std::stoi(line.c_str());
             if (batchSize > 0) {
-                bboxes_size_vector.resize(batchSize);
+                bbox_vector.resize(batchSize);
                 for (int i = 0; i < batchSize; i++) {
                     std::getline(box_list_file, line);
                     int numBoxes = std::stoi(line.c_str());
                     if (numBoxes > 0) {
-                        bboxes_size_vector[i] = numBoxes;
                         int currBoxIdx = bbox_vector.size();
-                        bbox_vector.resize(currBoxIdx + numBoxes);
                         for (int b = currBoxIdx; b < numBoxes + currBoxIdx; b++) {
+                            BndBox_t box;
                             std::getline(box_list_file, line);
-                            bbox_vector[b].box.x = std::atoi(line.c_str());
+                            box.box.x = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].box.y = std::atoi(line.c_str());
+                            box.box.y = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].box.width = std::atoi(line.c_str());
+                            box.box.width = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].box.height = std::atoi(line.c_str());
+                            box.box.height = std::atoi(line.c_str());
 
                             std::getline(box_list_file, line);
-                            bbox_vector[b].thickness = std::atoi(line.c_str());
+                            box.thickness = std::atoi(line.c_str());
 
                             std::getline(box_list_file, line);
-                            bbox_vector[b].borderColor.c0 = std::atoi(line.c_str());
+                            box.borderColor.r = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].borderColor.c1 = std::atoi(line.c_str());
+                            box.borderColor.g = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].borderColor.c2 = std::atoi(line.c_str());
+                            box.borderColor.b = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].borderColor.c3 = std::atoi(line.c_str());
+                            box.borderColor.a = std::atoi(line.c_str());
+
                             std::getline(box_list_file, line);
-                            bbox_vector[b].fillColor.c0 = std::atoi(line.c_str());
+                            box.fillColor.r = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].fillColor.c1 = std::atoi(line.c_str());
+                            box.fillColor.g = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].fillColor.c2 = std::atoi(line.c_str());
+                            box.fillColor.b = std::atoi(line.c_str());
                             std::getline(box_list_file, line);
-                            bbox_vector[b].fillColor.c3 = std::atoi(line.c_str());
+                            box.fillColor.a = std::atoi(line.c_str());
+
+                            bbox_vector[i].push_back(box);
                         }
                     } else {
                         std::cerr << "Invalid number of boxes: " << numBoxes << "for image: " << i << std::endl;
@@ -196,34 +199,19 @@ int main(int argc, char** argv) {
     } else {
         auto width = imageData.cols;
         auto height = imageData.rows;
-        batchSize = 1;
-        bboxes_size_vector.resize(1, 3);
-        bbox_vector.resize(3);
-        bbox_vector[0].box.x = width / 4;
-        bbox_vector[0].box.y = height / 4;
-        bbox_vector[0].box.width = width / 2;
-        bbox_vector[0].box.height = height / 2;
-        bbox_vector[0].thickness = 5;
-        bbox_vector[0].borderColor = {0, 0, 255, 200};
-        bbox_vector[0].fillColor = {0, 255, 0, 100};
-        bbox_vector[1].box.x = width / 3;
-        bbox_vector[1].box.y = height / 3;
-        bbox_vector[1].box.width = width / 3 * 2;
-        bbox_vector[1].box.height = height / 4;
-        bbox_vector[1].thickness = -1;
-        bbox_vector[1].borderColor = {90, 16, 181, 50};
-        bbox_vector[2].box.x = -50;
-        bbox_vector[2].box.y = (2 * height) / 3;
-        bbox_vector[2].box.width = width + 50;
-        bbox_vector[2].box.height = height / 3 + 50;
-        bbox_vector[2].thickness = 0;
-        bbox_vector[2].borderColor = {0, 0, 0, 50};
-        bbox_vector[2].fillColor = {111, 159, 232, 150};
+        bbox_vector = {
+            {
+                {{width / 4, height / 4, width / 2, height / 2}, 5, {0, 0, 255, 200}, {0, 255, 0, 100}},
+                {{width / 3, height / 3, width / 3 * 2, height / 4}, -1, {90, 16, 181, 50}, {0, 0, 0, 0}},
+                {{-50, (height * 2) / 3, width + 50, height / 3 + 50}, 0, {0, 0, 0, 0}, {111, 159, 232, 150}},
+            },
+        };
     }
-    BndBoxes_t bboxes{batchSize, bboxes_size_vector, bbox_vector};
+    BndBoxes bboxes(bbox_vector);
 
     // Create input/output tensors for the image.
-    TensorShape imageShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, imageData.rows, imageData.cols, imageData.channels()});
+    TensorShape imageShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
+                           {1, imageData.rows, imageData.cols, imageData.channels()});
     DataType dtype(eDataType::DATA_TYPE_U8);
     Tensor input(imageShape, dtype, device);
     Tensor output(imageShape, dtype, device);
@@ -237,7 +225,8 @@ int main(int argc, char** argv) {
     size_t imageSizeInByte = input.shape().size() * input.dtype().size();
     auto inputData = input.exportData<TensorDataStrided>();
     if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(inputData.basePtr(), imageData.data, imageSizeInByte, hipMemcpyHostToDevice, stream));
+        HIP_VALIDATE_NO_ERRORS(
+            hipMemcpyAsync(inputData.basePtr(), imageData.data, imageSizeInByte, hipMemcpyHostToDevice, stream));
     } else {
         memcpy(inputData.basePtr(), imageData.data, imageSizeInByte);
     }
@@ -250,7 +239,8 @@ int main(int argc, char** argv) {
     auto outData = output.exportData<TensorDataStrided>();
     std::vector<uint8_t> h_output(outputSize);
     if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(h_output.data(), outData.basePtr(), outputSize, hipMemcpyDeviceToHost, stream));
+        HIP_VALIDATE_NO_ERRORS(
+            hipMemcpyAsync(h_output.data(), outData.basePtr(), outputSize, hipMemcpyDeviceToHost, stream));
         HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
     } else {
         memcpy(h_output.data(), outData.basePtr(), outputSize);

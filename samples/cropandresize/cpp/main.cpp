@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
     int resizeHeight = 240;
 
     //  Create the crop rect for the cropping operator
-    Box_t crpRect = {cropX, cropY, cropWidth, cropHeight};
+    roccv::Box_t crpRect = {cropX, cropY, cropWidth, cropHeight};
 
     // tag: Allocate Tensors for Crop and Resize
     // Create a rocCV Tensor based on the crop window size.
