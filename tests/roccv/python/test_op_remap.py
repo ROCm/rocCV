@@ -48,19 +48,22 @@ def test_op_remap(samples, width, height, channels, dtype, map_interp, interp, m
 
 
     map_list = []
-    halfWidth = int(width / 2)
-    for y in range(height):
-        row_list = []
-        x = 0
-        while x < halfWidth:
-            row_list.append([halfWidth - x, y])
-            x += 1
-        while x < width:
-            row_list.append([x, y])
-            x += 1
-        map_list.append(row_list)
+    for b in range(samples):
+        image_map_list = []
+        halfWidth = int(width / 2)
+        for y in range(height):
+            row_list = []
+            x = 0
+            while x < halfWidth:
+                row_list.append([halfWidth - x, y])
+                x += 1
+            while x < width:
+                row_list.append([x, y])
+                x += 1
+            image_map_list.append(row_list)
+        map_list.append(image_map_list)
 
-    map_np_array = np.expand_dims(np.array(map_list, np.float32), axis=0)
+    map_np_array = np.array(map_list, np.float32)
     remap_tensor = rocpycv.from_dlpack(map_np_array, rocpycv.NHWC).copy_to(device)
 
     stream = rocpycv.Stream()
