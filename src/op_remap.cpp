@@ -154,6 +154,9 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(map.layout() == output.layout());
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) == map.shape(map.layout().batch_index()));
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) == map.shape(map.layout().width_index()));
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) == map.shape(map.layout().height_index()));
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
     eDataType dtype = input.dtype().etype();
