@@ -23,6 +23,8 @@ THE SOFTWARE.
 
 #include <memory>
 
+#include "core/detail/allocators/default_allocator.hpp"
+#include "core/detail/allocators/i_allocator.hpp"
 #include "tensor_data.hpp"
 #include "tensor_requirements.hpp"
 #include "tensor_storage.hpp"
@@ -46,6 +48,7 @@ class Tensor {
      * @param[in] reqs An object representing the requirements for this tensor.
      */
     explicit Tensor(const TensorRequirements &reqs);
+    explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc);
 
     /**
      * @brief Constructs a Tensor object given a list of requirements and the underlying data as a TensorStorage
@@ -55,6 +58,7 @@ class Tensor {
      * @param[in] data A TensorStorage object for the tensor's underlying data.
      */
     explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
+    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data, const IAllocator &alloc);
 
     /**
      * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device.
@@ -64,6 +68,8 @@ class Tensor {
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(const TensorShape &shape, DataType dtype, const eDeviceType device = eDeviceType::GPU);
+    explicit Tensor(const TensorShape &shape, DataType dtype, const IAllocator &alloc,
+                    const eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the
@@ -75,6 +81,8 @@ class Tensor {
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device = eDeviceType::GPU);
+    explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAllocator &alloc,
+                    eDeviceType device = eDeviceType::GPU);
 
     Tensor(const Tensor &other) = delete;
     Tensor(Tensor &&other);
@@ -194,6 +202,7 @@ class Tensor {
    private:
     TensorRequirements m_requirements;      // Tensor metadata
     std::shared_ptr<TensorStorage> m_data;  // Stores raw tensor data
+    const IAllocator &m_allocator;
 };
 
 /**

@@ -21,23 +21,27 @@
 
 #include "core/tensor_storage.hpp"
 
+#include "core/detail/context.hpp"
 #include "core/hip_assert.h"
 
 namespace roccv {
 TensorStorage::TensorStorage(void* data, eDeviceType device, eOwnership ownership)
-    : m_device(device), m_ownership(ownership), m_data(data) {}
+    : TensorStorage(data, device, GlobalContext().getDefaultAllocator(), ownership) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device) : m_device(device), m_ownership(eOwnership::OWNING) {
+TensorStorage::TensorStorage(void* data, eDeviceType device, const IAllocator& alloc, eOwnership ownership)
+    : m_device(device), m_ownership(ownership), m_data(data), m_allocator(alloc) {}
+
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device)
+    : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator()) {}
+
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc)
+    : m_device(device), m_ownership(eOwnership::OWNING), m_allocator(alloc) {
     switch (m_device) {
         case eDeviceType::GPU:
-            HIP_VALIDATE_NO_ERRORS(hipMalloc(&m_data, bytes));
+            m_data = m_allocator.allocHipMem(bytes);
             break;
         case eDeviceType::CPU:
-            m_data = malloc(bytes);
-            if (m_data == nullptr) {
-                throw Exception("Unable to allocate the requested amount of memory for tensor.",
-                                eStatusType::OUT_OF_MEMORY);
-            }
+            m_data = m_allocator.allocHostMem(bytes);
             break;
     }
 }
@@ -47,12 +51,10 @@ TensorStorage::~TensorStorage() {
 
     switch (m_device) {
         case eDeviceType::GPU:
-            hipFree(m_data);
-            m_data = nullptr;
+            m_allocator.freeHipMem(m_data);
             break;
         case eDeviceType::CPU:
-            free(m_data);
-            m_data = nullptr;
+            m_allocator.freeHostMem(m_data);
             break;
     }
 }

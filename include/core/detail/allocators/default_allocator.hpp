@@ -33,14 +33,14 @@ class DefaultAllocator final : public IAllocator {
      * @param alignment The memory alignment of the allocation.
      * @return A pointer to the allocated memory.
      */
-    void* allocHostMem(size_t size, int32_t alignment = 0);
+    void* allocHostMem(size_t size, int32_t alignment = 0) const override;
 
     /**
      * @brief Frees memory allocated on the host.
      *
      * @param ptr A pointer to allocate memory.
      */
-    void freeHostMem(void* ptr) noexcept;
+    void freeHostMem(void* ptr) const noexcept override;
 
     /**
      * @brief Allocates pinned host memory.
@@ -48,14 +48,14 @@ class DefaultAllocator final : public IAllocator {
      * @param size The size in bytes of the allocation.
      * @return A pointer to the allocated pinned host memory.
      */
-    void* allocHostPinnedMem(size_t size);
+    void* allocHostPinnedMem(size_t size) const override;
 
     /**
      * @brief Frees pinned host memory.
      *
      * @param ptr A pointer to pinned host memory.
      */
-    void freeHostPinnedMem(void* ptr) noexcept;
+    void freeHostPinnedMem(void* ptr) const noexcept override;
 
     /**
      * @brief Allocates memory on the device.
@@ -63,13 +63,13 @@ class DefaultAllocator final : public IAllocator {
      * @param size The size in bytes to allocate.
      * @return A pointer to allocated device memory.
      */
-    void* allocHipMem(size_t size);
+    void* allocHipMem(size_t size) const override;
 
     /**
      * @brief Free device allocated memory.
      *
      * @param ptr A pointer to device allocated memory.
      */
-    void freeHipMem(void* ptr) noexcept;
+    void freeHipMem(void* ptr) const noexcept override;
 };
 }  // namespace roccv

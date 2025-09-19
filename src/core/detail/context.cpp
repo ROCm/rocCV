@@ -19,38 +19,11 @@
  * THE SOFTWARE.
  */
 
-#include "core/detail/allocators/default_allocator.hpp"
-
-#include <hip/hip_runtime.h>
-
-#include "core/exception.hpp"
-#include "core/hip_assert.h"
+#include "core/detail/context.hpp"
 
 namespace roccv {
-void* DefaultAllocator::allocHostMem(size_t size, int32_t alignment) const {
-    void* ptr = aligned_alloc(alignment, size);
-    if (ptr == nullptr) {
-        throw Exception("Unable to allocate memory on host", eStatusType::OUT_OF_MEMORY);
-    }
-
-    return ptr;
+Context& GlobalContext() {
+    static Context ctx;
+    return ctx;
 }
-
-void DefaultAllocator::freeHostMem(void* ptr) const noexcept { free(ptr); }
-
-void* DefaultAllocator::allocHostPinnedMem(size_t size) const {
-    void* ptr;
-    HIP_VALIDATE_NO_ERRORS(hipHostMalloc(&ptr, size));
-    return ptr;
-}
-
-void DefaultAllocator::freeHostPinnedMem(void* ptr) const noexcept { hipHostFree(ptr); }
-
-void* DefaultAllocator::allocHipMem(size_t size) const {
-    void* ptr;
-    HIP_VALIDATE_NO_ERRORS(hipMalloc(&ptr, size));
-    return ptr;
-}
-
-void DefaultAllocator::freeHipMem(void* ptr) const noexcept { hipFree(ptr); }
 }  // namespace roccv

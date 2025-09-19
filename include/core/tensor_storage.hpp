@@ -23,6 +23,7 @@
 
 #include <stdlib.h>
 
+#include "core/detail/allocators/default_allocator.hpp"
 #include "core/util_enums.h"
 
 namespace roccv {
@@ -42,6 +43,8 @@ class TensorStorage {
      * Default is eOwnership::OWNING.
      */
     explicit TensorStorage(void* data, eDeviceType device, eOwnership ownership = eOwnership::OWNING);
+    explicit TensorStorage(void* data, eDeviceType device, const IAllocator& alloc,
+                           eOwnership ownership = eOwnership::OWNING);
 
     /**
      * @brief Creates a new TensorStorage object and allocates the requested number of bytes.
@@ -50,6 +53,8 @@ class TensorStorage {
      * @param device The device to allocate the memory on.
      */
     explicit TensorStorage(size_t bytes, eDeviceType device);
+    explicit TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc);
+
     ~TensorStorage();
 
     /**
@@ -70,6 +75,7 @@ class TensorStorage {
     eDeviceType m_device;
     eOwnership m_ownership;
     void* m_data;
+    const IAllocator& m_allocator;
 };
 
 }  // namespace roccv
