@@ -47,7 +47,7 @@ TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator&
 }
 
 TensorStorage::~TensorStorage() {
-    if (m_ownership == eOwnership::VIEW) return;
+    if (m_ownership != eOwnership::OWNING) return;
 
     switch (m_device) {
         case eDeviceType::GPU:
