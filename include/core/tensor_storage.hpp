@@ -23,7 +23,7 @@
 
 #include <stdlib.h>
 
-#include "core/detail/allocators/default_allocator.hpp"
+#include "core/detail/allocators/i_allocator.hpp"
 #include "core/util_enums.h"
 
 namespace roccv {

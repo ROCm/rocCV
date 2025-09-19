@@ -55,7 +55,9 @@ Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAlloca
     : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
 Tensor::Tensor(Tensor&& other)
-    : m_requirements(other.m_requirements), m_data(other.m_data), m_allocator(other.m_allocator) {}
+    : m_requirements(std::move(other.m_requirements)),
+      m_data(std::move(other.m_data)),
+      m_allocator(other.m_allocator) {}
 
 // Member definitions
 int Tensor::rank() const { return m_requirements.shape.layout().rank(); }

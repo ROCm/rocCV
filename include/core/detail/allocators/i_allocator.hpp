@@ -40,5 +40,7 @@ class IAllocator {
 
     virtual void* allocHipMem(size_t size) const = 0;
     virtual void freeHipMem(void* ptr) const noexcept = 0;
+
+    virtual ~IAllocator() = default;
 };
 }  // namespace roccv

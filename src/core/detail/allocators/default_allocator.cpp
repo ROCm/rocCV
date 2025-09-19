@@ -28,11 +28,22 @@
 
 namespace roccv {
 void* DefaultAllocator::allocHostMem(size_t size, int32_t alignment) const {
-    void* ptr = aligned_alloc(alignment, size);
-    if (ptr == nullptr) {
-        throw Exception("Unable to allocate memory on host", eStatusType::OUT_OF_MEMORY);
+    if (alignment == 0) {
+        // Use malloc when alignment is set to 0
+        void* ptr = malloc(size);
+        if (ptr == nullptr) throw Exception("Failure when allocating host memory", eStatusType::OUT_OF_MEMORY);
+        return ptr;
     }
 
+    // Otherwise, do an aligned allocation
+    size_t alignedSize = (size / alignment + 1) * alignment;
+
+    // Ensure alignment is a power of 2
+    if ((alignment & (alignment - 1)) != 0)
+        throw Exception("Specified alignment for host allocation is not a power of 2", eStatusType::INVALID_VALUE);
+
+    void* ptr = std::aligned_alloc(alignment, alignedSize);
+    if (ptr == nullptr) throw Exception("Failure when allocating host memory", eStatusType::OUT_OF_MEMORY);
     return ptr;
 }
 

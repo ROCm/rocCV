@@ -23,7 +23,6 @@ THE SOFTWARE.
 
 #include <memory>
 
-#include "core/detail/allocators/default_allocator.hpp"
 #include "core/detail/allocators/i_allocator.hpp"
 #include "tensor_data.hpp"
 #include "tensor_requirements.hpp"
