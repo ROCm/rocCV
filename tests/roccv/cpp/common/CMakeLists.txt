@@ -22,15 +22,6 @@
 # ##############################################################################
 cmake_minimum_required(VERSION 3.15)
 
-if(NOT DEFINED ENHANCED_MESSAGE)
-  string(ASCII 27 Esc)
-  set(ColourReset "${Esc}[m")
-  set(Red         "${Esc}[31m")
-  set(Green       "${Esc}[32m")
-  set(Yellow      "${Esc}[33m")
-  set(White       "${Esc}[37m")
-endif()
-
 # ROCM Path
 if(DEFINED ENV{ROCM_PATH})
     set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Default ROCm installation path")
@@ -48,9 +39,10 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/bin/amdclang++")
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/bin/amdclang++)
 endif()
 
-project(roccv-cpp-test)
+project(roccv-test-helper)
 
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
+
 # find HIP
 find_package(HIP REQUIRED)
 # find rocCV
@@ -61,23 +53,10 @@ if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
 else()
     message(FATAL_ERROR "{Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
 endif()
+# find opencv
+find_package(OpenCV REQUIRED)
 
-add_subdirectory(common)
-
-file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
-create_test_sourcelist(CppRocCVTests 
-    system_test_main.cpp 
-    ${CPP_ROCCV_TEST_SOURCES})
-
-add_executable(${PROJECT_NAME} ${CppRocCVTests})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${roccv_LIBRARY} hip::device)
-
-# make test with CTest
-enable_testing()
-include(CTest)
-
-foreach(test ${CPP_ROCCV_TEST_SOURCES})
-    get_filename_component(TName ${test} NAME_WE)
-    add_test(NAME ${TName} COMMAND ${PROJECT_NAME} ${TName} "${ROCM_PATH}/share/roccv/data")
-endforeach()
+file(GLOB TEST_HELPER_SOURCES "*.cpp")
+add_library(${PROJECT_NAME} STATIC ${TEST_HELPER_SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${roccv_LIBRARY} ${OpenCV_LIBS} hip::device)
