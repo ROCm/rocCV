@@ -179,7 +179,7 @@ class Tensor {
      *
      * @param[in] shape The desired shape of the tensor.
      * @param[in] dtype The desired data type of the tensor's raw data.
-     * @param[in] device The deivce the tensor data should belong to.
+     * @param[in] device The device the tensor data should belong to.
      * @return A TensorRequirements object representing this tensor's
      * requirements.
      */
@@ -192,7 +192,7 @@ class Tensor {
      * @param[in] num_images The number of images in the batch.
      * @param[in] image_size The size for images in the batch.
      * @param[in] fmt The format of the underlying image data.
-     * @param[in] device The deivce the tensor data should belong to.
+     * @param[in] device The device the tensor data should belong to.
      * @return A TensorRequirements object representing the tensor's requirements.
      */
     static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
