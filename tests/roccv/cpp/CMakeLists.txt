@@ -60,6 +60,7 @@ find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include
 if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
     message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
     set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
+    set(roccv_FOUND TRUE)
 else()
     if(BUILD_FROM_SOURCE)
         message("-- ${Yellow}${PROJECT_NAME} -- Install rocCV before testing${ColourReset}")
@@ -68,22 +69,25 @@ else()
     endif()
 endif()
 
-add_subdirectory(common)
+if(roccv_FOUND)
+    add_subdirectory(common)
 
-file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
-create_test_sourcelist(CppRocCVTests 
-    system_test_main.cpp 
-    ${CPP_ROCCV_TEST_SOURCES})
+    file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
+    create_test_sourcelist(CppRocCVTests 
+                            system_test_main.cpp 
+                            ${CPP_ROCCV_TEST_SOURCES}
+                        )
 
-add_executable(${PROJECT_NAME} ${CppRocCVTests})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${LINK_LIBRARY_LIST})
+    add_executable(${PROJECT_NAME} ${CppRocCVTests})
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${LINK_LIBRARY_LIST})
 
-# make test with CTest
-enable_testing()
-include(CTest)
+    # make test with CTest
+    enable_testing()
+    include(CTest)
 
-foreach(test ${CPP_ROCCV_TEST_SOURCES})
-    get_filename_component(TName ${test} NAME_WE)
-    add_test(NAME ${TName} COMMAND ${PROJECT_NAME} ${TName} "${ROCM_PATH}/share/roccv/data")
-endforeach()
+    foreach(test ${CPP_ROCCV_TEST_SOURCES})
+        get_filename_component(TName ${test} NAME_WE)
+        add_test(NAME ${TName} COMMAND ${PROJECT_NAME} ${TName} "${ROCM_PATH}/share/roccv/data")
+    endforeach()
+endif()
