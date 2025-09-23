@@ -53,13 +53,19 @@ project(roccv-cpp-test)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 # find HIP
 find_package(HIP REQUIRED)
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
 # find rocCV
 find_library(roccv_LIBRARY roccv PATHS ${ROCM_PATH}/lib)
 find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include/roccv)
 if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
     message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
+    set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
 else()
-    message(FATAL_ERROR "{Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
+    if(BUILD_FROM_SOURCE)
+        message("-- ${Yellow}${PROJECT_NAME} -- Install rocCV before testing${ColourReset}")
+    else()
+        message(FATAL_ERROR "{Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
+    endif()
 endif()
 
 add_subdirectory(common)
@@ -71,7 +77,7 @@ create_test_sourcelist(CppRocCVTests
 
 add_executable(${PROJECT_NAME} ${CppRocCVTests})
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${roccv_LIBRARY} hip::device)
+target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${LINK_LIBRARY_LIST})
 
 # make test with CTest
 enable_testing()

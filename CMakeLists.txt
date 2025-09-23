@@ -200,7 +200,7 @@ if(NOT OpenCV_FOUND)
 endif()
 
 # Check that all dependencies have been met
-if (NOT BUILD_ROCCV)
+if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
@@ -217,8 +217,10 @@ endif(BENCHMARKS)
 # Enable output to stdout by default when tests fail
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 enable_testing()
+include(CTest)
 
 if(TESTS)
+    set(BUILD_FROM_SOURCE ON)
 	add_subdirectory(tests)
 	add_custom_target(test_correctness
 		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure

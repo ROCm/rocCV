@@ -97,7 +97,7 @@ if (NOT pybind11_FOUND)
 	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires pybind11, Not Found ${ColourReset}")
 endif()
 
-if (NOT BUILD_ROCCV_PYPACKAGE)
+if(NOT BUILD_ROCCV_PYPACKAGE)
     message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} Python Package dependencies not satisfied${ColourReset}")
 endif()
 
