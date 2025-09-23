@@ -26,16 +26,16 @@ THE SOFTWARE.
 #include <pybind11/pybind11.h>
 
 #include "py_stream.hpp"
-#include "py_tensor.hpp"
 #include "py_structs.hpp"
+#include "py_tensor.hpp"
 
 namespace py = pybind11;
 
 class PyOpBndBox {
    public:
     static void Export(py::module& m);
-    static PyTensor Execute(PyTensor& input, BndBoxes_t bnd_boxes,
+    static PyTensor Execute(PyTensor& input, const roccv::BndBoxes& bnd_boxes,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
-    static void ExecuteInto(PyTensor& output, PyTensor& input, BndBoxes_t bnd_boxes,
+    static void ExecuteInto(PyTensor& output, PyTensor& input, const roccv::BndBoxes& bnd_boxes,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
 };

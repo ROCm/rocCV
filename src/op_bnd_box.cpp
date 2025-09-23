@@ -22,17 +22,18 @@ THE SOFTWARE.
 #include "op_bnd_box.hpp"
 
 #include <hip/hip_runtime.h>
-#include <functional>
+
 #include <algorithm>
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <vector>
 
-#include "core/wrappers/image_wrapper.hpp"
 #include "common/math_vector.hpp"
 #include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/tensor.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bnd_box_device.hpp"
 #include "kernels/host/bnd_box_host.hpp"
 
@@ -42,7 +43,8 @@ BndBox::BndBox() {}
 BndBox::~BndBox() {}
 
 template <bool has_alpha, typename T>
-void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, std::vector<Rect_t> rects, const eDeviceType device) {
+void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
+                            const std::vector<Rect_t> &rects, const eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
@@ -65,8 +67,8 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor& input, const Tenso
                     hipMemcpyAsync(rects_ptr, rects.data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
             }
             Kernels::Device::bndbox_kernel<has_alpha, T>
-                    <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
-                        inputWrapper, outputWrapper, rects_ptr, n_rects, batch_size, height, width);
+                <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
+                    inputWrapper, outputWrapper, rects_ptr, n_rects, batch_size, height, width);
             if (n_rects > 0) {
                 HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
             }
@@ -74,14 +76,15 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor& input, const Tenso
         }
 
         case eDeviceType::CPU: {
-            Kernels::Host::bndbox_kernel<has_alpha, T>(inputWrapper, outputWrapper, rects.data(), rects.size(), batch_size, height, width);
+            Kernels::Host::bndbox_kernel<has_alpha, T>(inputWrapper, outputWrapper, rects.data(), rects.size(),
+                                                       batch_size, height, width);
             break;
         }
     }
 }
 
-void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &output,
-                        const BndBoxes_t bnd_boxes, eDeviceType device) {
+void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const BndBoxes &bnd_boxes,
+                        eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -111,7 +114,7 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>, const eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>&, const eDeviceType)>, 4>>
         funcs =
         {
             {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}},
@@ -120,49 +123,43 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, rects, device);
 }
 
-void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes_t &bnd_boxes, int64_t height, int64_t width) {
-    if (bnd_boxes.batch == 0) {
+void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes &bnd_boxes, int64_t height, int64_t width) {
+    if (bnd_boxes.batch() == 0) {
         return;
     }
 
-    if (bnd_boxes.numBoxes.empty() || bnd_boxes.boxes.empty()) {
-        throw Exception("Invalid BndBoxes_t: has a nullptr but batch != 0.", eStatusType::INVALID_POINTER);
-    }
-
-    int32_t total_boxes = 0;
-    for (int64_t batch = 0; batch < bnd_boxes.batch; batch++) {
-        const auto numBoxes = bnd_boxes.numBoxes[batch];
+    for (int64_t batch = 0; batch < bnd_boxes.batch(); batch++) {
+        const auto numBoxes = bnd_boxes.numBoxesAt(batch);
 
         for (int32_t i = 0; i < numBoxes; i++) {
-            const auto curr_box = bnd_boxes.boxes[total_boxes + i];
-            const auto left = std::max(std::min(curr_box.box.x, width - 1), static_cast<int64_t>(0));
-            const auto top = std::max(std::min(curr_box.box.y, height - 1), static_cast<int64_t>(0));
-            const auto right = std::max(std::min(left + curr_box.box.width - 1, width - 1), static_cast<int64_t>(0));
-            const auto bottom = std::max(std::min(top + curr_box.box.height - 1, height - 1), static_cast<int64_t>(0));
+            const auto curr_box = bnd_boxes.boxAt(batch, i);
+            const auto left = std::max(std::min(curr_box.box.x, width - 1), 0L);
+            const auto top = std::max(std::min(curr_box.box.y, height - 1), 0L);
+            const auto right = std::max(std::min(left + curr_box.box.width - 1, width - 1), 0L);
+            const auto bottom = std::max(std::min(top + curr_box.box.height - 1, height - 1), 0L);
 
             if (left == right || top == bottom || curr_box.box.width <= 0 || curr_box.box.height <= 0) {
                 continue;
             }
 
-            if (curr_box.borderColor.c3 == 0 && curr_box.fillColor.c3 == 0) {
+            if (curr_box.borderColor.a == 0 && curr_box.fillColor.a == 0) {
                 continue;
             }
 
             // no border
-            if (curr_box.thickness == -1 && curr_box.borderColor.c3 != 0) {
+            if (curr_box.thickness == -1 && curr_box.borderColor.a != 0) {
                 Rect_t rect;
 
                 rect.batch = batch;
                 rect.bordered = false;
-                rect.color.x = curr_box.borderColor.c0;
-                rect.color.y = curr_box.borderColor.c1;
-                rect.color.z = curr_box.borderColor.c2;
-                rect.color.w = curr_box.borderColor.c3;
+                rect.color.x = curr_box.borderColor.r;
+                rect.color.y = curr_box.borderColor.g;
+                rect.color.z = curr_box.borderColor.b;
+                rect.color.w = curr_box.borderColor.a;
 
                 rect.o_left = left;
                 rect.o_right = right;
@@ -177,10 +174,10 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes_t &bnd_box
 
                     rect.batch = batch;
                     rect.bordered = false;
-                    rect.color.x = curr_box.fillColor.c0;
-                    rect.color.y = curr_box.fillColor.c1;
-                    rect.color.z = curr_box.fillColor.c2;
-                    rect.color.w = curr_box.fillColor.c3;
+                    rect.color.x = curr_box.fillColor.r;
+                    rect.color.y = curr_box.fillColor.g;
+                    rect.color.z = curr_box.fillColor.b;
+                    rect.color.w = curr_box.fillColor.a;
 
                     rect.o_left = left;
                     rect.o_right = right;
@@ -208,10 +205,10 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes_t &bnd_box
                     rect.i_top = top + half_thickness;
                     rect.i_bottom = bottom - half_thickness;
 
-                    rect.color.x = curr_box.borderColor.c0;
-                    rect.color.y = curr_box.borderColor.c1;
-                    rect.color.z = curr_box.borderColor.c2;
-                    rect.color.w = curr_box.borderColor.c3;
+                    rect.color.x = curr_box.borderColor.r;
+                    rect.color.y = curr_box.borderColor.g;
+                    rect.color.z = curr_box.borderColor.b;
+                    rect.color.w = curr_box.borderColor.a;
 
                     rects.push_back(rect);
                 }
@@ -219,8 +216,6 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes_t &bnd_box
                 continue;
             }
         }
-
-        total_boxes += numBoxes;
     }
 }
 }  // namespace roccv
