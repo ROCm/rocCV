@@ -278,8 +278,8 @@ set(ROCCV_RUNTIME_PACKAGE_LIST  "rocm-hip-runtime")
 set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "rocm-hip-runtime-dev, python3-dev")
 set(ROCCV_RPM_DEV_PACKAGE_LIST  "rocm-hip-runtime-devel, python3-devel")
 # * Test
-set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "python3-pytest, python3-numpy, python3-opencv")
-set(ROCCV_RPM_TEST_PACKAGE_LIST  "python3-pytest, python3-numpy")
+set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "cmake, libopencv-dev, python3-pytest, python3-numpy, python3-opencv")
+set(ROCCV_RPM_TEST_PACKAGE_LIST  "cmake, python3-pytest, python3-numpy") ## libopencv-dev has no equivalent in rpm
 
 # '%{?dist}' breaks manual builds on debian systems due to empty Provides
 execute_process(

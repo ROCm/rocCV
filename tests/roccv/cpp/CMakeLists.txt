@@ -64,30 +64,30 @@ if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
 else()
     if(BUILD_FROM_SOURCE)
         message("-- ${Yellow}${PROJECT_NAME} -- Install rocCV before testing${ColourReset}")
+        include_directories(${CMAKE_SOURCE_DIR}/include)
+        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
     else()
         message(FATAL_ERROR "{Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
     endif()
 endif()
 
-if(roccv_FOUND)
-    add_subdirectory(common)
+add_subdirectory(common)
 
-    file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
-    create_test_sourcelist(CppRocCVTests 
+file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
+create_test_sourcelist(CppRocCVTests 
                             system_test_main.cpp 
                             ${CPP_ROCCV_TEST_SOURCES}
-                        )
+                    )
 
-    add_executable(${PROJECT_NAME} ${CppRocCVTests})
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${LINK_LIBRARY_LIST})
+add_executable(${PROJECT_NAME} ${CppRocCVTests})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${LINK_LIBRARY_LIST})
 
-    # make test with CTest
-    enable_testing()
-    include(CTest)
+# make test with CTest
+enable_testing()
+include(CTest)
 
-    foreach(test ${CPP_ROCCV_TEST_SOURCES})
-        get_filename_component(TName ${test} NAME_WE)
-        add_test(NAME ${TName} COMMAND ${PROJECT_NAME} ${TName} "${ROCM_PATH}/share/roccv/data")
-    endforeach()
-endif()
+foreach(test ${CPP_ROCCV_TEST_SOURCES})
+    get_filename_component(TName ${test} NAME_WE)
+    add_test(NAME ${TName} COMMAND ${PROJECT_NAME} ${TName} "${ROCM_PATH}/share/roccv/data")
+endforeach()
