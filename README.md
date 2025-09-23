@@ -214,6 +214,16 @@ The installer copies:
 >   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
 >   ```
 
+### Verify rocCV C++ API with roccv-test package
+
+Test package will install ctest module to test rocCV PyBindings. Follow below steps to test package install
+
+```shell
+mkdir roccv-cpp-test && cd roccv-cpp-test
+cmake /opt/rocm/share/roccv/test/cpp
+ctest -VV
+```
+
 ### Verify rocCV PyBind with roccv-test package
 
 Test package will install ctest module to test rocCV PyBindings. Follow below steps to test package install
@@ -225,9 +235,7 @@ ctest -VV
 ```
 
 > [!NOTE]
-> Make sure all rocCV required libraries are in your PATH
+> Make sure all rocCV PyBind libraries are in your Python PATH
 > ```shell
-> export PATH=$PATH:/opt/rocm/bin
-> export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/rocm/lib
 > export PYTHONPATH=/opt/rocm/lib:$PYTHONPATH
 > ```

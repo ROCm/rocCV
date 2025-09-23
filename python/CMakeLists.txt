@@ -97,7 +97,7 @@ if (NOT pybind11_FOUND)
 	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires pybind11, Not Found ${ColourReset}")
 endif()
 
-if (NOT BUILD_ROCCV_PYPACKAGE)
+if(NOT BUILD_ROCCV_PYPACKAGE)
     message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} Python Package dependencies not satisfied${ColourReset}")
 endif()
 
@@ -117,6 +117,5 @@ install(DIRECTORY src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runt
 message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
 
 # PyBind Test - Installed
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/tests/pybind DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/tests/roccv/python DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test/pybind COMPONENT test)
