@@ -80,7 +80,10 @@ create_test_sourcelist(CppRocCVTests
                     )
 
 add_executable(${PROJECT_NAME} ${CppRocCVTests})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${roccv_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common ${HIP_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+if(roccv_FOUND)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${roccv_INCLUDE_DIR})
+endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper PUBLIC ${LINK_LIBRARY_LIST})
 
 # make test with CTest
