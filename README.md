@@ -221,6 +221,7 @@ Test package will install ctest module to test rocCV PyBindings. Follow below st
 ```shell
 mkdir roccv-cpp-test && cd roccv-cpp-test
 cmake /opt/rocm/share/roccv/test/cpp
+make -j8
 ctest -VV
 ```
 
