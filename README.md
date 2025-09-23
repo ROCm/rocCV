@@ -1,4 +1,5 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![doc](https://img.shields.io/badge/doc-readthedocs-blueviolet)](https://rocm.docs.amd.com/projects/rocCV/en/latest/)
 
 <p align="center"><img width="70%" src="docs/data/amd_roccv_logo.png" /></p>
 
@@ -12,6 +13,10 @@ rocCV is an efficient GPU-accelerated library for image pre- and post-processing
 > 
 > As rocCV is in early preview with ROCm 7.0.0, pre-built packages are not yet provided.
 > Packages will be made available with the ROCm 7.1.x release.
+
+#### Latest release
+
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/ROCm/rocCV?style=for-the-badge)](https://github.com/ROCm/rocCV/releases)
 
 ## Prerequisites
 
