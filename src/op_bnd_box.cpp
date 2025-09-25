@@ -25,9 +25,7 @@ THE SOFTWARE.
 
 #include <algorithm>
 #include <cstring>
-#include <functional>
 #include <iostream>
-#include <thread>
 #include <vector>
 
 #include "common/math_vector.hpp"
@@ -72,7 +70,8 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
                 HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
             }
 
-            // Capture shared_ptr to rects in lambda to prolong lifetime up until operation has finished
+            // Capture shared_ptr to rects in lambda to prolong lifetime up until all preceding stream work has been
+            // finished
             detail::LaunchHostFuncAsync(stream, [rects] {});
             break;
         }
