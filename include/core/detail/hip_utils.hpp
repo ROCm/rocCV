@@ -27,7 +27,7 @@
 
 namespace roccv::detail {
 namespace {
-static void StreamCallback(hipStream_t stream, hipError_t error, void* userData) {
+static void StreamCallback(void* userData) {
     std::function<void()>* func = static_cast<std::function<void()>*>(userData);
     (*func)();
     delete func;
@@ -43,8 +43,8 @@ static void StreamCallback(hipStream_t stream, hipError_t error, void* userData)
  * @param[in] cb A lambda containing the function definition. E.g. `[&]() {...}`
  */
 template <typename Callable>
-void AddHipStreamCallback(hipStream_t stream, Callable&& cb) {
+void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
     std::function<void()>* data = new std::function<void()>(std::forward<Callable>(cb));
-    hipStreamAddCallback(stream, StreamCallback, data, 0);
+    hipLaunchHostFunc(stream, StreamCallback, data);
 }
 }  // namespace roccv::detail

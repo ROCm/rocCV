@@ -52,13 +52,11 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
 
     auto width = inputWrapper.width();
     auto height = inputWrapper.height();
-    auto batch_size = inputWrapper.batches();
+    auto batchSize = inputWrapper.batches();
     switch (device) {
         case eDeviceType::GPU: {
-            const auto blockSize = 32;
-            const auto xGridSize = (width + blockSize - 1) / blockSize;
-            const auto yGridSize = (height + blockSize - 1) / blockSize;
-            const auto zGridSize = batch_size;
+            const dim3 block(32, 32);
+            const dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y, batchSize);
 
             Rect_t *rects_ptr = nullptr;
             const auto n_rects = rects->size();
@@ -69,21 +67,20 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
                     hipMemcpyAsync(rects_ptr, rects->data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
             }
             Kernels::Device::bndbox_kernel<has_alpha, T>
-                <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
-                    inputWrapper, outputWrapper, rects_ptr, n_rects, batch_size, height, width);
+                <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, rects_ptr, n_rects, batchSize, height, width);
             if (n_rects > 0) {
                 HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
             }
 
             // Capture shared_ptr to rects in lambda to prolong lifetime up until operation has finished
-            detail::AddHipStreamCallback(
-                stream, [rects] { printf("BndBox finished, rects still alive. %lu\n", rects.use_count()); });
+            detail::LaunchHostFuncAsync(stream, [rects] {});
             break;
         }
 
         case eDeviceType::CPU: {
             Kernels::Host::bndbox_kernel<has_alpha, T>(inputWrapper, outputWrapper, rects->data(), rects->size(),
-                                                       batch_size, height, width);
+                                                       batchSize, height, width);
+            // Host kernel is synchronous, rects vector will be appropriately freed once it falls out of scope
             break;
         }
     }
