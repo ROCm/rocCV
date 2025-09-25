@@ -42,7 +42,8 @@ static void StreamCallback(void* userData) {
  */
 template <typename Callable>
 void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
-    std::function<void()>* data = new std::function<void()>(std::forward<Callable>(cb));
-    hipLaunchHostFunc(stream, StreamCallback, data);
+    std::unique_ptr<std::function<void()>> data = std::make_unique<std::function<void()>>(std::forward<Callable>(cb));
+    hipLaunchHostFunc(stream, StreamCallback, data.get());
+    data.release();  // Release ownership, StreamCallback is responsible for it now
 }
 }  // namespace roccv::detail
