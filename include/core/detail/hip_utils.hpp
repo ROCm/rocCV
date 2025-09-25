@@ -26,13 +26,11 @@
 #include <memory>
 
 namespace roccv::detail {
-namespace {
 static void StreamCallback(void* userData) {
     std::function<void()>* func = static_cast<std::function<void()>*>(userData);
     (*func)();
     delete func;
 }
-};  // namespace
 
 /**
  * @brief A non-blocking call which queues a host-side function call on the given stream. This call will execute only
