@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <core/exception.hpp>
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
+#include <core/hip_assert.h>
 #include <cstdlib>
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -227,7 +228,7 @@ eTestStatusType compareArray(const Tensor& tensor, std::vector<T>& expected_data
 
     switch (tensor.device()) {
         case eDeviceType::GPU: {
-            hipMemcpy(tensor_data_host.data(), tensor_data.basePtr(), tensor_data_size, hipMemcpyDeviceToHost);
+            HIP_VALIDATE_NO_ERRORS(hipMemcpy(tensor_data_host.data(), tensor_data.basePtr(), tensor_data_size, hipMemcpyDeviceToHost));
             break;
         }
 
@@ -272,7 +273,7 @@ void copyData(const Tensor& input, const std::span<const T>& data, eDeviceType d
 
     switch (device) {
         case eDeviceType::GPU: {
-            hipMemcpy(tensor_data.basePtr(), data.data(), data.size() * sizeof(T), hipMemcpyHostToDevice);
+            HIP_VALIDATE_NO_ERRORS(hipMemcpy(tensor_data.basePtr(), data.data(), data.size() * sizeof(T), hipMemcpyHostToDevice));
             break;
         }
 
