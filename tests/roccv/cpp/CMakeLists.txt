@@ -59,6 +59,8 @@ create_test_sourcelist(CppRocCVTests
                     )
 
 add_executable(${PROJECT_NAME} ${CppRocCVTests})
+
+# roccv-test-helper exposes all required libraries/include directories
 target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper)
 
 # make test with CTest
