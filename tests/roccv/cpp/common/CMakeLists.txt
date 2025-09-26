@@ -70,7 +70,7 @@ else()
         set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${roccv_INCLUDE_DIR})
         set(roccv_FOUND TRUE)
     else()
-        message(FATAL_ERROR "{Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
+        message(FATAL_ERROR "${Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
     endif()
 endif()
 
