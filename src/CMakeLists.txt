@@ -28,10 +28,12 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${ROCM_PATH}/include)
 # Filesystem
 include_directories(${FILESYSTEM_INCLUDE_DIRS})
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${FILESYSTEM_LIBRARIES})
+# HIP
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
+
 
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
-target_link_libraries(${PROJECT_NAME} hip::device)
 
 message("-- ${White}${PROJECT_NAME} -- CMAKE_CXX_FLAGS:${CMAKE_CXX_FLAGS}${ColourReset}")
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARY_LIST})
@@ -45,3 +47,6 @@ install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMP
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT asan)
 # install rocCV include files -- {ROCM_PATH}/include/roccv/
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/roccv COMPONENT dev)
+# CPP Test - Installed
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/tests/roccv/cpp DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)

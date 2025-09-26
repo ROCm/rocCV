@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 using namespace py::literals;
 
-void PyOpCustomCrop::ExecuteInto(PyTensor& output, PyTensor& input, Box_t cropRect,
+void PyOpCustomCrop::ExecuteInto(PyTensor& output, PyTensor& input, roccv::Box_t cropRect,
                                  std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
@@ -34,7 +34,7 @@ void PyOpCustomCrop::ExecuteInto(PyTensor& output, PyTensor& input, Box_t cropRe
     op(hipStream, *input.getTensor(), *output.getTensor(), cropRect, device);
 }
 
-PyTensor PyOpCustomCrop::Execute(PyTensor& input, Box_t cropRect,
+PyTensor PyOpCustomCrop::Execute(PyTensor& input, roccv::Box_t cropRect,
                                  std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
