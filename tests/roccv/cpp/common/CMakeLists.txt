@@ -47,10 +47,6 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 find_package(HIP REQUIRED)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
 set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${HIP_INCLUDE_DIR})
-# find opencv
-find_package(OpenCV REQUIRED)
-set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${OpenCV_LIBRARIES})
-set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${OpenCV_INCLUDE_DIRS})
 # find rocCV
 find_library(roccv_LIBRARY roccv PATHS ${ROCM_PATH}/lib)
 find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include/roccv)

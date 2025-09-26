@@ -21,15 +21,15 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
-#include <optional>
-#include "core/detail/casting.hpp"
-#include "core/detail/type_traits.hpp"
-#include "core/detail/math/vectorized_type_math.hpp"
 #include <core/wrappers/image_wrapper.hpp>
 #include <iostream>
 #include <op_histogram.hpp>
-#include "operator_types.h"
+#include <optional>
 
+#include "core/detail/casting.hpp"
+#include "core/detail/math/vectorized_type_math.hpp"
+#include "core/detail/type_traits.hpp"
+#include "operator_types.h"
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -87,7 +87,8 @@ std::vector<BT> GoldenHistogram(std::vector<uchar>& input, int32_t batchSize, in
  */
 
 template <typename T, typename BT = detail::BaseType<T>>
-std::vector<BT> GoldenHistogramMask(std::vector<uchar>& input, std::vector<uchar>& mask, int32_t batchSize, int32_t width, int32_t height) {
+std::vector<BT> GoldenHistogramMask(std::vector<uchar>& input, std::vector<uchar>& mask, int32_t batchSize,
+                                    int32_t width, int32_t height) {
     // Create an output vector for the histogram
     std::vector<BT> output;
     std::vector<BT> local_histogram(256);
@@ -128,10 +129,10 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     Tensor input(batchSize, {width, height}, format, device);
     Tensor mask(batchSize, {width, height}, format, device);
     Tensor histogram(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), {batchSize, 256, 1}),
-                  DataType(eDataType::DATA_TYPE_S32), device);
+                     DataType(eDataType::DATA_TYPE_S32), device);
     Tensor histogramWithMask(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), {batchSize, 256, 1}),
-                  DataType(eDataType::DATA_TYPE_S32), device);
-    
+                             DataType(eDataType::DATA_TYPE_S32), device);
+
     // Create a vector and fill it with random data.
     std::vector<uchar> inputData(input.shape().size());
     FillVector(inputData);
@@ -182,7 +183,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     CompareVectors(result, ref);
     CompareVectors(maskResult, maskRef);
 }
-} // namespace
+}  // namespace
 
 eTestStatusType test_op_histogram(int argc, char** argv) {
     TEST_CASES_BEGIN();
@@ -213,153 +214,3 @@ eTestStatusType test_op_histogram(int argc, char** argv) {
 
     TEST_CASES_END();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-namespace {
-eTestStatusType testCorrectness(const std::string &inputFile, int32_t *expectedData, const eDeviceType device) {
-    cv::Mat testData = cv::imread(inputFile);
-    cv::cvtColor(testData, testData, cv::COLOR_BGR2GRAY);
-
-    TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                      {1, testData.rows, testData.cols, testData.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
-
-    Tensor input(shape, dtype, device);
-    size_t image_size = input.shape().size() * input.dtype().size();
-    auto d_input_data = input.exportData<TensorDataStrided>();
-
-    std::vector<int32_t> outData;
-    outData.assign(256, 0);
-    std::vector<int32_t> resultData;
-    resultData.assign(256, 0);
-
-    Tensor output(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), {1, 256, 1}),
-                  DataType(eDataType::DATA_TYPE_S32), device);
-
-    if (device == eDeviceType::GPU) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpy(d_input_data.basePtr(), testData.data, image_size, hipMemcpyHostToDevice));
-
-        hipStream_t stream;
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-        Histogram op;
-        op(stream, input, std::nullopt, output, device);
-
-        auto outputTensorData = output.exportData<TensorDataStrided>();
-        HIP_VALIDATE_NO_ERRORS(hipMemcpy(resultData.data(), outputTensorData.basePtr(),
-                                         output.shape().size() * output.dtype().size(), hipMemcpyDeviceToHost));
-
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-        HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-        for (int i = 0; i < output.shape().size(); i++) {
-            float err = std::abs(static_cast<int32_t>(resultData[i] - expectedData[i]));
-
-            if (err > 1) {
-                std::cout << "OpHistogram (DEVICE) failed at index: " << i << " with an error of: " << err << std::endl;
-                return eTestStatusType::UNEXPECTED_VALUE;
-            }
-        }
-    } else if (device == eDeviceType::CPU) {
-        memcpy(d_input_data.basePtr(), testData.data, image_size);
-
-        Histogram op;
-        op(nullptr, input, std::nullopt, output, device);
-
-        auto outputTensorData = output.exportData<TensorDataStrided>();
-
-        memcpy(resultData.data(), outputTensorData.basePtr(), output.shape().size() * output.dtype().size());
-
-        for (int i = 0; i < output.shape().size(); i++) {
-            float err = std::abs(static_cast<int32_t>(resultData[i] - expectedData[i]));
-
-            if (err > 1) {
-                std::cout << "OpHistogram (HOST) failed at index: " << i << " with an error of: " << err << std::endl;
-                return eTestStatusType::UNEXPECTED_VALUE;
-            }
-        }
-    }
-    return eTestStatusType::TEST_SUCCESS;
-}
-}  // namespace
-
-eTestStatusType test_op_histogram(int argc, char **argv) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <test data path>" << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    fs::path testDataPath = fs::path(argv[1]) / "tests" / "ops";
-
-    try {
-        int32_t *expectedData;
-        size_t expSize;
-
-        const std::string histogramBinFile = testDataPath / "expected_histogram.bin";
-
-        if (!rocCVBinaryIO::read_array_size(histogramBinFile, expSize)) {
-            std::cerr << "OpHistogram : read_array_size() failed for : " << histogramBinFile << std::endl;
-            return eTestStatusType::UNEXPECTED_VALUE;
-        }
-
-        if (expSize % 256 != 0 || expSize < 256) {
-            std::cerr << "OpHistogram : Wrong number of bin size in expected output :" << expSize << std::endl;
-            return eTestStatusType::UNEXPECTED_VALUE;
-        }
-
-        expectedData = (int32_t *)malloc(expSize * sizeof(int32_t));
-        if (!rocCVBinaryIO::read_array(histogramBinFile, expectedData, expSize)) {
-            std::cerr << "OpHistogram : read_array() failed for : " << histogramBinFile << std::endl;
-            return eTestStatusType::UNEXPECTED_VALUE;
-        }
-
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedData, eDeviceType::GPU),
-                           eTestStatusType::TEST_SUCCESS);
-        EXPECT_TEST_STATUS(testCorrectness(testDataPath / "test_input.bmp", expectedData, eDeviceType::CPU),
-                           eTestStatusType::TEST_SUCCESS);
-        free(expectedData);
-    } catch (Exception e) {
-        std::cout << "Exception: " << e.what() << std::endl;
-        return eTestStatusType::TEST_FAILURE;
-    }
-    return eTestStatusType::TEST_SUCCESS;
-}*/
