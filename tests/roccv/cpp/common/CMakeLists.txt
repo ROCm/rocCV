@@ -46,30 +46,37 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 # find HIP
 find_package(HIP REQUIRED)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
+set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${HIP_INCLUDE_DIR})
 # find opencv
 find_package(OpenCV REQUIRED)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${OpenCV_LIBRARIES})
+set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${OpenCV_INCLUDE_DIRS})
 # find rocCV
 find_library(roccv_LIBRARY roccv PATHS ${ROCM_PATH}/lib)
 find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include/roccv)
-if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
-    message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
-    set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
-    set(roccv_FOUND TRUE)
-else()
-    if(BUILD_FROM_SOURCE)
-        message("-- ${Yellow}${PROJECT_NAME} -- Install rocCV before testing${ColourReset}")
-        include_directories(${CMAKE_SOURCE_DIR}/include)
+
+# Add current source directory as an include
+set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_CURRENT_SOURCE_DIR})
+
+# If building from source, ensure we use the locally built version of roccv. Otherwise, look for an installed version to link against.
+if(BUILD_FROM_SOURCE)
+        message("-- ${Green}${PROJECT_NAME} -- Building CPP tests using roccv source build${ColourReset}")
+        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_SOURCE_DIR}/include)
         set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
+else()
+    if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
+        message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
+        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
+        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${roccv_INCLUDE_DIR})
+        set(roccv_FOUND TRUE)
     else()
         message(FATAL_ERROR "{Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
     endif()
 endif()
 
 file(GLOB TEST_HELPER_SOURCES "*.cpp")
+
+# Create roccv-test-helpers library
 add_library(${PROJECT_NAME} STATIC ${TEST_HELPER_SOURCES})
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${HIP_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
-if(roccv_FOUND)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${roccv_INCLUDE_DIR})
-endif()
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${INCLUDE_DIR_LIST})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LINK_LIBRARY_LIST})
