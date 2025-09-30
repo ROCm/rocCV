@@ -326,7 +326,7 @@ int main(int argc, char** argv) {
     resultFile << std::setw(4) << resultsJson << std::endl;
     resultFile.close();
 
-    std::cout << "Wrote benchmark results to " << resultPath << std::endl;
+    std::cout << "Wrote benchmark results to " << std::filesystem::absolute(resultPath) << std::endl;
 
     return 0;
 }

@@ -23,9 +23,17 @@
 
 project(roccv_bench)
 
+# Benchmark suite helper libraries
 add_subdirectory("roccvbench")
 
-file(GLOB BENCHMARK_SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES})
+# Include roccv benchmark units
+set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/roccv/*.cpp")
+
+file(GLOB BENCHMARK_SOURCES_GLOBBED
+    CONFIGURE_DEPENDS    
+    ${BENCHMARK_SOURCES}
+)
+
+add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES_GLOBBED} "src/main.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE roccv_bench_utils)
 target_include_directories(${PROJECT_NAME} PRIVATE "vendor")
