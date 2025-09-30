@@ -163,9 +163,18 @@ int main(int argc, char** argv) {
 
         else if (arg == "-l" || arg == "--list") {
             // List all available categories and exit the program
-            std::cout << "Available benchmark categories:" << std::endl;
+            std::cout << "Available benchmarks:\n";
             for (const auto& category : availableCategories) {
-                std::cout << "\t" << category << std::endl;
+                std::cout << "  \033[1m" << category << ":\033[0m\n    ";
+
+                std::vector<roccvbench::Benchmark> benchmarks =
+                    roccvbench::BenchmarkRegistry::instance().getBenchmarks().at(category);
+
+                for (int i = 0; i < benchmarks.size(); i++) {
+                    std::cout << benchmarks[i].name;
+                    if (i < benchmarks.size() - 1) std::cout << ", ";
+                }
+                std::cout << std::endl;
             }
             return EXIT_SUCCESS;
         }
