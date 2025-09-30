@@ -24,6 +24,15 @@
 #include <opencv2/opencv.hpp>
 #include <roccvbench/utils.hpp>
 
+/**
+ * @brief Generates a random OpenCV image as a matrix.
+ *
+ * @tparam T The base datatype of the generated data.
+ * @param width Image width.
+ * @param height Image height.
+ * @param datatype OpenCV datatype for the image. (e.g. CV_U8C3)
+ * @return A cv::Mat with randomly generated data.
+ */
 template <typename T>
 cv::Mat GenerateMat(int width, int height, int datatype) {
     const size_t vecSize = width * height * CV_MAT_CN(datatype);
@@ -33,6 +42,16 @@ cv::Mat GenerateMat(int width, int height, int datatype) {
     return mat.clone();
 }
 
+/**
+ * @brief Generates list of random OpenCV images.
+ *
+ * @tparam T Base datatype of the generated data.
+ * @param samples Number of images in the batch.
+ * @param width Image width.
+ * @param height Image height.
+ * @param datatype OpenCV datatype for the image. (e.g. CV_U8C3)
+ * @return A list of cv::Mat with randomly generated data.
+ */
 template <typename T>
 std::vector<cv::Mat> GenerateMats(int samples, int width, int height, int datatype) {
     std::vector<cv::Mat> batch;
