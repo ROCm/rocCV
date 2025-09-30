@@ -28,6 +28,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(Histogram, GPU) {
@@ -41,7 +43,7 @@ BENCHMARK(Histogram, GPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     Histogram op;
     hipStream_t stream;
@@ -72,7 +74,7 @@ BENCHMARK(Histogram, CPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     Histogram op;
     ROCCV_BENCH_RECORD_BLOCK(

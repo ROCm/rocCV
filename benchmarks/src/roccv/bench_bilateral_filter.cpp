@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(BilateralFilter, GPU) {
@@ -38,7 +40,7 @@ BENCHMARK(BilateralFilter, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     BilateralFilter op;
     hipStream_t stream;
@@ -66,7 +68,7 @@ BENCHMARK(BilateralFilter, CPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     BilateralFilter op;
     ROCCV_BENCH_RECORD_BLOCK(

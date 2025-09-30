@@ -34,14 +34,17 @@ endif()
 
 project(roccv_bench)
 
-# Benchmark suite helper libraries
-add_subdirectory("roccvbench")
-
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "vendor")
-set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv_bench_utils)
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "vendor" "roccvbench/include")
 
 # Include roccv benchmark units
-set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/roccv/*.cpp")
+if(BUILD_FROM_SOURCE)
+    message("-- ${Green}${PROJECT_NAME} -- Found rocCV")
+    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/roccv/*.cpp")
+    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_SOURCE_DIR}/include")
+    set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv)
+else()
+    message("-- ${Yellow}${PROJECT_NAME} -- Could not find rocCV, it will not be included in the benchmarks${ColorReset}")
+endif()
 
 # Include OpenCV benchmark units
 if(${OpenCV_FOUND})

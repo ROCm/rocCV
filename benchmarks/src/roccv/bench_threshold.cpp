@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(ThresholdBinary, GPU) {
@@ -43,9 +45,9 @@ BENCHMARK(ThresholdBinary, GPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(maxVal);
-    roccvbench::FillTensor(thresh);
+    FillTensor(input);
+    FillTensor(maxVal);
+    FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.samples);
     hipStream_t stream;
@@ -78,9 +80,9 @@ BENCHMARK(ThresholdBinary, CPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(maxVal);
-    roccvbench::FillTensor(thresh);
+    FillTensor(input);
+    FillTensor(maxVal);
+    FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.samples);
     ROCCV_BENCH_RECORD_BLOCK(

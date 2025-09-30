@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(Flip, GPU) {
@@ -38,7 +40,7 @@ BENCHMARK(Flip, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     Flip op;
     hipStream_t stream;
@@ -66,7 +68,7 @@ BENCHMARK(Flip, CPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     Flip op;
     ROCCV_BENCH_RECORD_BLOCK({ op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs);

@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(WarpPerspective, GPU) {
@@ -40,7 +42,7 @@ BENCHMARK(WarpPerspective, GPU) {
 
     PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     WarpPerspective op;
     hipStream_t stream;
@@ -71,7 +73,7 @@ BENCHMARK(WarpPerspective, CPU) {
 
     PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     WarpPerspective op;
     ROCCV_BENCH_RECORD_BLOCK(

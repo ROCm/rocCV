@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(WarpAffine, GPU) {
@@ -40,7 +42,7 @@ BENCHMARK(WarpAffine, GPU) {
 
     AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     WarpAffine op;
     hipStream_t stream;
@@ -71,7 +73,7 @@ BENCHMARK(WarpAffine, CPU) {
 
     AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     WarpAffine op;
     ROCCV_BENCH_RECORD_BLOCK(

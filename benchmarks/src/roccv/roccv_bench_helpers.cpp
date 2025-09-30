@@ -19,13 +19,12 @@
  * THE SOFTWARE.
  */
 
-#include "roccvbench/utils.hpp"
+#include "roccv_bench_helpers.hpp"
 
 #include <core/hip_assert.h>
 
-#include <core/tensor.hpp>
-
-namespace roccvbench {
+#include <roccvbench/utils.hpp>
+#include <vector>
 
 template <typename T>
 void MoveToTensor(const roccv::Tensor& tensor, const std::vector<T>& vec) {
@@ -48,37 +47,37 @@ void MoveToTensor(const roccv::Tensor& tensor, const std::vector<T>& vec) {
 void FillTensor(const roccv::Tensor& tensor) {
     switch (tensor.dtype().etype()) {
         case DATA_TYPE_U8: {
-            std::vector<uint8_t> vec = RandVector<uint8_t>(tensor.shape().size());
+            std::vector<uint8_t> vec = roccvbench::RandVector<uint8_t>(tensor.shape().size());
             MoveToTensor<uint8_t>(tensor, vec);
             break;
         }
 
         case DATA_TYPE_S8: {
-            std::vector<int8_t> vec = RandVector<int8_t>(tensor.shape().size());
+            std::vector<int8_t> vec = roccvbench::RandVector<int8_t>(tensor.shape().size());
             MoveToTensor<int8_t>(tensor, vec);
             break;
         }
 
         case DATA_TYPE_F32: {
-            std::vector<float> vec = RandVector<float>(tensor.shape().size());
+            std::vector<float> vec = roccvbench::RandVector<float>(tensor.shape().size());
             MoveToTensor<float>(tensor, vec);
             break;
         }
 
         case DATA_TYPE_F64: {
-            std::vector<double> vec = RandVector<double>(tensor.shape().size());
+            std::vector<double> vec = roccvbench::RandVector<double>(tensor.shape().size());
             MoveToTensor<double>(tensor, vec);
             break;
         }
 
         case DATA_TYPE_S32: {
-            std::vector<int32_t> vec = RandVector<int32_t>(tensor.shape().size());
+            std::vector<int32_t> vec = roccvbench::RandVector<int32_t>(tensor.shape().size());
             MoveToTensor<int32_t>(tensor, vec);
             break;
         }
 
         case DATA_TYPE_U32: {
-            std::vector<uint32_t> vec = RandVector<uint32_t>(tensor.shape().size());
+            std::vector<uint32_t> vec = roccvbench::RandVector<uint32_t>(tensor.shape().size());
             MoveToTensor<uint32_t>(tensor, vec);
             break;
         }
@@ -89,4 +88,3 @@ void FillTensor(const roccv::Tensor& tensor) {
         }
     }
 }
-}  // namespace roccvbench

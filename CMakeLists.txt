@@ -206,6 +206,10 @@ endif()
 
 add_subdirectory(src)
 
+# Flag to signal that other components requiring roccv can link against roccv
+# rather than looking for a global installation.
+set(BUILD_FROM_SOURCE ON)
+
 if(SAMPLES)
     add_subdirectory(samples)
 endif(SAMPLES)
@@ -220,7 +224,6 @@ enable_testing()
 include(CTest)
 
 if(TESTS)
-    set(BUILD_FROM_SOURCE ON)
 	add_subdirectory(tests)
 	add_custom_target(test_correctness
 		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure

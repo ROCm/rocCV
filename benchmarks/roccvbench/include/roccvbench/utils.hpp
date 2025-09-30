@@ -21,15 +21,9 @@
 
 #pragma once
 
-#include <core/hip_assert.h>
-
 #include <chrono>
 #include <random>
 #include <vector>
-
-namespace roccv {
-class Tensor;
-}
 
 namespace roccvbench {
 
@@ -62,13 +56,6 @@ std::vector<T> RandVector(size_t size) {
 
     return result;
 }
-
-/**
- * @brief Fills a tensor with random values.
- *
- * @param tensor The tensor to fill with random values.
- */
-extern void FillTensor(const roccv::Tensor& tensor);
 
 /**
  * @brief Records the execution time in milliseconds of a block of code <code> by running it <numRuns> times and taking

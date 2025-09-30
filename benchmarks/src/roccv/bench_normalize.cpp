@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(Normalize, GPU) {
@@ -43,9 +45,9 @@ BENCHMARK(Normalize, GPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(scale);
-    roccvbench::FillTensor(base);
+    FillTensor(input);
+    FillTensor(scale);
+    FillTensor(base);
 
     Normalize op;
     hipStream_t stream;
@@ -79,9 +81,9 @@ BENCHMARK(Normalize, CPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(scale);
-    roccvbench::FillTensor(base);
+    FillTensor(input);
+    FillTensor(scale);
+    FillTensor(base);
 
     Normalize op;
     ROCCV_BENCH_RECORD_BLOCK(

@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(Resize, GPU) {
@@ -40,7 +42,7 @@ BENCHMARK(Resize, GPU) {
     Tensor input(inputReqs);
     Tensor output(outputReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     Resize op;
     hipStream_t stream;
@@ -69,7 +71,7 @@ BENCHMARK(Resize, CPU) {
     Tensor input(inputReqs);
     Tensor output(outputReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     Resize op;
     ROCCV_BENCH_RECORD_BLOCK(

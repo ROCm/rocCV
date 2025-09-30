@@ -26,6 +26,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(GammaContrast, GPU) {
@@ -39,7 +41,7 @@ BENCHMARK(GammaContrast, GPU) {
     Tensor output(reqs);
     float gamma = 2.2f;
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     GammaContrast op;
     hipStream_t stream;
@@ -68,7 +70,7 @@ BENCHMARK(GammaContrast, CPU) {
     Tensor output(reqs);
     float gamma = 2.2f;
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     GammaContrast op;
     ROCCV_BENCH_RECORD_BLOCK(

@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(CvtColor, GPU) {
@@ -40,7 +42,7 @@ BENCHMARK(CvtColor, GPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CvtColor op;
     hipStream_t stream;
@@ -69,7 +71,7 @@ BENCHMARK(CvtColor, CPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CvtColor op;
     ROCCV_BENCH_RECORD_BLOCK(
