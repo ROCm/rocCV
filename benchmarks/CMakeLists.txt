@@ -26,8 +26,16 @@ project(roccv_bench)
 # Benchmark suite helper libraries
 add_subdirectory("roccvbench")
 
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "vendor")
+set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv_bench_utils)
+
 # Include roccv benchmark units
 set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/roccv/*.cpp")
+
+# Include OpenCV benchmark units
+set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/opencv/*.cpp")
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "src/opencv" ${OpenCV_INCLUDE_DIRS})
+set(BENCHMARK_LIBS ${BENCHMARK_LIBS} ${OpenCV_LIBRARIES})
 
 file(GLOB BENCHMARK_SOURCES_GLOBBED
     CONFIGURE_DEPENDS    
@@ -35,5 +43,5 @@ file(GLOB BENCHMARK_SOURCES_GLOBBED
 )
 
 add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES_GLOBBED} "src/main.cpp")
-target_link_libraries(${PROJECT_NAME} PRIVATE roccv_bench_utils)
-target_include_directories(${PROJECT_NAME} PRIVATE "vendor")
+target_link_libraries(${PROJECT_NAME} PRIVATE ${BENCHMARK_LIBS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${BENCHMARK_INCLUDES})

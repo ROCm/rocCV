@@ -24,33 +24,8 @@
 #include <core/hip_assert.h>
 
 #include <core/tensor.hpp>
-#include <random>
-#include <vector>
 
 namespace roccvbench {
-
-template <typename T>
-std::vector<T> RandVector(size_t size) {
-    std::random_device dev;
-    std::mt19937 gen(dev());
-    std::vector<T> result(size);
-
-    if constexpr (std::is_floating_point_v<T>) {
-        std::uniform_real_distribution<T> dist(0.0f, 1.0f);
-        for (size_t i = 0; i < size; i++) {
-            result[i] = dist(gen);
-        }
-    } else if constexpr (std::is_integral_v<T>) {
-        std::uniform_int_distribution<int64_t> dist(std::numeric_limits<T>().min(), std::numeric_limits<T>().max());
-        for (size_t i = 0; i < size; i++) {
-            result[i] = static_cast<T>(dist(gen));
-        }
-    } else {
-        static_assert(false, "Unsupported data type for random vector fill.\n");
-    }
-
-    return result;
-}
 
 template <typename T>
 void MoveToTensor(const roccv::Tensor& tensor, const std::vector<T>& vec) {
