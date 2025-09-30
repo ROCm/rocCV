@@ -27,8 +27,8 @@
 
 BENCHMARK(Flip, OpenCV) {
     roccvbench::BenchmarkResults results;
-    // Generate batch of OpenCV images
-    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, 3);
+
+    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
     cv::Mat outputMat(config.height, config.width, CV_8UC3);
 
     ROCCV_BENCH_RECORD_BLOCK(

@@ -25,21 +25,20 @@
 #include <roccvbench/utils.hpp>
 
 template <typename T>
-cv::Mat GenerateMat(int width, int height, int channels) {
-    const size_t vecSize = width * height * channels;
+cv::Mat GenerateMat(int width, int height, int datatype) {
+    const size_t vecSize = width * height * CV_MAT_CN(datatype);
     std::vector<T> data = roccvbench::RandVector<T>(vecSize);
 
-    // TODO: Support more datatypes
-    cv::Mat mat(height, width, CV_8UC3, data.data());
+    cv::Mat mat(height, width, datatype, data.data());
     return mat.clone();
 }
 
 template <typename T>
-std::vector<cv::Mat> GenerateMats(int samples, int width, int height, int channels) {
+std::vector<cv::Mat> GenerateMats(int samples, int width, int height, int datatype) {
     std::vector<cv::Mat> batch;
     batch.reserve(samples);
     for (int i = 0; i < samples; i++) {
-        batch.push_back(GenerateMat<T>(width, height, channels));
+        batch.push_back(GenerateMat<T>(width, height, datatype));
     }
     return batch;
 }
