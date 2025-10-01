@@ -30,6 +30,22 @@
 
 using namespace roccv;
 
+namespace {
+/**
+ * @brief Computes the shift required to move the resulting rotated image back to the center of the image.
+ *
+ * @param centerX The x coordinate for the center of the image.
+ * @param centerY The y coordinate for the center of the image.
+ * @param angle The angle in degrees the resulting image will be rotated.
+ * @return A double2 with the shift required to translate the image back to its center after a rotation.
+ */
+double2 ComputeCenterShift(const double centerX, const double centerY, const double angle) {
+    double xShift = (1 - cos(angle * M_PI / 180)) * centerX - sin(angle * M_PI / 180) * centerY;
+    double yShift = sin(angle * M_PI / 180) * centerX + (1 - cos(angle * M_PI / 180)) * centerY;
+    return {xShift, yShift};
+}
+}  // namespace
+
 BENCHMARK(Rotate, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
@@ -41,13 +57,18 @@ BENCHMARK(Rotate, GPU) {
     Tensor output(reqs);
     FillTensor(input);
 
+    const double angle = 180;
+    const double centerX = (config.width - 1) / 2.0;
+    const double centerY = (config.height - 1) / 2.0;
+    const double2 shift = ComputeCenterShift(centerX, centerY, angle);
+
     Rotate op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR);
+            op(stream, input, output, angle, shift, eInterpolationType::INTERP_TYPE_LINEAR);
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -68,12 +89,14 @@ BENCHMARK(Rotate, CPU) {
     Tensor output(reqs);
     FillTensor(input);
 
+    const double angle = 180;
+    const double centerX = (config.width - 1) / 2.0;
+    const double centerY = (config.height - 1) / 2.0;
+    const double2 shift = ComputeCenterShift(centerX, centerY, angle);
+
     Rotate op;
     ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(nullptr, input, output, -72.4, make_double2(0, 0), eInterpolationType::INTERP_TYPE_LINEAR,
-               eDeviceType::CPU);
-        },
+        { op(nullptr, input, output, angle, shift, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
         results.executionTime, config.runs);
 
     return results;
