@@ -108,13 +108,13 @@ if __name__ == "__main__":
         # Setup execution time axis
         ex_time_ax = ax[0]
         ex_time_ax.set_xlabel("Batch Size")
-        ex_time_ax.set_ylabel("Execution Time (ms) [Log Scale]")
+        ex_time_ax.set_ylabel("Execution Time (ms) [Log Scale]\n(Lower is better)")
         ex_time_ax.set_title("Execution Time")
         ex_time_ax.set_yscale('log')
 
         # Setup FPS axis
         fps_ax = ax[1]
-        fps_ax.set_ylabel("Frames per Second [Log Scale]")
+        fps_ax.set_ylabel("Frames per Second [Log Scale]\n(Higher is better)")
         fps_ax.set_xlabel("Batch Size")
         fps_ax.set_title("Frames per Second")
         fps_ax.set_yscale('log')
