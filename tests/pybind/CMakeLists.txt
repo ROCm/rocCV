@@ -53,7 +53,6 @@ if(EXISTS "${ROCM_PATH}/lib/rocpycv/rocpycv.pyi")
 endif()
 
 set(PYTEST_FLAGS  
-    "--data_dir" "${ROCM_PATH}/share/roccv/test/data/tests/ops"
     "--rootdir" "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
