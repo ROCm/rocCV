@@ -44,7 +44,7 @@ rocCV is an efficient GPU-accelerated library for image pre- and post-processing
 * [HIP](https://github.com/ROCm/HIP)
 
   ```shell
-  sudo apt install rocm-hip-runtime-dev
+  sudo apt install hip-dev
   ```
 
 * [DLPack](https://pypi.org/project/dlpack/)
