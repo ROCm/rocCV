@@ -24,9 +24,8 @@ THE SOFTWARE.
 
 #include <op_bnd_box.hpp>
 
-PyTensor PyOpBndBox::Execute(PyTensor& input, BndBoxes_t bnd_boxes,
-                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
-    
+PyTensor PyOpBndBox::Execute(PyTensor& input, const roccv::BndBoxes& bnd_boxes,
+                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
     auto inputTensor = input.getTensor();
@@ -37,9 +36,8 @@ PyTensor PyOpBndBox::Execute(PyTensor& input, BndBoxes_t bnd_boxes,
     return PyTensor(outputTensor);
 }
 
-void PyOpBndBox::ExecuteInto(PyTensor& output, PyTensor& input, BndBoxes_t bnd_boxes,
-                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
-    
+void PyOpBndBox::ExecuteInto(PyTensor& output, PyTensor& input, const roccv::BndBoxes& bnd_boxes,
+                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
     roccv::BndBox op;
@@ -48,8 +46,8 @@ void PyOpBndBox::ExecuteInto(PyTensor& output, PyTensor& input, BndBoxes_t bnd_b
 
 void PyOpBndBox::Export(py::module& m) {
     using namespace py::literals;
-    m.def("bndbox", &PyOpBndBox::Execute, "src"_a, "bnd_boxes"_a, 
-                    "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("bndbox", &PyOpBndBox::Execute, "src"_a, "bnd_boxes"_a, "stream"_a = nullptr, "device"_a = eDeviceType::GPU,
+          R"pbdoc(
             
             Executes the BndBox operation on the given HIP stream.
 
@@ -66,8 +64,8 @@ void PyOpBndBox::Export(py::module& m) {
                 rocpycv.Tensor: The output tensor.
 
             )pbdoc");
-    m.def("bndbox_into", &PyOpBndBox::ExecuteInto, "dst"_a, "src"_a, "bnd_boxes"_a, 
-                            "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("bndbox_into", &PyOpBndBox::ExecuteInto, "dst"_a, "src"_a, "bnd_boxes"_a, "stream"_a = nullptr,
+          "device"_a = eDeviceType::GPU, R"pbdoc(
 
             Executes the BndBox operation on the given HIP stream.
 

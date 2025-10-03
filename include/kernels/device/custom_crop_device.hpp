@@ -29,7 +29,7 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 template <typename SrcWrapper, typename DstWrapper>
-__global__ void custom_crop(SrcWrapper input, DstWrapper output, Box_t cropRect) {
+__global__ void custom_crop(SrcWrapper input, DstWrapper output, roccv::Box_t cropRect) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     const int b = blockIdx.z;

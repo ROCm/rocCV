@@ -27,7 +27,6 @@ THE SOFTWARE.
 namespace roccv {
 void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Size2D cropSize,
                             const eDeviceType device) const {
-
     auto i_height = input.shape()[input.shape().layout().height_index()];
     auto i_width = input.shape()[input.shape().layout().width_index()];
 
@@ -40,8 +39,8 @@ void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     int32_t half_cropWidth = cropWidth >> 1;
     int32_t half_cropHeight = cropHeight >> 1;
 
-    int64_t upper_left_corner_x = half_width - half_cropWidth;
-    int64_t upper_left_corner_y = half_height - half_cropHeight;
+    int32_t upper_left_corner_x = half_width - half_cropWidth;
+    int32_t upper_left_corner_y = half_height - half_cropHeight;
 
     Box_t cropRect{upper_left_corner_x, upper_left_corner_y, cropWidth, cropHeight};
 

@@ -29,13 +29,13 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper>
-void custom_crop(SrcWrapper input, DstWrapper output, Box_t cropRect) {
+void custom_crop(SrcWrapper input, DstWrapper output, roccv::Box_t cropRect) {
     for (int b = 0; b < output.batches(); b++) {
         for (int i = 0; i < cropRect.width; i++) {
             for (int j = 0; j < cropRect.height; j++) {
-                    int sourceX = i + cropRect.x;
-                    int sourceY = j + cropRect.y;
-                    output.at(b, j, i, 0) = input.at(b, sourceY, sourceX, 0);
+                int sourceX = i + cropRect.x;
+                int sourceY = j + cropRect.y;
+                output.at(b, j, i, 0) = input.at(b, sourceY, sourceX, 0);
             }
         }
     }

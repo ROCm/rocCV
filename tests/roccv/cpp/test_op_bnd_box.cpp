@@ -21,11 +21,12 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
-#include <iostream>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/image_wrapper.hpp>
+#include <iostream>
 #include <op_bnd_box.hpp>
+
 #include "common/math_vector.hpp"
 #include "test_helpers.hpp"
 
@@ -81,7 +82,8 @@ void shadeBBRect(const Rect_t &rect, int ix, int iy, T *out_color) {
  * @return None.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, int32_t width, int32_t height, BndBoxes_t bboxes) {
+void GenerateGoldenBndBox(std::vector<BT> &input, std::vector<BT> &output, int32_t batchSize, int32_t width,
+                          int32_t height, const BndBoxes &bboxes) {
     // Wrap input/output vectors for simplified data access
     ImageWrapper<T> src(input, batchSize, width, height);
     ImageWrapper<T> dst(output, batchSize, width, height);
@@ -107,15 +109,13 @@ void GenerateGoldenBndBox(std::vector<BT>& input, std::vector<BT>& output, int32
 
                 for (size_t i = 0; i < rects.size(); i++) {
                     Rect_t curr_rect = rects[i];
-                    if (curr_rect.batch <= b_idx)
-                        shadeBBRect<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
+                    if (curr_rect.batch <= b_idx) shadeBBRect<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
                 WorkType out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));
                 out_color.w = has_alpha ? out_color.w : (std::numeric_limits<BT>::max());
 
-                if (shaded_pixel.w != 0)
-                    alphaBlend<WorkType>(out_color, shaded_pixel);
+                if (shaded_pixel.w != 0) alphaBlend<WorkType>(out_color, shaded_pixel);
 
                 MathVector::trunc(out_color, &dst.at(b_idx, y_idx, x_idx, 0));
             }
@@ -146,29 +146,14 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     // Copy generated input data into input tensor
     CopyVectorIntoTensor(input, inputData);
 
-    std::vector<int32_t> bboxes_size_vector(1, 3);
-    std::vector<BndBox_t> bbox_vector(3);
-    bbox_vector[0].box.x = width / 4;
-    bbox_vector[0].box.y = height / 4;
-    bbox_vector[0].box.width = width / 2;
-    bbox_vector[0].box.height = height / 2;
-    bbox_vector[0].thickness = 5;
-    bbox_vector[0].borderColor = {0, 0, 255, 200};
-    bbox_vector[0].fillColor = {0, 255, 0, 100};
-    bbox_vector[1].box.x = width / 3;
-    bbox_vector[1].box.y = height / 3;
-    bbox_vector[1].box.width = width / 3 * 2;
-    bbox_vector[1].box.height = height / 4;
-    bbox_vector[1].thickness = -1;
-    bbox_vector[1].borderColor = {90, 16, 181, 50};
-    bbox_vector[2].box.x = -50;
-    bbox_vector[2].box.y = (2 * height) / 3;
-    bbox_vector[2].box.width = width + 50;
-    bbox_vector[2].box.height = height / 3 + 50;
-    bbox_vector[2].thickness = 0;
-    bbox_vector[2].borderColor = {0, 0, 0, 50};
-    bbox_vector[2].fillColor = {111, 159, 232, 150};
-    BndBoxes_t bboxes{1, bboxes_size_vector, bbox_vector};
+    std::vector<std::vector<BndBox_t>> bboxesVec = {
+        {
+            {{width / 4, height / 4, width / 2, height / 2}, 5, {0, 0, 255, 200}, {0, 255, 0, 100}},
+            {{width / 3, height / 3, width / 3 * 2, height / 4}, -1, {90, 16, 181, 50}, {0, 0, 0, 0}},
+            {{-50, (height * 2) / 3, width + 50, height / 3 + 50}, 0, {0, 0, 0, 0}, {111, 159, 232, 150}},
+        },
+    };
+    BndBoxes bboxes(bboxesVec);
 
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));

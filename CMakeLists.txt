@@ -44,7 +44,7 @@ endif()
 #       * rocCV source CMakeLists.txt
 #       * python CMakeLists.txt
 #       * pyproject.toml
-set(VERSION "0.2.0")
+set(VERSION "0.3.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Set Project Version and Language
@@ -71,8 +71,8 @@ option(ENHANCED_MESSAGE         "rocCV Enhanced Message Option"                 
 option(BUILD_PYPACKAGE          "Build with rocCV Python Package"               ON)
 option(BUILD_WITH_AMD_ADVANCE   "Build rocCV for advanced AMD GPU Architecture" OFF)
 option(FULL_BUILD               "Build with all tests and samples"              OFF)
-option(SAMPLES                  "Build with samples"                            ON)
-option(TESTS                    "Build with tests"                              ON)
+option(SAMPLES                  "Build with samples"                            OFF)
+option(TESTS                    "Build with tests"                              OFF)
 option(BENCHMARKS               "Build with benchmarks"                         OFF)
 set(PYTHON_VERSION_SUGGESTED    ""          CACHE STRING "Python version to build rocCV")
 set(DEFAULT_BUILD_TYPE          "Release"   CACHE STRING "Default build type for rocCV")
@@ -120,8 +120,8 @@ endif()
 message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColourReset}")
 message("-- ${Cyan}     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} [Select rocCV build type [options:Debug/Release](default:Release)]${ColourReset}")
 message("-- ${Cyan}     -D FULL_BUILD=${FULL_BUILD} [Compile with samples, and tests [options:ON/OFF](default:OFF)]${ColourReset}")
-message("-- ${Cyan}     -D SAMPLES=${SAMPLES} [Compile with samples [options:ON/OFF](default:ON)]${ColourReset}")
-message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](default:ON)]${ColourReset}")
+message("-- ${Cyan}     -D SAMPLES=${SAMPLES} [Compile with samples [options:ON/OFF](default:OFF)]${ColourReset}")
+message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](default:OFF)]${ColourReset}")
 message("-- ${Cyan}     -D BENCHMARKS=${BENCHMARKS} [Compile with benchmarks [options:ON/OFF](default:OFF)]${ColourReset}")
 message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build for rocCV Python Package(default:ON)]${ColourReset}")
 message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColourReset}")
@@ -200,7 +200,7 @@ if(NOT OpenCV_FOUND)
 endif()
 
 # Check that all dependencies have been met
-if (NOT BUILD_ROCCV)
+if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
@@ -217,8 +217,10 @@ endif(BENCHMARKS)
 # Enable output to stdout by default when tests fail
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 enable_testing()
+include(CTest)
 
 if(TESTS)
+    set(BUILD_FROM_SOURCE ON)
 	add_subdirectory(tests)
 	add_custom_target(test_correctness
 		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure
@@ -271,13 +273,13 @@ endif()
 
 # Set the dependent packages
 # * Runtime
-set(ROCCV_RUNTIME_PACKAGE_LIST  "rocm-hip-runtime")
+set(ROCCV_RUNTIME_PACKAGE_LIST  "hip-runtime-amd")
 # * Dev
-set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "rocm-hip-runtime-dev, python3-dev")
-set(ROCCV_RPM_DEV_PACKAGE_LIST  "rocm-hip-runtime-devel, python3-devel")
+set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "hip-dev, python3-dev")
+set(ROCCV_RPM_DEV_PACKAGE_LIST  "hip-devel, python3-devel")
 # * Test
-set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "python3-pytest, python3-numpy, python3-opencv")
-set(ROCCV_RPM_TEST_PACKAGE_LIST  "python3-pytest, python3-numpy")
+set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "cmake, libopencv-dev, python3-pytest, python3-numpy, python3-opencv")
+set(ROCCV_RPM_TEST_PACKAGE_LIST  "cmake, python3-pytest, python3-numpy") ## libopencv-dev has no equivalent in rpm
 
 # '%{?dist}' breaks manual builds on debian systems due to empty Provides
 execute_process(
