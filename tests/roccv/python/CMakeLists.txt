@@ -22,6 +22,6 @@
 # ##############################################################################
 
 add_custom_target(test_python
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR} --data_dir "${CMAKE_SOURCE_DIR}/data/tests/ops"
+    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Running rocpycv tests."
 )

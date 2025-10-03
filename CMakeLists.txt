@@ -44,7 +44,7 @@ endif()
 #       * rocCV source CMakeLists.txt
 #       * python CMakeLists.txt
 #       * pyproject.toml
-set(VERSION "0.2.0")
+set(VERSION "0.3.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Set Project Version and Language
@@ -273,10 +273,10 @@ endif()
 
 # Set the dependent packages
 # * Runtime
-set(ROCCV_RUNTIME_PACKAGE_LIST  "rocm-hip-runtime")
+set(ROCCV_RUNTIME_PACKAGE_LIST  "hip-runtime-amd")
 # * Dev
-set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "rocm-hip-runtime-dev, python3-dev")
-set(ROCCV_RPM_DEV_PACKAGE_LIST  "rocm-hip-runtime-devel, python3-devel")
+set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "hip-dev, python3-dev")
+set(ROCCV_RPM_DEV_PACKAGE_LIST  "hip-devel, python3-devel")
 # * Test
 set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "cmake, libopencv-dev, python3-pytest, python3-numpy, python3-opencv")
 set(ROCCV_RPM_TEST_PACKAGE_LIST  "cmake, python3-pytest, python3-numpy") ## libopencv-dev has no equivalent in rpm
