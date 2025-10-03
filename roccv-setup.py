@@ -34,7 +34,7 @@ else:
 libraryName = "rocCV"
 
 __copyright__ = f"Copyright (c) 2024, AMD ROCm {libraryName}"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __email__ = "mivisionx.support@amd.com"
 __status__ = "Shipping"
 
@@ -166,15 +166,15 @@ if userName == 'root':
 # debian packages
 coreDebianPackages = [
     'libdlpack-dev',
+    'hip-dev',
     'python3-dev',
-    'python3-pip',
     'python3-opencv'
 ]
 
 # rpm packages
 coreRpmPackages = [
-    'python3-devel',
-    'git'
+    'hip-devel',
+    'python3-devel'
 ]
 
 # common packages
@@ -183,11 +183,6 @@ coreCommonPackages = [
     'python3-pip',
     'python3-pytest',
     'python3-numpy'
-]
-
-# rocm dependencies
-rocmPackages = [
-    'rocm-hip-runtime-dev'
 ]
 
 # pip3 packages
@@ -213,8 +208,6 @@ else:
 
 install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
 
-# rocCV - ROCm packages
-install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, rocmPackages)
 # pip3 packages
 for i in range(len(pip3Packages)):
     ERROR_CHECK(os.system('pip3 install '+ pip3Packages[i]))
