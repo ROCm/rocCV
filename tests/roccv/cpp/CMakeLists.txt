@@ -23,12 +23,12 @@
 cmake_minimum_required(VERSION 3.15)
 
 if(NOT DEFINED ENHANCED_MESSAGE)
-  string(ASCII 27 Esc)
-  set(ColourReset "${Esc}[m")
-  set(Red         "${Esc}[31m")
-  set(Green       "${Esc}[32m")
-  set(Yellow      "${Esc}[33m")
-  set(White       "${Esc}[37m")
+    string(ASCII 27 Esc)
+    set(ColourReset "${Esc}[m")
+    set(Red         "${Esc}[31m")
+    set(Green       "${Esc}[32m")
+    set(Yellow      "${Esc}[33m")
+    set(White       "${Esc}[37m")
 endif()
 
 # ROCM Path
@@ -56,8 +56,7 @@ file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.
 create_test_sourcelist(CppRocCVTests 
                             system_test_main.cpp 
                             ${CPP_ROCCV_TEST_SOURCES}
-                    )
-
+)
 add_executable(${PROJECT_NAME} ${CppRocCVTests})
 
 # roccv-test-helper exposes all required libraries/include directories
