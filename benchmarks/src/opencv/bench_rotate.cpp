@@ -19,60 +19,25 @@
  * THE SOFTWARE.
  */
 
-#include <core/hip_assert.h>
-
-#include <core/tensor.hpp>
-#include <op_gamma_contrast.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
-using namespace roccv;
+#include "opencv_bench_helpers.hpp"
 
-BENCHMARK(GammaContrast, GPU) {
+BENCHMARK(Rotate, OpenCV) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8));
-    Tensor input(reqs);
-    Tensor output(reqs);
-    float gamma = 2.2f;
+    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
 
-    roccvbench::FillTensor(input);
-
-    GammaContrast op;
-    hipStream_t stream;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    cv::Mat outMat(config.height, config.width, CV_8UC3);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, gamma);
-            hipStreamSynchronize(stream);
+            for (const auto& mat : mats) {
+                cv::rotate(mat, outMat, cv::ROTATE_180);
+            }
         },
         results.executionTime, config.runs);
-
-    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-    return results;
-}
-
-BENCHMARK(GammaContrast, CPU) {
-    roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
-
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8), eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
-    float gamma = 2.2f;
-
-    roccvbench::FillTensor(input);
-
-    GammaContrast op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, gamma, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

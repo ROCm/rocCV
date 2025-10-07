@@ -26,6 +26,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(CustomCrop, GPU) {
@@ -42,7 +44,7 @@ BENCHMARK(CustomCrop, GPU) {
                               {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype());
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CustomCrop op;
     hipStream_t stream;
@@ -74,7 +76,7 @@ BENCHMARK(CustomCrop, CPU) {
                               {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype(), eDeviceType::CPU);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CustomCrop op;
     ROCCV_BENCH_RECORD_BLOCK(

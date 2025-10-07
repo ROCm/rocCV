@@ -23,13 +23,15 @@
 
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <op_thresholding.hpp>
+#include <op_normalize.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
-BENCHMARK(ThresholdBinary, GPU) {
+BENCHMARK(Normalize, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
@@ -38,22 +40,22 @@ BENCHMARK(ThresholdBinary, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    Tensor::Requirements paramReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64));
-    Tensor maxVal(paramReqs);
-    Tensor thresh(paramReqs);
+    Tensor::Requirements paramTensorReqs = Tensor::CalcRequirements(
+        TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}), DataType(eDataType::DATA_TYPE_F32));
+    Tensor scale(paramTensorReqs);
+    Tensor base(paramTensorReqs);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(maxVal);
-    roccvbench::FillTensor(thresh);
+    FillTensor(input);
+    FillTensor(scale);
+    FillTensor(base);
 
-    Threshold op(eThresholdType::THRESH_BINARY, config.samples);
+    Normalize op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, thresh, maxVal);
+            op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0);
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -63,7 +65,7 @@ BENCHMARK(ThresholdBinary, GPU) {
     return results;
 }
 
-BENCHMARK(ThresholdBinary, CPU) {
+BENCHMARK(Normalize, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
@@ -73,18 +75,20 @@ BENCHMARK(ThresholdBinary, CPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    Tensor::Requirements paramReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64), eDeviceType::CPU);
-    Tensor maxVal(paramReqs);
-    Tensor thresh(paramReqs);
+    Tensor::Requirements paramTensorReqs =
+        Tensor::CalcRequirements(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}),
+                                 DataType(eDataType::DATA_TYPE_F32), eDeviceType::CPU);
+    Tensor scale(paramTensorReqs);
+    Tensor base(paramTensorReqs);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(maxVal);
-    roccvbench::FillTensor(thresh);
+    FillTensor(input);
+    FillTensor(scale);
+    FillTensor(base);
 
-    Threshold op(eThresholdType::THRESH_BINARY, config.samples);
+    Normalize op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU); }, results.executionTime,
+        config.runs);
 
     return results;
 }

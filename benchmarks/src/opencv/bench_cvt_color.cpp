@@ -19,57 +19,24 @@
  * THE SOFTWARE.
  */
 
-#include <core/hip_assert.h>
-
-#include <core/image_format.hpp>
-#include <core/tensor.hpp>
-#include <op_flip.hpp>
+#include <opencv2/opencv.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
-using namespace roccv;
+#include "opencv_bench_helpers.hpp"
 
-BENCHMARK(Flip, GPU) {
+BENCHMARK(CvtColor, OpenCV) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
-    Tensor input(reqs);
-    Tensor output(reqs);
-
-    roccvbench::FillTensor(input);
-
-    Flip op;
-    hipStream_t stream;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
+    cv::Mat outputMat(config.height, config.width, CV_8UC1);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, -1);
-            hipStreamSynchronize(stream);
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::cvtColor(mats[i], outputMat, cv::COLOR_RGB2GRAY);
+            }
         },
         results.executionTime, config.runs);
-
-    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-    return results;
-}
-
-BENCHMARK(Flip, CPU) {
-    roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
-
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
-        eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
-
-    roccvbench::FillTensor(input);
-
-    Flip op;
-    ROCCV_BENCH_RECORD_BLOCK({ op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs);
-
     return results;
 }
