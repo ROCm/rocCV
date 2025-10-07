@@ -158,6 +158,7 @@ def compare_tensors(actual: rocpycv.Tensor, expected: rocpycv.Tensor) -> None:
     assert actual.layout() == expected.layout()
     assert actual.device() == expected.device()
 
+
 def generate_random_array(shape: list[int], dtype: rocpycv.eDataType) -> np.ndarray:
     np_dtype = rocpycv_type_to_np_type(dtype)
 
@@ -168,6 +169,7 @@ def generate_random_array(shape: list[int], dtype: rocpycv.eDataType) -> np.ndar
         np_array = np.random.randint(type_info.min, type_info.max, size=shape, dtype=np_dtype)
 
     return np_array
+
 
 def compare_array(array: np.ndarray, expected_array: np.ndarray, diff_threshold: float = 0.0) -> None:
     # Ensure the actual tensor is located on the CPU. We can do this using the copy_to method.

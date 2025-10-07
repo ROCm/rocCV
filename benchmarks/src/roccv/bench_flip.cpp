@@ -23,33 +23,32 @@
 
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <op_histogram.hpp>
-#include <optional>
+#include <op_flip.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
-BENCHMARK(Histogram, GPU) {
+BENCHMARK(Flip, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
+    Tensor input(reqs);
+    Tensor output(reqs);
 
-    Tensor input(inReqs);
-    Tensor output(outReqs);
+    FillTensor(input);
 
-    roccvbench::FillTensor(input);
-
-    Histogram op;
+    Flip op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, std::nullopt, output);
+            op(stream, input, output, -1);
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -59,24 +58,20 @@ BENCHMARK(Histogram, GPU) {
     return results;
 }
 
-BENCHMARK(Histogram, CPU) {
+BENCHMARK(Flip, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements inReqs =
-        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}),
-                                 DataType(eDataType::DATA_TYPE_S32), eDeviceType::CPU);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
+        eDeviceType::CPU);
+    Tensor input(reqs);
+    Tensor output(reqs);
 
-    Tensor input(inReqs);
-    Tensor output(outReqs);
+    FillTensor(input);
 
-    roccvbench::FillTensor(input);
-
-    Histogram op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs);
+    Flip op;
+    ROCCV_BENCH_RECORD_BLOCK({ op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }
