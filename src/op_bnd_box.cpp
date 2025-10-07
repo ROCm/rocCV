@@ -25,13 +25,13 @@ THE SOFTWARE.
 
 #include <algorithm>
 #include <cstring>
-#include <functional>
 #include <iostream>
 #include <vector>
 
 #include "common/math_vector.hpp"
 #include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bnd_box_device.hpp"
@@ -44,40 +44,42 @@ BndBox::~BndBox() {}
 
 template <bool has_alpha, typename T>
 void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                            const std::vector<Rect_t> &rects, const eDeviceType device) {
+                            std::shared_ptr<std::vector<Rect_t>> rects, const eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
     auto width = inputWrapper.width();
     auto height = inputWrapper.height();
-    auto batch_size = inputWrapper.batches();
+    auto batchSize = inputWrapper.batches();
     switch (device) {
         case eDeviceType::GPU: {
-            const auto blockSize = 32;
-            const auto xGridSize = (width + blockSize - 1) / blockSize;
-            const auto yGridSize = (height + blockSize - 1) / blockSize;
-            const auto zGridSize = batch_size;
+            const dim3 block(32, 32);
+            const dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y, batchSize);
 
             Rect_t *rects_ptr = nullptr;
-            const auto n_rects = rects.size();
+            const auto n_rects = rects->size();
 
             if (n_rects > 0) {
                 HIP_VALIDATE_NO_ERRORS(hipMallocAsync(&rects_ptr, sizeof(Rect_t) * n_rects, stream));
                 HIP_VALIDATE_NO_ERRORS(
-                    hipMemcpyAsync(rects_ptr, rects.data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
+                    hipMemcpyAsync(rects_ptr, rects->data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
             }
             Kernels::Device::bndbox_kernel<has_alpha, T>
-                <<<dim3(xGridSize, yGridSize, zGridSize), dim3(blockSize, blockSize, 1), 0, stream>>>(
-                    inputWrapper, outputWrapper, rects_ptr, n_rects, batch_size, height, width);
+                <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, rects_ptr, n_rects, batchSize, height, width);
             if (n_rects > 0) {
                 HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
             }
+
+            // Capture shared_ptr to rects in lambda to prolong lifetime up until all preceding stream work has been
+            // finished
+            detail::LaunchHostFuncAsync(stream, [rects] {});
             break;
         }
 
         case eDeviceType::CPU: {
-            Kernels::Host::bndbox_kernel<has_alpha, T>(inputWrapper, outputWrapper, rects.data(), rects.size(),
-                                                       batch_size, height, width);
+            Kernels::Host::bndbox_kernel<has_alpha, T>(inputWrapper, outputWrapper, rects->data(), rects->size(),
+                                                       batchSize, height, width);
+            // Host kernel is synchronous, rects vector will be appropriately freed once it falls out of scope
             break;
         }
     }
@@ -108,13 +110,13 @@ void BndBox::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     const auto height = input.shape()[input.shape().layout().height_index()];
     const auto width = input.shape()[input.shape().layout().width_index()];
 
-    std::vector<Rect_t> rects;
-    generateRects(rects, bnd_boxes, height, width);
+    std::shared_ptr<std::vector<Rect_t>> rects = std::make_shared<std::vector<Rect_t>>();
+    generateRects(*rects, bnd_boxes, height, width);
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const std::vector<Rect_t>&, const eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, std::shared_ptr<std::vector<Rect_t>>, const eDeviceType)>, 4>>
         funcs =
         {
             {eDataType::DATA_TYPE_U8, {0, 0, dispatch_bnd_box_dtype<false, uchar3>, dispatch_bnd_box_dtype<true, uchar4>}},

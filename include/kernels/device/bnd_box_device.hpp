@@ -41,7 +41,7 @@ __global__ void bndbox_kernel(SrcWrapper input, DstWrapper output, const Rect_t 
 
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto b_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const auto b_idx = blockIdx.z;
 
     if (x_idx >= width || y_idx >= height || b_idx >= batch) {
         return;
