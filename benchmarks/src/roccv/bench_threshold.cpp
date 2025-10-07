@@ -23,31 +23,39 @@
 
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <op_bilateral_filter.hpp>
+#include <op_thresholding.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
-BENCHMARK(BilateralFilter, GPU) {
+BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements reqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    Tensor::Requirements paramReqs =
+        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64));
+    Tensor maxVal(paramReqs);
+    Tensor thresh(paramReqs);
 
-    BilateralFilter op;
+    FillTensor(input);
+    FillTensor(maxVal);
+    FillTensor(thresh);
+
+    Threshold op(eThresholdType::THRESH_BINARY, config.samples);
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
-               make_float4(1.0f, 0.0f, 1.0f, 1.0f));
+            op(stream, input, output, thresh, maxVal);
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -57,24 +65,28 @@ BENCHMARK(BilateralFilter, GPU) {
     return results;
 }
 
-BENCHMARK(BilateralFilter, CPU) {
+BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements reqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
+        eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    Tensor::Requirements paramReqs = Tensor::CalcRequirements(
+        TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64), eDeviceType::CPU);
+    Tensor maxVal(paramReqs);
+    Tensor thresh(paramReqs);
 
-    BilateralFilter op;
+    FillTensor(input);
+    FillTensor(maxVal);
+    FillTensor(thresh);
+
+    Threshold op(eThresholdType::THRESH_BINARY, config.samples);
     ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(nullptr, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
-               make_float4(1.0f, 0.0f, 1.0f, 1.0f), eDeviceType::CPU);
-        },
-        results.executionTime, config.runs);
+        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

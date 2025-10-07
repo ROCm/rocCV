@@ -27,6 +27,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(CopyMakeBorder, GPU_Constant) {
@@ -44,7 +46,7 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CopyMakeBorder op;
 
@@ -79,7 +81,7 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CopyMakeBorder op;
     ROCCV_BENCH_RECORD_BLOCK(
@@ -104,7 +106,7 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CopyMakeBorder op;
 
@@ -139,7 +141,7 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
     CopyMakeBorder op;
     ROCCV_BENCH_RECORD_BLOCK(

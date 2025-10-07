@@ -21,34 +21,35 @@
 
 #include <core/hip_assert.h>
 
-#include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <op_cvt_color.hpp>
+#include <op_gamma_contrast.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
-BENCHMARK(CvtColor, GPU) {
+BENCHMARK(GammaContrast, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8);
-    Tensor input(inReqs);
-    Tensor output(outReqs);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
+        DataType(DATA_TYPE_U8));
+    Tensor input(reqs);
+    Tensor output(reqs);
+    float gamma = 2.2f;
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
-    CvtColor op;
+    GammaContrast op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, eColorConversionCode::COLOR_RGB2GRAY);
+            op(stream, input, output, gamma);
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -58,23 +59,22 @@ BENCHMARK(CvtColor, GPU) {
     return results;
 }
 
-BENCHMARK(CvtColor, CPU) {
+BENCHMARK(GammaContrast, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
-    Tensor input(inReqs);
-    Tensor output(outReqs);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
+        DataType(DATA_TYPE_U8), eDeviceType::CPU);
+    Tensor input(reqs);
+    Tensor output(reqs);
+    float gamma = 2.2f;
 
-    roccvbench::FillTensor(input);
+    FillTensor(input);
 
-    CvtColor op;
+    GammaContrast op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        { op(nullptr, input, output, gamma, eDeviceType::CPU); }, results.executionTime, config.runs);
 
     return results;
 }

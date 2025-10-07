@@ -28,6 +28,8 @@
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
 BENCHMARK(Composite, GPU) {
@@ -44,9 +46,9 @@ BENCHMARK(Composite, GPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(background);
-    roccvbench::FillTensor(foreground);
-    roccvbench::FillTensor(mask);
+    FillTensor(background);
+    FillTensor(foreground);
+    FillTensor(mask);
 
     Composite op;
 
@@ -81,9 +83,9 @@ BENCHMARK(Composite, CPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
-    roccvbench::FillTensor(background);
-    roccvbench::FillTensor(foreground);
-    roccvbench::FillTensor(mask);
+    FillTensor(background);
+    FillTensor(foreground);
+    FillTensor(mask);
 
     Composite op;
     ROCCV_BENCH_RECORD_BLOCK(

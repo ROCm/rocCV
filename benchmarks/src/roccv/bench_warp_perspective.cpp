@@ -23,32 +23,35 @@
 
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <op_resize.hpp>
+#include <op_warp_perspective.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
-BENCHMARK(Resize, GPU) {
+BENCHMARK(WarpPerspective, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8);
-    Tensor input(inputReqs);
-    Tensor output(outputReqs);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
+    Tensor input(reqs);
+    Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
-    Resize op;
+    FillTensor(input);
+
+    WarpPerspective op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
+            op(stream, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
+               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -58,22 +61,26 @@ BENCHMARK(Resize, GPU) {
     return results;
 }
 
-BENCHMARK(Resize, CPU) {
+BENCHMARK(WarpPerspective, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outputReqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8, eDeviceType::CPU);
-    Tensor input(inputReqs);
-    Tensor output(outputReqs);
+    TensorRequirements reqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
+        eDeviceType::CPU);
+    Tensor input(reqs);
+    Tensor output(reqs);
 
-    roccvbench::FillTensor(input);
+    PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
-    Resize op;
+    FillTensor(input);
+
+    WarpPerspective op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
+        {
+            op(nullptr, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
+               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
+        },
         results.executionTime, config.runs);
 
     return results;

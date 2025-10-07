@@ -23,37 +23,34 @@
 
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <op_normalize.hpp>
+#include <op_resize.hpp>
 #include <roccvbench/registry.hpp>
 #include <roccvbench/utils.hpp>
 
+#include "roccv_bench_helpers.hpp"
+
 using namespace roccv;
 
-BENCHMARK(Normalize, GPU) {
+BENCHMARK(Resize, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    Tensor::Requirements inputReqs =
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
+    Tensor::Requirements outputReqs =
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8);
+    Tensor input(inputReqs);
+    Tensor output(outputReqs);
 
-    Tensor::Requirements paramTensorReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}), DataType(eDataType::DATA_TYPE_F32));
-    Tensor scale(paramTensorReqs);
-    Tensor base(paramTensorReqs);
+    FillTensor(input);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(scale);
-    roccvbench::FillTensor(base);
-
-    Normalize op;
+    Resize op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0);
+            op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
             hipStreamSynchronize(stream);
         },
         results.executionTime, config.runs);
@@ -63,30 +60,23 @@ BENCHMARK(Normalize, GPU) {
     return results;
 }
 
-BENCHMARK(Normalize, CPU) {
+BENCHMARK(Resize, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
-        eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    Tensor::Requirements inputReqs =
+        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
+    Tensor::Requirements outputReqs = Tensor::CalcRequirements(
+        config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8, eDeviceType::CPU);
+    Tensor input(inputReqs);
+    Tensor output(outputReqs);
 
-    Tensor::Requirements paramTensorReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}),
-                                 DataType(eDataType::DATA_TYPE_F32), eDeviceType::CPU);
-    Tensor scale(paramTensorReqs);
-    Tensor base(paramTensorReqs);
+    FillTensor(input);
 
-    roccvbench::FillTensor(input);
-    roccvbench::FillTensor(scale);
-    roccvbench::FillTensor(base);
-
-    Normalize op;
+    Resize op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        { op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
+        results.executionTime, config.runs);
 
     return results;
 }
