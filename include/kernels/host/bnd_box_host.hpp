@@ -46,7 +46,7 @@ void bndbox_kernel(SrcWrapper input, DstWrapper output, const Rect_t *rects, siz
 
                 for (size_t i = 0; i < n_rects; i++) {
                     Rect_t curr_rect = rects[i];
-                    if (curr_rect.batch <= b_idx) shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
+                    if (curr_rect.batch == b_idx) shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
                 WorkType out_color = MathVector::fill(input.at(b_idx, y_idx, x_idx, 0));
