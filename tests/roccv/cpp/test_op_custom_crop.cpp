@@ -78,7 +78,7 @@ template <typename T, typename BT = detail::BaseType<T>>
 void TestCorrectness(int batchSize, int width, int height, Box_t cropRect, ImageFormat format, eDeviceType device) {
     // Create input and output tensor based on test parameters
     Tensor input(batchSize, {width, height}, format, device);
-    Tensor output(batchSize, {cropRect.width, cropRect.height}, format, device);
+    Tensor output(batchSize, {static_cast<int>(cropRect.width), static_cast<int>(cropRect.height)}, format, device);
 
     // Create a vector and fill it with random data.
     std::vector<BT> inputData(input.shape().size());
