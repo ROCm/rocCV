@@ -44,9 +44,13 @@ def test_op_center_crop(samples, height, width, channels, dtype, box, device):
     output_golden = rocpycv.Tensor([samples, box[1], box[0], channels],
                                    rocpycv.eTensorLayout.NHWC, dtype, device)
 
-    stream = rocpycv.Stream()
-    rocpycv.center_crop_into(output_golden, input, box, stream, device)
-    output = rocpycv.center_crop(input, box, stream, device)
-    stream.synchronize()
+    if device == rocpycv.eDeviceType.GPU:
+        stream = rocpycv.Stream()
+        rocpycv.center_crop_into(output_golden, input, box, stream, device)
+        output = rocpycv.center_crop(input, box, stream, device)
+        stream.synchronize()
+    else:
+        rocpycv.center_crop_into(output_golden, input, box, None, device)
+        output = rocpycv.center_crop(input, box, None, device)
 
     compare_tensors(output, output_golden)

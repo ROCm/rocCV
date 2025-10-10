@@ -43,10 +43,13 @@ def test_op_custom_crop(samples, height, width, channels, dtype, box, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
     output_golden = rocpycv.Tensor([samples, box.height, box.width, channels],
                                    rocpycv.eTensorLayout.NHWC, dtype, device)
-
-    stream = rocpycv.Stream()
-    rocpycv.custom_crop_into(output_golden, input, box, stream, device)
-    output = rocpycv.custom_crop(input, box, stream, device)
-    stream.synchronize()
+    if device == rocpycv.eDeviceType.GPU:
+        stream = rocpycv.Stream()
+        rocpycv.custom_crop_into(output_golden, input, box, stream, device)
+        output = rocpycv.custom_crop(input, box, stream, device)
+        stream.synchronize()
+    else:
+        rocpycv.custom_crop_into(output_golden, input, box, None, device)
+        output = rocpycv.custom_crop(input, box, None, device)
 
     compare_tensors(output, output_golden)
