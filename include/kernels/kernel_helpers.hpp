@@ -32,7 +32,8 @@ using namespace roccv;
 namespace Kernels {
 
 static __host__ __device__ __forceinline__ bool pixel_in_box(float ix, float iy, float left, float right, float top, float bottom) {
-    return (ix > left) && (ix < right) && (iy > top) && (iy < bottom);
+    // The rect dimension ranges are inclusive
+    return (ix >= left) && (ix <= right) && (iy >= top) && (iy <= bottom);
 }
 
 template <typename T>

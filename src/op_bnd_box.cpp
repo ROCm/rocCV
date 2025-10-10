@@ -152,66 +152,71 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes &bnd_boxes
                 continue;
             }
 
-            // no border
+            // The rect dimension ranges are inclusive
             if (curr_box.thickness == -1 && curr_box.borderColor.a != 0) {
+                // Only fill
                 Rect_t rect;
-
                 rect.batch = batch;
                 rect.bordered = false;
+                // Use border color to fill the rect for thickness = -1
                 rect.color.x = curr_box.borderColor.r;
                 rect.color.y = curr_box.borderColor.g;
                 rect.color.z = curr_box.borderColor.b;
                 rect.color.w = curr_box.borderColor.a;
-
                 rect.o_left = left;
                 rect.o_right = right;
                 rect.o_top = top;
                 rect.o_bottom = bottom;
-
                 rects.push_back(rect);
-            } else if (curr_box.thickness >= 0) {
+            } else if (curr_box.thickness == 0) {
+                // Only fill
+                Rect_t rect;
+                rect.batch = batch;
+                rect.bordered = false;
+                rect.color.x = curr_box.fillColor.r;
+                rect.color.y = curr_box.fillColor.g;
+                rect.color.z = curr_box.fillColor.b;
+                rect.color.w = curr_box.fillColor.a;
+                rect.o_left = left;
+                rect.o_right = right;
+                rect.o_top = top;
+                rect.o_bottom = bottom;
+                rects.push_back(rect);
+            } else if (curr_box.thickness > 0) {
                 // fill rect
                 {
                     Rect_t rect;
-
+                    float half_thickness = curr_box.thickness / 2.0f;
                     rect.batch = batch;
                     rect.bordered = false;
                     rect.color.x = curr_box.fillColor.r;
                     rect.color.y = curr_box.fillColor.g;
                     rect.color.z = curr_box.fillColor.b;
                     rect.color.w = curr_box.fillColor.a;
-
-                    rect.o_left = left;
-                    rect.o_right = right;
-                    rect.o_top = top;
-                    rect.o_bottom = bottom;
-
+                    rect.o_left = left + half_thickness;
+                    rect.o_right = right - half_thickness;
+                    rect.o_top = top + half_thickness;
+                    rect.o_bottom = bottom - half_thickness;
                     rects.push_back(rect);
                 }
                 // border rect
                 {
                     Rect_t rect;
-
                     rect.batch = batch;
                     rect.bordered = true;
-
                     float half_thickness = curr_box.thickness / 2.0f;
-
                     rect.o_left = left - half_thickness;
                     rect.o_right = right + half_thickness;
                     rect.o_top = top - half_thickness;
                     rect.o_bottom = bottom + half_thickness;
-
                     rect.i_left = left + half_thickness;
                     rect.i_right = right - half_thickness;
                     rect.i_top = top + half_thickness;
                     rect.i_bottom = bottom - half_thickness;
-
                     rect.color.x = curr_box.borderColor.r;
                     rect.color.y = curr_box.borderColor.g;
                     rect.color.z = curr_box.borderColor.b;
                     rect.color.w = curr_box.borderColor.a;
-
                     rects.push_back(rect);
                 }
             } else {
