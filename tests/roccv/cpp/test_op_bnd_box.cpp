@@ -36,7 +36,7 @@ using namespace roccv::tests;
 namespace {
 
 bool isPixelInBox(float ix, float iy, float left, float right, float top, float bottom) {
-    return (ix > left) && (ix < right) && (iy > top) && (iy < bottom);
+    return (ix >= left) && (ix <= right) && (iy >= top) && (iy <= bottom);
 }
 
 template <typename T>
@@ -109,7 +109,7 @@ void GenerateGoldenBndBox(std::vector<BT> &input, std::vector<BT> &output, int32
 
                 for (size_t i = 0; i < rects.size(); i++) {
                     Rect_t curr_rect = rects[i];
-                    if (curr_rect.batch <= b_idx) shadeBBRect<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
+                    if (curr_rect.batch == b_idx) shadeBBRect<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
                 }
 
                 WorkType out_color = MathVector::fill(src.at(b_idx, y_idx, x_idx, 0));

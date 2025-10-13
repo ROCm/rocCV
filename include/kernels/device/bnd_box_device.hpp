@@ -41,7 +41,7 @@ __global__ void bndbox_kernel(SrcWrapper input, DstWrapper output, const Rect_t 
 
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto b_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const auto b_idx = blockIdx.z;
 
     if (x_idx >= width || y_idx >= height || b_idx >= batch) {
         return;
@@ -51,7 +51,7 @@ __global__ void bndbox_kernel(SrcWrapper input, DstWrapper output, const Rect_t 
 
     for (size_t i = 0; i < n_rects; i++) {
         Rect_t curr_rect = rects[i];
-        if (curr_rect.batch <= b_idx) shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
+        if (curr_rect.batch == b_idx) shade_rectangle<WorkType>(curr_rect, x_idx, y_idx, &shaded_pixel);
     }
 
     WorkType out_color = MathVector::fill(input.at(b_idx, y_idx, x_idx, 0));
