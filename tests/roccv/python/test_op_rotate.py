@@ -48,8 +48,9 @@ def test_op_rotate(samples, width, height, channels, angle, dtype, interp, devic
     input = generate_tensor(samples, width, height, channels, dtype, device)
     output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
-    center_x = math.floor((width + 1) / 2)
-    center_y = math.floor((height + 1) / 2)
+    center_x = (width - 1) / 2
+    center_y = (height - 1) / 2
+
     shift = calc_center_shift(center_x, center_y, angle)
 
     stream = rocpycv.Stream()
