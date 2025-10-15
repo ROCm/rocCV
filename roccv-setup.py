@@ -44,22 +44,28 @@ TEXT_ERROR = "\033[91m\033[1m"
 TEXT_INFO = "\033[1m"
 TEXT_DEFAULT = "\033[0m"
 
+
 def info(msg):
     print(f"{TEXT_INFO}INFO:{TEXT_DEFAULT} {msg}")
 
+
 def warn(msg):
     print(f"{TEXT_WARNING}WARNING:{TEXT_DEFAULT} {msg}")
+
 
 def error(msg):
     print(f"{TEXT_ERROR}ERROR:{TEXT_DEFAULT} {msg}")
 
 # error check for calls
+
+
 def ERROR_CHECK(waitval):
-    if(waitval != 0): # return code and signal flags
+    if (waitval != 0):  # return code and signal flags
         error('ERROR_CHECK failed with status:'+str(waitval))
         traceback.print_stack()
-        status = ((waitval >> 8) | waitval) & 255 # combine exit code and wait flags into single non-zero byte
+        status = ((waitval >> 8) | waitval) & 255  # combine exit code and wait flags into single non-zero byte
         exit(status)
+
 
 def install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, package_list):
     cmd_str = 'sudo ' + linuxFlag + ' ' + linuxSystemInstall + \
@@ -67,6 +73,7 @@ def install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, pa
     for i in range(len(package_list)):
         cmd_str += package_list[i] + " "
     ERROR_CHECK(os.system(cmd_str))
+
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -168,7 +175,9 @@ coreDebianPackages = [
     'libdlpack-dev',
     'hip-dev',
     'python3-dev',
-    'python3-opencv'
+    'python3-opencv',
+    'python3-pybind11',
+    'python3-numpy'
 ]
 
 # rpm packages
@@ -185,19 +194,12 @@ coreCommonPackages = [
     'python3-numpy'
 ]
 
-# pip3 packages
-pip3Packages = [
-    'pybind11~=2.12',
-    'wheel~=0.30',
-    'numpy~=1.23'
-]
-
 pip3RpmPackages = [
     'opencv-python~=4.10'
 ]
 
 # update
-ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall +' '+linuxSystemInstall_check+' '+osUpdate))
+ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall + ' '+linuxSystemInstall_check+' '+osUpdate))
 
 # rocCV Core - Requirements
 ERROR_CHECK(os.system('sudo '+sudoValidate))
@@ -209,15 +211,16 @@ else:
 install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
 
 # pip3 packages
-for i in range(len(pip3Packages)):
-    ERROR_CHECK(os.system('pip3 install '+ pip3Packages[i]))
+# for i in range(len(pip3Packages)):
+#     ERROR_CHECK(os.system('pip3 install ' + pip3Packages[i]))
 
 # rpm specific install
-if not("ubuntu" in platformInfo):
+if not ("ubuntu" in platformInfo):
     for i in range(len(pip3RpmPackages)):
-        ERROR_CHECK(os.system('pip3 install '+ pip3RpmPackages[i]))
+        ERROR_CHECK(os.system('pip3 install ' + pip3RpmPackages[i]))
     ERROR_CHECK(os.system('mkdir -p ~/.roccv-deps'))
     ERROR_CHECK(os.system('(cd ~/.roccv-deps; git clone -b v1.0 https://github.com/dmlc/dlpack.git)'))
-    ERROR_CHECK(os.system('(cd ~/.roccv-deps/dlpack; mkdir -p build && cd build; '+linuxCMake+' ..; make -j$(nproc); sudo make install)'))
+    ERROR_CHECK(os.system('(cd ~/.roccv-deps/dlpack; mkdir -p build && cd build; ' +
+                linuxCMake+' ..; make -j$(nproc); sudo make install)'))
 
 info(f"{libraryName} Dependencies Installed with roccv-setup.py V-"+__version__)
