@@ -69,7 +69,7 @@ BENCHMARK(Rotate, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, angle, shift, eInterpolationType::INTERP_TYPE_LINEAR);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 

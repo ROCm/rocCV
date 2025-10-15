@@ -56,7 +56,7 @@ BENCHMARK(ThresholdBinary, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, thresh, maxVal);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 

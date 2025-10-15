@@ -58,7 +58,7 @@ BENCHMARK(Composite, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, foreground, background, mask, output);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 

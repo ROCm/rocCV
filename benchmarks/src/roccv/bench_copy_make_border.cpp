@@ -56,7 +56,7 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, top, left, borderType, borderVal);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 
@@ -116,7 +116,7 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, top, left, borderType, borderVal);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 
