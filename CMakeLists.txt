@@ -160,6 +160,7 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 find_package(HIP QUIET)
 find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
+find_package(OpenMP COMPONENTS CXX QUIET)
 if(PYTHON_VERSION_SUGGESTED)
     find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
 else()
@@ -185,7 +186,6 @@ if (NOT rocm_smi_FOUND)
 	set(BUILD_ROCCV false)
 	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires rocm_smi, Not Found ${ColourReset}")
 endif()
-
 # Python3	
 if(NOT Python3_FOUND)	
     set(BUILD_PYPACKAGE OFF)	
@@ -197,6 +197,11 @@ if(NOT OpenCV_FOUND)
     set(SAMPLES OFF)
     set(TESTS OFF)
     message("-- ${Yellow}NOTE: ${PROJECT_NAME} samples, and tests requires OpenCV, Not Found ${ColourReset}")
+endif()
+# OpenMP
+if (NOT OpenMP_CXX_FOUND)
+    set(BUILD_ROCCV false)
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires OpenMP, Not Found${ColourReset}")
 endif()
 
 # Check that all dependencies have been met
