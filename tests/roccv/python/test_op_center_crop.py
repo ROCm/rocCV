@@ -30,7 +30,7 @@ from test_helpers import generate_tensor, compare_tensors
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
 @pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.S8, rocpycv.eDataType.U16, rocpycv.eDataType.S16, rocpycv.eDataType.U32, rocpycv.eDataType.S32, rocpycv.eDataType.F32, rocpycv.eDataType.F64])
 @pytest.mark.parametrize("box", [
-    (100, 100),
+    (99, 99),
     (34, 10)
 ])
 @pytest.mark.parametrize("channels", [1, 3, 4])
@@ -44,9 +44,13 @@ def test_op_center_crop(samples, height, width, channels, dtype, box, device):
     output_golden = rocpycv.Tensor([samples, box[1], box[0], channels],
                                    rocpycv.eTensorLayout.NHWC, dtype, device)
 
-    stream = rocpycv.Stream()
-    rocpycv.center_crop_into(output_golden, input, box, stream, device)
-    output = rocpycv.center_crop(input, box, stream, device)
-    stream.synchronize()
+    if device == rocpycv.eDeviceType.GPU:
+        stream = rocpycv.Stream()
+        rocpycv.center_crop_into(output_golden, input, box, stream, device)
+        output = rocpycv.center_crop(input, box, stream, device)
+        stream.synchronize()
+    else:
+        rocpycv.center_crop_into(output_golden, input, box, None, device)
+        output = rocpycv.center_crop(input, box, None, device)
 
     compare_tensors(output, output_golden)
