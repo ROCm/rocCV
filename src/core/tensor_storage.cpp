@@ -46,14 +46,20 @@ TensorStorage::~TensorStorage() {
     if (m_ownership == eOwnership::VIEW) return;
 
     switch (m_device) {
-        case eDeviceType::GPU:
-            hipFree(m_data);
+        case eDeviceType::GPU: {
+            hipError_t status = hipFree(m_data);
+            if (status != hipSuccess) {
+                std::cerr << "Warning: Error when attempting to free device allocated tensor data: "
+                          << hipGetErrorName(status) << std::endl;
+            }
             m_data = nullptr;
             break;
-        case eDeviceType::CPU:
+        }
+        case eDeviceType::CPU: {
             free(m_data);
             m_data = nullptr;
             break;
+        }
     }
 }
 

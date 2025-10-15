@@ -52,7 +52,7 @@ BENCHMARK(Histogram, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, std::nullopt, output);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 
