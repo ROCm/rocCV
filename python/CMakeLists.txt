@@ -77,6 +77,7 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 find_package(HIP QUIET)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(dlpack REQUIRED)
+find_package(OpenMP COMPONENTS CXX QUIET)
 
 set(BUILD_ROCCV_PYPACKAGE true)
 
@@ -100,15 +101,32 @@ endif()
 if(NOT BUILD_ROCCV_PYPACKAGE)
     message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} Python Package dependencies not satisfied${ColourReset}")
 endif()
+# OpenMP
+if (NOT OpenMP_CXX_FOUND)
+    set(BUILD_ROCCV false)
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires OpenMP, Not Found${ColourReset}")
+endif()
+
+# Check that all dependencies have been met
+if(NOT BUILD_ROCCV)
+	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${ROCM_PATH}/include)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} OpenMP::OpenMP_CXX)
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} dlpack::dlpack)
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} pybind11::headers)
 
 file(GLOB_RECURSE sources "src/*.cpp")
 pybind11_add_module(${PROJECT_NAME} MODULE ${sources} WITH_SOABI)
 target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "include")
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
-target_link_libraries(${PROJECT_NAME} PRIVATE roccv pybind11::headers dlpack::dlpack)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARY_LIST})
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET "hidden" CUDA_VISIBILITY_PRESET "hidden")
 
 # install rocpycv lib -- {ROCM_PATH)/lib
