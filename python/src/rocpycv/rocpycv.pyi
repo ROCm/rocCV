@@ -621,7 +621,7 @@ def center_crop(src: Tensor, crop_size: tuple, stream: Stream | None = ..., devi
                     dst (rocpycv.Tensor): Output tensor which image results are written to.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     crop_size (Tuple[int]): The crop rectangle width and height.
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
                 Returns:
@@ -642,7 +642,7 @@ def center_crop_into(dst: Tensor, src: Tensor, crop_size: tuple, stream: Stream 
                     dst (rocpycv.Tensor): Output tensor which image results are written to.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     crop_size (Tuple[int]): The crop rectangle width and height.
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
                 Returns:
@@ -756,7 +756,7 @@ def custom_crop(src: Tensor, crop_rect: Box, stream: Stream | None = ..., device
                     dst (rocpycv.Tensor): Output tensor which image results are written to.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     crop_rect (rocpycv.Box): A Box defining how the image should be cropped.
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
                 Returns:
@@ -776,7 +776,7 @@ def custom_crop_into(dst: Tensor, src: Tensor, crop_rect: Box, stream: Stream | 
                 Args:
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     crop_rect (rocpycv.Box): A Box defining how the image should be cropped.
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
                 Returns:
@@ -836,8 +836,8 @@ def flip(src: Tensor, flip_code: int, stream: Stream | None = ..., device: eDevi
         
                 Args:
                     src (rocpycv.Tensor): Input tensor containing one or more images.
-                    flip_code (int): A flip code representing how images in the batch should be flipped. 
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    flip_code (int): A flip code representing how images in the batch should be flipped. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
                 Returns:
@@ -857,8 +857,8 @@ def flip_into(dst: Tensor, src: Tensor, flip_code: int, stream: Stream | None = 
                 Args:
                     dst (rocpycv.Tensor): The destination tensor which results are written to.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
-                    flip_code (int): A flip code representing how images in the batch should be flipped. 
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    flip_code (int): A flip code representing how images in the batch should be flipped. 0 flips along the x-axis, positive integer flips along the y-axis, and negative integers flip along both axis.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
                 Returns:
