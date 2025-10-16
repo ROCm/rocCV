@@ -131,8 +131,8 @@ if __name__ == "__main__":
 
     # Rotate
     angle = 180
-    center_x = math.floor((shape[2] + 1) / 2)
-    center_y = math.floor((shape[1] + 1) / 2)
+    center_x = (shape[2] - 1) / 2
+    center_y = (shape[1] - 1) / 2
     shift = calc_center_shift(center_x, center_y, angle)
     rotated_tensor = rocpycv.rotate(box_tensor, angle, shift, rocpycv.eInterpolationType.LINEAR, stream, rocpycv.GPU)
 
