@@ -170,22 +170,6 @@ if userName == 'root':
     ERROR_CHECK(os.system(linuxSystemInstall+' '+osUpdate))
     ERROR_CHECK(os.system(linuxSystemInstall+' install sudo'))
 
-# debian packages
-coreDebianPackages = [
-    'libdlpack-dev',
-    'hip-dev',
-    'python3-dev',
-    'python3-opencv',
-    'python3-pybind11',
-    'python3-numpy'
-]
-
-# rpm packages
-coreRpmPackages = [
-    'hip-devel',
-    'python3-devel'
-]
-
 # common packages
 coreCommonPackages = [
     'cmake',
@@ -194,28 +178,61 @@ coreCommonPackages = [
     'python3-numpy'
 ]
 
+# Common ubuntu packages
+coreUbuntuPackages = [
+    'libdlpack-dev',
+    'hip-dev',
+    'python3-dev',
+    'python3-opencv',
+]
+
+# Ubuntu 24 packages
+coreUbuntu24Packages = [
+    'python3-pybind11',
+]
+
+# rpm packages
+coreRpmPackages = [
+    'hip-devel',
+    'python3-devel'
+]
+
+
+# Pip Ubuntu 22 packages
+pip3Ubuntu22Packages = [
+    'pybind11'
+]
+
+# Pip RPM packages
 pip3RpmPackages = [
     'opencv-python~=4.10'
 ]
 
-# update
+# Update
 ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall + ' '+linuxSystemInstall_check+' '+osUpdate))
 
 # rocCV Core - Requirements
 ERROR_CHECK(os.system('sudo '+sudoValidate))
+
+# Ubuntu specific install
 if "ubuntu" in platformInfo:
-    install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreDebianPackages)
-else:
+    # Install common packages
+    install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreUbuntuPackages)
+
+    # Ubuntu 24 specific installs
+    if "ubuntu-24" in platformInfo:
+        install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreUbuntu24Packages)
+
+    if "ubuntu-22" in platformInfo:
+        for package in pip3Ubuntu22Packages:
+            ERROR_CHECK(os.system(f'pip3 install {package}'))
+
+# RPM specific install
+if "sles" or "centos" in platformInfo:
+
+    # Core RPM packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
 
-install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
-
-# pip3 packages
-# for i in range(len(pip3Packages)):
-#     ERROR_CHECK(os.system('pip3 install ' + pip3Packages[i]))
-
-# rpm specific install
-if not ("ubuntu" in platformInfo):
     for i in range(len(pip3RpmPackages)):
         ERROR_CHECK(os.system('pip3 install ' + pip3RpmPackages[i]))
     ERROR_CHECK(os.system('mkdir -p ~/.roccv-deps'))
