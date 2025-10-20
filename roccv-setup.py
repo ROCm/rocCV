@@ -197,7 +197,6 @@ coreRpmPackages = [
     'python3-devel'
 ]
 
-
 # Pip Ubuntu 22 packages
 pip3Ubuntu22Packages = [
     'pybind11'
@@ -228,7 +227,7 @@ if "ubuntu" in platformInfo:
             ERROR_CHECK(os.system(f'pip3 install {package}'))
 
 # RPM specific install
-if "sles" or "centos" in platformInfo:
+if ("sles" in platformInfo) or ("centos" in platformInfo):
 
     # Core RPM packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
