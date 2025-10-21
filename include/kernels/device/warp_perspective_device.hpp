@@ -37,9 +37,16 @@ __global__ void warp_perspective(SrcWrapper input, DstWrapper output, Mat mat) {
 
     if (x >= output.width() || y >= output.height()) return;
 
-    const float coeff = 1.0f / (mat[6] * x + mat[7] * y + mat[8]);
-    const float ox = (mat[0] * x + mat[1] * y + mat[2]) * coeff;
-    const float oy = (mat[3] * x + mat[4] * y + mat[5]) * coeff;
+    float ox,oy;
+    const float denom = mat[6] * x + mat[7] * y + mat[8];
+    if (denom != 0.0) {
+        const float coeff = 1.0f / denom;
+        ox = (mat[0] * x + mat[1] * y + mat[2]) * coeff;
+        oy = (mat[3] * x + mat[4] * y + mat[5]) * coeff;
+    } else {
+        ox = 0.0;
+        oy = 0.0;
+    }
 
     output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
 }
