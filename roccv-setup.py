@@ -205,7 +205,6 @@ pip3Ubuntu22Packages = [
 # Pip RPM packages
 pip3RpmPackages = [
     'pybind11',
-    'numpy~=1.26',
 ]
 
 # Update
