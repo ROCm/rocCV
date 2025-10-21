@@ -193,9 +193,11 @@ if(NOT Python3_FOUND)
 endif()
 # OpenCV
 if(NOT OpenCV_FOUND)
+    if (SAMPLES)
+        message("-- ${Yellow}NOTE: ${PROJECT_NAME} building samples requires OpenCV, Not Found ${ColourReset}")
+        set(SAMPLES OFF)
+    endif()
     set(FULL_BUILD OFF)
-    set(SAMPLES OFF)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} building samples requires OpenCV, Not Found ${ColourReset}")
 endif()
 # OpenMP
 if (NOT OpenMP_CXX_FOUND)
