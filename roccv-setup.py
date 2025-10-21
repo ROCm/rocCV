@@ -199,13 +199,13 @@ coreRpmPackages = [
 # Pip Ubuntu 22 packages
 pip3Ubuntu22Packages = [
     'pybind11',
-    'numpy>=1.26',
+    'numpy~=1.26',
 ]
 
 # Pip RPM packages
 pip3RpmPackages = [
     'pybind11',
-    'numpy>=1.26',
+    'numpy~=1.26',
 ]
 
 # Update
