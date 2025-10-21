@@ -115,22 +115,24 @@ if __name__ == "__main__":
     bbox_array = []
     numBoxes = []
     numBoxes.append(int(1))
-    
-    box1 = rocpycv.Box((shape[2] >> 1), (shape[1] >> 1), (shape[2] >> 2), (shape[1] >> 3))
-    box1_borderColor = rocpycv.Color4(0, 0, 255, 200)
-    thickness = 8
-    box1_fillColor = rocpycv.Color4(0, 0, 0, 0)
-    bndbox1 = rocpycv.BndBox(box1, thickness, box1_borderColor, box1_fillColor)
-    bbox_array.append(bndbox1)
 
-    bnd_boxes = rocpycv.BndBoxes(1, numBoxes, bbox_array)
+    boxes = []
+    box_list = []
+    box1 = rocpycv.Box((shape[2] >> 1), (shape[1] >> 1), (shape[2] >> 2), (shape[1] >> 3))
+    box1_borderColor = rocpycv.ColorRGBA(0, 0, 255, 200)
+    thickness = 8
+    box1_fillColor = rocpycv.ColorRGBA(0, 0, 0, 0)
+    #bndbox1 = rocpycv.BndBox(box1, thickness, box1_borderColor, box1_fillColor)
+    box_list.append(rocpycv.BndBox(box1, thickness, box1_borderColor, box1_fillColor))
+    boxes.append(box_list)
+    bnd_boxes = rocpycv.BndBoxes(boxes)
 
     box_tensor = rocpycv.bndbox(filtered_tensor, bnd_boxes, stream, rocpycv.GPU)
 
     # Rotate
     angle = 180
-    center_x = math.floor((shape[2] + 1) / 2)
-    center_y = math.floor((shape[1] + 1) / 2)
+    center_x = (shape[2] - 1) / 2
+    center_y = (shape[1] - 1) / 2
     shift = calc_center_shift(center_x, center_y, angle)
     rotated_tensor = rocpycv.rotate(box_tensor, angle, shift, rocpycv.eInterpolationType.LINEAR, stream, rocpycv.GPU)
 
