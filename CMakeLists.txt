@@ -195,8 +195,7 @@ endif()
 if(NOT OpenCV_FOUND)
     set(FULL_BUILD OFF)
     set(SAMPLES OFF)
-    set(TESTS OFF)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} samples, and tests requires OpenCV, Not Found ${ColourReset}")
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} building samples requires OpenCV, Not Found ${ColourReset}")
 endif()
 # OpenMP
 if (NOT OpenMP_CXX_FOUND)
@@ -286,8 +285,8 @@ set(ROCCV_RUNTIME_PACKAGE_LIST  "hip-runtime-amd")
 set(ROCCV_DEBIAN_DEV_PACKAGE_LIST  "hip-dev, python3-dev")
 set(ROCCV_RPM_DEV_PACKAGE_LIST  "hip-devel, python3-devel")
 # * Test
-set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "cmake, libopencv-dev, python3-pytest, python3-numpy, python3-opencv")
-set(ROCCV_RPM_TEST_PACKAGE_LIST  "cmake, python3-pytest, python3-numpy") ## libopencv-dev has no equivalent in rpm
+set(ROCCV_DEBIAN_TEST_PACKAGE_LIST  "cmake, python3-pytest, python3-numpy")
+set(ROCCV_RPM_TEST_PACKAGE_LIST  "cmake, python3-pytest, python3-numpy")
 
 # '%{?dist}' breaks manual builds on debian systems due to empty Provides
 execute_process(
