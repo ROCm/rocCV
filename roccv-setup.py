@@ -175,7 +175,7 @@ coreCommonPackages = [
     'cmake',
     'python3-pip',
     'python3-pytest',
-    'python3-numpy'
+    'python3-numpy',
 ]
 
 # Common ubuntu packages
@@ -183,7 +183,6 @@ coreUbuntuPackages = [
     'libdlpack-dev',
     'hip-dev',
     'python3-dev',
-    'python3-opencv',
 ]
 
 # Ubuntu 24 packages
@@ -199,12 +198,12 @@ coreRpmPackages = [
 
 # Pip Ubuntu 22 packages
 pip3Ubuntu22Packages = [
-    'pybind11'
+    'pybind11',
 ]
 
 # Pip RPM packages
 pip3RpmPackages = [
-    'opencv-python~=4.10'
+    'pybind11',
 ]
 
 # Update
@@ -212,6 +211,10 @@ ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall + ' '+linuxSystem
 
 # rocCV Core - Requirements
 ERROR_CHECK(os.system('sudo '+sudoValidate))
+
+# Common installs
+install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
+
 
 # Ubuntu specific install
 if "ubuntu" in platformInfo:
