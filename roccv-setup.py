@@ -235,8 +235,8 @@ if ("sles" in platformInfo) or ("centos" in platformInfo):
     # Core RPM packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
 
-    for i in range(len(pip3RpmPackages)):
-        ERROR_CHECK(os.system('pip3 install ' + pip3RpmPackages[i]))
+    for package in pip3RpmPackages:
+        ERROR_CHECK(os.system(f'pip3 install {package}'))
     ERROR_CHECK(os.system('mkdir -p ~/.roccv-deps'))
     ERROR_CHECK(os.system('(cd ~/.roccv-deps; git clone -b v1.0 https://github.com/dmlc/dlpack.git)'))
     ERROR_CHECK(os.system('(cd ~/.roccv-deps/dlpack; mkdir -p build && cd build; ' +
