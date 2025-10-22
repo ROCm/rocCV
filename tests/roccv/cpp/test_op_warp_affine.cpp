@@ -80,9 +80,9 @@ std::vector<detail::BaseType<T>> GoldenWarpAffine(std::vector<detail::BaseType<T
     for (int b = 0; b < outputWrap.batches(); b++) {
         for (int y = 0; y < outputWrap.height(); y++) {
             for (int x = 0; x < outputWrap.width(); x++) {
+                bool valid = false;
                 // Get transformed input point by multiplying by the given perspective transformation matrix
-                Point2D inputCoord =
-                    MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value());
+                Point2D inputCoord = MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value(), valid);
                 outputWrap.at(b, y, x, 0) = inputWrap.at(b, inputCoord.y, inputCoord.x, 0);
             }
         }

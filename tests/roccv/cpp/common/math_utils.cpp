@@ -24,7 +24,7 @@
 #include <cmath>
 
 namespace roccv::tests {
-Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat) {
+Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat, bool& valid) {
     // Assuming mat is a 3x3 matrix stored in row-major order
     float oX = mat[0] * point.x + mat[1] * point.y + mat[2];
     float oY = mat[3] * point.x + mat[4] * point.y + mat[5];
@@ -34,9 +34,11 @@ Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat) {
     if (oW != 0.0f) {
         oX /= oW;
         oY /= oW;
+        valid = true;
     } else {
         oX = 0.0;
         oY = 0.0;
+        valid = false;
     }
 
     return Point2D{oX, oY};

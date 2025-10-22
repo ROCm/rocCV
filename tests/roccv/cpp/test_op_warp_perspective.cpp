@@ -75,9 +75,19 @@ std::vector<detail::BaseType<T>> GoldenWarpPerspective(std::vector<detail::BaseT
         for (int y = 0; y < outputWrap.height(); y++) {
             for (int x = 0; x < outputWrap.width(); x++) {
                 // Get transformed input point by multiplying by the given perspective transformation matrix
-                Point2D inputCoord =
-                    MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value());
-                outputWrap.at(b, y, x, 0) = inputWrap.at(b, inputCoord.y, inputCoord.x, 0);
+                bool valid = false;
+                Point2D inputCoord = MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value(), valid);
+                if (valid) {
+                    outputWrap.at(b, y, x, 0) = inputWrap.at(b, inputCoord.y, inputCoord.x, 0);
+                } else {
+                    if (x > 0) {
+                        outputWrap.at(b, y, x, 0) = outputWrap.at(b, y, x - 1, 0);
+                    } else if (y > 0) {
+                        outputWrap.at(b, y, x, 0) = outputWrap.at(b, y - 1, x, 0);
+                    } else {
+                        outputWrap.at(b, y, x, 0) = inputWrap.at(b, 0, 0, 0);
+                    }
+                }
             }
         }
     }
