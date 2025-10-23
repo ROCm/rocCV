@@ -83,7 +83,7 @@ class TensorShape {
      *
      * @return The size of the tensor.
      */
-    int size() const;
+    size_t size() const;
 
     // Operators
     int64_t operator[](int32_t i) const;
