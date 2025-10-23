@@ -37,22 +37,11 @@ __global__ void warp_perspective(SrcWrapper input, DstWrapper output, Mat mat) {
 
     if (x >= output.width() || y >= output.height()) return;
 
-    float ox,oy;
     const float denom = mat[6] * x + mat[7] * y + mat[8];
-    if (denom != 0.0) {
-        const float coeff = 1.0f / denom;
-        ox = (mat[0] * x + mat[1] * y + mat[2]) * coeff;
-        oy = (mat[3] * x + mat[4] * y + mat[5]) * coeff;
-        output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
-    } else {
-        if ( x > 0) {
-            output.at(b, y, x, 0) = output.at(b, y, x - 1, 0);
-        } else if ( y > 0) {
-            output.at(b, y, x, 0) = output.at(b, y - 1, x, 0);
-        } else {
-            output.at(b, y, x, 0) = input.at(b, 0, 0, 0);
-        }
-    }
+    const float coeff = denom == 0.0 ? std::numeric_limits<float>::max() : 1.0f / denom;
+    const float ox = (mat[0] * x + mat[1] * y + mat[2]) * coeff;
+    const float oy = (mat[3] * x + mat[4] * y + mat[5]) * coeff;
+    output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
 }
 }  // namespace Device
 }  // namespace Kernels

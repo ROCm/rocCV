@@ -34,7 +34,7 @@ struct Point2D {
  * @param mat A row-major, 3x3 transformation matrix.
  * @return The transformed x and y coordinates.
  */
-extern Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat, bool& valid);
+extern Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat);
 
 /**
  * @brief Calculates the determinant of a 3x3 matrix.
