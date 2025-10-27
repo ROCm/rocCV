@@ -116,7 +116,7 @@ bool TensorShape::operator==(const TensorShape &rhs) const {
 
 bool TensorShape::operator!=(const TensorShape &rhs) const { return !(*this == rhs); }
 
-int TensorShape::size() const { return m_size; }
+size_t TensorShape::size() const { return m_size; }
 
 const TensorLayout &TensorShape::layout() const { return m_layout; }
 }  // namespace roccv
