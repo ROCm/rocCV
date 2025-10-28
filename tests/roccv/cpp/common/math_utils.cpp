@@ -34,6 +34,9 @@ Point2D MatTransform(const Point2D point, const std::array<float, 9>& mat) {
     if (oW != 0.0f) {
         oX /= oW;
         oY /= oW;
+    } else {
+        oX *= std::numeric_limits<float>::max();
+        oY *= std::numeric_limits<float>::max();
     }
 
     return Point2D{oX, oY};
