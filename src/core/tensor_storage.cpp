@@ -58,7 +58,6 @@ TensorStorage::~TensorStorage() {
             break;
     }
 }
-}
 
 void* TensorStorage::data() const { return m_data; }
 

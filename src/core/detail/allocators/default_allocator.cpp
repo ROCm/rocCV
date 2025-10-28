@@ -55,7 +55,12 @@ void* DefaultAllocator::allocHostPinnedMem(size_t size) const {
     return ptr;
 }
 
-void DefaultAllocator::freeHostPinnedMem(void* ptr) const noexcept { hipHostFree(ptr); }
+void DefaultAllocator::freeHostPinnedMem(void* ptr) const noexcept {
+    hipError_t status = hipHostFree(ptr);
+    if (status != hipSuccess) {
+        std::cerr << "Warning: Error when attempting to free pinned memory: " << hipGetErrorName(status) << std::endl;
+    }
+}
 
 void* DefaultAllocator::allocHipMem(size_t size) const {
     void* ptr;
@@ -63,5 +68,11 @@ void* DefaultAllocator::allocHipMem(size_t size) const {
     return ptr;
 }
 
-void DefaultAllocator::freeHipMem(void* ptr) const noexcept { hipFree(ptr); }
+void DefaultAllocator::freeHipMem(void* ptr) const noexcept {
+    hipError_t status = hipFree(ptr);
+    if (status != hipSuccess) {
+        std::cerr << "Warning: Error when attempting to free device allocated memory: " << hipGetErrorName(status)
+                  << std::endl;
+    }
+}
 }  // namespace roccv
