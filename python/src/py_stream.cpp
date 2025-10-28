@@ -22,13 +22,21 @@ THE SOFTWARE.
 
 #include "py_stream.hpp"
 
-PyStream::PyStream() { hipStreamCreate(&m_stream); }
+#include <core/hip_assert.h>
+
+PyStream::PyStream() { HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&m_stream)); }
 
 hipStream_t PyStream::getStream() { return m_stream; }
 
-PyStream::~PyStream() { hipStreamDestroy(m_stream); }
+PyStream::~PyStream() {
+    // Errors cannot be thrown in the destructor. Display a warning if an error occurs on stream destruction.
+    hipError_t status = hipStreamDestroy(m_stream);
+    if (status != hipSuccess) {
+        std::cerr << "Warning: HIP stream destruction resulted in an error: " << hipGetErrorName(status) << std::endl;
+    }
+}
 
-void PyStream::synchronize() { hipStreamSynchronize(m_stream); }
+void PyStream::synchronize() { HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(m_stream)); }
 
 void PyStream::Export(py::module& m) {
     py::class_<PyStream>(m, "Stream", "Python wrapper for HIP streams.")

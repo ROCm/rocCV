@@ -19,8 +19,6 @@
  * THE SOFTWARE.
  */
 
-#include <core/hip_assert.h>
-
 #include <core/tensor.hpp>
 #include <op_composite.hpp>
 #include <opencv2/opencv.hpp>
@@ -76,21 +74,21 @@ int main(int argc, char** argv) {
                                           hipMemcpyHostToDevice, stream));
 
     hipEvent_t begin, end;
-    hipEventCreate(&begin);
-    hipEventCreate(&end);
+    HIP_VALIDATE_NO_ERRORS(hipEventCreate(&begin));
+    HIP_VALIDATE_NO_ERRORS(hipEventCreate(&end));
 
-    hipEventRecord(begin, stream);
+    HIP_VALIDATE_NO_ERRORS(hipEventRecord(begin, stream));
     roccv::Composite op;
     op(stream, foreground_tensor, background_tensor, mask_tensor, output_tensor);
-    hipEventRecord(end, stream);
-    hipEventSynchronize(end);
+    HIP_VALIDATE_NO_ERRORS(hipEventRecord(end, stream));
+    HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(end));
 
     float duration;
-    hipEventElapsedTime(&duration, begin, end);
+    HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&duration, begin, end));
     printf("Kernel execution time: %fms\n", duration);
 
-    hipEventDestroy(begin);
-    hipEventDestroy(end);
+    HIP_VALIDATE_NO_ERRORS(hipEventDestroy(begin));
+    HIP_VALIDATE_NO_ERRORS(hipEventDestroy(end));
 
     // Move image data back to device
     auto out_data = output_tensor.exportData<TensorDataStrided>();

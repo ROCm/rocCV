@@ -50,7 +50,7 @@ BENCHMARK(BilateralFilter, GPU) {
         {
             op(stream, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
                make_float4(1.0f, 0.0f, 1.0f, 1.0f));
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 

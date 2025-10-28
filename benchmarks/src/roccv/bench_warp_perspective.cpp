@@ -52,7 +52,7 @@ BENCHMARK(WarpPerspective, GPU) {
         {
             op(stream, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 

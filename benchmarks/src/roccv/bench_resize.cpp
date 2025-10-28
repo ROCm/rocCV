@@ -51,7 +51,7 @@ BENCHMARK(Resize, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 

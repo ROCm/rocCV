@@ -53,7 +53,7 @@ BENCHMARK(CustomCrop, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, cropRect);
-            hipStreamSynchronize(stream);
+            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
         results.executionTime, config.runs);
 
