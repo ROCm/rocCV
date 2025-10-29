@@ -22,27 +22,44 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+#include "core/detail/context.hpp"
 #include "core/exception.hpp"
 #include "core/hip_assert.h"
 #include "core/image_format.hpp"
 #include "operator_types.h"
 
 namespace roccv {
-Tensor::Tensor(const TensorRequirements& reqs) : m_requirements(reqs) {
-    m_data = std::make_shared<TensorStorage>(reqs.shape.size() * reqs.dtype.size(), reqs.device);
-}
 
+// Constructor definitions
+Tensor::Tensor(const TensorRequirements& reqs) : Tensor(reqs, GlobalContext().getDefaultAllocator()) {}
+
+Tensor::Tensor(const TensorRequirements& reqs, const IAllocator& alloc) : m_requirements(reqs), m_allocator(alloc) {
+    m_data = std::make_shared<TensorStorage>(reqs.shape.size() * reqs.dtype.size(), reqs.device, alloc);
+}
 Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data)
-    : m_requirements(reqs), m_data(data) {}
+    : Tensor(reqs, data, GlobalContext().getDefaultAllocator()) {}
+
+Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data, const IAllocator& alloc)
+    : m_requirements(reqs), m_data(data), m_allocator(alloc) {}
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType device)
-    : Tensor(CalcRequirements(shape, dtype, device)) {}
+    : Tensor(shape, dtype, GlobalContext().getDefaultAllocator(), device) {}
+
+Tensor::Tensor(const TensorShape& shape, DataType dtype, const IAllocator& alloc, const eDeviceType device)
+    : Tensor(CalcRequirements(shape, dtype, device), alloc) {}
 
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device)
-    : Tensor(CalcRequirements(num_images, image_size, fmt, device)) {}
+    : Tensor(num_images, image_size, fmt, GlobalContext().getDefaultAllocator(), device) {}
 
-Tensor::Tensor(Tensor&& other) : m_requirements(other.m_requirements), m_data(other.m_data) {}
+Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAllocator& alloc, eDeviceType device)
+    : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
+Tensor::Tensor(Tensor&& other)
+    : m_requirements(std::move(other.m_requirements)),
+      m_data(std::move(other.m_data)),
+      m_allocator(other.m_allocator) {}
+
+// Member definitions
 int Tensor::rank() const { return m_requirements.shape.layout().rank(); }
 
 const eDeviceType Tensor::device() const { return m_requirements.device; }
