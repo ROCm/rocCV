@@ -5,6 +5,12 @@ The rocCV benchmark tools are used to analyze rocCV operator performance. Curren
 
 ## Building and Running Benchmarks
 
+### Dependencies
+To include OpenCV benchmarks, the OpenCV development libraries are required. Note that OpenCV is not required if you only wish to run the rocCV library benchmarks.
+```shell
+apt install libopencv-dev
+```
+
 ### Building Benchmarks
 
 To build the benchmarks, follow these steps:
