@@ -190,11 +190,6 @@ coreRpmPackages = [
     'python3-devel'
 ]
 
-# Pip Ubuntu 22 packages
-pip3Ubuntu22Packages = [
-    'numpy~=1.26',
-]
-
 # Update
 ERROR_CHECK(os.system('sudo '+linuxFlag+' '+linuxSystemInstall + ' '+linuxSystemInstall_check+' '+osUpdate))
 
@@ -204,15 +199,13 @@ ERROR_CHECK(os.system('sudo '+sudoValidate))
 # Common installs
 install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
 
-
 # Ubuntu specific install
 if "ubuntu" in platformInfo:
-    # Install common packages
+    # Core Ubuntu packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreUbuntuPackages)
 
 # RPM specific install
 if ("sles" in platformInfo) or ("centos" in platformInfo):
-
     # Core RPM packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
 
