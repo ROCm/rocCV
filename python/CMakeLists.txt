@@ -42,7 +42,7 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
 endif()
 
 # pyVersion
-# NOTE: rocCV version updates requires updates in 
+# NOTE: rocCV version updates requires updates in
 #       * rocCV source CMakeLists.txt
 #       * python CMakeLists.txt
 #       * pyproject.toml
@@ -64,19 +64,10 @@ else()
     find_package(Python3 QUIET COMPONENTS Interpreter Development)
 endif()
 
-# Locate cmake directory for pybind11
-execute_process(
-    COMMAND ${Python3_EXECUTABLE} -c "import pybind11; print(pybind11.get_cmake_dir())"
-    OUTPUT_VARIABLE PYBIND11_CMAKE_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-list(APPEND CMAKE_PREFIX_PATH "${PYBIND11_CMAKE_DIR}")
 list(APPEND CMAKE_MODULE_PATH $ENV{PROJECT_ROOT}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
 find_package(HIP QUIET)
-find_package(pybind11 CONFIG REQUIRED)
-find_package(dlpack REQUIRED)
 find_package(OpenMP COMPONENTS CXX QUIET)
 
 set(BUILD_ROCCV_PYPACKAGE true)
@@ -86,20 +77,6 @@ set(BUILD_ROCCV_PYPACKAGE true)
 if(NOT HIP_FOUND)
     set(BUILD_ROCCV_PYPACKAGE false)
     message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires HIP, Not Found${ColourReset}")
-endif()
-# DLPack
-if (NOT dlpack_FOUND)
-	set(BUILD_ROCCV_PYPACKAGE false)
-	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires DLPack, Not Found ${ColourReset}")
-endif()
-# Pybind11
-if (NOT pybind11_FOUND)
-	set(BUILD_ROCCV_PYPACKAGE false)
-	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires pybind11, Not Found ${ColourReset}")
-endif()
-
-if(NOT BUILD_ROCCV_PYPACKAGE)
-    message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} Python Package dependencies not satisfied${ColourReset}")
 endif()
 # OpenMP
 if (NOT OpenMP_CXX_FOUND)
