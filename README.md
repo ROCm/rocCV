@@ -131,9 +131,6 @@ sudo zypper install roccv roccv-devel roccv-test
 ```
 
 > [!IMPORTANT]
-> `RedHat`/`SLES` requires an additional manual installation of the `OpenCV` and `DLPack` dev packages.
-
-> [!IMPORTANT]
 > To use the rocCV python module, `PYTHONPATH` must be set appropriately to point to its install location in the ROCm directory:
 >
 > ```bash
