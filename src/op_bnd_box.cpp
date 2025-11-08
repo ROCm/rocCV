@@ -168,7 +168,7 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes &bnd_boxes
                 rect.o_top = top;
                 rect.o_bottom = bottom;
                 rects.push_back(rect);
-            } else if (curr_box.thickness == 0) {
+            } else if (curr_box.thickness == 0 && curr_box.fillColor.a != 0) {
                 // Only fill
                 Rect_t rect;
                 rect.batch = batch;
@@ -184,7 +184,7 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes &bnd_boxes
                 rects.push_back(rect);
             } else if (curr_box.thickness > 0) {
                 // fill rect
-                {
+                if (curr_box.fillColor.a != 0) {
                     Rect_t rect;
                     float half_thickness = curr_box.thickness / 2.0f;
                     rect.batch = batch;
@@ -200,7 +200,7 @@ void BndBox::generateRects(std::vector<Rect_t> &rects, const BndBoxes &bnd_boxes
                     rects.push_back(rect);
                 }
                 // border rect
-                {
+                if (curr_box.borderColor.a != 0) {
                     Rect_t rect;
                     rect.batch = batch;
                     rect.bordered = true;
