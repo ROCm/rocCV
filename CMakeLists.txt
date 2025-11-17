@@ -43,8 +43,7 @@ endif()
 # NOTE: rocCV version updates requires updates in
 #       * rocCV source CMakeLists.txt
 #       * python CMakeLists.txt
-#       * pyproject.toml
-set(VERSION "0.3.0")
+set(VERSION "0.4.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Set Project Version and Language
