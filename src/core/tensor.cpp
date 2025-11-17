@@ -22,10 +22,15 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+#include "core/data_type.hpp"
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
 #include "core/hip_assert.h"
 #include "core/image_format.hpp"
+#include "core/tensor_layout.hpp"
+#include "core/tensor_requirements.hpp"
+#include "core/tensor_shape.hpp"
+#include "core/util_enums.h"
 #include "operator_types.h"
 
 namespace roccv {
@@ -34,7 +39,8 @@ namespace roccv {
 Tensor::Tensor(const TensorRequirements& reqs) : Tensor(reqs, GlobalContext().getDefaultAllocator()) {}
 
 Tensor::Tensor(const TensorRequirements& reqs, const IAllocator& alloc) : m_requirements(reqs), m_allocator(alloc) {
-    m_data = std::make_shared<TensorStorage>(reqs.shape.size() * reqs.dtype.size(), reqs.device, alloc);
+    size_t numBytes = reqs.device == eDeviceType::GPU ? reqs.res.deviceMem.bytes : reqs.res.hostMem.bytes;
+    m_data = std::make_shared<TensorStorage>(numBytes, reqs.device, alloc);
 }
 Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data)
     : Tensor(reqs, data, GlobalContext().getDefaultAllocator()) {}
@@ -60,17 +66,17 @@ Tensor::Tensor(Tensor&& other)
       m_allocator(other.m_allocator) {}
 
 // Member definitions
-int Tensor::rank() const { return m_requirements.shape.layout().rank(); }
+int Tensor::rank() const { return m_requirements.rank; }
 
-const eDeviceType Tensor::device() const { return m_requirements.device; }
+eDeviceType Tensor::device() const { return m_requirements.device; }
 
-const TensorShape& Tensor::shape() const { return m_requirements.shape; }
+TensorShape Tensor::shape() const { return TensorShape(m_requirements.shape, m_requirements.rank, layout()); }
 
-const int64_t Tensor::shape(int d) const& { return m_requirements.shape[d]; }
+int64_t Tensor::shape(int d) const& { return shape()[d]; }
 
-const DataType& Tensor::dtype() const { return m_requirements.dtype; }
+DataType Tensor::dtype() const { return DataType(m_requirements.dtype); }
 
-const TensorLayout& Tensor::layout() const { return m_requirements.shape.layout(); }
+TensorLayout Tensor::layout() const { return TensorLayout(m_requirements.layout); }
 
 TensorData Tensor::exportData() const {
     TensorBufferStrided buffer;
@@ -107,14 +113,24 @@ Tensor& Tensor::operator=(const Tensor& other) {
 }
 
 TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, DataType dtype, const eDeviceType device) {
-    // Calculate strides based on the given tensor shape. Strides are byte-wise.
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
-    strides[shape.layout().rank() - 1] = dtype.size();
-    for (int i = shape.layout().rank() - 2; i >= 0; i--) {
-        strides[i] = strides[i + 1] * shape[i + 1];
-    }
+    TensorRequirements reqs;
 
-    TensorRequirements reqs = {dtype, device, shape, strides};
+    reqs.shape = shape.shape();
+    reqs.rank = shape.layout().rank();
+    reqs.layout = shape.layout().elayout();
+    reqs.strides = CalcStrides(shape, dtype);
+    reqs.dtype = dtype.etype();
+    reqs.alignBytes = 0;  // TODO: Must be specified later
+    reqs.device = device;
+
+    // TODO: Resource requirements should be calculated differently later, once padded/aligned strides have been
+    // implemented
+    size_t numBytes = reqs.strides[0] * reqs.shape[0];
+    if (reqs.device == eDeviceType::GPU) {
+        reqs.res.deviceMem.bytes = numBytes;
+    } else if (reqs.device == eDeviceType::CPU) {
+        reqs.res.hostMem.bytes = numBytes;
+    }
 
     return reqs;
 }
@@ -125,6 +141,18 @@ TensorRequirements Tensor::CalcRequirements(int num_images, Size2D image_size, I
     TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
                       {num_images, image_size.h, image_size.w, fmt.channels()});
     return CalcRequirements(shape, DataType(fmt.dtype()), device);
+}
+
+std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape& shape, const DataType& dtype) {
+    // TODO: Support memory alignment and padding in stride calculations
+
+    // Calculate strides based on the given tensor shape. Strides are byte-wise.
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    strides[shape.layout().rank() - 1] = dtype.size();
+    for (int i = shape.layout().rank() - 2; i >= 0; i--) {
+        strides[i] = strides[i + 1] * shape[i + 1];
+    }
+    return strides;
 }
 
 Tensor TensorWrapData(const TensorData& tensor_data) {
