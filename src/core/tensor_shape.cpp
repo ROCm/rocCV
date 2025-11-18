@@ -74,7 +74,7 @@ TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, const T
         throw Exception("Size of the input shape data is less than the rank provided.", eStatusType::OUT_OF_BOUNDS);
     }
 
-    for (int i = 0; i < layout.rank(); i++) {
+    for (int i = 0; i < rank; i++) {
         if (shape[i] <= 0) {
             throw Exception(
                 "Invalid shape dimension: values of elements in the "
@@ -88,8 +88,8 @@ TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, const T
 
     // Calculate shape size
     m_size = 1;
-    for (int64_t dim_size : shape) {
-        m_size *= dim_size;
+    for (int i = 0; i < rank; i++) {
+        m_size *= m_shape[i];
     }
 }
 
