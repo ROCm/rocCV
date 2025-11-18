@@ -23,10 +23,9 @@ THE SOFTWARE.
 #include "core/tensor_data.hpp"
 
 #include "core/data_type.hpp"
+#include "core/util_enums.h"
 
 namespace roccv {
-
-void* roccv::TensorData::basePtr() const { return m_buffer.basePtr; }
 
 int TensorData::rank() const { return m_shape.layout().rank(); }
 
@@ -38,13 +37,35 @@ const DataType& TensorData::dtype() const { return m_dtype; }
 
 const eDeviceType TensorData::device() const { return m_deviceType; }
 
-TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBufferStrided& buffer,
+TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer,
                        const eDeviceType device)
-    : m_shape(tshape), m_dtype(dtype), m_deviceType(device), m_buffer(buffer) {}
+    : m_shape(tshape),
+      m_dtype(dtype),
+      m_deviceType(device),
+      m_bufferType(TensorBufferType::TENSOR_BUFFER_NONE),
+      m_buffer(buffer) {}
+
+TensorDataStrided::TensorDataStrided(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer,
+                                     const eDeviceType device)
+    : TensorData(tshape, dtype, buffer, device) {
+    switch (device) {
+        case eDeviceType::GPU: {
+            m_bufferType = TensorBufferType::TENSOR_BUFFER_STRIDED_HIP;
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            m_bufferType = TensorBufferType::TENSOR_BUFFER_STRIDED_HOST;
+            break;
+        }
+    }
+}
 
 TensorDataStrided::TensorDataStrided(const TensorShape& tshape, const DataType& dtype,
                                      const TensorBufferStrided& buffer, const eDeviceType device)
-    : TensorData(tshape, dtype, buffer, device) {}
+    : TensorDataStrided(tshape, dtype, {.strided = buffer}, device) {}
 
-const int64_t TensorDataStrided::stride(int d) const { return m_buffer.strides[d]; }
+void* roccv::TensorDataStrided::basePtr() const { return m_buffer.strided.basePtr; }
+
+const int64_t TensorDataStrided::stride(int d) const { return m_buffer.strided.strides[d]; }
 }  // namespace roccv

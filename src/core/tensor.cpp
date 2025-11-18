@@ -25,8 +25,9 @@ THE SOFTWARE.
 #include "core/data_type.hpp"
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
-#include "core/hip_assert.h"
 #include "core/image_format.hpp"
+#include "core/status_type.h"
+#include "core/tensor_data.hpp"
 #include "core/tensor_layout.hpp"
 #include "core/tensor_requirements.hpp"
 #include "core/tensor_shape.hpp"
@@ -156,9 +157,26 @@ std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape
 }
 
 Tensor TensorWrapData(const TensorData& tensor_data) {
-    TensorRequirements req = Tensor::CalcRequirements(tensor_data.shape(), tensor_data.dtype(), tensor_data.device());
-    auto data = std::make_shared<TensorStorage>(tensor_data.basePtr(), tensor_data.device(), eOwnership::OWNING);
-    return Tensor(req, data);
+    auto tensorDataStrided = tensor_data.cast<TensorDataStrided>();
+    if (!tensorDataStrided.has_value()) {
+        throw Exception("TensorData could not be cast to TensorDataStrided. Tensors can only wrap strided tensor data.",
+                        eStatusType::INVALID_VALUE);
+    }
+
+    TensorRequirements reqs;
+    reqs.layout = tensorDataStrided->shape().layout().elayout();
+    reqs.rank = tensorDataStrided->rank();
+    reqs.device = tensorDataStrided->device();
+    reqs.dtype = tensorDataStrided->dtype().etype();
+    reqs.shape = tensorDataStrided->shape().shape();
+
+    for (int i = 0; i < reqs.rank; i++) {
+        reqs.strides[i] = tensorDataStrided->stride(i);
+    }
+
+    auto data =
+        std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), tensorDataStrided->device(), eOwnership::OWNING);
+    return Tensor(reqs, data);
 }
 
 }  // namespace roccv

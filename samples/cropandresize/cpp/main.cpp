@@ -32,6 +32,7 @@
 #include <string>
 
 #include "common/utils.hpp"
+#include "core/tensor_shape.hpp"
 
 /**
  * @brief Crop and Resize sample app.
@@ -132,7 +133,8 @@ int main(int argc, char *argv[]) {
         roccv::Tensor::CalcRequirements(batchSize, {maxImageWidth, maxImageHeight}, roccv::FMT_RGB8);
 
     // Create a tensor buffer to store the data pointer and pitch bytes for each plane
-    roccv::TensorDataStrided inData(inReqs.shape, inReqs.dtype, inBuf);
+    roccv::TensorDataStrided inData(roccv::TensorShape{inReqs.shape, inReqs.rank, inReqs.layout},
+                                    roccv::DataType{inReqs.dtype}, inBuf);
 
     // Wrap tensor data in a rocCV tensor for use with the rocCV operators.
     roccv::Tensor inTensor = roccv::TensorWrapData(inData);

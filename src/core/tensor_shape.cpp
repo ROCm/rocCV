@@ -58,6 +58,9 @@ TensorShape::TensorShape(const std::initializer_list<const int64_t> shape, const
 TensorShape::TensorShape(const std::span<const int64_t> shape, const std::string &layoutDesc)
     : TensorShape(GetLayoutFromString(layoutDesc), shape) {}
 
+TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, eTensorLayout layout)
+    : TensorShape(shape, rank, TensorLayout(layout)) {}
+
 TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, const TensorLayout &layout)
     : m_layout(layout) {
     if (rank != layout.rank()) {
