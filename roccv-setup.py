@@ -180,31 +180,14 @@ coreCommonPackages = [
 
 # Common ubuntu packages
 coreUbuntuPackages = [
-    'libdlpack-dev',
     'hip-dev',
     'python3-dev',
-]
-
-# Ubuntu 24 packages
-coreUbuntu24Packages = [
-    'python3-pybind11',
 ]
 
 # rpm packages
 coreRpmPackages = [
     'hip-devel',
     'python3-devel'
-]
-
-# Pip Ubuntu 22 packages
-pip3Ubuntu22Packages = [
-    'pybind11',
-    'numpy~=1.26',
-]
-
-# Pip RPM packages
-pip3RpmPackages = [
-    'pybind11',
 ]
 
 # Update
@@ -216,31 +199,14 @@ ERROR_CHECK(os.system('sudo '+sudoValidate))
 # Common installs
 install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreCommonPackages)
 
-
 # Ubuntu specific install
 if "ubuntu" in platformInfo:
-    # Install common packages
+    # Core Ubuntu packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreUbuntuPackages)
-
-    # Ubuntu 24 specific installs
-    if "ubuntu-24" in platformInfo:
-        install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreUbuntu24Packages)
-
-    if "ubuntu-22" in platformInfo:
-        for package in pip3Ubuntu22Packages:
-            ERROR_CHECK(os.system(f'pip3 install {package}'))
 
 # RPM specific install
 if ("sles" in platformInfo) or ("centos" in platformInfo):
-
     # Core RPM packages
     install_packages(linuxFlag, linuxSystemInstall, linuxSystemInstall_check, coreRpmPackages)
-
-    for package in pip3RpmPackages:
-        ERROR_CHECK(os.system(f'pip3 install {package}'))
-    ERROR_CHECK(os.system('mkdir -p ~/.roccv-deps'))
-    ERROR_CHECK(os.system('(cd ~/.roccv-deps; git clone -b v1.0 https://github.com/dmlc/dlpack.git)'))
-    ERROR_CHECK(os.system('(cd ~/.roccv-deps/dlpack; mkdir -p build && cd build; ' +
-                linuxCMake+' ..; make -j$(nproc); sudo make install)'))
 
 info(f"{libraryName} Dependencies Installed with roccv-setup.py V-"+__version__)
