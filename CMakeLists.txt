@@ -40,11 +40,10 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
 
-# NOTE: rocCV version updates requires updates in 
+# NOTE: rocCV version updates requires updates in
 #       * rocCV source CMakeLists.txt
 #       * python CMakeLists.txt
-#       * pyproject.toml
-set(VERSION "0.3.0")
+set(VERSION "0.4.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Set Project Version and Language
@@ -98,13 +97,13 @@ if (NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
-	# -O0 		-- Don't Optimize output file 
+	# -O0 		-- Don't Optimize output file
 	# -g  		-- generate debugging information --- dwarf-4 for making valgrind work
     # -Wall     -- Print all warnings
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -gdwarf-4 -Wall")
 else()
-	# -O3       -- Optimize output file 
-	# -DNDEBUG  -- turn off asserts 
+	# -O3       -- Optimize output file
+	# -DNDEBUG  -- turn off asserts
 	# -fPIC     -- Generate position-independent code if possible
     # -Wall     -- Print all warnings
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -fPIC -Wall")
@@ -179,16 +178,16 @@ endif()
 # Filesystem
 if(NOT FILESYSTEM_FOUND)
     set(BUILD_ROCCV false)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires FileSystem, Not Found ${ColourReset}")	
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires FileSystem, Not Found ${ColourReset}")
 endif()
 # rocm_smi
 if (NOT rocm_smi_FOUND)
 	set(BUILD_ROCCV false)
 	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires rocm_smi, Not Found ${ColourReset}")
 endif()
-# Python3	
-if(NOT Python3_FOUND)	
-    set(BUILD_PYPACKAGE OFF)	
+# Python3
+if(NOT Python3_FOUND)
+    set(BUILD_PYPACKAGE OFF)
     message("-- ${Yellow}NOTE: ${PROJECT_NAME} rocPyCV requires Python3, Not Found${ColourReset}")
 endif()
 # OpenCV
@@ -238,6 +237,8 @@ if(TESTS)
 endif(TESTS)
 
 if(BUILD_PYPACKAGE)
+    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/pybind11")
+    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/dlpack")
     add_subdirectory("${CMAKE_SOURCE_DIR}/python")
 endif(BUILD_PYPACKAGE)
 
@@ -301,7 +302,7 @@ if(PROC_RESULT EQUAL "0" AND NOT EVAL_RESULT STREQUAL "")
     string(APPEND CPACK_RPM_PACKAGE_RELEASE "%{?dist}")
 endif()
 
-# set package 
+# set package
 set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${CPACK_PACKAGE_HOMEPAGE})
 set(CPACK_RPM_PACKAGE_URL ${CPACK_PACKAGE_HOMEPAGE})
