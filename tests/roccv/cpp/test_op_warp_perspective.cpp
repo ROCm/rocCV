@@ -53,7 +53,7 @@ std::vector<detail::BaseType<T>> GoldenWarpPerspective(std::vector<detail::BaseT
                                                        Size2D inputSize, Size2D outputSize, float4 borderValue) {
     // Create interpolation wrapper for input vector
     InterpolationWrapper<T, BorderType, InterpType> inputWrap((BorderWrapper<T, BorderType>(
-        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::RangeCast<T>(borderValue))));
+        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue))));
 
     // Create ImageWrapper for output vector. We also need to create said output vector.
     std::vector<detail::BaseType<T>> output(batchSize * outputSize.w * outputSize.h * detail::NumElements<T>);
@@ -75,7 +75,8 @@ std::vector<detail::BaseType<T>> GoldenWarpPerspective(std::vector<detail::BaseT
         for (int y = 0; y < outputWrap.height(); y++) {
             for (int x = 0; x < outputWrap.width(); x++) {
                 // Get transformed input point by multiplying by the given perspective transformation matrix
-                Point2D inputCoord = MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value());
+                Point2D inputCoord =
+                    MatTransform((Point2D){static_cast<float>(x), static_cast<float>(y)}, invMat.value());
                 outputWrap.at(b, y, x, 0) = inputWrap.at(b, inputCoord.y, inputCoord.x, 0);
             }
         }

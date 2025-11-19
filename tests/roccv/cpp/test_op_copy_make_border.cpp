@@ -23,6 +23,7 @@
 #include <core/wrappers/border_wrapper.hpp>
 #include <op_copy_make_border.hpp>
 
+#include "core/detail/casting.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -52,7 +53,7 @@ std::vector<BT> GoldenCopyMakeBorder(std::vector<BT> input, int batchSize, Size2
     int channels = detail::NumElements<T>;
 
     // Convert border value into the type of the image
-    T borderVal = detail::RangeCast<T>(borderValue);
+    T borderVal = detail::SaturateCast<T>(borderValue);
 
     // Wrap the input images in a BorderWrapper to handle out of bounds image behavior. The BorderWrapper has already
     // been tested in another test so it can be used reliably.
