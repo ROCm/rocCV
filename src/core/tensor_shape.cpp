@@ -63,6 +63,10 @@ TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, eTensor
 
 TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, const TensorLayout &layout)
     : m_layout(layout) {
+    if (rank < 0) {
+        throw Exception("Rank must be a non-negative integer.", eStatusType::OUT_OF_BOUNDS);
+    }
+
     if (rank != layout.rank()) {
         throw Exception(
             "Invalid shape size: The size of the shape must match the rank of "
@@ -70,7 +74,7 @@ TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, const T
             eStatusType::OUT_OF_BOUNDS);
     }
 
-    if (shape.size() < rank) {
+    if (shape.size() < static_cast<size_t>(rank)) {
         throw Exception("Size of the input shape data is less than the rank provided.", eStatusType::OUT_OF_BOUNDS);
     }
 

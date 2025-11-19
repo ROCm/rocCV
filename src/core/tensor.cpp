@@ -94,6 +94,10 @@ TensorData Tensor::exportData() const {
         case eDeviceType::CPU: {
             return TensorDataStridedHost(shape(), dtype(), buffer);
         }
+
+        default: {
+            throw Exception("Unsupported device type in Tensor::exportData().", eStatusType::INVALID_VALUE);
+        }
     }
 }
 

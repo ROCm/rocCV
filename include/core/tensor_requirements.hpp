@@ -30,7 +30,7 @@ THE SOFTWARE.
 namespace roccv {
 
 struct MemRequirements {
-    size_t bytes;
+    size_t bytes = 0;
 };
 
 struct ResourceRequirements {

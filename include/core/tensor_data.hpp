@@ -96,7 +96,7 @@ class TensorData {
             return std::nullopt;
         }
 
-        return std::optional(Derived(m_shape, m_dtype, m_buffer));
+        return std::make_optional<Derived>(m_shape, m_dtype, m_buffer);
     }
 
     static bool IsCompatibleKind(TensorBufferType bufferType);
@@ -155,7 +155,7 @@ class TensorDataStridedHip : public TensorDataStrided {
      * @brief Creates a GPU-accessible strided tensor data object.
      *
      * @param[in] shape The tensor's shape.
-     * @param[in] dtype The datatype of the underlying  data.
+     * @param[in] dtype The datatype of the underlying data.
      * @param[in] buffer A strided tensor buffer with data allocated on the GPU.
      */
     TensorDataStridedHip(const TensorShape &shape, const DataType &dtype, const Buffer &buffer);
@@ -177,7 +177,7 @@ class TensorDataStridedHost : public TensorDataStrided {
      * @brief Creates a host-accessible strided tensor data object.
      *
      * @param[in] shape The tensor's shape.
-     * @param[in] dtype The datatype of the underlying  data.
+     * @param[in] dtype The datatype of the underlying data.
      * @param[in] buffer A strided tensor buffer with data allocated on the host.
      */
     TensorDataStridedHost(const TensorShape &shape, const DataType &dtype, const Buffer &buffer);

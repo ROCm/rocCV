@@ -39,7 +39,11 @@ const DataType& TensorData::dtype() const { return m_dtype; }
 const eDeviceType TensorData::device() const { return m_deviceType; }
 
 TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer)
-    : m_shape(tshape), m_dtype(dtype), m_bufferType(TensorBufferType::TENSOR_BUFFER_NONE), m_buffer(buffer) {}
+    : m_shape(tshape),
+      m_dtype(dtype),
+      m_deviceType(eDeviceType::GPU),
+      m_bufferType(TensorBufferType::TENSOR_BUFFER_NONE),
+      m_buffer(buffer) {}
 
 bool TensorData::IsCompatibleKind(TensorBufferType bufferType) {
     return bufferType != TensorBufferType::TENSOR_BUFFER_NONE;
