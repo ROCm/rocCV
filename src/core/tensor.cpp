@@ -85,8 +85,16 @@ TensorData Tensor::exportData() const {
     TensorBufferStrided buffer;
     buffer.basePtr = m_data->data();
     buffer.strides = m_requirements.strides;
-    TensorDataStrided data(shape(), dtype(), buffer, device());
-    return data;
+
+    switch (device()) {
+        case eDeviceType::GPU: {
+            return TensorDataStridedHip(shape(), dtype(), buffer);
+        }
+
+        case eDeviceType::CPU: {
+            return TensorDataStridedHost(shape(), dtype(), buffer);
+        }
+    }
 }
 
 Tensor Tensor::reshape(const TensorShape& new_shape) const {
