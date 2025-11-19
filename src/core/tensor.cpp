@@ -22,6 +22,8 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+#include <array>
+
 #include "core/data_type.hpp"
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
@@ -113,13 +115,20 @@ Tensor& Tensor::operator=(const Tensor& other) {
     return *this;
 }
 
-TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, DataType dtype, const eDeviceType device) {
+TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, const eDeviceType device) {
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype);
+    TensorRequirements reqs = CalcRequirements(shape, dtype, strides, device);
+    return reqs;
+}
+
+TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
+                                            std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, eDeviceType device) {
     TensorRequirements reqs;
 
     reqs.shape = shape.shape();
     reqs.rank = shape.layout().rank();
     reqs.layout = shape.layout().elayout();
-    reqs.strides = CalcStrides(shape, dtype);
+    reqs.strides = strides;
     reqs.dtype = dtype.etype();
     reqs.alignBytes = 0;  // TODO: Must be specified later
     reqs.device = device;
@@ -163,16 +172,12 @@ Tensor TensorWrapData(const TensorData& tensor_data) {
                         eStatusType::INVALID_VALUE);
     }
 
-    TensorRequirements reqs;
-    reqs.layout = tensorDataStrided->shape().layout().elayout();
-    reqs.rank = tensorDataStrided->rank();
-    reqs.device = tensorDataStrided->device();
-    reqs.dtype = tensorDataStrided->dtype().etype();
-    reqs.shape = tensorDataStrided->shape().shape();
-
-    for (int i = 0; i < reqs.rank; i++) {
-        reqs.strides[i] = tensorDataStrided->stride(i);
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    for (int i = 0; i < tensorDataStrided->rank(); i++) {
+        strides[i] = tensorDataStrided->stride(i);
     }
+    TensorRequirements reqs = Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(), strides,
+                                                       tensorDataStrided->device());
 
     auto data =
         std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), tensorDataStrided->device(), eOwnership::OWNING);

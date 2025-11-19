@@ -24,8 +24,10 @@ THE SOFTWARE.
 #include <array>
 #include <memory>
 
+#include "core/data_type.hpp"
 #include "core/detail/allocators/i_allocator.hpp"
 #include "core/tensor_layout.hpp"
+#include "core/util_enums.h"
 #include "tensor_data.hpp"
 #include "tensor_requirements.hpp"
 #include "tensor_storage.hpp"
@@ -185,8 +187,21 @@ class Tensor {
      * @return A TensorRequirements object representing this tensor's
      * requirements.
      */
-    static Requirements CalcRequirements(const TensorShape &shape, DataType dtype,
+    static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
                                          const eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates tensor requirements.
+     *
+     * @param[in] shape The shape describing the tensor.
+     * @param[in] dtype The type of the tensor's data.
+     * @param[in] strides The tensor's strides.
+     * @param[in] device The device the tensor data belongs on. (Default: GPU)
+     * @return Tensor requirements.
+     */
+    static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
+                                         std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides,
+                                         eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Calculates tensor requirements using image-based parameters.

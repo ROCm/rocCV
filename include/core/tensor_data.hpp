@@ -91,8 +91,15 @@ class TensorData {
     std::optional<Derived> cast() const {
         static_assert(std::is_base_of<TensorData, Derived>::value, "Cannot cast TensorData to an unrelated type.");
         static_assert(sizeof(Derived) == sizeof(TensorData), "Derived type must not add any additional data members.");
+
+        if (!Derived::IsCompatibleKind(m_bufferType)) {
+            return std::nullopt;
+        }
+
         return std::optional(Derived(m_shape, m_dtype, m_buffer, m_deviceType));
     }
+
+    static bool IsCompatibleKind(TensorBufferType bufferType);
 
    protected:
     TensorData(const TensorShape &tshape, const DataType &dtype, const TensorBuffer &buffer,
@@ -129,6 +136,8 @@ class TensorDataStrided : public TensorData {
      */
     TensorDataStrided(const TensorShape &tshape, const DataType &dtype, const TensorBufferStrided &buffer,
                       const eDeviceType device = eDeviceType::GPU);
+
+    static bool IsCompatibleKind(TensorBufferType bufferType);
 
     /**
      * @brief Returns the base pointer of the tensor data in memory.
