@@ -40,13 +40,13 @@ THE SOFTWARE.
 namespace roccv {
 
 // Constructor definitions
-Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_requirements(reqs), m_allocator(alloc) {
+Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_requirements(reqs) {
     size_t numBytes = reqs.device == eDeviceType::GPU ? reqs.res.deviceMem.bytes : reqs.res.hostMem.bytes;
     m_data = std::make_shared<TensorStorage>(numBytes, reqs.device, alloc);
 }
 
 Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data)
-    : m_requirements(reqs), m_data(data), m_allocator(data->allocator()) {}
+    : m_requirements(reqs), m_data(data) {}
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType device)
     : Tensor(shape, dtype, {}, GlobalContext().getDefaultAllocator(), device) {}
@@ -62,10 +62,7 @@ Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlig
                const IAllocator& alloc, eDeviceType device)
     : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
-Tensor::Tensor(Tensor&& other)
-    : m_requirements(std::move(other.m_requirements)),
-      m_data(std::move(other.m_data)),
-      m_allocator(other.m_allocator) {}
+Tensor::Tensor(Tensor&& other) : m_requirements(std::move(other.m_requirements)), m_data(std::move(other.m_data)) {}
 
 // Member definitions
 int Tensor::rank() const { return m_requirements.rank; }
@@ -133,7 +130,7 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
                                               const MemAlignment& bufAlign, const eDeviceType device) {
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype);
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype, bufAlign);
     Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, device);
     return reqs;
 }
@@ -184,7 +181,8 @@ Tensor::Requirements Tensor::CalcRequirements(int num_images, Size2D image_size,
     return CalcRequirements(shape, DataType(fmt.dtype()), bufAlign, device);
 }
 
-std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape& shape, const DataType& dtype) {
+std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape& shape, const DataType& dtype,
+                                                               const MemAlignment& bufAlign) {
     // TODO: Support memory alignment and padding in stride calculations
 
     // Calculate strides based on the given tensor shape. Strides are byte-wise.

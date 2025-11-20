@@ -28,11 +28,11 @@ THE SOFTWARE.
 #include "core/detail/allocators/i_allocator.hpp"
 #include "core/detail/context.hpp"
 #include "core/mem_alignment.hpp"
+#include "core/tensor_data.hpp"
 #include "core/tensor_layout.hpp"
+#include "core/tensor_requirements.hpp"
+#include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
-#include "tensor_data.hpp"
-#include "tensor_requirements.hpp"
-#include "tensor_storage.hpp"
 
 namespace roccv {
 
@@ -268,18 +268,20 @@ class Tensor {
                                          const MemAlignment &bufAlign, eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Calculates strides required for a tensor.
+     * @brief Calculates strides required for a tensor. Uses a user-specified memory alignment strategy to determine the
+     * strides with padding in mind.
      *
      * @param shape The tensor shape.
      * @param dtype The datatype of the tensor.
+     * @param bufAlign The memory alignment strategy to use.
      * @return An array containing strides for the given parameters.
      */
-    static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype);
+    static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype,
+                                                                  const MemAlignment &bufAlign);
 
    private:
     TensorRequirements m_requirements;      // Tensor metadata
     std::shared_ptr<TensorStorage> m_data;  // Stores raw tensor data
-    const IAllocator &m_allocator;
 };
 
 /**
