@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
 #include "core/image_format.hpp"
+#include "core/mem_alignment.hpp"
 #include "core/status_type.h"
 #include "core/tensor_data.hpp"
 #include "core/tensor_layout.hpp"
@@ -39,28 +40,26 @@ THE SOFTWARE.
 namespace roccv {
 
 // Constructor definitions
-Tensor::Tensor(const TensorRequirements& reqs) : Tensor(reqs, GlobalContext().getDefaultAllocator()) {}
-
-Tensor::Tensor(const TensorRequirements& reqs, const IAllocator& alloc) : m_requirements(reqs), m_allocator(alloc) {
+Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_requirements(reqs), m_allocator(alloc) {
     size_t numBytes = reqs.device == eDeviceType::GPU ? reqs.res.deviceMem.bytes : reqs.res.hostMem.bytes;
     m_data = std::make_shared<TensorStorage>(numBytes, reqs.device, alloc);
 }
-Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data)
-    : Tensor(reqs, data, GlobalContext().getDefaultAllocator()) {}
 
-Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data, const IAllocator& alloc)
+Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data, const IAllocator& alloc)
     : m_requirements(reqs), m_data(data), m_allocator(alloc) {}
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType device)
-    : Tensor(shape, dtype, GlobalContext().getDefaultAllocator(), device) {}
+    : Tensor(shape, dtype, {}, GlobalContext().getDefaultAllocator(), device) {}
 
-Tensor::Tensor(const TensorShape& shape, DataType dtype, const IAllocator& alloc, const eDeviceType device)
+Tensor::Tensor(const TensorShape& shape, DataType dtype, const MemAlignment& bufAlign, const IAllocator& alloc,
+               const eDeviceType device)
     : Tensor(CalcRequirements(shape, dtype, device), alloc) {}
 
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device)
-    : Tensor(num_images, image_size, fmt, GlobalContext().getDefaultAllocator(), device) {}
+    : Tensor(num_images, image_size, fmt, {}, GlobalContext().getDefaultAllocator(), device) {}
 
-Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAllocator& alloc, eDeviceType device)
+Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlignment& bufAlign,
+               const IAllocator& alloc, eDeviceType device)
     : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
 Tensor::Tensor(Tensor&& other)
@@ -108,7 +107,7 @@ Tensor Tensor::reshape(const TensorShape& new_shape) const {
                         eStatusType::INVALID_VALUE);
     }
 
-    TensorRequirements reqs = CalcRequirements(new_shape, this->dtype(), this->device());
+    Tensor::Requirements reqs = CalcRequirements(new_shape, this->dtype(), this->device());
     return Tensor(reqs, m_data);
 }
 
@@ -117,7 +116,7 @@ Tensor Tensor::reshape(const TensorShape& new_shape, const DataType& new_dtype) 
         throw Exception("New tensor view must have the same underlying number of bytes.", eStatusType::INVALID_VALUE);
     }
 
-    TensorRequirements reqs = CalcRequirements(new_shape, new_dtype, this->device());
+    Tensor::Requirements reqs = CalcRequirements(new_shape, new_dtype, this->device());
     return Tensor(reqs, m_data);
 }
 
@@ -127,15 +126,21 @@ Tensor& Tensor::operator=(const Tensor& other) {
     return *this;
 }
 
-TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, const eDeviceType device) {
+Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
+                                              const eDeviceType device) {
+    return CalcRequirements(shape, dtype, (MemAlignment){}, device);
+}
+
+Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
+                                              const MemAlignment& bufAlign, const eDeviceType device) {
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype);
-    TensorRequirements reqs = CalcRequirements(shape, dtype, strides, device);
+    Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, device);
     return reqs;
 }
 
-TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
-                                            std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, eDeviceType device) {
-    TensorRequirements reqs;
+Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
+                                              std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, eDeviceType device) {
+    Tensor::Requirements reqs;
 
     reqs.shape = shape.shape();
     reqs.rank = shape.layout().rank();
@@ -145,24 +150,38 @@ TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const Data
     reqs.alignBytes = 0;  // TODO: Must be specified later
     reqs.device = device;
 
-    // TODO: Resource requirements should be calculated differently later, once padded/aligned strides have been
-    // implemented
+    // Determine resource usage
     size_t numBytes = reqs.strides[0] * reqs.shape[0];
-    if (reqs.device == eDeviceType::GPU) {
-        reqs.res.deviceMem.bytes = numBytes;
-    } else if (reqs.device == eDeviceType::CPU) {
-        reqs.res.hostMem.bytes = numBytes;
+    switch (reqs.device) {
+        case eDeviceType::GPU: {
+            reqs.res.deviceMem.bytes = numBytes;
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            reqs.res.hostMem.bytes = numBytes;
+            break;
+        }
+
+        default: {
+            throw Exception("Unsupported device when calling Tensor::CalcRequirements().", eStatusType::INVALID_VALUE);
+        }
     }
 
     return reqs;
 }
 
-TensorRequirements Tensor::CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device) {
+Tensor::Requirements Tensor::CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device) {
+    return CalcRequirements(num_images, image_size, fmt, (MemAlignment){}, device);
+}
+
+Tensor::Requirements Tensor::CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
+                                              const MemAlignment& bufAlign, eDeviceType device) {
     // TODO: Need to support different types of tensor layouts. This will happen once more image formats are supported
     // first.
     TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
                       {num_images, image_size.h, image_size.w, fmt.channels()});
-    return CalcRequirements(shape, DataType(fmt.dtype()), device);
+    return CalcRequirements(shape, DataType(fmt.dtype()), bufAlign, device);
 }
 
 std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape& shape, const DataType& dtype) {
@@ -188,8 +207,9 @@ Tensor TensorWrapData(const TensorData& tensor_data) {
     for (int i = 0; i < tensorDataStrided->rank(); i++) {
         strides[i] = tensorDataStrided->stride(i);
     }
-    TensorRequirements reqs = Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(), strides,
-                                                       tensorDataStrided->device());
+
+    Tensor::Requirements reqs = Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(),
+                                                         strides, tensorDataStrided->device());
 
     auto data =
         std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), tensorDataStrided->device(), eOwnership::OWNING);

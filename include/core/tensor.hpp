@@ -26,6 +26,8 @@ THE SOFTWARE.
 
 #include "core/data_type.hpp"
 #include "core/detail/allocators/i_allocator.hpp"
+#include "core/detail/context.hpp"
+#include "core/mem_alignment.hpp"
 #include "core/tensor_layout.hpp"
 #include "core/util_enums.h"
 #include "tensor_data.hpp"
@@ -50,8 +52,7 @@ class Tensor {
      *
      * @param[in] reqs An object representing the requirements for this tensor.
      */
-    explicit Tensor(const TensorRequirements &reqs);
-    explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc);
+    explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc = GlobalContext().getDefaultAllocator());
 
     /**
      * @brief Constructs a Tensor object given a list of requirements and the underlying data as a TensorStorage
@@ -60,8 +61,8 @@ class Tensor {
      * @param[in] reqs An object representing the requirements for this tensor.
      * @param[in] data A TensorStorage object for the tensor's underlying data.
      */
-    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
-    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data, const IAllocator &alloc);
+    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data,
+                    const IAllocator &alloc = GlobalContext().getDefaultAllocator());
 
     /**
      * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device.
@@ -71,7 +72,8 @@ class Tensor {
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(const TensorShape &shape, DataType dtype, const eDeviceType device = eDeviceType::GPU);
-    explicit Tensor(const TensorShape &shape, DataType dtype, const IAllocator &alloc,
+    explicit Tensor(const TensorShape &shape, DataType dtype, const MemAlignment &bufAlign,
+                    const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     const eDeviceType device = eDeviceType::GPU);
 
     /**
@@ -84,7 +86,8 @@ class Tensor {
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device = eDeviceType::GPU);
-    explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAllocator &alloc,
+    explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlignment &bufAlign,
+                    const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     eDeviceType device = eDeviceType::GPU);
 
     Tensor(const Tensor &other) = delete;
@@ -189,6 +192,8 @@ class Tensor {
      */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
                                          const eDeviceType device = eDeviceType::GPU);
+    static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype, const MemAlignment &bufAlign,
+                                         const eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Calculates tensor requirements.
@@ -214,6 +219,8 @@ class Tensor {
      */
     static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
                                          eDeviceType device = eDeviceType::GPU);
+    static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
+                                         const MemAlignment &bufAlign, eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Calculates strides required for a tensor.
