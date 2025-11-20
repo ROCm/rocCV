@@ -27,19 +27,17 @@ THE SOFTWARE.
 #include "core/data_type.hpp"
 #include "core/detail/allocators/i_allocator.hpp"
 #include "core/detail/context.hpp"
+#include "core/image_format.hpp"
 #include "core/mem_alignment.hpp"
 #include "core/tensor_data.hpp"
 #include "core/tensor_layout.hpp"
 #include "core/tensor_requirements.hpp"
+#include "core/tensor_shape.hpp"
 #include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
+#include "operator_types.h"
 
 namespace roccv {
-
-class ImageFormat;
-struct Size2D;
-class TensorShape;
-class TensorLayout;
 
 class Tensor {
    public:
@@ -113,7 +111,10 @@ class Tensor {
                     const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     eDeviceType device = eDeviceType::GPU);
 
-    Tensor(const Tensor &other) = delete;
+    // Copy constructor
+    Tensor(const Tensor &other);
+
+    // Move constructor
     Tensor(Tensor &&other);
 
     /**
@@ -202,6 +203,13 @@ class Tensor {
     Tensor reshape(const TensorShape &new_shape, const DataType &new_dtype) const;
 
     Tensor &operator=(const Tensor &other);
+
+    /**
+     * @brief Returns the total number of bytes being used to store the raw tensor data.
+     *
+     * @return Total number of bytes being used to store the raw tensor data.
+     */
+    size_t dataSize() const;
 
     /**
      * @brief Calculates tensor requirements using the default memory alignment strategy.

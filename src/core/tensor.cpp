@@ -41,8 +41,7 @@ namespace roccv {
 
 // Constructor definitions
 Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_requirements(reqs) {
-    size_t numBytes = reqs.device == eDeviceType::GPU ? reqs.res.deviceMem.bytes : reqs.res.hostMem.bytes;
-    m_data = std::make_shared<TensorStorage>(numBytes, reqs.device, alloc);
+    m_data = std::make_shared<TensorStorage>(this->dataSize(), reqs.device, alloc);
 }
 
 Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data)
@@ -62,6 +61,12 @@ Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlig
                const IAllocator& alloc, eDeviceType device)
     : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
+// Copy constructor
+Tensor::Tensor(const Tensor& other) : m_requirements(other.m_requirements) {
+    m_data = std::make_shared<TensorStorage>(this->dataSize(), m_requirements.device, other.m_data->allocator());
+}
+
+// Move constructor
 Tensor::Tensor(Tensor&& other) : m_requirements(std::move(other.m_requirements)), m_data(std::move(other.m_data)) {}
 
 // Member definitions
@@ -121,6 +126,17 @@ Tensor& Tensor::operator=(const Tensor& other) {
     this->m_requirements = other.m_requirements;
     this->m_data = other.m_data;
     return *this;
+}
+
+size_t Tensor::dataSize() const {
+    switch (m_requirements.device) {
+        case eDeviceType::GPU:
+            return m_requirements.res.deviceMem.bytes;
+        case eDeviceType::CPU:
+            return m_requirements.res.hostMem.bytes;
+    }
+
+    return 0;
 }
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
