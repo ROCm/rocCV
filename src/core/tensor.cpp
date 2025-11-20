@@ -45,8 +45,8 @@ Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_re
     m_data = std::make_shared<TensorStorage>(numBytes, reqs.device, alloc);
 }
 
-Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data, const IAllocator& alloc)
-    : m_requirements(reqs), m_data(data), m_allocator(alloc) {}
+Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data)
+    : m_requirements(reqs), m_data(data), m_allocator(data->allocator()) {}
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType device)
     : Tensor(shape, dtype, {}, GlobalContext().getDefaultAllocator(), device) {}

@@ -62,4 +62,7 @@ TensorStorage::~TensorStorage() {
 void* TensorStorage::data() const { return m_data; }
 
 const eDeviceType TensorStorage::device() const { return m_device; }
+
+const IAllocator& TensorStorage::allocator() const { return m_allocator; }
+
 }  // namespace roccv

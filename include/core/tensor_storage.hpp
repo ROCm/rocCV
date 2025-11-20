@@ -71,6 +71,13 @@ class TensorStorage {
      */
     const eDeviceType device() const;
 
+    /**
+     * @brief Returns the allocation strategy being used.
+     *
+     * @return The allocation strategy being used.
+     */
+    const IAllocator& allocator() const;
+
    private:
     eDeviceType m_device;
     eOwnership m_ownership;

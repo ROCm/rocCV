@@ -61,24 +61,35 @@ class Tensor {
      * @param[in] reqs An object representing the requirements for this tensor.
      * @param[in] data A TensorStorage object for the tensor's underlying data.
      */
-    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data,
-                    const IAllocator &alloc = GlobalContext().getDefaultAllocator());
+    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
 
     /**
-     * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device.
+     * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device. Uses
+     * the default memory alignment and allocation strategy.
      *
      * @param[in] shape The shape describing the tensor.
      * @param[in] dtype The underlying datatype of the tensor.
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(const TensorShape &shape, DataType dtype, const eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device. Uses a
+     * user-specified memory alignment and allocation strategy.
+     *
+     * @param[in] shape The shape describing the tensor.
+     * @param[in] dtype The underlying datatype of the tensor.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] alloc The allocation strategy. (Default: DefaultAllocator)
+     * @param[in] device The device the tensor should be allocated on.
+     */
     explicit Tensor(const TensorShape &shape, DataType dtype, const MemAlignment &bufAlign,
                     const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     const eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the
-     * specified device.
+     * specified device. Uses the default memory alignment and allocation strategy.
      *
      * @param[in] num_images The number of images in the batch.
      * @param[in] image_size The size for images in the batch.
@@ -86,6 +97,18 @@ class Tensor {
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the
+     * specified device. Uses user-provided memory alignment and allocation strategies.
+     *
+     * @param[in] num_images The number of images in the batch.
+     * @param[in] image_size The size for images in the batch.
+     * @param[in] fmt The format of the underlying image data.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] alloc The allocation strategy. (Default: DefaultAllocator)
+     * @param[in] device The device the tensor should be allocated on.
+     */
     explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlignment &bufAlign,
                     const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     eDeviceType device = eDeviceType::GPU);
@@ -181,8 +204,7 @@ class Tensor {
     Tensor &operator=(const Tensor &other);
 
     /**
-     * @brief Calculates tensor requirements. This essentially wraps the
-     * provided parameters into a TensorRequirements object.
+     * @brief Calculates tensor requirements using the default memory alignment strategy.
      *
      * @param[in] shape The desired shape of the tensor.
      * @param[in] dtype The desired data type of the tensor's raw data.
@@ -192,11 +214,22 @@ class Tensor {
      */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
                                          const eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates tensor requirements with a user-provided memory alignment strategy.
+     *
+     * @param[in] shape The desired shape of the tensor.
+     * @param[in] dtype The desired data type of the tensor's raw data.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] device The device the tensor data should belong to.
+     * @return A TensorRequirements object representing this tensor's
+     * requirements.
+     */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype, const MemAlignment &bufAlign,
                                          const eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Calculates tensor requirements.
+     * @brief Calculates tensor requirements with user-provided strides.
      *
      * @param[in] shape The shape describing the tensor.
      * @param[in] dtype The type of the tensor's data.
@@ -209,16 +242,28 @@ class Tensor {
                                          eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Calculates tensor requirements using image-based parameters.
+     * @brief Calculates tensor requirements using image-based parameters. This will use a default memory alignment
+     * strategy.
      *
      * @param[in] num_images The number of images in the batch.
      * @param[in] image_size The size for images in the batch.
      * @param[in] fmt The format of the underlying image data.
      * @param[in] device The device the tensor data should belong to.
-     * @return A TensorRequirements object representing the tensor's requirements.
+     * @return A Tensor::Requirements object representing the tensor's requirements.
      */
     static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
                                          eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates tensor requirements using image-based parameters and a specified memory alignment.
+     *
+     * @param[in] num_images The number of images in the batch.
+     * @param[in] image_size The size of images in the batch.
+     * @param[in] fmt The format of the underling image data.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] device The device the tensor is to be allocated on.
+     * @return A Tensor::Requirements object representing this tensor's requirements.
+     */
     static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
                                          const MemAlignment &bufAlign, eDeviceType device = eDeviceType::GPU);
 
