@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <core/wrappers/interpolation_wrapper.hpp>
 #include <op_rotate.hpp>
 
+#include "core/detail/casting.hpp"
 #include "math_utils.hpp"
 #include "test_helpers.hpp"
 
@@ -64,7 +65,7 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
     size_t numElements = batchSize * imageSize.w * imageSize.h * detail::NumElements<T>;
     std::vector<detail::BaseType<T>> output(numElements);
 
-    T borderVal = detail::RangeCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
+    T borderVal = detail::SaturateCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
 
     ImageWrapper<T> outputWrapper(output, batchSize, imageSize.w, imageSize.h);
     InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType> inputWrapper(

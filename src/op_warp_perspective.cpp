@@ -98,7 +98,7 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
     }
 
     auto func = funcs.at(borderType);
-    func(stream, input, output, transMatrix, interpolation, detail::RangeCast<T>(borderValue), device);
+    func(stream, input, output, transMatrix, interpolation, detail::SaturateCast<T>(borderValue), device);
 }
 
 void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const Tensor &output,

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <functional>
 #include <iostream>
 #include <numeric>
+
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
@@ -80,7 +81,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         Kernels::Device::bilateral_filter<T><<<grid, block, 0, stream>>>(
             inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
-        int divisor = std::gcd(4, outputWrapper.height()); // greatest common divisor
+        int divisor = std::gcd(4, outputWrapper.height());  // greatest common divisor
         int dividend = std::gcd((numThreads / divisor), outputWrapper.width());
 
         int factorW = outputWrapper.width() / dividend;
@@ -130,7 +131,7 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
     }
 
     auto func = funcs.at(borderMode);
-    func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::RangeCast<T>(borderValue), device);
+    func(stream, input, output, diameter, sigmaColor, sigmaSpace, detail::SaturateCast<T>(borderValue), device);
 }
 
 void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
@@ -141,8 +142,10 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     CHECK_TENSOR_DEVICE(output, device);
 
     // Ensure all tensors are using supported datatypes
-    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
-    CHECK_TENSOR_DATATYPES(output, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32,
+                           DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
+    CHECK_TENSOR_DATATYPES(output, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32,
+                           DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
 
     // Ensure all tensors are using supported layouts.
     CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_NHWC, TENSOR_LAYOUT_HWC);
