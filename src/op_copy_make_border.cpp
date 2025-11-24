@@ -78,7 +78,7 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
     }
 
     auto func = funcs.at(border_mode);
-    func(stream, input, output, top, left, detail::RangeCast<T>(border_value), device);
+    func(stream, input, output, top, left, detail::SaturateCast<T>(border_value), device);
 }
 
 void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,

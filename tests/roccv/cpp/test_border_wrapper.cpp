@@ -143,7 +143,7 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
         batchSize * (imageSize.w + borderRadius * 2) * (imageSize.h + borderRadius * 2) * channels;
 
     // Convert borderValue to the same type as the image pixels
-    T borderVal = detail::RangeCast<T>(borderValue);
+    T borderVal = detail::SaturateCast<T>(borderValue);
 
     // Generate synthetic data
     std::vector<BT> inputData(numElements);
