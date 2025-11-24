@@ -21,15 +21,15 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
-#include "core/detail/casting.hpp"
-#include "core/detail/type_traits.hpp"
-#include "core/detail/math/vectorized_type_math.hpp"
 #include <core/wrappers/image_wrapper.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
 #include <iostream>
 #include <op_remap.hpp>
-#include "operator_types.h"
 
+#include "core/detail/casting.hpp"
+#include "core/detail/math/vectorized_type_math.hpp"
+#include "core/detail/type_traits.hpp"
+#include "operator_types.h"
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -54,23 +54,24 @@ namespace {
  * @param[in] borderValue Border value to use as a fallback when going out of bounds.
  * @return Vector containing the results of the operation.
  */
-template <typename T, eBorderType BorderType, eInterpolationType InterpType, eInterpolationType MapInterpType, typename BT = detail::BaseType<T>>
-std::vector<BT> GoldenRemapAbsolute(std::vector<BT>& input, int32_t batchSize, int32_t width, int32_t height, std::vector<float2>& mapData, float4 borderValue) {
-
+template <typename T, eBorderType BorderType, eInterpolationType InterpType, eInterpolationType MapInterpType,
+          typename BT = detail::BaseType<T>>
+std::vector<BT> GoldenRemapAbsolute(std::vector<BT>& input, int32_t batchSize, int32_t width, int32_t height,
+                                    std::vector<float2>& mapData, float4 borderValue) {
     // Create an output vector the same size as the input vector
     std::vector<BT> output(input.size());
 
     // Create interpolation wrapper for input vector
     InterpolationWrapper<T, BorderType, InterpType> src((BorderWrapper<T, BorderType>(
-        ImageWrapper<T>(input, batchSize, width, height), detail::RangeCast<T>(borderValue))));
+        ImageWrapper<T>(input, batchSize, width, height), detail::SaturateCast<T>(borderValue))));
 
     // Wrap the output vector for simplified data access
     ImageWrapper<T> dst(output, batchSize, width, height);
-    
+
     // Create an interpolation wrapper for the map tensor
-    //InterpolationWrapper<float2, BorderType, MapInterpType> wrappedMapTensor(map, make_float2(0, 0));
+    // InterpolationWrapper<float2, BorderType, MapInterpType> wrappedMapTensor(map, make_float2(0, 0));
     InterpolationWrapper<float2, BorderType, MapInterpType> map((BorderWrapper<float2, BorderType>(
-        ImageWrapper<float2>(mapData.data(), batchSize, width, height), detail::RangeCast<float2>(borderValue))));
+        ImageWrapper<float2>(mapData.data(), batchSize, width, height), detail::SaturateCast<float2>(borderValue))));
 
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < height; y++) {
@@ -100,13 +101,14 @@ std::vector<BT> GoldenRemapAbsolute(std::vector<BT>& input, int32_t batchSize, i
  * @param mapType Type of remap to do, REMAP_ABSOLUTE, REMAP_ABSOLUTE_NORMALIZED, REMAP_RELATIVE_NORMALIZED
  * @param device The device to run the roccv::WarpPerspective operator on.
  */
-template <typename T, eBorderType BorderType, eInterpolationType InterpType, eInterpolationType MapInterpType, typename BT = detail::BaseType<T>>
-void TestCorrectness(int batchSize, int width, int height, ImageFormat format, float4 borderValue, eRemapType mapType, eDeviceType device) {
-    
+template <typename T, eBorderType BorderType, eInterpolationType InterpType, eInterpolationType MapInterpType,
+          typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, int width, int height, ImageFormat format, float4 borderValue, eRemapType mapType,
+                     eDeviceType device) {
     // Create input and output tensor based on test parameters
     Tensor input(batchSize, {width, height}, format, device);
     Tensor output(batchSize, {width, height}, format, device);
-    
+
     // Create a vector and fill it with random data.
     std::vector<BT> inputData(input.shape().size());
     FillVector(inputData);
@@ -118,7 +120,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, f
     std::vector<float> rowRemapTable;
 
     float halfWidth = width / 2;
-    for (int b = 0; b < batchSize; b++){
+    for (int b = 0; b < batchSize; b++) {
         for (int i = 0; i < height; i++) {
             int j = 0;
             for (; j < halfWidth; j++) {
@@ -136,8 +138,6 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, f
     for (int i = 0; i < rowRemapTable.size(); i++) {
         mapData[i] = make_float2(colRemapTable[i], rowRemapTable[i]);
     }
-
-    
 
     // Create map tensor and fill it with mapData
     TensorShape map_shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {batchSize, height, width, 2});
@@ -157,7 +157,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, f
     std::vector<BT> result(output.shape().size());
     CopyTensorIntoVector(result, output);
 
-    std::vector<BT> ref = GoldenRemapAbsolute<T, BorderType, InterpType, MapInterpType>(inputData, batchSize, width, height, mapData, borderValue);
+    std::vector<BT> ref = GoldenRemapAbsolute<T, BorderType, InterpType, MapInterpType>(inputData, batchSize, width,
+                                                                                        height, mapData, borderValue);
 
     // Compare data in actual output versus the generated golden reference image
     CompareVectors(result, ref);
@@ -167,25 +168,61 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, f
 eTestStatusType test_op_remap(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(5, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
-    
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_NEAREST>(1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(3, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(3, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST, eInterpolationType::INTERP_TYPE_LINEAR>(5, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR, eInterpolationType::INTERP_TYPE_NEAREST>(5, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        1, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        3, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_LINEAR,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        5, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        5, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        5, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::GPU)));
+
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        1, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        1, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        1, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        3, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        3, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        3, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_LINEAR,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        5, 480, 360, FMT_U8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_NEAREST,
+                               eInterpolationType::INTERP_TYPE_LINEAR>(
+        5, 480, 360, FMT_RGB8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR,
+                               eInterpolationType::INTERP_TYPE_NEAREST>(
+        5, 480, 360, FMT_RGBA8, make_float4(0.0f, 0.0f, 0.0f, 1.0f), REMAP_ABSOLUTE, eDeviceType::CPU)));
 
     TEST_CASES_END();
 }

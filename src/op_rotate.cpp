@@ -52,7 +52,7 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
     // Wrap in a kernel-friendly fixed size array to ensure the affine matrix gets transferred to the device properly.
     ArrayWrapper<double, 6> matWrap(mat);
 
-    T borderVal = detail::RangeCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
+    T borderVal = detail::SaturateCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
 
     ImageWrapper<T> outputWrap(output);
     InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType> inputWrap(input, borderVal);
