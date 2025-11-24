@@ -61,11 +61,6 @@ Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlig
                const IAllocator& alloc, eDeviceType device)
     : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
-// Copy constructor
-Tensor::Tensor(const Tensor& other) : m_requirements(other.m_requirements) {
-    m_data = std::make_shared<TensorStorage>(this->dataSize(), m_requirements.device, other.m_data->allocator());
-}
-
 // Move constructor
 Tensor::Tensor(Tensor&& other) : m_requirements(std::move(other.m_requirements)), m_data(std::move(other.m_data)) {}
 

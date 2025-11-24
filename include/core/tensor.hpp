@@ -111,10 +111,7 @@ class Tensor {
                     const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     eDeviceType device = eDeviceType::GPU);
 
-    // Copy constructor
-    Tensor(const Tensor &other);
-
-    // Move constructor
+    Tensor(const Tensor &other) = delete;
     Tensor(Tensor &&other);
 
     /**
