@@ -40,6 +40,65 @@ namespace {
 bool IsOutOfBounds(int32_t coordinate, int32_t dimSize) { return (coordinate < 0) || (coordinate >= dimSize); }
 
 /**
+ * @brief Calculate the coordinate of certain dimension (x or y) for the border pixel.
+ * @param[in] u The coordinate of the border pixel.
+ * @param[in] dimSize The size of the image in the dimension.
+ * @param[in] borderMode The border mode to determine how the coordinate of the border pixel is mapped.
+ * @return The in-image coordinate for the border pixel.
+ */
+int64_t GetCoordOfBorderPel(int64_t u, int64_t dimSize, const eBorderType borderMode) {
+    int64_t v = u;
+    switch (borderMode) {
+        case eBorderType::BORDER_TYPE_REFLECT: {
+            if (u < 0) {
+                v = (-u - 1) % dimSize;
+            } else if (u >= dimSize) {
+                v = dimSize - (u % dimSize) - 1;
+            } else {
+                v = u;
+            }
+            break;
+        }
+
+        case eBorderType::BORDER_TYPE_REFLECT101: {
+            if (dimSize == 1) {
+                v = 0;
+            } else {
+                if (u < 0) {
+                    v = (-u) % dimSize;
+                } else if (u >= dimSize) {
+                    v = u % dimSize;
+                    v = (dimSize * 2 - 2 - v) % dimSize;
+                } else {
+                    v = u;
+                }
+            }
+            break;
+        }
+
+        case eBorderType::BORDER_TYPE_REPLICATE: {
+            if (u < 0) {
+                v = 0;
+            } else if (u >= dimSize) {
+                v = dimSize - 1;
+            } else {
+                v = u;
+            }
+            break;
+        }
+
+        case eBorderType::BORDER_TYPE_WRAP: {
+            v = ((u % dimSize) + dimSize) % dimSize;
+            break;
+        }
+
+        default: {
+            v = u;
+        }
+    }
+    return v;
+}
+/**
  * @brief Golden implementation for handling out of bounds behavior during image accesses.
  *
  * @tparam T The underlying datatype of the image. (e.g. uchar3)
@@ -60,63 +119,15 @@ BT GoldenBorderAt(ImageWrapper<T>& input, const eBorderType borderMode, T border
                   int64_t x, int64_t channel) {
     int64_t outX = x, outY = y;
 
-    switch (borderMode) {
-        case eBorderType::BORDER_TYPE_CONSTANT: {
-            // Handle constant border type boundaries. This will return a constant value if either x or y coordinates
-            // fall out of bounds.
-            if (IsOutOfBounds(x, input.width()) || IsOutOfBounds(y, input.height())) {
-                return detail::GetElement(borderValue, channel);
-            }
-
-            // Otherwise, the coordinates are within bounds. outX and outY do not need to be modified.
-            break;
+    if (borderMode == eBorderType::BORDER_TYPE_CONSTANT) {
+        // Handle constant border type boundaries. This will return a constant value if either x or y coordinates
+        // fall out of bounds.
+        if (IsOutOfBounds(x, input.width()) || IsOutOfBounds(y, input.height())) {
+            return detail::GetElement(borderValue, channel);
         }
-
-        case eBorderType::BORDER_TYPE_REFLECT: {
-            // Note, BORDER_TYPE_REFLECT also copies the border pixels. This behavior is intended, as an additional
-            // BORDER_TYPE_REFLECT101 will be implemented to handle reflections without copying the pixels on the
-            // border.
-
-            int64_t width = input.width();
-            // Handle the special case where we have a dimension of size 1.
-            if (width == 1) {
-                outX = 0;
-            } else {
-                int64_t scale = width * 2;  // The period of the reflection, used for wrapping.
-                int64_t val = (x % scale + scale) % scale;
-                outX = (val < width) ? val : scale - 1 - val;
-            }
-
-            // Identical to the logic above, just handled along the y axis instead.
-            int64_t height = input.height();
-            if (height == 1) {
-                outY = 0;
-            } else {
-                int64_t scale = height * 2;
-                int64_t val = (y % scale + scale) % scale;
-                outY = (val < height) ? val : scale - 1 - val;
-            }
-            break;
-        }
-
-        case eBorderType::BORDER_TYPE_REPLICATE: {
-            // BORDER_TYPE_REPLICATE just clamps out-of-bounds coordinates to the coordinate at the nearest border. We
-            // handle this for both the x and y axis.
-
-            outX = std::clamp<int64_t>(x, 0, input.width() - 1);
-            outY = std::clamp<int64_t>(y, 0, input.height() - 1);
-            break;
-        }
-
-        case eBorderType::BORDER_TYPE_WRAP: {
-            // Note: We cannot just do x % input.width() since a negative dividend (x) will result in a negative number.
-            int64_t width = input.width();
-            outX = ((x % width) + width) % width;
-
-            int64_t height = input.height();
-            outY = ((y % height) + height) % height;
-            break;
-        }
+    } else {
+        outX = GetCoordOfBorderPel(x, input.width(), borderMode);
+        outY = GetCoordOfBorderPel(y, input.height(), borderMode);
     }
 
     // Return the value at the modified outX, outY coordinates using the passed in ImageWrapper.
@@ -208,6 +219,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // S8 datatype tests
     TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -226,6 +240,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // U16 datatype tests
     TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -244,6 +261,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // S16 datatype tests
     TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -262,6 +282,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // S32 datatype tests
     TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -280,6 +303,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // U32 datatype tests
     TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -298,6 +324,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // F32 datatype tests
     TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -316,6 +345,9 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
 
     // F64 datatype tests
     TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_CONSTANT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
@@ -333,6 +365,10 @@ eTestStatusType test_border_wrapper(int argc, char** argv) {
     TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
     TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REFLECT>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
     TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_REFLECT>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
+
+    TEST_CASE((TestCorrectness<double1, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 1.0f), 1, {56, 13}, 9)));
+    TEST_CASE((TestCorrectness<double3, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(0.5f, 1.0f, 0.0f, 1.0f), 2, {1, 1}, 9)));
+    TEST_CASE((TestCorrectness<double4, eBorderType::BORDER_TYPE_REFLECT101>(make_float4(1.0f, 1.0f, 1.0f, 0.5f), 3, {16, 83}, 9)));
     // clang-format on
 
     TEST_CASES_END();
