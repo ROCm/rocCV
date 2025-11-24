@@ -141,10 +141,11 @@ sudo zypper install roccv roccv-devel roccv-test
 
 To build rocCV from source and install, follow the steps below:
 
-- Clone rocCV source code
+- Clone rocCV source code and `cd` into the project:
 
 ```shell
 git clone https://github.com/ROCm/rocCV.git
+cd rocCV
 ```
 
 - Initialize and update submodules (for `pybind11` and `dlpack` dependencies)
