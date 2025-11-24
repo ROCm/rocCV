@@ -4,9 +4,13 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 
 ## rocCV 0.4.0 for ROCm 7.2.0
 
+### Added
+- Reflect 101 border mode.
+
 ### Changed
 
 - `Pybind11` and `DLPack` requirements moved to git submodules.
+- Updated border C-model.
 
 ### Known issues
 
