@@ -144,7 +144,14 @@ To build rocCV from source and install, follow the steps below:
 - Clone rocCV source code
 
 ```shell
-git clone https://github.com/ROCm/rocCV.git --recurse-submodules
+git clone https://github.com/ROCm/rocCV.git
+```
+
+- Initialize and update submodules (for `pybind11` and `dlpack` dependencies)
+
+```shell
+git submodule init
+git submodule update
 ```
 
 > [!NOTE]
