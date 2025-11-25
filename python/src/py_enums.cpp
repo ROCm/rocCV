@@ -75,6 +75,7 @@ void PyEnums::Export(py::module& m) {
         .value("CONSTANT", BORDER_TYPE_CONSTANT)
         .value("REPLICATE", BORDER_TYPE_REPLICATE)
         .value("REFLECT", BORDER_TYPE_REFLECT)
+        .value("REFLECT101", BORDER_TYPE_REFLECT101)
         .value("WRAP", BORDER_TYPE_WRAP)
         .export_values();
 

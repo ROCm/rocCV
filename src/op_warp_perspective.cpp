@@ -89,6 +89,7 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_REFLECT,      dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,   dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REFLECT101>},
             {eBorderType::BORDER_TYPE_WRAP,         dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
