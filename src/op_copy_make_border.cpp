@@ -69,6 +69,7 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
         {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
         {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
         {eBorderType::BORDER_TYPE_REFLECT,      dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+        {eBorderType::BORDER_TYPE_REFLECT101,   dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_REFLECT101>},
         {eBorderType::BORDER_TYPE_WRAP,         dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
     };
     // clang-format on

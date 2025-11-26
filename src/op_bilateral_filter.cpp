@@ -122,6 +122,7 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
             {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REFLECT,     dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,  dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REFLECT101>},
             {eBorderType::BORDER_TYPE_WRAP,        dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on

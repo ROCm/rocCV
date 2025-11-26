@@ -91,21 +91,30 @@ class BorderWrapper {
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
-            // There is a special case if we have a dimension of size 1
+            int64_t scale = imgWidth * 2;
+            int64_t val = (w % scale + scale) % scale;
+            x = (val < imgWidth) ? val : scale - 1 - val;
+
+            scale = imgHeight * 2;
+            val = (h % scale + scale) % scale;
+            y = (val < imgHeight) ? val : scale - 1 - val;
+        }
+
+        if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT101) {
             if (imgWidth == 1) {
                 x = 0;
             } else {
-                int64_t scale = imgWidth * 2;
-                int64_t val = (w % scale + scale) % scale;
-                x = (val < imgWidth) ? val : scale - 1 - val;
+                int64_t scale = 2 * imgWidth - 2;
+                x = (w % scale + scale) % scale;
+                x = imgWidth - 1 - std::abs(imgWidth - 1 - x);
             }
 
             if (imgHeight == 1) {
                 y = 0;
             } else {
-                int64_t scale = imgHeight * 2;
-                int64_t val = (h % scale + scale) % scale;
-                y = (val < imgHeight) ? val : scale - 1 - val;
+                int64_t scale = 2 * imgHeight - 2;
+                y = (h % scale + scale) % scale;
+                y = imgHeight - 1 - std::abs(imgHeight - 1 - y);
             }
         }
 
