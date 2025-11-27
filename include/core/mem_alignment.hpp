@@ -26,8 +26,27 @@
 namespace roccv {
 
 /**
- * @brief Defines memory alignment for containers.
+ * @class MemAlignment
+ * @brief Class for specifying memory alignment constraints for buffer allocations.
  *
+ * The MemAlignment class allows you to specify the memory alignment in bytes that should
+ * be used when allocating or working with device or host memory buffers. Proper alignment
+ * is important for performance reasons and hardware compatibility, especially for GPU operations.
+ *
+ * There are two types of alignment constraints:
+ *  - Base address alignment: Alignment requirements for the starting address of the buffer.
+ *  - Row address alignment: Alignment requirements for the starting address of each row, which is
+ *    important for multi-dimensional data (e.g., images or tensors).
+ *
+ * Both alignment values default to 0, which implies that the system or device default alignment will be used.
+ *
+ * Example usage:
+ * @code
+ *   roccv::MemAlignment align;
+ *   align.baseAddr(256).rowAddr(128);
+ * @endcode
+ *
+ * @see roccv::Tensor
  */
 class MemAlignment {
    public:

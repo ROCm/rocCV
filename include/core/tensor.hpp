@@ -199,6 +199,16 @@ class Tensor {
      */
     Tensor reshape(const TensorShape &new_shape, const DataType &new_dtype) const;
 
+    /**
+     * @brief Performs a shallow copy of the tensor (creates a view).
+     *
+     * This assignment operator copies the tensor's metadata and data handle,
+     * resulting in a new tensor object that shares the same underlying data
+     * with the original tensor. No deep copy of the data is performed.
+     *
+     * @param other The tensor to assign from.
+     * @return Reference to this tensor.
+     */
     Tensor &operator=(const Tensor &other);
 
     /**
@@ -239,11 +249,12 @@ class Tensor {
      * @param[in] shape The shape describing the tensor.
      * @param[in] dtype The type of the tensor's data.
      * @param[in] strides The tensor's strides.
+     * @param[in] baseAlign The base address alignment.
      * @param[in] device The device the tensor data belongs on. (Default: GPU)
      * @return Tensor requirements.
      */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
-                                         std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides,
+                                         std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, int32_t baseAlign,
                                          eDeviceType device = eDeviceType::GPU);
 
     /**
@@ -273,16 +284,15 @@ class Tensor {
                                          const MemAlignment &bufAlign, eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Calculates strides required for a tensor. Uses a user-specified memory alignment strategy to determine the
-     * strides with padding in mind.
+     * @brief Calculates strides required for a tensor.
      *
      * @param shape The tensor shape.
      * @param dtype The datatype of the tensor.
-     * @param bufAlign The memory alignment strategy to use.
+     * @param rowAlign The row alignment to use. Setting to 0 will ensure contiguous memory usage.
      * @return An array containing strides for the given parameters.
      */
     static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype,
-                                                                  const MemAlignment &bufAlign);
+                                                                  int32_t rowAlign);
 
    private:
     TensorRequirements m_requirements;      // Tensor metadata

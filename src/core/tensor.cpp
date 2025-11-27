@@ -23,10 +23,12 @@ THE SOFTWARE.
 #include "core/tensor.hpp"
 
 #include <array>
+#include <numeric>
 
 #include "core/data_type.hpp"
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
+#include "core/hip_assert.h"
 #include "core/image_format.hpp"
 #include "core/mem_alignment.hpp"
 #include "core/status_type.h"
@@ -35,6 +37,7 @@ THE SOFTWARE.
 #include "core/tensor_requirements.hpp"
 #include "core/tensor_shape.hpp"
 #include "core/util_enums.h"
+#include "core/utils.hpp"
 #include "operator_types.h"
 
 namespace roccv {
@@ -52,14 +55,14 @@ Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType devic
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, const MemAlignment& bufAlign, const IAllocator& alloc,
                const eDeviceType device)
-    : Tensor(CalcRequirements(shape, dtype, device), alloc) {}
+    : Tensor(CalcRequirements(shape, dtype, bufAlign, device), alloc) {}
 
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device)
     : Tensor(num_images, image_size, fmt, {}, GlobalContext().getDefaultAllocator(), device) {}
 
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlignment& bufAlign,
                const IAllocator& alloc, eDeviceType device)
-    : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
+    : Tensor(CalcRequirements(num_images, image_size, fmt, bufAlign, device), alloc) {}
 
 // Move constructor
 Tensor::Tensor(Tensor&& other) : m_requirements(std::move(other.m_requirements)), m_data(std::move(other.m_data)) {}
@@ -141,13 +144,41 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
                                               const MemAlignment& bufAlign, const eDeviceType device) {
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype, bufAlign);
-    Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, device);
+    int dev;
+    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&dev));
+
+    // Validate memory alignment, set default alignment if set to 0.
+    // TODO: Must be supported for CPU as well.
+    int rowAlign;
+    if (bufAlign.rowAddr() == 0) {
+        HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&rowAlign, hipDeviceAttributeTexturePitchAlignment, dev));
+        rowAlign = std::lcm(rowAlign, detail::NextPowerOfTwo(dtype.size()));
+    } else {
+        if (!detail::IsPowerOfTwo(bufAlign.rowAddr())) {
+            throw Exception("Row address alignment must be a power of two.", eStatusType::INVALID_VALUE);
+        }
+        rowAlign = std::lcm(bufAlign.rowAddr(), detail::NextPowerOfTwo(dtype.size()));
+    }
+
+    int baseAlign;
+    if (bufAlign.baseAddr() == 0) {
+        HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&baseAlign, hipDeviceAttributeTextureAlignment, dev));
+        baseAlign = std::lcm(baseAlign, detail::NextPowerOfTwo(dtype.size()));
+    } else {
+        if (!detail::IsPowerOfTwo(bufAlign.baseAddr())) {
+            throw Exception("Base address alignment must be a power of two.", eStatusType::INVALID_VALUE);
+        }
+        baseAlign = std::lcm(bufAlign.baseAddr(), detail::NextPowerOfTwo(dtype.size()));
+    }
+
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype, rowAlign);
+    Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, baseAlign, device);
     return reqs;
 }
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
-                                              std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, eDeviceType device) {
+                                              std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, int32_t baseAlign,
+                                              eDeviceType device) {
     Tensor::Requirements reqs;
 
     reqs.shape = shape.shape();
@@ -155,7 +186,7 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
     reqs.layout = shape.layout().elayout();
     reqs.strides = strides;
     reqs.dtype = dtype.etype();
-    reqs.alignBytes = 0;  // TODO: Must be specified later
+    reqs.alignBytes = baseAlign;
     reqs.device = device;
 
     // Determine resource usage
@@ -193,14 +224,17 @@ Tensor::Requirements Tensor::CalcRequirements(int num_images, Size2D image_size,
 }
 
 std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape& shape, const DataType& dtype,
-                                                               const MemAlignment& bufAlign) {
-    // TODO: Support memory alignment and padding in stride calculations
-
+                                                               int32_t rowAlign) {
     // Calculate strides based on the given tensor shape. Strides are byte-wise.
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
     strides[shape.layout().rank() - 1] = dtype.size();
     for (int i = shape.layout().rank() - 2; i >= 0; i--) {
-        strides[i] = strides[i + 1] * shape[i + 1];
+        // Ensure strides for the row are padded to the next multiple of the alignment.
+        if (i == shape.layout().height_index()) {
+            strides[i] = detail::AlignUp(strides[i + 1] * shape[i + 1], rowAlign);
+        } else {
+            strides[i] = strides[i + 1] * shape[i + 1];
+        }
     }
     return strides;
 }
@@ -218,7 +252,7 @@ Tensor TensorWrapData(const TensorData& tensor_data) {
     }
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(),
-                                                         strides, tensorDataStrided->device());
+                                                         strides, 0, tensorDataStrided->device());
 
     auto data =
         std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), tensorDataStrided->device(), eOwnership::OWNING);

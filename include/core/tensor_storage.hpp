@@ -84,5 +84,4 @@ class TensorStorage {
     void* m_data;
     const IAllocator& m_allocator;
 };
-
 }  // namespace roccv
