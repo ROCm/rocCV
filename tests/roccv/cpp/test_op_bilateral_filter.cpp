@@ -193,7 +193,7 @@ eTestStatusType test_op_bilateral_filter(int argc, char** argv) {
     TEST_CASE((TestCorrectness<char3, BORDER_TYPE_WRAP>(5, 32, 24, FMT_RGBs8, 5, 60.0f, 5.0f, {100.0, 0.0, 100.0, 0.0},
                                                         eDeviceType::GPU)));
 
-    TEST_CASE((TestCorrectness<char4, BORDER_TYPE_REFLECT>(1, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
+    TEST_CASE((TestCorrectness<char4, BORDER_TYPE_REFLECT101>(1, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
                                                            {100.0, 0.0, 100.0, 0.0}, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<char4, BORDER_TYPE_CONSTANT>(5, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
                                                             {100.0, 100.0, 100.0, 0.0}, eDeviceType::GPU)));
@@ -205,7 +205,7 @@ eTestStatusType test_op_bilateral_filter(int argc, char** argv) {
 
     TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 4, 500.0f, 3.0f,
                                                               {500.0, 600.0, 0.0, 0.0}, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_RGB16, 4, 500.0f, 3.0f,
+    TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGB16, 4, 500.0f, 3.0f,
                                                              {0.0, 0.0, 0.0, 0.0}, eDeviceType::GPU)));
 
     TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 4, 600.0f, 3.0f,
@@ -294,7 +294,7 @@ eTestStatusType test_op_bilateral_filter(int argc, char** argv) {
     TEST_CASE((TestCorrectness<char3, BORDER_TYPE_WRAP>(5, 32, 24, FMT_RGBs8, 5, 60.0f, 5.0f, {100.0, 0.0, 100.0, 0.0},
                                                         eDeviceType::CPU)));
 
-    TEST_CASE((TestCorrectness<char4, BORDER_TYPE_REFLECT>(1, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
+    TEST_CASE((TestCorrectness<char4, BORDER_TYPE_REFLECT101>(1, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
                                                            {100.0, 0.0, 100.0, 0.0}, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<char4, BORDER_TYPE_CONSTANT>(5, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
                                                             {100.0, 100.0, 100.0, 0.0}, eDeviceType::CPU)));
@@ -309,7 +309,7 @@ eTestStatusType test_op_bilateral_filter(int argc, char** argv) {
     TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_RGB16, 4, 500.0f, 3.0f,
                                                              {0.0, 0.0, 0.0, 0.0}, eDeviceType::CPU)));
 
-    TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 4, 600.0f, 3.0f,
+    TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT101>(1, 20, 20, FMT_RGBA16, 4, 600.0f, 3.0f,
                                                              {500.0, 600.0, 0.0, 0.0}, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_WRAP>(2, 20, 20, FMT_RGBA16, 4, 500.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                           eDeviceType::CPU)));

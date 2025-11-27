@@ -118,6 +118,7 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_REFLECT,      dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,   dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REFLECT101>},
             {eBorderType::BORDER_TYPE_WRAP,         dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
