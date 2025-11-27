@@ -152,6 +152,8 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
     int rowAlign;
     if (bufAlign.rowAddr() == 0) {
         HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&rowAlign, hipDeviceAttributeTexturePitchAlignment, dev));
+        printf("rowAlign: %d\n", rowAlign);
+        printf("NextPowerOfTwo(dtype.size()): %lu\n", detail::NextPowerOfTwo(dtype.size()));
         rowAlign = std::lcm(rowAlign, detail::NextPowerOfTwo(dtype.size()));
     } else {
         if (!detail::IsPowerOfTwo(bufAlign.rowAddr())) {
@@ -159,6 +161,7 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
         }
         rowAlign = std::lcm(bufAlign.rowAddr(), detail::NextPowerOfTwo(dtype.size()));
     }
+    printf("rowAlign: %d\n", rowAlign);
 
     int baseAlign;
     if (bufAlign.baseAddr() == 0) {
@@ -170,6 +173,7 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
         }
         baseAlign = std::lcm(bufAlign.baseAddr(), detail::NextPowerOfTwo(dtype.size()));
     }
+    printf("baseAlign: %d\n", baseAlign);
 
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype, rowAlign);
     Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, baseAlign, device);

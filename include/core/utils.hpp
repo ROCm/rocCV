@@ -24,28 +24,19 @@ THE SOFTWARE.
 
 #include <stdint.h>
 
+#include <cstddef>
 #include <type_traits>
 
 namespace roccv::detail {
-/**
- * @brief Returns the next power of two greater than or equal to the given value.
- *
- * @tparam T Integral type of the input and output.
- * @param value The value to find the next power of two for.
- * @return The next power of two greater than or equal to the given value.
- */
-template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-inline constexpr T NextPowerOfTwo(T value) noexcept {
+
+inline constexpr size_t NextPowerOfTwo(size_t value) noexcept {
     if (value <= 1) return 1;
 #if defined(__GNUC__) || defined(__clang__)
-    // For unsigned types, use clz built-in. For signed, cast to unsigned.
-    using U = std::make_unsigned_t<T>;
-    constexpr int numBits = sizeof(T) * 8;
-    return static_cast<T>(U(1) << (numBits - __builtin_clz(static_cast<U>(value - 1))));
+    constexpr int numBits = sizeof(size_t) * 8;
+    return 1UL << (numBits - __builtin_clzl(value - 1));
 #else
-    // Portable fallback: fill lower bits, then add one.
     value--;
-    for (size_t i = 1; i < sizeof(T) * 8; i <<= 1) value |= (value >> i);
+    for (size_t i = 1; i < sizeof(size_t) * 8; i <<= 1) value |= (value >> i);
     return value + 1;
 #endif
 }

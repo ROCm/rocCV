@@ -20,6 +20,7 @@
  */
 
 #include <core/tensor.hpp>
+#include <core/utils.hpp>
 
 #include "test_helpers.hpp"
 
@@ -33,16 +34,22 @@ namespace {
  *
  * @param shape The tensor's shape.
  * @param dtype The datatype of the tensor.
+ * @param rowAlign The row alignment to use. Setting to 0 will ensure contiguous memory usage.
  * @return A list of strides for each dimension of the given shape.
  */
-std::vector<int64_t> CalculateStrides(const TensorShape& shape, const DataType& dtype) {
+std::vector<int64_t> CalculateStrides(const TensorShape& shape, const DataType& dtype, int32_t rowAlign) {
     std::vector<int64_t> strides(shape.layout().rank());
 
     // Strides are calculated byte-wise. Therefore, the highest dimension will refer to the stride between singular
     // elements (which, in turn, is the number of bytes per said element).
     strides[shape.layout().rank() - 1] = dtype.size();
     for (int i = shape.layout().rank() - 2; i >= 0; --i) {
-        strides[i] = strides[i + 1] * shape[i + 1];
+        // Use the row alignment for the height dimension.
+        if (i == shape.layout().height_index()) {
+            strides[i] = detail::AlignUp(strides[i + 1] * shape[i + 1], rowAlign);
+        } else {
+            strides[i] = strides[i + 1] * shape[i + 1];
+        }
     }
     return strides;
 }
@@ -61,17 +68,22 @@ void TestNegativeTensorShape() {
 }
 
 /**
- * @brief Negative tests related to the Tensor object.
+ * @brief Negative tests for the Tensor class, verifying error handling in invalid scenarios.
  *
+ * These tests confirm that the Tensor class appropriately throws exceptions when:
+ *   1. Attempting to reshape a tensor to a shape with a different number of elements.
+ *   2. Attempting to reshape a tensor to a shape and datatype combination that would change the total number of bytes
+ * in the underlying storage.
+ *
+ * In both cases, the expected behavior is to throw an exception of type eStatusType::INVALID_VALUE.
  */
 void TestNegativeTensor() {
     {
-        // Should not be able to reshape tensor into another view with a differing number of elements
+        // Case 1: Reshaping to a different number of elements is invalid
         Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
         EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 2}, "NHWC")), eStatusType::INVALID_VALUE);
 
-        // Should not be able to reshape tensor into another view which would result in a different number of bytes in
-        // the underlying memory.
+        // Case 2: Reshaping to a different total byte size is invalid, even if element count matches
         EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC"), DataType(DATA_TYPE_S16)),
                          eStatusType::INVALID_VALUE);
     }
@@ -131,7 +143,9 @@ void TestTensorCorrectness() {
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
     Tensor tensor(shape, dtype);
-    std::vector<int64_t> expectedStrides = CalculateStrides(shape, dtype);
+
+    // TODO: Use row alignment from device attributes instead of a hardcoded value.
+    std::vector<int64_t> expectedStrides = CalculateStrides(shape, dtype, 256);
     std::vector<int64_t> actualStrides(tensor.rank());
     auto data = tensor.exportData<TensorDataStrided>();
 
