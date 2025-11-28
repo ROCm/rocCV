@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 #include <functional>
 
-#include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/custom_crop_device.hpp"
@@ -34,7 +33,8 @@ THE SOFTWARE.
 namespace roccv {
 
 template <typename T>
-void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, const Box_t cropRect, const eDeviceType device) {
+void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, const Box_t cropRect,
+                                const eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
@@ -58,7 +58,8 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
                             const eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_HWC, TENSOR_LAYOUT_NHWC);
-    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32, DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32,
+                           DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
     size_t batchSize = input.shape(input.layout().batch_index());
@@ -94,8 +95,7 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    if (func == 0)
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, cropRect, device);
 }
 }  // namespace roccv
