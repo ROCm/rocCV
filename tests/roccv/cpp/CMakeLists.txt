@@ -21,7 +21,6 @@
 #
 # ##############################################################################
 cmake_minimum_required(VERSION 3.15)
-project(roccv-cpp-test)
 
 if(NOT DEFINED ENHANCED_MESSAGE)
     string(ASCII 27 Esc)
@@ -48,6 +47,8 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
     set(CMAKE_C_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang)
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
+
+project(roccv-cpp-tests)
 
 # Find required libraries
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
