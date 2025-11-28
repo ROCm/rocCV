@@ -169,7 +169,7 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
 }
 }  // namespace
 
-eTestStatusType test_interpolation_wrapper(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off

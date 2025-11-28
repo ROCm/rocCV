@@ -128,7 +128,7 @@ void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFo
 
 }  // namespace
 
-eTestStatusType test_op_resize(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off
