@@ -24,6 +24,7 @@
 #include "core/detail/casting.hpp"
 #include "core/detail/math/vectorized_type_math.hpp"
 #include "core/wrappers/border_wrapper.hpp"
+#include "core/detail/vector_utils.hpp"
 #include "operator_types.h"
 
 namespace roccv {
@@ -57,6 +58,31 @@ class InterpolationWrapper {
      * @param borderWrapper The BorderWrapper to wrap.
      */
     InterpolationWrapper(BorderWrapper<T, B> borderWrapper) : m_desc(borderWrapper) {}
+
+    /**
+     * @brief This function calculates the weighting coefficents for the Catmull-Rom cubic interpolation.
+     * @param dist The distance between the current point and the previous data point.
+     * @param weight The pointer to the array of weights.
+     * @return None.
+     */
+    __device__ __host__ inline void CalBicubicWeights(float dist, float* weight) const {
+        weight[0] = -0.5f;
+        weight[0] = weight[0] * dist + 1.0f;
+        weight[0] = weight[0] * dist - 0.5f;
+        weight[0] = weight[0] * dist;
+
+        weight[1] = 1.5f;
+        weight[1] = weight[1] * dist - 2.5f;
+        weight[1] = weight[1] * dist;
+        weight[1] = weight[1] * dist + 1.0f;
+
+        weight[2] = -1.5f;
+        weight[2] = weight[2] * dist + 2.f;
+        weight[2] = weight[2] * dist + 0.5f;
+        weight[2] = weight[2] * dist;
+
+        weight[3] = 1 - weight[0] - weight[1] - weight[2];
+    }
 
     /**
      * @brief Retrieves an interpolated value at given image batch coordinates.
@@ -93,12 +119,28 @@ class InterpolationWrapper {
             auto q = q1 * (y1 - h) + q2 * (h - y0);
 
             return detail::RangeCast<T>(q);
-        }
+        } else if (I == eInterpolationType::INTERP_TYPE_CUBIC) {
+            using namespace roccv::detail;
+            using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-        // TODO: Support other interpolation methods.
+            // Integer coordinates for pixel (x, y)
+            int64_t int_x = static_cast<int64_t>(floorf(w));
+            int64_t int_y = static_cast<int64_t>(floorf(h));
 
-        else {
-            static_assert(false, "Provided interpolation type is not supported.");
+            // Calculate weights
+            float weight_x[4], weight_y[4];
+            CalBicubicWeights(w - int_x, weight_x);
+            CalBicubicWeights(h - int_y, weight_y);
+
+            // Weighted sum
+            WorkType sum = SetAll<WorkType>(0.0f);
+            for (int index_y = -1; index_y <= 2; index_y++) {
+                for (int index_x = -1; index_x <= 2; index_x++) {
+                    sum += detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, 0)) * (weight_x[index_x + 1] * weight_y[index_y + 1]);
+                }
+            }
+
+            return detail::RangeCast<T>(sum);
         }
     }
 
