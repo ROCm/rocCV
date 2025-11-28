@@ -60,7 +60,7 @@ class InterpolationWrapper {
     InterpolationWrapper(BorderWrapper<T, B> borderWrapper) : m_desc(borderWrapper) {}
 
     /**
-     * @brief This function calculates the weighting coefficents for the Catmull-Rom cubic interpolation.
+     * @brief This function calculates the weighting coefficients for the Catmull-Rom cubic interpolation.
      * @param dist The distance between the current point and the previous data point.
      * @param weight The pointer to the array of weights.
      * @return None.

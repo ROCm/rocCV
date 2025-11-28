@@ -92,7 +92,7 @@ T GoldenNearest(BorderWrapper<T, BorderType> input, int64_t sample, float y, flo
 }
 
 /**
- * @brief This function calculates the weighting coefficents for the Catmull-Rom cubic interpolation.
+ * @brief This function calculates the weighting coefficients for the Catmull-Rom cubic interpolation.
  * @param dist The distance between the current point and the previous data point.
  * @param weight The pointer to the array of weights.
  * @return None.
@@ -289,7 +289,7 @@ eTestStatusType test_interpolation_wrapper(int argc, char **argv) {
     TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
 
-    // Test bilinear interpolation
+    // Test bicubic interpolation
     TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT101, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 0.5), 0.1f)));
@@ -312,7 +312,7 @@ eTestStatusType test_interpolation_wrapper(int argc, char **argv) {
 
     TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
-    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REFLECT101, eInterpolationType::INTERP_TYPE_LINEAR>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REFLECT101, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
 
     TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
