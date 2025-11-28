@@ -66,8 +66,8 @@ void TestTensorShapeCorrectness() {
         TensorShape shape1({1, 2, 3}, "NWC");
         TensorShape shape2({1, 2, 3}, "NWC");
         TensorShape shape3({3, 2, 1}, "NWC");
-        EXPECT_EQ(shape1 != shape2, false);
-        EXPECT_EQ(shape1 != shape3, true);
+        EXPECT_TRUE(shape1 != shape3);
+        EXPECT_TRUE(shape1 == shape2);
     }
 
     // Test TensorShape assignment operator
@@ -75,7 +75,7 @@ void TestTensorShapeCorrectness() {
         TensorShape shape1({1, 2, 3}, "NWC");
         TensorShape shape2({1, 2, 3}, "NWC");
         shape2 = shape1;
-        EXPECT_EQ(shape1 == shape2, true);
+        EXPECT_TRUE(shape1 == shape2);
     }
 }
 }  // namespace
