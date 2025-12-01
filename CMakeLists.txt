@@ -73,6 +73,7 @@ option(FULL_BUILD               "Build with all tests and samples"              
 option(SAMPLES                  "Build with samples"                            OFF)
 option(TESTS                    "Build with tests"                              OFF)
 option(BENCHMARKS               "Build with benchmarks"                         OFF)
+option(ENABLE_CODE_COVERAGE      "Enable LLVM code coverage"                    OFF)
 set(PYTHON_VERSION_SUGGESTED    ""          CACHE STRING "Python version to build rocCV")
 set(DEFAULT_BUILD_TYPE          "Release"   CACHE STRING "Default build type for rocCV")
 
@@ -110,6 +111,14 @@ else()
 endif()
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
 
+if(ENABLE_CODE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES Debug)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+elseif(ENABLE_CODE_COVERAGE AND NOT CMAKE_BUILD_TYPE MATCHES Debug)
+    message("-- ${Yellow}LLVM code coverage enabled, but build type is not Debug. Code coverage will be disabled.${ColourReset}")
+    set(ENABLE_CODE_COVERAGE OFF)
+endif()
+
 # Set all build flags if FULL_BUILD is set.
 if(FULL_BUILD)
     set(SAMPLES ON)
@@ -124,6 +133,7 @@ message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](d
 message("-- ${Cyan}     -D BENCHMARKS=${BENCHMARKS} [Compile with benchmarks [options:ON/OFF](default:OFF)]${ColourReset}")
 message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build for rocCV Python Package(default:ON)]${ColourReset}")
 message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColourReset}")
+message("-- ${Cyan}     -D ENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE} [Enable LLVM code coverage [options:ON/OFF](default:OFF)]${ColourReset}")
 
 # Set supported GPU Targets
 set(DEFAULT_GPU_TARGETS "gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201")
