@@ -119,7 +119,7 @@ class InterpolationWrapper {
             auto q = q1 * (y1 - h) + q2 * (h - y0);
 
             return detail::RangeCast<T>(q);
-        } else if (I == eInterpolationType::INTERP_TYPE_CUBIC) {
+        } else if constexpr (I == eInterpolationType::INTERP_TYPE_CUBIC) {
             using namespace roccv::detail;
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
