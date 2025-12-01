@@ -28,6 +28,9 @@ using namespace roccv::tests;
 
 namespace {
 
+/**
+ * @brief Tests that DefaultAllocator correctly rejects invalid arguments.
+ */
 void TestNegative() {
     // Test alignment which is not a power of 2
     {
@@ -36,6 +39,9 @@ void TestNegative() {
     }
 }
 
+/**
+ * @brief Tests the correctness of the DefaultAllocator memory allocation and free routines.
+ */
 void TestCorrectness() {
     // Test basic host memory allocation and free
     {
