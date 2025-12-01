@@ -45,6 +45,16 @@ void TestNegativeTensorShape() {
         EXPECT_EXCEPTION(TensorShape shape({1, 2, 3}, "NHWC"), eStatusType::OUT_OF_BOUNDS);
         EXPECT_EXCEPTION(TensorShape shape({1, 2}, "NWC"), eStatusType::OUT_OF_BOUNDS);
     }
+
+    // Test shape creation with negative values
+    {
+        EXPECT_EXCEPTION(TensorShape shape({1, 2, -3}, "NWC"), eStatusType::OUT_OF_BOUNDS);
+    }
+
+    // Test shape creation with invalid layout string
+    {
+        EXPECT_EXCEPTION(TensorShape shape({1, 2, 3}, "NWCX"), eStatusType::INVALID_VALUE);
+    }
 }
 
 /**
