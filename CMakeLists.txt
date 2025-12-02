@@ -111,6 +111,7 @@ else()
 endif()
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
 
+# Enable LLVM code coverage if build type is Debug and ENABLE_CODE_COVERAGE is set.
 if(ENABLE_CODE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_options(-fprofile-instr-generate -fcoverage-mapping -O0 -g)
     add_link_options(-fprofile-instr-generate -fcoverage-mapping)
@@ -125,6 +126,7 @@ if(FULL_BUILD)
     set(TESTS ON)
 endif()
 
+# Print developer options.
 message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColourReset}")
 message("-- ${Cyan}     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} [Select rocCV build type [options:Debug/Release](default:Release)]${ColourReset}")
 message("-- ${Cyan}     -D FULL_BUILD=${FULL_BUILD} [Compile with samples, and tests [options:ON/OFF](default:OFF)]${ColourReset}")
@@ -246,13 +248,18 @@ if(TESTS)
 	)
 endif(TESTS)
 
+# Build Python package if BUILD_PYPACKAGE is set.
 if(BUILD_PYPACKAGE)
+    # Include third party dependencies for Python package.
+    # * pybind11
     add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/pybind11")
+    # * dlpack
     add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/dlpack")
+    # * Python package
     add_subdirectory("${CMAKE_SOURCE_DIR}/python")
 endif(BUILD_PYPACKAGE)
 
-# set package information
+# Set package information.
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
