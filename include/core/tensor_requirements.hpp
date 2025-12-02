@@ -22,21 +22,31 @@ THE SOFTWARE.
 
 #pragma once
 
-#include "data_type.hpp"
-#include "tensor_layout.hpp"
+#include <array>
+
+#include "core/tensor_layout.hpp"
+#include "core/util_enums.h"
 
 namespace roccv {
+
+struct MemRequirements {
+    size_t bytes = 0;
+};
+
+struct ResourceRequirements {
+    MemRequirements deviceMem;
+    MemRequirements hostMem;
+    MemRequirements pinnedMem;
+};
+
 struct TensorRequirements {
-    // The data type of the tensor.
-    DataType dtype;
-
-    // Location of the tensor's underlying data.
-    eDeviceType device;
-
-    // The shape of the tensor.
-    TensorShape shape;
-
-    // Distance in bytes between each element of a given dimension.
+    eDataType dtype;
+    eTensorLayout layout;
+    int32_t rank;
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shape;
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    int32_t alignBytes;
+    ResourceRequirements res;
+    eDeviceType device;
 };
 }  // namespace roccv
