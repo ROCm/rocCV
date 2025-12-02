@@ -23,10 +23,10 @@ THE SOFTWARE.
 #include "core/tensor_data.hpp"
 
 #include "core/data_type.hpp"
+#include "core/tensor_buffer.hpp"
+#include "core/util_enums.h"
 
 namespace roccv {
-
-void* roccv::TensorData::basePtr() const { return m_buffer.basePtr; }
 
 int TensorData::rank() const { return m_shape.layout().rank(); }
 
@@ -38,13 +38,55 @@ const DataType& TensorData::dtype() const { return m_dtype; }
 
 const eDeviceType TensorData::device() const { return m_deviceType; }
 
-TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBufferStrided& buffer,
-                       const eDeviceType device)
-    : m_shape(tshape), m_dtype(dtype), m_deviceType(device), m_buffer(buffer) {}
+TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer)
+    : m_shape(tshape),
+      m_dtype(dtype),
+      m_deviceType(eDeviceType::GPU),
+      m_bufferType(TensorBufferType::TENSOR_BUFFER_NONE),
+      m_buffer(buffer) {}
 
-TensorDataStrided::TensorDataStrided(const TensorShape& tshape, const DataType& dtype,
-                                     const TensorBufferStrided& buffer, const eDeviceType device)
-    : TensorData(tshape, dtype, buffer, device) {}
+bool TensorData::IsCompatibleKind(TensorBufferType bufferType) {
+    return bufferType != TensorBufferType::TENSOR_BUFFER_NONE;
+}
 
-const int64_t TensorDataStrided::stride(int d) const { return m_buffer.strides[d]; }
+TensorDataStrided::TensorDataStrided(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer)
+    : TensorData(tshape, dtype, buffer) {}
+
+bool TensorDataStrided::IsCompatibleKind(TensorBufferType bufferType) {
+    return bufferType == TensorBufferType::TENSOR_BUFFER_STRIDED_HIP ||
+           bufferType == TensorBufferType::TENSOR_BUFFER_STRIDED_HOST;
+}
+
+void* roccv::TensorDataStrided::basePtr() const { return m_buffer.strided.basePtr; }
+
+const int64_t TensorDataStrided::stride(int d) const { return m_buffer.strided.strides[d]; }
+
+TensorDataStridedHip::TensorDataStridedHip(const TensorShape& shape, const DataType& dtype, const TensorBuffer& buffer)
+    : TensorDataStrided(shape, dtype, buffer) {
+    m_bufferType = TensorBufferType::TENSOR_BUFFER_STRIDED_HIP;
+    m_deviceType = eDeviceType::GPU;
+}
+
+TensorDataStridedHip::TensorDataStridedHip(const TensorShape& shape, const DataType& dtype,
+                                           const TensorDataStridedHip::Buffer& buffer)
+    : TensorDataStridedHip(shape, dtype, {.strided = buffer}) {}
+
+bool TensorDataStridedHip::IsCompatibleKind(TensorBufferType bufferType) {
+    return bufferType == TensorBufferType::TENSOR_BUFFER_STRIDED_HIP;
+}
+
+TensorDataStridedHost::TensorDataStridedHost(const TensorShape& shape, const DataType& dtype,
+                                             const TensorBuffer& buffer)
+    : TensorDataStrided(shape, dtype, buffer) {
+    m_bufferType = TensorBufferType::TENSOR_BUFFER_STRIDED_HOST;
+    m_deviceType = eDeviceType::CPU;
+}
+
+TensorDataStridedHost::TensorDataStridedHost(const TensorShape& shape, const DataType& dtype, const Buffer& buffer)
+    : TensorDataStridedHost(shape, dtype, {.strided = buffer}) {}
+
+bool TensorDataStridedHost::IsCompatibleKind(TensorBufferType bufferType) {
+    return bufferType == TensorBufferType::TENSOR_BUFFER_STRIDED_HOST;
+}
+
 }  // namespace roccv

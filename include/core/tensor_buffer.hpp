@@ -31,20 +31,21 @@ THE SOFTWARE.
 namespace roccv {
 
 /**
+ * @brief A tensor buffer with strided data.
+ *
+ */
+struct TensorBufferStrided {
+    void* basePtr;
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+};
+
+/**
  * @brief A tensor buffer. Stores the raw data associated with a tensor. Data
  * should be allocated by the user and set to the basePtr of the buffer.
  *
  */
 struct TensorBuffer {
-    void* basePtr;
-};
-
-/**
- * @brief A tensor buffer with strided data.
- *
- */
-struct TensorBufferStrided : public TensorBuffer {
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    TensorBufferStrided strided;
 };
 
 }  // namespace roccv

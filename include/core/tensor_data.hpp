@@ -24,14 +24,20 @@ THE SOFTWARE.
 
 #include <stdint.h>
 
-#include <iostream>
 #include <optional>
 
-#include "data_type.hpp"
-#include "tensor_buffer.hpp"
-#include "tensor_shape.hpp"
+#include "core/data_type.hpp"
+#include "core/tensor_buffer.hpp"
+#include "core/tensor_shape.hpp"
+#include "core/util_enums.h"
 
 namespace roccv {
+
+enum class TensorBufferType {
+    TENSOR_BUFFER_NONE,         // Default/invalid buffer type. Used when no buffer type is specified.
+    TENSOR_BUFFER_STRIDED_HIP,  // GPU-accessible buffer with strided access.
+    TENSOR_BUFFER_STRIDED_HOST  // Host accessible buffer with strided access.
+};
 
 /**
  * @brief Holds the underlying tensor data alongside metadata (shape, layout,
@@ -74,13 +80,6 @@ class TensorData {
     virtual const DataType &dtype() const;
 
     /**
-     * @brief Returns the base pointer of the tensor data in memory.
-     *
-     * @return A pointer to the tensor data in memory.
-     */
-    virtual void *basePtr() const;
-
-    /**
      * @brief Retrieves the location where the tensor data is allocated, either
      * on the device or the host.
      *
@@ -89,20 +88,27 @@ class TensorData {
     virtual const eDeviceType device() const;
 
     template <typename Derived>
-    std::optional<Derived> cast() {
+    std::optional<Derived> cast() const {
         static_assert(std::is_base_of<TensorData, Derived>::value, "Cannot cast TensorData to an unrelated type.");
         static_assert(sizeof(Derived) == sizeof(TensorData), "Derived type must not add any additional data members.");
-        return std::optional(Derived(m_shape, m_dtype, m_buffer, m_deviceType));
+
+        if (!Derived::IsCompatibleKind(m_bufferType)) {
+            return std::nullopt;
+        }
+
+        return std::make_optional<Derived>(m_shape, m_dtype, m_buffer);
     }
 
+    static bool IsCompatibleKind(TensorBufferType bufferType);
+
    protected:
-    TensorData(const TensorShape &tshape, const DataType &dtype, const TensorBufferStrided &buffer,
-               const eDeviceType device = eDeviceType::GPU);
+    TensorData(const TensorShape &tshape, const DataType &dtype, const TensorBuffer &buffer);
 
     TensorShape m_shape;
     DataType m_dtype;
     eDeviceType m_deviceType;
-    TensorBufferStrided m_buffer;
+    TensorBufferType m_bufferType;
+    TensorBuffer m_buffer;
 };
 
 /**
@@ -114,17 +120,17 @@ class TensorData {
 class TensorDataStrided : public TensorData {
    public:
     using Buffer = TensorBufferStrided;
+
+    TensorDataStrided(const TensorShape &shape, const DataType &dtype, const TensorBuffer &buffer);
+
+    static bool IsCompatibleKind(TensorBufferType bufferType);
+
     /**
-     * @brief Constructs a TensorDataStrided object.
+     * @brief Returns the base pointer of the tensor data in memory.
      *
-     * @param[in] tshape The shape of the tensor.
-     * @param[in] dtype The datatype of the tensor.
-     * @param[in] buffer The buffer containing the tensor's underlying data.
-     * @param[in] data_location The data location of the tensor (default:
-     * DATA_ON_DEVICE).
+     * @return A pointer to the tensor data in memory.
      */
-    TensorDataStrided(const TensorShape &tshape, const DataType &dtype, const TensorBufferStrided &buffer,
-                      const eDeviceType device = eDeviceType::GPU);
+    void *basePtr() const;
 
     /**
      * @brief Returns the stride at a given dimension.
@@ -133,5 +139,49 @@ class TensorDataStrided : public TensorData {
      * @return The stride for the given dimension.
      */
     const int64_t stride(int d) const;
+};
+
+/**
+ * @brief GPU-accessible strided tensor data.
+ *
+ */
+class TensorDataStridedHip : public TensorDataStrided {
+   public:
+    using Buffer = TensorBufferStrided;
+
+    TensorDataStridedHip(const TensorShape &shape, const DataType &dtype, const TensorBuffer &buffer);
+
+    /**
+     * @brief Creates a GPU-accessible strided tensor data object.
+     *
+     * @param[in] shape The tensor's shape.
+     * @param[in] dtype The datatype of the underlying data.
+     * @param[in] buffer A strided tensor buffer with data allocated on the GPU.
+     */
+    TensorDataStridedHip(const TensorShape &shape, const DataType &dtype, const Buffer &buffer);
+
+    static bool IsCompatibleKind(TensorBufferType bufferType);
+};
+
+/**
+ * @brief Host-accessible strided tensor data.
+ *
+ */
+class TensorDataStridedHost : public TensorDataStrided {
+   public:
+    using Buffer = TensorBufferStrided;
+
+    TensorDataStridedHost(const TensorShape &shape, const DataType &dtype, const TensorBuffer &buffer);
+
+    /**
+     * @brief Creates a host-accessible strided tensor data object.
+     *
+     * @param[in] shape The tensor's shape.
+     * @param[in] dtype The datatype of the underlying data.
+     * @param[in] buffer A strided tensor buffer with data allocated on the host.
+     */
+    TensorDataStridedHost(const TensorShape &shape, const DataType &dtype, const Buffer &buffer);
+
+    static bool IsCompatibleKind(TensorBufferType bufferType);
 };
 }  // namespace roccv

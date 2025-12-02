@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <algorithm>
 
+#include "core/exception.hpp"
+#include "core/status_type.h"
 #include "core/tensor_layout.hpp"
 
 namespace roccv {
@@ -44,32 +46,8 @@ const TensorLayout GetLayoutFromString(const std::string &desc) {
     return TensorLayout(layoutDescToEnum.at(desc));
 }
 
-TensorShape::TensorShape(const TensorLayout &layout, const std::span<const int64_t> shape) : m_layout(layout) {
-    if (shape.size() != layout.rank()) {
-        throw Exception(
-            "Invalid shape size: The size of the shape must match the rank of "
-            "the provided layout.",
-            eStatusType::OUT_OF_BOUNDS);
-    }
-
-    for (int i = 0; i < layout.rank(); i++) {
-        if (shape[i] <= 0) {
-            throw Exception(
-                "Invalid shape dimension: values of elements in the "
-                "shape array must be > 0.",
-                eStatusType::OUT_OF_BOUNDS);
-        }
-    }
-
-    // Copy the std::span shape into the internal shape array.
-    std::copy(shape.begin(), shape.end(), m_shape.begin());
-
-    // Calculate shape size
-    m_size = 1;
-    for (int64_t dim_size : shape) {
-        m_size *= dim_size;
-    }
-}
+TensorShape::TensorShape(const TensorLayout &layout, const std::span<const int64_t> shape)
+    : TensorShape(shape, shape.size(), layout) {}
 
 TensorShape::TensorShape(const TensorLayout &layout, const std::initializer_list<const int64_t> shape)
     : TensorShape(layout, std::span<const int64_t>(shape.begin(), shape.end())) {}
@@ -79,6 +57,45 @@ TensorShape::TensorShape(const std::initializer_list<const int64_t> shape, const
 
 TensorShape::TensorShape(const std::span<const int64_t> shape, const std::string &layoutDesc)
     : TensorShape(GetLayoutFromString(layoutDesc), shape) {}
+
+TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, eTensorLayout layout)
+    : TensorShape(shape, rank, TensorLayout(layout)) {}
+
+TensorShape::TensorShape(const std::span<const int64_t> shape, int rank, const TensorLayout &layout)
+    : m_layout(layout) {
+    if (rank < 0) {
+        throw Exception("Rank must be a non-negative integer.", eStatusType::OUT_OF_BOUNDS);
+    }
+
+    if (rank != layout.rank()) {
+        throw Exception(
+            "Invalid shape size: The size of the shape must match the rank of "
+            "the provided layout.",
+            eStatusType::OUT_OF_BOUNDS);
+    }
+
+    if (shape.size() < static_cast<size_t>(rank)) {
+        throw Exception("Size of the input shape data is less than the rank provided.", eStatusType::OUT_OF_BOUNDS);
+    }
+
+    for (int i = 0; i < rank; i++) {
+        if (shape[i] <= 0) {
+            throw Exception(
+                "Invalid shape dimension: values of elements in the "
+                "shape array must be > 0.",
+                eStatusType::OUT_OF_BOUNDS);
+        }
+    }
+
+    // Copy the std::span shape into the internal shape array.
+    std::copy_n(shape.begin(), rank, m_shape.begin());
+
+    // Calculate shape size
+    m_size = 1;
+    for (int i = 0; i < rank; i++) {
+        m_size *= m_shape[i];
+    }
+}
 
 TensorShape &TensorShape::operator=(const TensorShape &other) {
     if (this != &other) {
@@ -119,4 +136,7 @@ bool TensorShape::operator!=(const TensorShape &rhs) const { return !(*this == r
 size_t TensorShape::size() const { return m_size; }
 
 const TensorLayout &TensorShape::layout() const { return m_layout; }
+
+const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &TensorShape::shape() const { return m_shape; }
+
 }  // namespace roccv
