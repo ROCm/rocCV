@@ -19,7 +19,6 @@
  * THE SOFTWARE.
  */
 
-#include <type_traits>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include "core/detail/vector_utils.hpp"
