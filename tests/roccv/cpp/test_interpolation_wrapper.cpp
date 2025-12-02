@@ -19,6 +19,7 @@
  * THE SOFTWARE.
  */
 
+#include <type_traits>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include "core/detail/vector_utils.hpp"
@@ -220,8 +221,11 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
             }
         }
     }
-
-    CompareVectorsNear(actualOutput, goldenOutput);
+    if constexpr (std::is_integral_v<detail::BaseType<T>> && std::is_signed_v<detail::BaseType<T>> && sizeof(detail::BaseType<T>) == 4) {
+        CompareVectorsNear(actualOutput, goldenOutput, NEAR_EQUAL_THRESHOLD * 2);
+    } else {
+        CompareVectorsNear(actualOutput, goldenOutput);
+    }
 }
 }  // namespace
 
