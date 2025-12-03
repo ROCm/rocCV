@@ -254,7 +254,7 @@ class Tensor {
      * @return Tensor requirements.
      */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
-                                         std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, int32_t baseAlign,
+                                         const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, int32_t baseAlign,
                                          eDeviceType device = eDeviceType::GPU);
 
     /**

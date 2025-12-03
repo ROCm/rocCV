@@ -267,24 +267,6 @@ eTestStatusType compareImage(const Tensor& tensor, const std::string& filename, 
 
 void writeTensor(const Tensor& tensor, const std::string& output_file);
 
-template <typename T>
-void copyData(const Tensor& input, const std::span<const T>& data, eDeviceType device) {
-    auto tensor_data = input.exportData<TensorDataStrided>();
-
-    switch (device) {
-        case eDeviceType::GPU: {
-            HIP_VALIDATE_NO_ERRORS(
-                hipMemcpy(tensor_data.basePtr(), data.data(), data.size() * sizeof(T), hipMemcpyHostToDevice));
-            break;
-        }
-
-        case eDeviceType::CPU: {
-            memcpy(tensor_data.basePtr(), data.data(), data.size() * sizeof(T));
-            break;
-        }
-    }
-}
-
 /**
  * @brief Fills a vector with random values based on a provided seed.
  *
@@ -400,75 +382,83 @@ void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref,
         }
     }
 }
-
 /**
- * @brief Copies vector data into a roccv::Tensor. This will copy vector data into either GPU memory or CPU memory,
- * depending on the device specified in the roccv::Tensor's metadata.
- *
- * @tparam T The base datatype of the underlying data.
- * @param dst The destination roccv::Tensor to copy data into.
- * @param src A source vector containing data.
- * @throws std::runtime_error if the size of the dst and src do not match.
+ * @brief Computes copy parameters for any tensor layout.
+ * @param[in] tensor The tensor to compute copy parameters for.
+ * @return tuple of (row_width_bytes, num_rows, tensor_pitch)
+ *         If no padding, returns (total_size, 1, total_size)
  */
-template <typename T>
-void CopyVectorIntoTensor(const Tensor& dst, std::vector<T>& src) {
-    auto tensorData = dst.exportData<TensorDataStrided>();
-    size_t dataSize = dst.shape().size() * dst.dtype().size();
+inline std::tuple<size_t, size_t, size_t> ComputeCopyParams(const Tensor& tensor) {
+    auto tensorData = tensor.exportData<TensorDataStrided>();
+    const auto& layout = tensor.layout();
+    int heightIdx = layout.height_index();
 
-    // Ensure source and destination have the same amount of memory allocated.
-    if (dataSize != src.size() * sizeof(T)) {
-        throw std::runtime_error(
-            "Cannot copy source vector into destination tensor. Size of src vector and destination tensor do not "
-            "match.");
+    if (heightIdx < 0) {
+        // No height dimension = contiguous data, no padding
+        size_t totalSize = tensor.shape().size() * tensor.dtype().size();
+        return {totalSize, 1, totalSize};
     }
 
-    switch (dst.device()) {
-        case eDeviceType::GPU: {
-            HIP_VALIDATE_NO_ERRORS(
-                hipMemcpy(tensorData.basePtr(), src.data(), dataSize, hipMemcpyKind::hipMemcpyHostToDevice));
-            break;
-        }
-
-        case eDeviceType::CPU: {
-            HIP_VALIDATE_NO_ERRORS(
-                hipMemcpy(tensorData.basePtr(), src.data(), dataSize, hipMemcpyKind::hipMemcpyHostToHost));
-            break;
-        }
+    // Row width = product of all dimensions AFTER height_index × dtype size
+    size_t rowWidth = tensor.dtype().size();
+    for (int i = heightIdx + 1; i < layout.rank(); ++i) {
+        rowWidth *= tensor.shape(i);
     }
+
+    // Number of rows = product of all dimensions UP TO AND INCLUDING height_index
+    size_t numRows = 1;
+    for (int i = 0; i <= heightIdx; ++i) {
+        numRows *= tensor.shape(i);
+    }
+
+    // Tensor pitch comes from the stride at height_index
+    size_t tensorPitch = tensorData.stride(heightIdx);
+
+    return {rowWidth, numRows, tensorPitch};
 }
 
 /**
- * @brief Copies roccv::Tensor data into a destination vector.
+ * @brief Copies vector data into a tensor. Works with any tensor layout.
  *
- * @tparam T The base datatype of the underlying tensor data.
- * @param dst The destination vector which the data will be copied into.
- * @param src The roccv::Tensor containing the source data.
- * @throws std::runtime_error if the size of src and dst do not match.
+ * @tparam T The data type of the elements to copy.
+ * @param[out] dst The tensor to copy vector data into.
+ * @param[in] src The vector to copy data from.
+ */
+template <typename T>
+void CopyVectorIntoTensor(const Tensor& dst, const std::vector<T>& src) {
+    auto tensorData = dst.exportData<TensorDataStrided>();
+    auto [rowWidth, numRows, dstPitch] = ComputeCopyParams(dst);
+
+    // Source is always contiguous
+    size_t srcPitch = rowWidth;
+
+    hipMemcpyKind kind = (dst.device() == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
+
+    HIP_VALIDATE_NO_ERRORS(hipMemcpy2D(tensorData.basePtr(), dstPitch, src.data(), srcPitch, rowWidth, numRows, kind));
+}
+
+/**
+ * @brief Copies tensor data into a vector. Works with any tensor layout.
+ *
+ * The destination vector @p dst is assumed to be compact/contiguous in memory; data will be copied into it as a dense
+ * contiguous array.
+ *
+ * @tparam T The data type of the elements to copy.
+ * @param[out] dst The vector to copy tensor data into. Must be preallocated to the correct size and will be filled
+ * contiguously.
+ * @param[in] src The tensor to copy data from.
  */
 template <typename T>
 void CopyTensorIntoVector(std::vector<T>& dst, const Tensor& src) {
-    size_t size = src.shape().size() * src.dtype().size();
     auto tensorData = src.exportData<TensorDataStrided>();
+    auto [rowWidth, numRows, srcPitch] = ComputeCopyParams(src);
 
-    if (size != dst.size() * sizeof(T)) {
-        throw std::runtime_error(
-            "Cannot copy source tensor data into destination vector. Size of destination vector and source tensor do "
-            "not match.");
-    }
+    // Destination is always contiguous
+    size_t dstPitch = rowWidth;
 
-    switch (src.device()) {
-        case eDeviceType::GPU: {
-            HIP_VALIDATE_NO_ERRORS(
-                hipMemcpy(dst.data(), tensorData.basePtr(), size, hipMemcpyKind::hipMemcpyDeviceToHost));
-            break;
-        }
+    hipMemcpyKind kind = (src.device() == eDeviceType::GPU) ? hipMemcpyDeviceToHost : hipMemcpyHostToHost;
 
-        case eDeviceType::CPU: {
-            HIP_VALIDATE_NO_ERRORS(
-                hipMemcpy(dst.data(), tensorData.basePtr(), size, hipMemcpyKind::hipMemcpyHostToHost));
-            break;
-        }
-    }
+    HIP_VALIDATE_NO_ERRORS(hipMemcpy2D(dst.data(), dstPitch, tensorData.basePtr(), srcPitch, rowWidth, numRows, kind));
 }
 
 }  // namespace tests
