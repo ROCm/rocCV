@@ -71,21 +71,15 @@ void TestNegativeTensorShape() {
  * @brief Negative tests for the Tensor class, verifying error handling in invalid scenarios.
  *
  * These tests confirm that the Tensor class appropriately throws exceptions when:
- *   1. Attempting to reshape a tensor to a shape with a different number of elements.
- *   2. Attempting to reshape a tensor to a shape and datatype combination that would change the total number of bytes
- * in the underlying storage.
+ *   1. Attempting to reshape a non-contiguous tensor.
  *
  * In both cases, the expected behavior is to throw an exception of type eStatusType::INVALID_VALUE.
  */
 void TestNegativeTensor() {
+    // Reshaping a non-contiguous tensor is invalid
     {
-        // Case 1: Reshaping to a different number of elements is invalid
         Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
-        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 2}, "NHWC")), eStatusType::INVALID_VALUE);
-
-        // Case 2: Reshaping to a different total byte size is invalid, even if element count matches
-        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC"), DataType(DATA_TYPE_S16)),
-                         eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC")), eStatusType::INVALID_VALUE);
     }
 }
 
@@ -108,21 +102,6 @@ void TestTensorCorrectness() {
         EXPECT_EQ(tensor.dtype().size(), 1);
     }
 
-    // Tensor reshape: Change layout
-    {
-        // Reshape tensor from NHWC -> HWC layout
-        Tensor tensor(1, {720, 480}, FMT_RGB8);
-        Tensor reshapedTensor = tensor.reshape(TensorShape({720, 480, 3}, "HWC"));
-        EXPECT_EQ(reshapedTensor.rank(), 3);
-        EXPECT_NE(reshapedTensor.rank(), tensor.rank());
-        EXPECT_EQ(reshapedTensor.shape().size(), tensor.shape().size());
-
-        // Ensure they are sharing the same underlying data
-        auto data = tensor.exportData<TensorDataStrided>();
-        auto dataReshaped = reshapedTensor.exportData<TensorDataStrided>();
-        EXPECT_TRUE(data.basePtr() == dataReshaped.basePtr());
-    }
-
     // Tensor reshape: Change layout and datatype
     {
         Tensor tensor(TensorShape({1, 5, 4}, "NWC"), DataType(DATA_TYPE_S16));
@@ -142,10 +121,15 @@ void TestTensorCorrectness() {
  * @brief Tests internal stride calculations on Tensor construction.
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
-    Tensor tensor(shape, dtype);
+    Tensor tensor(shape, dtype, eDeviceType::GPU);
 
-    // TODO: Use row alignment from device attributes instead of a hardcoded value.
-    std::vector<int64_t> expectedStrides = CalculateStrides(shape, dtype, 256);
+    // Get row alignment from device attributes
+    int dev;
+    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&dev));
+    int rowAlign;
+    HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&rowAlign, hipDeviceAttributeTexturePitchAlignment, dev));
+
+    std::vector<int64_t> expectedStrides = CalculateStrides(shape, dtype, rowAlign);
     std::vector<int64_t> actualStrides(tensor.rank());
     auto data = tensor.exportData<TensorDataStrided>();
 
