@@ -101,6 +101,11 @@ TensorData Tensor::exportData() const {
 }
 
 Tensor Tensor::reshape(const TensorShape& new_shape) const {
+    if (!isContiguous()) {
+        throw Exception("Tensor is not contiguous. Reshape can only be performed on contiguous tensors.",
+                        eStatusType::INVALID_VALUE);
+    }
+
     // New tensor shape must have the same number of elements
     if (new_shape.size() != this->shape().size()) {
         throw Exception("New tensor shape does not match the number of elements of the old shape.",
@@ -112,6 +117,11 @@ Tensor Tensor::reshape(const TensorShape& new_shape) const {
 }
 
 Tensor Tensor::reshape(const TensorShape& new_shape, const DataType& new_dtype) const {
+    if (!isContiguous()) {
+        throw Exception("Tensor is not contiguous. Reshape can only be performed on contiguous tensors.",
+                        eStatusType::INVALID_VALUE);
+    }
+
     if (new_shape.size() * new_dtype.size() != this->shape().size() * this->dtype().size()) {
         throw Exception("New tensor view must have the same underlying number of bytes.", eStatusType::INVALID_VALUE);
     }
@@ -126,16 +136,9 @@ Tensor& Tensor::operator=(const Tensor& other) {
     return *this;
 }
 
-size_t Tensor::dataSize() const {
-    switch (m_requirements.device) {
-        case eDeviceType::GPU:
-            return m_requirements.res.deviceMem.bytes;
-        case eDeviceType::CPU:
-            return m_requirements.res.hostMem.bytes;
-    }
+size_t Tensor::dataSize() const { return m_requirements.strides[0] * m_requirements.shape[0]; }
 
-    return 0;
-}
+bool Tensor::isContiguous() const { return dataSize() == shape().size() * dtype().size(); }
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
                                               const eDeviceType device) {

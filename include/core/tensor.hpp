@@ -219,6 +219,13 @@ class Tensor {
     size_t dataSize() const;
 
     /**
+     * @brief Returns true if the tensor is contiguous in memory, meaning there is no padding present in the tensor.
+     *
+     * @return True if the tensor is contiguous in memory, false otherwise.
+     */
+    bool isContiguous() const;
+
+    /**
      * @brief Calculates tensor requirements using the default memory alignment strategy.
      *
      * @param[in] shape The desired shape of the tensor.
