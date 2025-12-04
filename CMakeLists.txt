@@ -113,7 +113,7 @@ message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${Colour
 
 # Enable LLVM code coverage if build type is Debug and ENABLE_CODE_COVERAGE is set.
 if(ENABLE_CODE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES Debug)
-    add_compile_options(-fprofile-instr-generate -fcoverage-mapping -O0 -g)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
     add_link_options(-fprofile-instr-generate -fcoverage-mapping)
 elseif(ENABLE_CODE_COVERAGE AND NOT CMAKE_BUILD_TYPE MATCHES Debug)
     message("-- ${Yellow}LLVM code coverage enabled, but build type is not Debug. Code coverage will be disabled.${ColourReset}")
