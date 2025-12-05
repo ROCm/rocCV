@@ -67,7 +67,7 @@ inline MemcpyParams GetMemcpyParams(const roccv::Tensor &tensor) {
     params.rowPitch = tensorData.stride(tensor.layout().height_index());
     params.rowBytes = tensor.shape(tensor.layout().width_index()) * tensor.shape(tensor.layout().channels_index()) *
                       tensor.dtype().size();
-    params.imageBytes = params.rowBytes * tensor.shape(tensor.layout().height_index());
+    params.imageBytes = params.rowPitch * tensor.shape(tensor.layout().height_index());
     params.basePtr = tensorData.basePtr();
 
     return params;
@@ -133,6 +133,7 @@ inline roccv::Tensor LoadImages(const std::string &image_path, eDeviceType devic
         CHECK_HIP_ERROR(hipMemcpy2D(static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes, params.rowPitch,
                                     images[i].data, params.rowBytes, params.rowBytes, height, kind));
     }
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
 
     return tensor;
 }
@@ -171,12 +172,14 @@ inline void WriteImages(const roccv::Tensor &tensor, const std::string &output_p
                                     static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes, params.rowPitch,
                                     params.rowBytes, height, kind));
     }
+    CHECK_HIP_ERROR(hipDeviceSynchronize());
 
-    if (std::filesystem::is_directory(output_path)) {
+    std::filesystem::path outputPath(output_path);
+    if (outputPath.extension().empty()) {
         for (int i = 0; i < batchSize; i++) {
-            std::ostringstream outFilename;
-            outFilename << output_path << "/image_" << i << ".bmp";
-            cv::imwrite(outFilename.str().c_str(), images[i]);
+            std::filesystem::create_directories(outputPath);
+            std::filesystem::path outFilename = outputPath / std::format("image_{}.bmp", i);
+            cv::imwrite(outFilename.string(), images[i]);
         }
     } else {
         cv::imwrite(output_path, images[0]);
