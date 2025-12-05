@@ -39,12 +39,148 @@ inline void CheckHIPError(hipError_t code, const char *file, const int line) {
         CheckHIPError((val), __FILE__, __LINE__); \
     }
 
-bool ContainsExtension(const std::filesystem::path &path, const std::vector<std::string> &extension_list) {
+inline bool ContainsExtension(const std::filesystem::path &path, const std::vector<std::string> &extension_list) {
     for (auto extension : extension_list) {
         if (path.extension() == extension) return true;
     }
 
     return false;
+}
+
+struct MemcpyParams {
+    void *basePtr = nullptr;  // Base pointer to the tensor data
+    size_t rowPitch = 0;      // Number of bytes per row, including padding
+    size_t rowBytes = 0;      // Number of bytes per row, not including padding
+    size_t imageBytes = 0;    // Number of bytes per image, including padding (rowBytes * height)
+};
+
+/**
+ * @brief Gets the memcpy parameters for a tensor to perform a memcpy2D operation.
+ *
+ * @param tensor The tensor to get the memcpy parameters for.
+ * @return The memcpy parameters to perform a memcpy2D operation.
+ */
+inline MemcpyParams GetMemcpyParams(const roccv::Tensor &tensor) {
+    MemcpyParams params;
+
+    roccv::TensorDataStrided tensorData = tensor.exportData<roccv::TensorDataStrided>();
+    params.rowPitch = tensorData.stride(tensor.layout().height_index());
+    params.rowBytes = tensor.shape(tensor.layout().width_index()) * tensor.shape(tensor.layout().channels_index()) *
+                      tensor.dtype().size();
+    params.imageBytes = params.rowBytes * tensor.shape(tensor.layout().height_index());
+    params.basePtr = tensorData.basePtr();
+
+    return params;
+}
+
+/**
+ * @brief Loads an image, or multiple images if given a directory, into a tensor. Will be in NHWC layout and U8 format.
+ * All images must be of the same size and format. This is a blocking operation.
+ *
+ * @param image_path The path to the image to load. If a directory is provided, all supported images in the directory
+ * will be loaded.
+ * @param device The device to load the images onto. Defaults to GPU.
+ * @return A NHWC tensor containing the loaded images.
+ */
+inline roccv::Tensor LoadImages(const std::string &image_path, eDeviceType device = eDeviceType::GPU) {
+    const std::vector<std::string> supportedExtensions = {".bmp", ".jpg", ".jpeg", ".png"};
+
+    std::vector<cv::Mat> images;
+
+    int width = -1;
+    int height = -1;
+    int channels = -1;
+
+    // Load images from directory or file if a single image is provided
+    if (std::filesystem::is_directory(image_path)) {
+        for (auto file : std::filesystem::directory_iterator(image_path)) {
+            if (!std::filesystem::is_directory(file.path()) && ContainsExtension(file.path(), supportedExtensions)) {
+                images.push_back(cv::imread(file.path()));
+
+                // Check if all images are of the same size
+                if (width == -1 && height == -1 && channels == -1) {
+                    width = images.back().cols;
+                    height = images.back().rows;
+                    channels = images.back().channels();
+                } else if (images.back().cols != width || images.back().rows != height ||
+                           images.back().channels() != channels) {
+                    throw std::runtime_error("All images must be of the same size and format");
+                }
+            }
+        }
+    } else if (std::filesystem::is_regular_file(image_path) && ContainsExtension(image_path, supportedExtensions)) {
+        images.push_back(cv::imread(image_path));
+        width = images.back().cols;
+        height = images.back().rows;
+        channels = images.back().channels();
+    } else {
+        throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.\n");
+    }
+
+    if (images.empty()) {
+        throw std::runtime_error("No valid images found in directory " + image_path);
+    }
+
+    // Create tensor and prepare arguments for hipMemcpy2D
+    roccv::Tensor tensor(images.size(), roccv::Size2D(width, height),
+                         roccv::ImageFormat(eDataType::DATA_TYPE_U8, channels), device);
+
+    MemcpyParams params = GetMemcpyParams(tensor);
+
+    // Copy images into tensor
+    hipMemcpyKind kind = (device == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
+    for (int i = 0; i < images.size(); i++) {
+        CHECK_HIP_ERROR(hipMemcpy2D(static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes, params.rowPitch,
+                                    images[i].data, params.rowBytes, params.rowBytes, height, kind));
+    }
+
+    return tensor;
+}
+
+/**
+ * @brief Writes a batch of images from a tensor to the specified output path. This is a blocking operation.
+ *
+ * @param tensor The tensor to write the images from.
+ * @param output_path The path to write the images to. If a directory is provided, the images will be written to the
+ * directory.
+ */
+inline void WriteImages(const roccv::Tensor &tensor, const std::string &output_path) {
+    if (tensor.layout() != eTensorLayout::TENSOR_LAYOUT_NHWC && tensor.layout() != eTensorLayout::TENSOR_LAYOUT_HWC) {
+        throw std::runtime_error(
+            "Unsupported tensor layout in WriteImages(). Only NHWC and HWC layouts are supported.");
+    }
+
+    int64_t height = tensor.shape(tensor.layout().height_index());
+    int64_t width = tensor.shape(tensor.layout().width_index());
+    int64_t batchSize =
+        tensor.layout().batch_index() < 0 ? 1 : tensor.shape(tensor.layout().batch_index());  // Support for HWC layout
+    int64_t channels = tensor.shape(tensor.layout().channels_index());
+
+    // Get OpenCV image format
+    int64_t cvFormat = CV_MAKETYPE(CV_8U, channels);
+
+    // Get memcpy parameters
+    MemcpyParams params = GetMemcpyParams(tensor);
+    hipMemcpyKind kind = (tensor.device() == eDeviceType::GPU) ? hipMemcpyDeviceToHost : hipMemcpyHostToHost;
+
+    // Copy images from tensor to OpenCV image vector
+    std::vector<cv::Mat> images(batchSize);
+    for (int i = 0; i < batchSize; i++) {
+        images[i] = cv::Mat(height, width, cvFormat);
+        CHECK_HIP_ERROR(hipMemcpy2D(images[i].data, params.rowBytes,
+                                    static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes, params.rowPitch,
+                                    params.rowBytes, height, kind));
+    }
+
+    if (std::filesystem::is_directory(output_path)) {
+        for (int i = 0; i < batchSize; i++) {
+            std::ostringstream outFilename;
+            outFilename << output_path << "/image_" << i << ".bmp";
+            cv::imwrite(outFilename.str().c_str(), images[i]);
+        }
+    } else {
+        cv::imwrite(output_path, images[0]);
+    }
 }
 
 /**
@@ -54,7 +190,7 @@ bool ContainsExtension(const std::filesystem::path &path, const std::vector<std:
  * @param num_images The number of images to load into GPU memory.
  * @param gpu_input A pointer to valid GPU memory.
  */
-void DecodeRGBIImage(const std::string &images_dir, int num_images, void *gpu_input) {
+inline void DecodeRGBIImage(const std::string &images_dir, int num_images, void *gpu_input) {
     const std::vector<std::string> supportedExtensions = {".bmp", ".jpg", ".jpeg", ".png"};
 
     std::vector<std::string> imageFiles;
@@ -99,7 +235,7 @@ void DecodeRGBIImage(const std::string &images_dir, int num_images, void *gpu_in
  * @param tensor A tensor containing a batch of RGBI images.
  * @param stream The HIP stream to synchronize with.
  */
-void WriteRGBITensor(const roccv::Tensor &tensor, hipStream_t stream) {
+inline void WriteRGBITensor(const roccv::Tensor &tensor, hipStream_t stream) {
     CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
     auto srcData = tensor.exportData<roccv::TensorDataStrided>();

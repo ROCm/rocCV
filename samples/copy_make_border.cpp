@@ -27,12 +27,23 @@ THE SOFTWARE.
 #include <op_copy_make_border.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "common/utils.hpp"
+
 using namespace roccv;
 
 /**
  * @brief Copy make border operation example.
+ *
+ * This sample demonstrates the usage of the CopyMakeBorder operator. It loads an image from the specified input path,
+ * creates a border around the image based on the specified border mode and border value, and writes the output image to
+ * the specified output path.
+ *
+ * Usage:
+ * ./copy_make_border <image_filename> <output_filename> <top> <left> <r> <g> <b> <a> <border_mode> <device_id>
+ *
  */
 int main(int argc, char** argv) {
+    // Validate command line arguments
     if (argc != 11) {
         std::cerr << "Usage: " << argv[0]
                   << " <image_filename> <output_filename> <top> <left> <r> <g> <b> <a> <border_mode> <device_id>"
@@ -40,8 +51,9 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    HIP_VALIDATE_NO_ERRORS(hipSetDevice(std::stoi(argv[10])));
+    CHECK_HIP_ERROR(hipSetDevice(std::stoi(argv[10])));
 
+    // Parse command line arguments
     int32_t top = std::stoi(argv[3]);
     int32_t left = std::stoi(argv[4]);
     float r = std::stof(argv[5]);
@@ -50,42 +62,29 @@ int main(int argc, char** argv) {
     float a = std::stof(argv[8]);
     eBorderType border_mode = static_cast<eBorderType>(std::stoi(argv[9]));
 
-    cv::Mat image_data = cv::imread(argv[1]);
+    // Load input image
+    Tensor input = LoadImages(argv[1]);
 
-    // Create input/output tensors for the image.
-    TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                      {1, image_data.rows, image_data.cols, image_data.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
+    // Create output tensor
+    int64_t outputHeight = input.shape(input.layout().height_index()) + top * 2;
+    int64_t outputWidth = input.shape(input.layout().width_index()) + left * 2;
+    TensorShape outputShape(input.layout(), {input.shape(input.layout().batch_index()), outputHeight, outputWidth,
+                                             input.shape(input.layout().channels_index())});
+    Tensor output(outputShape, input.dtype());
 
-    TensorShape o_shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                        {1, image_data.rows + top * 2, image_data.cols + left * 2, image_data.channels()});
-
-    Tensor d_in(shape, dtype);
-    Tensor d_out(o_shape, dtype);
-
+    // Create stream
     hipStream_t stream;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
 
-    // Move image data to input tensor
-    size_t image_size = d_in.shape().size() * d_in.dtype().size();
-    auto d_input_data = d_in.exportData<TensorDataStrided>();
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpyAsync(d_input_data.basePtr(), image_data.data, image_size, hipMemcpyHostToDevice, stream));
-
+    // Create CopyMakeBorder operator
     CopyMakeBorder op;
-    op(stream, d_in, d_out, top, left, border_mode, {b, g, r, a});
+    op(stream, input, output, top, left, border_mode, {b, g, r, a});
 
-    // Move image data back to device
-    auto d_out_data = d_out.exportData<TensorDataStrided>();
-    size_t out_image_size = d_out.shape().size() * d_out.dtype().size();
-    std::vector<uint8_t> h_output(out_image_size);
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpyAsync(h_output.data(), d_out_data.basePtr(), out_image_size, hipMemcpyDeviceToHost, stream));
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
-    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    WriteImages(output, argv[2]);
 
-    cv::Mat output_image_data(image_data.rows + top * 2, image_data.cols + left * 2, CV_8UC3, h_output.data());
-    cv::imwrite(argv[2], output_image_data);
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
     return EXIT_SUCCESS;
 }
