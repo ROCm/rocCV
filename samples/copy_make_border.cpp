@@ -62,8 +62,12 @@ int main(int argc, char** argv) {
     float a = std::stof(argv[8]);
     eBorderType border_mode = static_cast<eBorderType>(std::stoi(argv[9]));
 
+    // Create stream
+    hipStream_t stream;
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
+
     // Load input image
-    Tensor input = LoadImages(argv[1]);
+    Tensor input = LoadImages(stream, argv[1]);
 
     // Create output tensor
     int64_t outputHeight = input.shape(input.layout().height_index()) + top * 2;
@@ -72,19 +76,15 @@ int main(int argc, char** argv) {
                                              input.shape(input.layout().channels_index())});
     Tensor output(outputShape, input.dtype());
 
-    // Create stream
-    hipStream_t stream;
-    CHECK_HIP_ERROR(hipStreamCreate(&stream));
-
     // Create CopyMakeBorder operator
     CopyMakeBorder op;
     op(stream, input, output, top, left, border_mode, {b, g, r, a});
 
-    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
+    // Synchronize not required, WriteImages will block on the given stream
+    WriteImages(stream, output, argv[2]);
 
-    WriteImages(output, argv[2]);
-
-    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
+    // Destroy stream
+    CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
 }

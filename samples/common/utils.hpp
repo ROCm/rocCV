@@ -75,14 +75,15 @@ inline MemcpyParams GetMemcpyParams(const roccv::Tensor &tensor) {
 
 /**
  * @brief Loads an image, or multiple images if given a directory, into a tensor. Will be in NHWC layout and U8 format.
- * All images must be of the same size and format. This is a blocking operation.
+ * All images must be of the same size and format. This is a non-blocking operation.
  *
  * @param image_path The path to the image to load. If a directory is provided, all supported images in the directory
  * will be loaded.
  * @param device The device to load the images onto. Defaults to GPU.
  * @return A NHWC tensor containing the loaded images.
  */
-inline roccv::Tensor LoadImages(const std::string &image_path, eDeviceType device = eDeviceType::GPU) {
+inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_path,
+                                eDeviceType device = eDeviceType::GPU) {
     const std::vector<std::string> supportedExtensions = {".bmp", ".jpg", ".jpeg", ".png"};
 
     std::vector<cv::Mat> images;
@@ -130,10 +131,10 @@ inline roccv::Tensor LoadImages(const std::string &image_path, eDeviceType devic
     // Copy images into tensor
     hipMemcpyKind kind = (device == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
     for (int i = 0; i < images.size(); i++) {
-        CHECK_HIP_ERROR(hipMemcpy2D(static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes, params.rowPitch,
-                                    images[i].data, params.rowBytes, params.rowBytes, height, kind));
+        CHECK_HIP_ERROR(hipMemcpy2DAsync(static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes,
+                                         params.rowPitch, images[i].data, params.rowBytes, params.rowBytes, height,
+                                         kind, stream));
     }
-    CHECK_HIP_ERROR(hipDeviceSynchronize());
 
     return tensor;
 }
@@ -145,7 +146,7 @@ inline roccv::Tensor LoadImages(const std::string &image_path, eDeviceType devic
  * @param output_path The path to write the images to. If a directory is provided, the images will be written to the
  * directory.
  */
-inline void WriteImages(const roccv::Tensor &tensor, const std::string &output_path) {
+inline void WriteImages(hipStream_t stream, const roccv::Tensor &tensor, const std::string &output_path) {
     if (tensor.layout() != eTensorLayout::TENSOR_LAYOUT_NHWC && tensor.layout() != eTensorLayout::TENSOR_LAYOUT_HWC) {
         throw std::runtime_error(
             "Unsupported tensor layout in WriteImages(). Only NHWC and HWC layouts are supported.");
@@ -168,11 +169,13 @@ inline void WriteImages(const roccv::Tensor &tensor, const std::string &output_p
     std::vector<cv::Mat> images(batchSize);
     for (int i = 0; i < batchSize; i++) {
         images[i] = cv::Mat(height, width, cvFormat);
-        CHECK_HIP_ERROR(hipMemcpy2D(images[i].data, params.rowBytes,
-                                    static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes, params.rowPitch,
-                                    params.rowBytes, height, kind));
+        CHECK_HIP_ERROR(hipMemcpy2DAsync(images[i].data, params.rowBytes,
+                                         static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes,
+                                         params.rowPitch, params.rowBytes, height, kind, stream));
     }
-    CHECK_HIP_ERROR(hipDeviceSynchronize());
+
+    // Ensure all memory operations are completed before writing images
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
     std::filesystem::path outputPath(output_path);
     if (outputPath.extension().empty()) {
