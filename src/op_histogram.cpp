@@ -29,10 +29,9 @@ THE SOFTWARE.
 #include <unordered_map>
 
 #include "common/array_wrapper.hpp"
-#include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
-#include "core/wrappers/image_wrapper.hpp"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/histogram_device.hpp"
 #include "kernels/host/histogram_host.hpp"
 
@@ -42,9 +41,9 @@ Histogram::Histogram() {}
 Histogram::~Histogram() {}
 
 template <typename T>
-void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input, std::optional<std::reference_wrapper<const Tensor>> mask, 
-                            const Tensor& histogram, const eDeviceType device) {
-    
+void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
+                              std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
+                              const eDeviceType device) {
     ImageWrapper<uchar1> inputWrapper(input);
 
     const auto o_height = histogram.shape()[histogram.shape().layout().height_index()];
@@ -79,9 +78,9 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input, std::opti
 
     switch (device) {
         case eDeviceType::GPU: {
-            HIP_VALIDATE_NO_ERRORS(hipMemset2DAsync(histogram_data.basePtr(),
-                                                histogram_data.stride(histogram_data.shape().layout().height_index()),
-                                                0, 256 * histogram.dtype().size(), batch_size, stream));
+            HIP_VALIDATE_NO_ERRORS(hipMemset2DAsync(
+                histogram_data.basePtr(), histogram_data.stride(histogram_data.shape().layout().height_index()), 0,
+                256 * histogram.dtype().size(), batch_size, stream));
 
             const dim3 threads_block(256, 1, 1);
 
@@ -89,22 +88,19 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input, std::opti
             const auto shared_mem_size = 256 * histogram.dtype().size();
 
             if (mask.has_value()) {
-                
                 std::reference_wrapper<const Tensor> mask_ref = mask.value();
                 const Tensor& actual_mask = mask_ref.get();
                 CHECK_TENSOR_COMPARISON(input.shape() == actual_mask.shape());
                 ImageWrapper<uchar1> maskWrapper(actual_mask);
-                Kernels::Device::histogram_kernel<T>
-                    <<<grid_size, threads_block, shared_mem_size, stream>>>(inputWrapper, maskWrapper, GenericTensorWrapper<T>(histogram));
-            }
-            else {
-               Kernels::Device::histogram_kernel<T>
-                    <<<grid_size, threads_block, shared_mem_size, stream>>>(inputWrapper, GenericTensorWrapper<T>(histogram)); 
+                Kernels::Device::histogram_kernel<T><<<grid_size, threads_block, shared_mem_size, stream>>>(
+                    inputWrapper, maskWrapper, GenericTensorWrapper<T>(histogram));
+            } else {
+                Kernels::Device::histogram_kernel<T><<<grid_size, threads_block, shared_mem_size, stream>>>(
+                    inputWrapper, GenericTensorWrapper<T>(histogram));
             }
             break;
         }
         case eDeviceType::CPU: {
-            
             auto memset_ptr = static_cast<uint8_t*>(histogram_data.basePtr());
             const auto memset_offset = histogram_data.stride(histogram_data.shape().layout().height_index());
             const auto memset_width = 256 * histogram.dtype().size();
@@ -121,8 +117,7 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input, std::opti
                 CHECK_TENSOR_COMPARISON(input.shape() == actual_mask.shape());
                 ImageWrapper<uchar1> maskWrapper(actual_mask);
                 Kernels::Host::histogram_kernel(inputWrapper, maskWrapper, GenericTensorWrapper<T>(histogram));
-            }
-            else {
+            } else {
                 Kernels::Host::histogram_kernel(inputWrapper, GenericTensorWrapper<T>(histogram));
             }
             break;
@@ -130,8 +125,9 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input, std::opti
     }
 }
 
-void Histogram::operator()(hipStream_t stream, const Tensor& input, std::optional<std::reference_wrapper<const Tensor>> mask, 
-                            const Tensor& histogram, const eDeviceType device) {
+void Histogram::operator()(hipStream_t stream, const Tensor& input,
+                           std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
+                           const eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(histogram, device);
