@@ -21,172 +21,139 @@ THE SOFTWARE.
 */
 
 #include <core/hip_assert.h>
+#include <getopt.h>
+
 #include <core/tensor.hpp>
 #include <iostream>
-#include <fstream>
 #include <op_bilateral_filter.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "common/utils.hpp"
+
 using namespace roccv;
+
+struct Config {
+    std::string inputPath;
+    std::string outputPath = "output";
+    int deviceId = 0;
+    int diameter = 2;
+    float sigmaSpace = 2.0f;
+    float sigmaColor = 10.0f;
+    eBorderType borderMode = eBorderType::BORDER_TYPE_REPLICATE;
+    float4 borderColor = {0.0f, 0.0f, 0.0f, 0.0f};
+    eDeviceType device = eDeviceType::GPU;
+};
 
 /**
  * @brief Bilateral filter operation example.
  */
 
- void ShowHelpAndExit(const char *option = NULL) {
-    std::cout << "Options: " << option << std::endl
-    << "-i Input File Path - required" << std::endl
-    << "-o Output File Path - optional; default: output.bmp" << std::endl
-    << "-cpu Select CPU instead of GPU to perform operation - optional; default choice is GPU path" << std::endl
-    << "-d GPU device ID (0 for the first device, 1 for the second, etc.) - optional; default: 0" << std::endl
-    << "-diameter Diameter of the filtering area - optional; default: 2" << std::endl
-    << "-sigma_space Spatial parameter sigma of the Gaussian function - optional; default: 2.0f" << std::endl
-    << "-sigma_color Range parameter sigma of the Gaussian function - optional; default: 10.0f" << std::endl
-    << "-border_mode Border mode at image boundary when work pixels are outside of the image (0: constant color; 1: replicate; 2: reflect; 3: wrap) - optional; default: 1 (replicate)" << std::endl
-    << "-border_color Border color for constant color border mode - optional; default: (0, 0, 0, 0)" << std::endl;
-    exit(0);
+void PrintUsage(const char* programName) {
+    // clang-format off
+    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-d <device_id>] [-D <diameter>] [-s <sigma_space>] [-c <sigma_color>] [-b <border_mode>] [-B <border_color>]" << std::endl;
+    std::cout << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
+    std::cout << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
+    std::cout << "  -d, --device <device_id>            Device ID to use for execution (optional, default: 0)" << std::endl;
+    std::cout << "  -D, --diameter <diameter>           Diameter of the filtering area (optional, default: 2)" << std::endl;
+    std::cout << "  -s, --sigma_space <sigma_space>     Spatial parameter sigma of the Gaussian function (optional, default: 2.0f)" << std::endl;
+    std::cout << "  -c, --sigma_color <sigma_color>     Range parameter sigma of the Gaussian function (optional, default: 10.0f)" << std::endl;
+    std::cout << "  -B, --border_mode <border_mode>     Border mode at image boundary when work pixels are outside of the image (optional, default: 1 (replicate))" << std::endl;
+    std::cout << "  -B, --border_color <border_color>   Border color for constant color border mode (optional, default: 0,0,0,0)" << std::endl;
+    std::cout << "  -C, --cpu                           Use CPU for execution (optional, default: GPU)" << std::endl;
+    std::cout << "  -h, --help                          Show this help message" << std::endl;
+    // clang-format on
+}
+
+bool ParseBorderColor(const std::string& borderColorStr, float4& borderColor) {
+    return sscanf(borderColorStr.c_str(), "%f,%f,%f,%f", &borderColor.x, &borderColor.y, &borderColor.z,
+                  &borderColor.w) == 4;
 }
 
 int main(int argc, char** argv) {
-    std::string input_file_path;
-    std::string output_file_path = "output.bmp";
-    bool gpuPath = true; // use GPU by default
-    eDeviceType device = eDeviceType::GPU;
-    int deviceId = 0;
-    int diameter = 2;
-    float sigmaSpace = 2.0f;
-    float sigmaColor = 10.0f;
-    eBorderType borderMode = BORDER_TYPE_REPLICATE;
-    float4 borderColor = {0.0f, 0.0f, 0.0f, 0.0f};
+    Config config;
 
-    if(argc < 3) {
-        ShowHelpAndExit("-h");
-    }
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-h")) {
-            ShowHelpAndExit("-h");
-        }
-        if (!strcmp(argv[i], "-i")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-i");
-            }
-            input_file_path = argv[i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-o")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-o");
-            }
-            output_file_path = argv[i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-diameter")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-diameter");
-            }
-            diameter = std::atoi(argv[i]);
-            continue;
-        }
-        if (!strcmp(argv[i], "-sigma_space")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-sigma_space");
-            }
-            sigmaSpace = std::atof(argv[i]);
-            continue;
-        }
-        if (!strcmp(argv[i], "-sigma_color")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-sigma_color");
-            }
-            sigmaColor = std::atof(argv[i]);
-            continue;
-        }
-        if (!strcmp(argv[i], "-border_mode")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-border_mode");
-            }
-            borderMode = static_cast<eBorderType>(std::atoi(argv[i]));
-            continue;
-        }
-        if (!strcmp(argv[i], "-border_color")) {
-            i++;
-            if (i + 4 > argc) {
-                ShowHelpAndExit("-border_color");
-            }
-            borderColor.x = static_cast<float>(atoi(argv[i++]));
-            borderColor.y = static_cast<float>(atoi(argv[i++]));
-            borderColor.z = static_cast<float>(atoi(argv[i++]));
-            borderColor.w = static_cast<float>(atoi(argv[i]));
-            continue;
-        }
-        if (!strcmp(argv[i], "-cpu")) {
-            gpuPath = false;
-            continue;
+    static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
+                                          {"output", required_argument, nullptr, 'o'},
+                                          {"device", required_argument, nullptr, 'd'},
+                                          {"diameter", required_argument, nullptr, 'D'},
+                                          {"sigma_space", required_argument, nullptr, 's'},
+                                          {"sigma_color", required_argument, nullptr, 'c'},
+                                          {"border_mode", required_argument, nullptr, 'b'},
+                                          {"border_color", required_argument, nullptr, 'B'},
+                                          {"cpu", no_argument, nullptr, 'C'},
+                                          {"help", no_argument, nullptr, 'h'},
+                                          {nullptr, 0, nullptr, 0}};
+
+    int opt;
+    while ((opt = getopt_long(argc, argv, "i:o:d:D:s:c:b:B:h:C", longOptions, nullptr)) != -1) {
+        switch (opt) {
+            case 'i':
+                config.inputPath = optarg;
+                break;
+            case 'o':
+                config.outputPath = optarg;
+                break;
+            case 'd':
+                config.deviceId = std::stoi(optarg);
+                break;
+            case 'D':
+                config.diameter = std::stoi(optarg);
+                break;
+            case 's':
+                config.sigmaSpace = std::stof(optarg);
+                break;
+            case 'c':
+                config.sigmaColor = std::stof(optarg);
+                break;
+            case 'b':
+                config.borderMode = static_cast<eBorderType>(std::stoi(optarg));
+                break;
+            case 'B':
+                if (!ParseBorderColor(optarg, config.borderColor)) {
+                    std::cerr << "Invalid border color format. Use: r,g,b,a (e.g., 0,0,0,0)\n";
+                    return EXIT_FAILURE;
+                }
+                break;
+            case 'C':
+                config.device = eDeviceType::CPU;
+                break;
+            case 'h':
+                PrintUsage(argv[0]);
+                return EXIT_SUCCESS;
+            default:
+                PrintUsage(argv[0]);
+                return EXIT_FAILURE;
         }
     }
 
-    if (gpuPath) {
-        device = eDeviceType::GPU;
-        HIP_VALIDATE_NO_ERRORS(hipSetDevice(deviceId));
-    } else {
-        device = eDeviceType::CPU;
-    }
-    hipStream_t stream = nullptr;
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    if (config.inputPath.empty()) {
+        std::cerr << "Error: Input path is required.\n\n";
+        PrintUsage(argv[0]);
+        return EXIT_FAILURE;
     }
 
-    cv::Mat imageData = cv::imread(input_file_path);
-    if (imageData.empty()) {
-        std::cerr << "Failed to read the input image file" << std::endl;
-        exit(1);
+    if (config.device == eDeviceType::GPU) {
+        CHECK_HIP_ERROR(hipSetDevice(config.deviceId));
     }
 
-    // Create input/output tensors for the image.
-    TensorShape imageShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, imageData.rows, imageData.cols, imageData.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
-    Tensor input(imageShape, dtype, device);
-    Tensor output(imageShape, dtype, device);
+    // Create stream
+    hipStream_t stream;
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
 
-    // Move image data to input tensor
-    size_t imageSizeInByte = input.shape().size() * input.dtype().size();
-    auto inputData = input.exportData<TensorDataStrided>();
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(inputData.basePtr(), imageData.data, imageSizeInByte, hipMemcpyHostToDevice, stream));
-    } else {
-        memcpy(inputData.basePtr(), imageData.data, imageSizeInByte);
-    }
+    // Load input image
+    Tensor input = LoadImages(stream, config.inputPath.c_str(), config.device);
 
+    // Create output tensor
+    Tensor output(input.shape(), input.dtype(), config.device);
+
+    // Create BilateralFilter operator
     BilateralFilter op;
-    op(stream, input, output, diameter, sigmaColor, sigmaSpace, borderMode, borderColor, device);
+    op(stream, input, output, config.diameter, config.sigmaColor, config.sigmaSpace, config.borderMode,
+       config.borderColor, config.device);
 
-    // Move image data back to host
-    size_t outputSize = output.shape().size() * output.dtype().size();
-    auto outData = output.exportData<TensorDataStrided>();
-    std::vector<uint8_t> h_output(outputSize);
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(h_output.data(), outData.basePtr(), outputSize, hipMemcpyDeviceToHost, stream));
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-    } else {
-        memcpy(h_output.data(), outData.basePtr(), outputSize);
-    }
+    WriteImages(stream, output, config.outputPath);
 
-    // Write output image to disk
-    cv::Mat outImageData(imageData.rows, imageData.cols, imageData.type(), h_output.data());
-    bool ret = cv::imwrite(output_file_path, outImageData);
-    if (!ret) {
-        std::cerr << "Faild to save output image to the file" << std::endl;
-        exit(1);
-    }
-
-    std::cout << "Input image file: " << input_file_path << std::endl;
-    std::cout << "Output image file: " << output_file_path << std::endl;
-    if (gpuPath) {
-        std::cout << "Operation on GPU device " << deviceId << std::endl;
-    } else {
-        std::cout << "Operation on CPU" << std::endl;
-    }
-    std::cout << "Image size: width = " << imageData.cols << ", height = " << imageData.rows << std::endl;
+    CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
 }
