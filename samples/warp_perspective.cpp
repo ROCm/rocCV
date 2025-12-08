@@ -45,7 +45,7 @@ void PrintUsage(const char* programName) {
     std::cerr << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-p <interpolation>] [-b <border>] [-d <device_id>]" << std::endl;
     std::cerr << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
     std::cerr << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
-    std::cerr << "  -p, --interpolation <interpolation> Interpolation type to use for output images [0: NEAREST, 1: LINEAR, 2: CUBIC] (optional, default: 1 (LINEAR))" << std::endl;
+    std::cerr << "  -I, --interpolation <interpolation> Interpolation type to use for output images [0: NEAREST, 1: LINEAR, 2: CUBIC] (optional, default: 1 (LINEAR))" << std::endl;
     std::cerr << "  -b, --border <border>               Border type for output images [0: CONSTANT, 1: REPLICATE, 2: REFLECT, 3: REFLECT101, 4: WRAP] (optional, default: 0 (CONSTANT))" << std::endl;
     std::cerr << "  -d, --device <device_id>            Device ID to use for execution (optional, default: 0)" << std::endl;
     // clang-format on
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
                                           {"output", required_argument, nullptr, 'o'},
-                                          {"interpolation", required_argument, nullptr, 'p'},
+                                          {"interpolation", required_argument, nullptr, 'I'},
                                           {"border", required_argument, nullptr, 'b'},
                                           {"device", required_argument, nullptr, 'd'},
                                           {"help", no_argument, nullptr, 'h'},
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
     // Parse command line arguments
     int opt;
-    while ((opt = getopt_long(argc, argv, "i:o:p:b:d:h", longOptions, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "i:o:I:b:d:h", longOptions, nullptr)) != -1) {
         switch (opt) {
             case 'i':
                 config.inputPath = optarg;
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
             case 'o':
                 config.outputPath = optarg;
                 break;
-            case 'p':
+            case 'I':
                 config.interpolation = static_cast<eInterpolationType>(std::stoi(optarg));
                 break;
             case 'b':
