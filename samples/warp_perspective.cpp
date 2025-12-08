@@ -21,62 +21,101 @@ THE SOFTWARE.
 */
 
 #include <core/hip_assert.h>
+#include <getopt.h>
 
 #include <core/tensor.hpp>
 #include <iostream>
 #include <op_warp_perspective.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "common/utils.hpp"
+
 using namespace roccv;
+
+struct Config {
+    std::string inputPath;
+    std::string outputPath = "output";
+    eInterpolationType interpolation = eInterpolationType::INTERP_TYPE_LINEAR;
+    eBorderType borderMode = eBorderType::BORDER_TYPE_CONSTANT;
+    int deviceId = 0;
+};
+
+void PrintUsage(const char* programName) {
+    // clang-format off
+    std::cerr << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-p <interpolation>] [-b <border>] [-d <device_id>]" << std::endl;
+    std::cerr << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
+    std::cerr << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
+    std::cerr << "  -p, --interpolation <interpolation> Interpolation type to use for output images [0: NEAREST, 1: LINEAR, 2: CUBIC] (optional, default: 1 (LINEAR))" << std::endl;
+    std::cerr << "  -b, --border <border>               Border type for output images [0: CONSTANT, 1: REPLICATE, 2: REFLECT, 3: REFLECT101, 4: WRAP] (optional, default: 0 (CONSTANT))" << std::endl;
+    std::cerr << "  -d, --device <device_id>            Device ID to use for execution (optional, default: 0)" << std::endl;
+    // clang-format on
+}
 
 /**
  * @brief Warp perspective operation example.
  */
 int main(int argc, char** argv) {
-    if (argc != 6) {
-        std::cerr << "Usage: " << argv[0] << " <image_filename> <output_filename> <interpolation> <border> <device_id>"
-                  << std::endl;
+    Config config;
+
+    static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
+                                          {"output", required_argument, nullptr, 'o'},
+                                          {"interpolation", required_argument, nullptr, 'p'},
+                                          {"border", required_argument, nullptr, 'b'},
+                                          {"device", required_argument, nullptr, 'd'},
+                                          {"help", no_argument, nullptr, 'h'},
+                                          {nullptr, 0, nullptr, 0}};
+
+    // Parse command line arguments
+    int opt;
+    while ((opt = getopt_long(argc, argv, "i:o:p:b:d:h", longOptions, nullptr)) != -1) {
+        switch (opt) {
+            case 'i':
+                config.inputPath = optarg;
+                break;
+            case 'o':
+                config.outputPath = optarg;
+                break;
+            case 'p':
+                config.interpolation = static_cast<eInterpolationType>(std::stoi(optarg));
+                break;
+            case 'b':
+                config.borderMode = static_cast<eBorderType>(std::stoi(optarg));
+                break;
+            case 'd':
+                config.deviceId = std::stoi(optarg);
+                break;
+            case 'h':
+                PrintUsage(argv[0]);
+                return EXIT_SUCCESS;
+            default:
+                PrintUsage(argv[0]);
+                return EXIT_FAILURE;
+        }
+    }
+
+    if (config.inputPath.empty()) {
+        std::cerr << "Error: Input path is required.\n\n";
+        PrintUsage(argv[0]);
         return EXIT_FAILURE;
     }
 
-    HIP_VALIDATE_NO_ERRORS(hipSetDevice(std::stoi(argv[5])));
-    eInterpolationType interp = static_cast<eInterpolationType>(std::stoi(argv[3]));
-    eBorderType border_mode = static_cast<eBorderType>(std::stoi(argv[4]));
-    cv::Mat image_data = cv::imread(argv[1]);
-
-    // Create input/output tensors for the image.
-    TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                      {1, image_data.rows, image_data.cols, image_data.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
-
-    Tensor d_in(shape, dtype);
-    Tensor d_out(shape, dtype);
+    CHECK_HIP_ERROR(hipSetDevice(config.deviceId));
 
     hipStream_t stream;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
 
-    // Move image data to input tensor
-    size_t image_size = d_in.shape().size() * d_in.dtype().size();
-    auto d_input_data = d_in.exportData<TensorDataStrided>();
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpyAsync(d_input_data.basePtr(), image_data.data, image_size, hipMemcpyHostToDevice, stream));
+    // Create input/output tensors for the image.
+    Tensor input = LoadImages(stream, config.inputPath, eDeviceType::GPU);
+    Tensor output(input.shape(), input.dtype(), eDeviceType::GPU);
 
     PerspectiveTransform transform_matrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
     roccv::WarpPerspective op;
-    op(stream, d_in, d_out, transform_matrix, true, interp, border_mode, make_float4(0, 0, 0, 0));
+    op(stream, input, output, transform_matrix, true, config.interpolation, config.borderMode, make_float4(0, 0, 0, 0));
 
     // Move image data back to device
-    auto d_out_data = d_out.exportData<TensorDataStrided>();
-    std::vector<uint8_t> h_output(image_size);
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpyAsync(h_output.data(), d_out_data.basePtr(), image_size, hipMemcpyDeviceToHost, stream));
-
-    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-
-    // Write normalized image to disk
-    cv::Mat output_image_data(image_data.rows, image_data.cols, CV_8UC3, h_output.data());
-    cv::imwrite(argv[2], output_image_data);
+    WriteImages(stream, output, config.outputPath);
+    CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
 }

@@ -43,6 +43,7 @@ struct Config {
 };
 
 void PrintUsage(const char* programName) {
+    // clang-format off
     std::cout << "Usage: " << programName << " -i <input_image_or_directory> [options]\n\n"
               << "Options:\n"
               << "  -i, --input <path>      Input image or directory (required)\n"
@@ -50,11 +51,12 @@ void PrintUsage(const char* programName) {
               << "  -t, --top <pixels>      Top/bottom border size (default: 10)\n"
               << "  -l, --left <pixels>     Left/right border size (default: 10)\n"
               << "  -c, --color <r,g,b,a>   Border color as r,g,b,a (default: 0,0,0,255)\n"
-              << "  -m, --mode <mode>       Border mode: 0=constant, 1=replicate, 2=reflect (default: constant)\n"
+              << "  -m, --mode <mode>       Border mode: 0=CONSTANT, 1=REPLICATE, 2=REFLECT, 3=REFLECT101, 4=WRAP (default: CONSTANT)\n"
               << "  -d, --device <id>       GPU device ID (default: 0)\n"
               << "  -h, --help              Show this help message\n\n"
               << "Example:\n"
               << "  " << programName << " -i image.jpg -o bordered.png -t 20 -l 15 -c 255,0,0,255\n";
+    // clang-format on
 }
 
 bool ParseColor(const std::string& colorStr, float& r, float& g, float& b, float& a) {
