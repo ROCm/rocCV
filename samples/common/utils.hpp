@@ -83,7 +83,7 @@ inline MemcpyParams GetMemcpyParams(const roccv::Tensor &tensor) {
  * @return A NHWC tensor containing the loaded images.
  */
 inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_path,
-                                eDeviceType device = eDeviceType::GPU) {
+                                eDeviceType device = eDeviceType::GPU, int openCVFlags = cv::IMREAD_UNCHANGED) {
     const std::vector<std::string> supportedExtensions = {".bmp", ".jpg", ".jpeg", ".png"};
 
     std::vector<cv::Mat> images;
@@ -96,7 +96,7 @@ inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_pat
     if (std::filesystem::is_directory(image_path)) {
         for (auto file : std::filesystem::directory_iterator(image_path)) {
             if (!std::filesystem::is_directory(file.path()) && ContainsExtension(file.path(), supportedExtensions)) {
-                images.push_back(cv::imread(file.path()));
+                images.push_back(cv::imread(file.path(), openCVFlags));
 
                 // Check if all images are of the same size
                 if (width == -1 && height == -1 && channels == -1) {
