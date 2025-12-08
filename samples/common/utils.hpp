@@ -80,6 +80,7 @@ inline MemcpyParams GetMemcpyParams(const roccv::Tensor &tensor) {
  * @param image_path The path to the image to load. If a directory is provided, all supported images in the directory
  * will be loaded.
  * @param device The device to load the images onto. Defaults to GPU.
+ * @param openCVFlags The OpenCV flags to use when loading the images. Defaults to IMREAD_UNCHANGED.
  * @return A NHWC tensor containing the loaded images.
  */
 inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_path,
@@ -189,77 +190,5 @@ inline void WriteImages(hipStream_t stream, const roccv::Tensor &tensor, const s
         }
     } else {
         cv::imwrite(output_path, images[0]);
-    }
-}
-
-/**
- * @brief Loads images into the GPU memory specified.
- *
- * @param images_dir Either a directory or a single image to load into GPU memory.
- * @param num_images The number of images to load into GPU memory.
- * @param gpu_input A pointer to valid GPU memory.
- */
-inline void DecodeRGBIImage(const std::string &images_dir, int num_images, void *gpu_input) {
-    const std::vector<std::string> supportedExtensions = {".bmp", ".jpg", ".jpeg", ".png"};
-
-    std::vector<std::string> imageFiles;
-    if (std::filesystem::is_directory(images_dir)) {
-        // A directory is provided. Collect all supported files in the directory (non-recursively).
-        for (auto file : std::filesystem::directory_iterator(images_dir)) {
-            if (!std::filesystem::is_directory(file.path()) && ContainsExtension(file.path(), supportedExtensions)) {
-                imageFiles.push_back(file.path());
-            }
-        }
-
-        // Throw an error if there were no valid images found in the given directory
-        if (imageFiles.empty()) {
-            throw std::runtime_error("No valid images found in directory " + images_dir);
-        }
-    } else {
-        // A single image file is provided
-        if (!ContainsExtension(images_dir, supportedExtensions))
-            throw std::runtime_error("Cannot decode " + images_dir + ". File type not supported.\n");
-        imageFiles.push_back(images_dir);
-    }
-
-    // Load images into provided GPU memory
-    size_t mem_offset = 0;
-    for (int b = 0; b < num_images; b++) {
-        cv::Mat inputMat = cv::imread(imageFiles[b]);
-        if (inputMat.empty()) {
-            throw std::runtime_error("Unable to load image " + imageFiles[b]);
-        }
-
-        size_t imageSize = inputMat.rows * inputMat.cols * inputMat.channels() * sizeof(uint8_t);
-        CHECK_HIP_ERROR(
-            hipMemcpy(static_cast<uint8_t *>(gpu_input) + mem_offset, inputMat.data, imageSize, hipMemcpyHostToDevice));
-        mem_offset += imageSize;
-    }
-}
-
-/**
- * @brief Writes a batch of 3-channel RGBI images in a tensor to .bmp files. This will also block on the provided
- * stream.
- *
- * @param tensor A tensor containing a batch of RGBI images.
- * @param stream The HIP stream to synchronize with.
- */
-inline void WriteRGBITensor(const roccv::Tensor &tensor, hipStream_t stream) {
-    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
-
-    auto srcData = tensor.exportData<roccv::TensorDataStrided>();
-    int batchSize = tensor.shape(tensor.layout().batch_index());
-    int height = tensor.shape(tensor.layout().height_index());
-    int width = tensor.shape(tensor.layout().width_index());
-
-    // Write each image in the batch to separate .bmp files
-    for (int b = 0; b < batchSize; b++) {
-        std::ostringstream outFilename;
-        outFilename << "./roccvtest_" << b << ".bmp";
-
-        cv::Mat outputMat(height, width, CV_8UC3);
-        CHECK_HIP_ERROR(hipMemcpy(outputMat.data, srcData.basePtr(),
-                                  (tensor.shape().size() / batchSize) * tensor.dtype().size(), hipMemcpyDeviceToHost));
-        cv::imwrite(outFilename.str().c_str(), outputMat);
     }
 }
