@@ -21,9 +21,13 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include <array>
 #include <memory>
 
+#include "core/data_type.hpp"
 #include "core/detail/allocators/i_allocator.hpp"
+#include "core/tensor_layout.hpp"
+#include "core/util_enums.h"
 #include "tensor_data.hpp"
 #include "tensor_requirements.hpp"
 #include "tensor_storage.hpp"
@@ -98,14 +102,14 @@ class Tensor {
      *
      * @return The location of the tensor data.
      */
-    const eDeviceType device() const;
+    eDeviceType device() const;
 
     /**
      * @brief Returns the shape of the tensor
      *
      * @return Shape of the tensor
      */
-    const TensorShape &shape() const;
+    TensorShape shape() const;
 
     /**
      * @brief Retrieves a specific dimension size from the tensor shape.
@@ -113,21 +117,21 @@ class Tensor {
      * @param[in] d The index of the dimension.
      * @return The size of the specified dimension.
      */
-    const int64_t shape(int d) const &;
+    int64_t shape(int d) const &;
 
     /**
      * @brief Returns the data type of the tensor
      *
      * @return Data type of the tensor
      */
-    const DataType &dtype() const;
+    DataType dtype() const;
 
     /**
      * @brief Returns the layout of the tensor
      *
      * @return Layout of the tensor
      */
-    const TensorLayout &layout() const;
+    TensorLayout layout() const;
 
     /**
      * @brief Exports the tensor data of the tensor
@@ -183,8 +187,21 @@ class Tensor {
      * @return A TensorRequirements object representing this tensor's
      * requirements.
      */
-    static Requirements CalcRequirements(const TensorShape &shape, DataType dtype,
+    static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
                                          const eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates tensor requirements.
+     *
+     * @param[in] shape The shape describing the tensor.
+     * @param[in] dtype The type of the tensor's data.
+     * @param[in] strides The tensor's strides.
+     * @param[in] device The device the tensor data belongs on. (Default: GPU)
+     * @return Tensor requirements.
+     */
+    static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
+                                         std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides,
+                                         eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Calculates tensor requirements using image-based parameters.
@@ -197,6 +214,15 @@ class Tensor {
      */
     static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
                                          eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates strides required for a tensor.
+     *
+     * @param shape The tensor shape.
+     * @param dtype The datatype of the tensor.
+     * @return An array containing strides for the given parameters.
+     */
+    static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype);
 
    private:
     TensorRequirements m_requirements;      // Tensor metadata

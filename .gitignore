@@ -1,3 +1,6 @@
+# Miscellaneous
+.notes
+
 # Build files
 .build/
 build
@@ -8,6 +11,8 @@ data/samples/python/output
 # Configuration files
 .devenv/
 .vscode/
+.clangd
+pyrightconfig.json
 
 # vcpkg installs
 vcpkg_installed

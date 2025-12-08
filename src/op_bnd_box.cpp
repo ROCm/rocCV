@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <vector>
 
 #include "common/math_vector.hpp"
-#include "common/strided_data_wrap.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/hip_utils.hpp"
 #include "core/tensor.hpp"
