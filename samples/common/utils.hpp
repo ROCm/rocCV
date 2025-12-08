@@ -75,7 +75,7 @@ inline MemcpyParams GetMemcpyParams(const roccv::Tensor &tensor) {
 
 /**
  * @brief Loads an image, or multiple images if given a directory, into a tensor. Will be in NHWC layout and U8 format.
- * All images must be of the same size and format. This is a non-blocking operation.
+ * All images must be of the same size and format. This operation will block on the provided stream.
  *
  * @param image_path The path to the image to load. If a directory is provided, all supported images in the directory
  * will be loaded.
@@ -135,6 +135,9 @@ inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_pat
                                          params.rowPitch, images[i].data, params.rowBytes, params.rowBytes, height,
                                          kind, stream));
     }
+
+    // Ensure all memory operations are completed before returning the tensor
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
     return tensor;
 }
