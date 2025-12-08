@@ -58,16 +58,23 @@ struct Config {
 
 void PrintUsage(const char* programName) {
     // clang-format off
-    std::cout << "Usage: " << programName << " -i <input_image_or_directory> [options]" << std::endl;
-    std::cout << "  -i, --input <input_image_or_directory>   Input image or directory (required)" << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "  -o, --output <output_image_or_directory> Output image or directory (optional, default: output)" << std::endl;
-    std::cout << "  -r, --resize <width,height>              Resize shape as width,height (optional, default: 320,480)" << std::endl;
-    std::cout << "  -c, --crop <x,y,w,h>                     Crop rectangle as x,y,w,h (optional, default: 50,150,400,300)" << std::endl;
-    std::cout << "  -I, --interpolation <interpolation>      Interpolation type: 0=NEAREST, 1=LINEAR, 2=CUBIC (optional, default: LINEAR)" << std::endl;
-    std::cout << "  -C, --cpu                                Use CPU for execution (optional, default: GPU)" << std::endl;
-    std::cout << "  -d, --device <device_id>                 Device ID to use for execution (optional, default: 0)" << std::endl;
-    std::cout << "  -h, --help                               Show this help message" << std::endl;
+    std::cout << "rocCV Crop and Resize Sample Application\n";
+    std::cout << "----------------------------------------\n";
+    std::cout << "This sample demonstrates how to set up a simple image processing pipeline using rocCV.\n";
+    std::cout << "It shows reading a batch of images, cropping them to a specified rectangle,\n";
+    std::cout << "resizing the cropped images to a target shape, and writing the outputs to image files.\n";
+    std::cout << "You may select the device (CPU or GPU), interpolation type, input size, and more.\n";
+    std::cout << '\n';
+    std::cout << "Usage: " << programName << " -i <input_image_or_directory> [options]\n";
+    std::cout << "  -i, --input <input_image_or_directory>   Input image or directory (required)\n";
+    std::cout << "Options:\n";
+    std::cout << "  -o, --output <output_image_or_directory> Output image or directory (optional, default: output)\n";
+    std::cout << "  -r, --resize <width,height>              Resize shape as width,height (optional, default: 320,480)\n";
+    std::cout << "  -c, --crop <x,y,w,h>                     Crop rectangle as x,y,w,h (optional, default: 50,150,400,300)\n";
+    std::cout << "  -I, --interpolation <interpolation>      Interpolation type: 0=NEAREST, 1=LINEAR, 2=CUBIC (optional, default: LINEAR)\n";
+    std::cout << "  -C, --cpu                                Use CPU for execution (optional, default: GPU)\n";
+    std::cout << "  -d, --device <device_id>                 Device ID to use for execution (optional, default: 0)\n";
+    std::cout << "  -h, --help                               Show this help message\n";
     std::cout << std::endl;
     // clang-format on
 }
