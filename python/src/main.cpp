@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include "operators/py_op_thresholding.hpp"
 #include "operators/py_op_warp_affine.hpp"
 #include "operators/py_op_warp_perspective.hpp"
+#include "operators/py_op_convert_to.hpp"
 #include "py_enums.hpp"
 #include "py_exception.hpp"
 #include "py_stream.hpp"
@@ -76,4 +77,5 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpCopyMakeBorder::Export(m);
     PyOpCenterCrop::Export(m);
     PyOpHistogram::Export(m);
+    PyOpConvertTo::Export(m);
 }
