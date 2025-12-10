@@ -214,14 +214,14 @@ endif()
 set(BUILD_FROM_SOURCE ON)
 set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_subdirectory(${ROCCV_SOURCE_DIR}/src)
+add_subdirectory(src)
 
 if(SAMPLES)
-    add_subdirectory(${ROCCV_SOURCE_DIR}/samples)
+    add_subdirectory(samples)
 endif(SAMPLES)
 
 if(BENCHMARKS)
-    add_subdirectory(${ROCCV_SOURCE_DIR}/benchmarks)
+    add_subdirectory(benchmarks)
 endif(BENCHMARKS)
 
 # Enable output to stdout by default when tests fail
@@ -230,7 +230,7 @@ enable_testing()
 include(CTest)
 
 if(TESTS)
-	add_subdirectory(${ROCCV_SOURCE_DIR}/tests)
+	add_subdirectory(tests)
 	add_custom_target(test_correctness
 		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure
         COMMENT "Running correctness tests for rocCV."
@@ -238,9 +238,9 @@ if(TESTS)
 endif(TESTS)
 
 if(BUILD_PYPACKAGE)
-    add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/pybind11")
-    add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/dlpack" EXCLUDE_FROM_ALL) # Ensure dlpack is not added to the build system or installed
-    add_subdirectory("${ROCCV_SOURCE_DIR}/python")
+    add_subdirectory("third_party/pybind11")
+    add_subdirectory("third_party/dlpack" EXCLUDE_FROM_ALL)
+    add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
 # set package information
@@ -268,10 +268,10 @@ endif()
 
 # set license information
 set(CPACK_RPM_PACKAGE_LICENSE    "MIT")
-set(CPACK_RESOURCE_FILE_LICENSE  "${ROCCV_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_LICENSE  "${CURRENT_SOURCE_DIR}/LICENSE.txt")
 
 # set license information - {ROCM_PATH}/share/doc/roccv
-set(CPACK_RESOURCE_FILE_LICENSE  "${ROCCV_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_LICENSE  "${CURRENT_SOURCE_DIR}/LICENSE.txt")
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR}-asan COMPONENT asan)
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT runtime)
 

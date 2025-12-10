@@ -88,17 +88,15 @@ if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
-include_directories(${ROCCV_SOURCE_DIR}/include ${ROCM_PATH}/include)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} OpenMP::OpenMP_CXX)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} dlpack::dlpack)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} pybind11::headers)
 
-file(GLOB_RECURSE sources "${ROCCV_SOURCE_DIR}/python/src/*.cpp")
+file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 pybind11_add_module(${PROJECT_NAME} MODULE ${sources} WITH_SOABI)
-target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "${ROCCV_SOURCE_DIR}/python/include")
+target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
@@ -107,7 +105,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET "hidden" 
 
 # install rocpycv lib -- {ROCM_PATH)/lib
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME} COMPONENT runtime)
-install(DIRECTORY ${ROCCV_SOURCE_DIR}/python/src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
 message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
 
 # PyBind Test - Installed
