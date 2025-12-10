@@ -52,9 +52,9 @@ project(roccv VERSION ${VERSION} LANGUAGES CXX C)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
 include(GNUInstallDirs)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 find_program(MAKE_NSIS_EXE makensis)
 find_program(RPMBUILD_EXE rpmbuild)
@@ -209,18 +209,19 @@ if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
-add_subdirectory(src)
-
 # Flag to signal that other components requiring roccv can link against roccv
 # rather than looking for a global installation.
 set(BUILD_FROM_SOURCE ON)
+set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(${ROCCV_SOURCE_DIR}/src)
 
 if(SAMPLES)
-    add_subdirectory(samples)
+    add_subdirectory(${ROCCV_SOURCE_DIR}/samples)
 endif(SAMPLES)
 
 if(BENCHMARKS)
-    add_subdirectory(benchmarks)
+    add_subdirectory(${ROCCV_SOURCE_DIR}/benchmarks)
 endif(BENCHMARKS)
 
 # Enable output to stdout by default when tests fail
@@ -229,7 +230,7 @@ enable_testing()
 include(CTest)
 
 if(TESTS)
-	add_subdirectory(tests)
+	add_subdirectory(${ROCCV_SOURCE_DIR}/tests)
 	add_custom_target(test_correctness
 		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure
         COMMENT "Running correctness tests for rocCV."
@@ -237,9 +238,9 @@ if(TESTS)
 endif(TESTS)
 
 if(BUILD_PYPACKAGE)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/pybind11")
-    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/dlpack")
-    add_subdirectory("${CMAKE_SOURCE_DIR}/python")
+    add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/pybind11")
+    add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/dlpack")
+    add_subdirectory("${ROCCV_SOURCE_DIR}/python")
 endif(BUILD_PYPACKAGE)
 
 # set package information
@@ -267,10 +268,10 @@ endif()
 
 # set license information
 set(CPACK_RPM_PACKAGE_LICENSE    "MIT")
-set(CPACK_RESOURCE_FILE_LICENSE  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_LICENSE  "${ROCCV_SOURCE_DIR}/LICENSE.txt")
 
 # set license information - {ROCM_PATH}/share/doc/roccv
-set(CPACK_RESOURCE_FILE_LICENSE  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_RESOURCE_FILE_LICENSE  "${ROCCV_SOURCE_DIR}/LICENSE.txt")
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR}-asan COMPONENT asan)
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT runtime)
 

@@ -25,7 +25,7 @@
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}/data")
 file(GLOB SAMPLE_DATA_FILES "${CMAKE_SOURCE_DIR}/data/samples/*")
 
-include_directories(${CMAKE_SOURCE_DIR}/include ${ROCM_PATH}/include)
+include_directories(${ROCCV_SOURCE_DIR}/include ${ROCM_PATH}/include)
 
 file(MAKE_DIRECTORY ${DESTINATION_DIR})
 foreach(FILE ${SAMPLE_DATA_FILES})
