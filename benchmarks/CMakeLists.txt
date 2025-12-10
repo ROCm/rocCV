@@ -40,7 +40,7 @@ set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor
 if(BUILD_FROM_SOURCE)
     message("-- ${Green}${PROJECT_NAME} -- Found rocCV")
     set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
-    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/include" "${ROCCV_SOURCE_DIR}/include")
+    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv" "${ROCCV_SOURCE_DIR}/include")
     set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv)
 else()
     message("-- ${Yellow}${PROJECT_NAME} -- Could not find rocCV, it will not be included in the benchmarks${ColorReset}")

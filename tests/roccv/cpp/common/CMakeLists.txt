@@ -57,7 +57,7 @@ set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_CURRENT_SOURCE_DIR})
 # If building from source, ensure we use the locally built version of roccv. Otherwise, look for an installed version to link against.
 if(BUILD_FROM_SOURCE)
         message("-- ${Green}${PROJECT_NAME} -- Building CPP tests using roccv source build${ColourReset}")
-        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_SOURCE_DIR}/include)
+        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${ROCCV_SOURCE_DIR}/include)
         set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
 else()
     if(roccv_LIBRARY AND roccv_INCLUDE_DIR)

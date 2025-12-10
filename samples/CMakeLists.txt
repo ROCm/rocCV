@@ -23,7 +23,7 @@
 
 # Copy sample images to relative data directory
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}/data")
-file(GLOB SAMPLE_DATA_FILES "${CMAKE_SOURCE_DIR}/data/samples/*")
+file(GLOB SAMPLE_DATA_FILES "${ROCCV_SOURCE_DIR}/data/samples/*")
 
 include_directories(${ROCCV_SOURCE_DIR}/include ${ROCM_PATH}/include)
 
