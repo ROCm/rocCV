@@ -239,7 +239,7 @@ endif(TESTS)
 
 if(BUILD_PYPACKAGE)
     add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/pybind11")
-    add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/dlpack")
+    add_subdirectory("${ROCCV_SOURCE_DIR}/third_party/dlpack" EXCLUDE_FROM_ALL) # Ensure dlpack is not added to the build system or installed
     add_subdirectory("${ROCCV_SOURCE_DIR}/python")
 endif(BUILD_PYPACKAGE)
 
