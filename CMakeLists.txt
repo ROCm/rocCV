@@ -52,9 +52,9 @@ project(roccv VERSION ${VERSION} LANGUAGES CXX C)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
 include(GNUInstallDirs)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 find_program(MAKE_NSIS_EXE makensis)
 find_program(RPMBUILD_EXE rpmbuild)
@@ -209,11 +209,12 @@ if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
-add_subdirectory(src)
-
 # Flag to signal that other components requiring roccv can link against roccv
 # rather than looking for a global installation.
 set(BUILD_FROM_SOURCE ON)
+set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(src)
 
 if(SAMPLES)
     add_subdirectory(samples)
@@ -237,9 +238,9 @@ if(TESTS)
 endif(TESTS)
 
 if(BUILD_PYPACKAGE)
-    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/pybind11")
-    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/dlpack")
-    add_subdirectory("${CMAKE_SOURCE_DIR}/python")
+    add_subdirectory("third_party/pybind11")
+    add_subdirectory("third_party/dlpack" EXCLUDE_FROM_ALL)
+    add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
 # set package information

@@ -88,17 +88,15 @@ if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR}/include ${ROCM_PATH}/include)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} OpenMP::OpenMP_CXX)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} dlpack::dlpack)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} pybind11::headers)
 
-file(GLOB_RECURSE sources "src/*.cpp")
+file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 pybind11_add_module(${PROJECT_NAME} MODULE ${sources} WITH_SOABI)
-target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "include")
+target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include" "${ROCCV_SOURCE_DIR}/include")
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
@@ -107,9 +105,20 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET "hidden" 
 
 # install rocpycv lib -- {ROCM_PATH)/lib
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME} COMPONENT runtime)
-install(DIRECTORY src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
 message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
 
 # PyBind Test - Installed
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/tests/pybind DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/tests/roccv/python DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test/pybind COMPONENT test)
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/pybind
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
+
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/python
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test/pybind
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
