@@ -64,11 +64,11 @@ class ConvertTo final : public IOperator {
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.
      * @param[out] output  Output tensor for storing modified image data.
-     * @param[in] alpha Scalar for output data.
-     * @param[in] beta Offset for the data.
+     * @param[in] alpha Scalar for output data. (Default: 1.0)
+     * @param[in] beta Offset for the data. (Default: 0.0)
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                    const double alpha, const double beta, const eDeviceType device = eDeviceType::GPU) const;
+                    const double alpha = 1.0, const double beta = 0.0, const eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv
