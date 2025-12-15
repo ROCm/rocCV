@@ -74,8 +74,8 @@ void PyOpConvertTo::Export(py::module& m) {
             Args:
                 dst (rocpycv.Tensor): The output tensor with gamma correction applied.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                alpha (double): Scalar for output data. Defaults to 1.0.
-                beta (double): Offset for the data. Defaults to 0.0.
+                alpha (double, optional): Scalar for output data. Defaults to 1.0.
+                beta (double, optional): Offset for the data. Defaults to 0.0.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 
