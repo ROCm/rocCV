@@ -152,11 +152,6 @@ message("-- ${White}${PROJECT_NAME} -- AMD GPU_TARGETS: ${GPU_TARGETS}${ColourRe
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
-# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
-if (NOT DEFINED ENV{HIP_PLATFORM})
-    set(ENV{HIP_PLATFORM} "amd")
-endif()
-
 # Determine if we are building using the TheRock install of ROCm.
 set(USING_THE_ROCK OFF)
 if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
@@ -164,11 +159,17 @@ if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
 endif()
 message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
 
+# Set device library path for TheRock install of ROCm.
 if (USING_THE_ROCK)
     if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
         set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
         set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
     endif()
+endif()
+
+# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
+if (NOT DEFINED ENV{HIP_PLATFORM})
+    set(ENV{HIP_PLATFORM} "amd")
 endif()
 
 # Find dependencies
