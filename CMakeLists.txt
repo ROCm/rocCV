@@ -149,11 +149,20 @@ else()
 endif()
 message("-- ${White}${PROJECT_NAME} -- AMD GPU_TARGETS: ${GPU_TARGETS}${ColourReset}")
 
-# Do not warn on unused function results.
-add_compile_options("-Wno-unused-result")
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
+
+# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
+if (NOT DEFINED ENV{HIP_PLATFORM})
+    set(ENV{HIP_PLATFORM} "amd")
+endif()
+
+# Determine if we are building using the TheRock install of ROCm.
+set(USING_THE_ROCK OFF)
+if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
+    set(USING_THE_ROCK ON)
+endif()
+message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
 
 # Find dependencies
 find_package(HIP QUIET)
