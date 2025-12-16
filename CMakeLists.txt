@@ -110,8 +110,6 @@ else()
 endif()
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
-
 # Set all build flags if FULL_BUILD is set.
 if(FULL_BUILD)
     set(SAMPLES ON)
