@@ -110,6 +110,8 @@ else()
 endif()
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --rocm-path=${ROCM_PATH}")
+
 # Set all build flags if FULL_BUILD is set.
 if(FULL_BUILD)
     set(SAMPLES ON)
@@ -127,8 +129,6 @@ message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} 
 
 # Set supported GPU Targets
 set(DEFAULT_GPU_TARGETS "gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201")
-
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --offload-arch=native")
 
 # Set AMD GPU_TARGETS
 if((AMDGPU_TARGETS OR DEFINED ENV{AMDGPU_TARGETS}) AND (NOT GPU_TARGETS))
