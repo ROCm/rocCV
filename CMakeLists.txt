@@ -164,6 +164,13 @@ if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
 endif()
 message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
 
+if (USING_THE_ROCK)
+    if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
+        set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
+    endif()
+endif()
+
 # Find dependencies
 find_package(HIP QUIET)
 find_package(StdFilesystem QUIET)
