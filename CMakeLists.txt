@@ -175,6 +175,17 @@ find_package(HIP QUIET)
 find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
 find_package(OpenMP COMPONENTS CXX QUIET)
+
+# Auto-detect Python3 executable if not specified
+if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR)
+    find_program(PYTHON3_FOUND python3)
+    if(PYTHON3_FOUND)
+        set(Python3_EXECUTABLE ${PYTHON3_FOUND})
+        get_filename_component(Python3_ROOT_DIR "${PYTHON3_FOUND}" DIRECTORY)
+        get_filename_component(Python3_ROOT_DIR "${Python3_ROOT_DIR}" DIRECTORY)
+    endif()
+endif()
+
 if(PYTHON_VERSION_SUGGESTED)
     find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
 else()
