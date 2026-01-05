@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include <span>
 
+#include "core/util_enums.h"
 #include "tensor_layout.hpp"
 
 namespace roccv {
@@ -71,6 +72,9 @@ class TensorShape {
      */
     TensorShape(const std::initializer_list<const int64_t> shape, const std::string &layoutDesc);
 
+    TensorShape(const std::span<const int64_t> shape, int rank, const TensorLayout &layout);
+    TensorShape(const std::span<const int64_t> shape, int rank, eTensorLayout layout);
+
     /**
      * @brief Retrieves the layout of the tensor.
      *
@@ -84,6 +88,13 @@ class TensorShape {
      * @return The size of the tensor.
      */
     size_t size() const;
+
+    /**
+     * @brief Returns the underlying shape data of the TensorShape.
+     *
+     * @return Shape data of the tensor shape.
+     */
+    const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &shape() const;
 
     // Operators
     int64_t operator[](int32_t i) const;

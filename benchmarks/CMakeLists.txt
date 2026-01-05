@@ -34,13 +34,13 @@ endif()
 
 project(roccv_bench)
 
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "vendor" "roccvbench/include")
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
 
 # Include roccv benchmark units
 if(BUILD_FROM_SOURCE)
     message("-- ${Green}${PROJECT_NAME} -- Found rocCV")
-    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/roccv/*.cpp")
-    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_SOURCE_DIR}/include")
+    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
+    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv" "${ROCCV_SOURCE_DIR}/include")
     set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv)
 else()
     message("-- ${Yellow}${PROJECT_NAME} -- Could not find rocCV, it will not be included in the benchmarks${ColorReset}")
@@ -49,8 +49,8 @@ endif()
 # Include OpenCV benchmark units
 if(${OpenCV_FOUND})
     message("-- ${Green}${PROJECT_NAME} -- Found OpenCV. Including in benchmarks${ColorReset}")
-    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "src/opencv/*.cpp")
-    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "src/opencv" ${OpenCV_INCLUDE_DIRS})
+    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/opencv/*.cpp")
+    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/opencv" ${OpenCV_INCLUDE_DIRS})
     set(BENCHMARK_LIBS ${BENCHMARK_LIBS} ${OpenCV_LIBRARIES})
 else()
     message("-- ${Yellow}${PROJECT_NAME} -- Could not find OpenCV, it will not be included in the benchmarks ${ColorReset}")
@@ -61,6 +61,6 @@ file(GLOB BENCHMARK_SOURCES_GLOBBED
     ${BENCHMARK_SOURCES}
 )
 
-add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES_GLOBBED} "src/main.cpp")
+add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES_GLOBBED} "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${BENCHMARK_LIBS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${BENCHMARK_INCLUDES})

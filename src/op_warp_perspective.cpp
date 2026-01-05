@@ -67,7 +67,8 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
     static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor &, const Tensor &, const PerspectiveTransform, const T, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST,   dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
-            {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
+            {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_CUBIC>}
         };  // clang-format on
 
     if (!funcs.contains(interpolation)) {
@@ -89,6 +90,7 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_REFLECT,      dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,   dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REFLECT101>},
             {eBorderType::BORDER_TYPE_WRAP,         dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on

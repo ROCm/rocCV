@@ -43,6 +43,26 @@ project(roccv-test-helper)
 
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 
+# Check if we are building using the TheRock install of ROCm.
+set(USING_THE_ROCK OFF)
+if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
+    set(USING_THE_ROCK ON)
+endif()
+message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
+
+# Set device library path for TheRock install of ROCm.
+if (USING_THE_ROCK)
+    if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
+        set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
+    endif()
+endif()
+
+# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
+if (NOT DEFINED ENV{HIP_PLATFORM})
+    set(ENV{HIP_PLATFORM} "amd")
+endif()
+
 # find HIP
 find_package(HIP REQUIRED)
 set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
@@ -57,7 +77,7 @@ set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_CURRENT_SOURCE_DIR})
 # If building from source, ensure we use the locally built version of roccv. Otherwise, look for an installed version to link against.
 if(BUILD_FROM_SOURCE)
         message("-- ${Green}${PROJECT_NAME} -- Building CPP tests using roccv source build${ColourReset}")
-        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_SOURCE_DIR}/include)
+        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${ROCCV_SOURCE_DIR}/include)
         set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
 else()
     if(roccv_LIBRARY AND roccv_INCLUDE_DIR)

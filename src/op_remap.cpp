@@ -72,7 +72,8 @@ void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor
     static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eRemapType, const bool, const T, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_NEAREST>},
-            {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>}
+            {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_CUBIC>}
         };  // clang-format on
 
     if (!funcs.contains(mapInterpolation)) {
@@ -94,7 +95,8 @@ void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const T
     static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eRemapType, const bool, const T, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
-            {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
+            {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_CUBIC>}
         };  // clang-format on
 
     if (!funcs.contains(inInterpolation)) {
@@ -118,6 +120,7 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_REFLECT,      dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,   dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REFLECT101>},
             {eBorderType::BORDER_TYPE_WRAP,         dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on

@@ -34,10 +34,11 @@ typedef enum eInterpolationType {
 } eInterpolationType;
 
 typedef enum eBorderType {
-    BORDER_TYPE_CONSTANT = 0,   ///< Uses a constant value for borders.
-    BORDER_TYPE_REPLICATE = 1,  ///< Replicates the last element for borders.
-    BORDER_TYPE_REFLECT = 2,    ///< Reflects the border elements.
-    BORDER_TYPE_WRAP = 3,       ///< Wraps the border elements.
+    BORDER_TYPE_CONSTANT = 0,       ///< Uses a constant value for borders.
+    BORDER_TYPE_REPLICATE = 1,      ///< Replicates the last element for borders.
+    BORDER_TYPE_REFLECT = 2,        ///< Reflects the border elements, including the boundary pixel
+    BORDER_TYPE_REFLECT101 = 3,     ///< Reflects the border elements, excluding the boundary pixel
+    BORDER_TYPE_WRAP = 4,           ///< Wraps the border elements.
 } eBorderType;
 
 typedef enum eRemapType {

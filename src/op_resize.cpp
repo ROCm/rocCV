@@ -65,10 +65,10 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
     static const std::unordered_map<
         eInterpolationType,
         std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device)>>
-        funcs = {{eInterpolationType::INTERP_TYPE_NEAREST,
-                  dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
-                 {eInterpolationType::INTERP_TYPE_LINEAR,
-                  dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>}};
+        funcs = {{eInterpolationType::INTERP_TYPE_NEAREST, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
+                 {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
+                 {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}
+                };
 
     if (!funcs.contains(interpolation)) {
         throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);

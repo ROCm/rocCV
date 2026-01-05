@@ -4,10 +4,15 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 
 ## rocCV 0.4.0 for ROCm 7.2.0
 
+### Added
+- Reflect 101 border mode.
+- Bicubic interpolation.
+
 ### Changed
 
 - `Pybind11` and `DLPack` requirements moved to git submodules.
 - Border value parameters now use Saturate cast instead of Range cast when being converted to their internal types. This means passing in `1.0f` as a value for a `U8` image will result in a value of `1`, whereas previously it would have been converted to `255`.
+- Updated border C-model.
 
 ### Known issues
 
