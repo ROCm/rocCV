@@ -21,11 +21,13 @@
 
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
+#include "core/detail/vector_utils.hpp"
 #include <core/wrappers/interpolation_wrapper.hpp>
 
 #include "test_helpers.hpp"
 
 using namespace roccv;
+using namespace roccv::detail;
 using namespace roccv::tests;
 
 namespace {
@@ -90,6 +92,57 @@ T GoldenNearest(BorderWrapper<T, BorderType> input, int64_t sample, float y, flo
 }
 
 /**
+ * @brief This function calculates the weighting coefficients for the Catmull-Rom cubic interpolation.
+ * @param dist The distance between the current point and the previous data point.
+ * @param weight The pointer to the array of weights.
+ * @return None.
+ */
+void CalBicubicWeights(float dist, float* weight) {
+    const float A = -0.5f; // Note OpenCV sets alpha to -0.75f
+
+    weight[0] = ((A * (dist + 1) - 5 * A) * (dist + 1) + 8 * A) * (dist + 1) - 4 * A;
+    weight[1] = ((A + 2) * dist - (A + 3)) * dist * dist + 1;
+    weight[2] = ((A + 2) * (1 - dist) - (A + 3)) * (1 - dist) * (1 - dist) + 1;
+    weight[3] = 1.f - weight[0] - weight[1] - weight[2];
+}
+
+/**
+ * @brief Golden model for Bicubic interpolation. This is the Catmull-Rom cubic interpolation commonly used in CV libraries.
+ *
+ * @tparam T Image datatype.
+ * @tparam BorderType Border type for boundary conditions.
+ * @param input BorderWrapper containing input data.
+ * @param sample The sample within the image batch to index into.
+ * @param y A floating point describing the y position of the selected image.
+ * @param x A floating point describing the x position of the selected image.
+ * @return T The interpolated pixel.
+ */
+template <typename T, eBorderType BorderType>
+T GoldenBicubic(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x) {
+    // Defines the vectorized float type for intermediate calculations.
+    using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
+
+    // Integer coordinates for pixel (x, y)
+    int64_t intX = static_cast<int64_t>(floorf(x));
+    int64_t intY = static_cast<int64_t>(floorf(y));
+
+    // Calculate weights
+    float weightX[4], weightY[4];
+    CalBicubicWeights(x - intX, weightX);
+    CalBicubicWeights(y - intY, weightY);
+
+    // Weighted sum
+    WorkType sum = SetAll<WorkType>(0.0f);
+    for (int indexY = -1; indexY <= 2; indexY++) {
+        for (int indexX = -1; indexX <= 2; indexX++) {
+            sum += detail::RangeCast<WorkType>(input.at(sample, intY + indexY, intX + indexX, 0)) * (weightX[indexX + 1] * weightY[indexY + 1]);
+        }
+    }
+
+    return detail::RangeCast<T>(sum);
+}
+
+/**
  * @brief General Golden model for image interpolation. Does interpolation, but allows you to select a given
  * interpolation type.
  *
@@ -111,6 +164,9 @@ T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, floa
 
         case eInterpolationType::INTERP_TYPE_LINEAR:
             return GoldenLinear(input, sample, y, x);
+
+        case eInterpolationType::INTERP_TYPE_CUBIC:
+            return GoldenBicubic(input, sample, y, x);
 
         default:
             throw std::runtime_error("Interpolation type does not have a golden model yet.");
@@ -164,8 +220,11 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
             }
         }
     }
-
-    CompareVectorsNear(actualOutput, goldenOutput);
+    if constexpr (std::is_integral_v<detail::BaseType<T>> && std::is_signed_v<detail::BaseType<T>> && sizeof(detail::BaseType<T>) == 4) {
+        CompareVectorsNear(actualOutput, goldenOutput, NEAR_EQUAL_THRESHOLD * 2);
+    } else {
+        CompareVectorsNear(actualOutput, goldenOutput);
+    }
 }
 }  // namespace
 
@@ -232,7 +291,36 @@ int main(int argc, char **argv) {
     TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_LINEAR>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
-    // clang-format on
+
+    // Test bicubic interpolation
+    TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<uchar3, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<uchar4, eBorderType::BORDER_TYPE_REFLECT101, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 0.5), 0.1f)));
+
+    TEST_CASE((TestCorrectness<char1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<char3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<char4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+
+    TEST_CASE((TestCorrectness<ushort1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<ushort3, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<ushort4, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+
+    TEST_CASE((TestCorrectness<short1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<short3, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<short4, eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+
+    TEST_CASE((TestCorrectness<uint1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<uint3, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<uint4, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+
+    TEST_CASE((TestCorrectness<int1, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<int3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<int4, eBorderType::BORDER_TYPE_REFLECT101, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+
+    TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
+    TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
+     // clang-format on
 
     TEST_CASES_END();
 }

@@ -52,9 +52,9 @@ project(roccv VERSION ${VERSION} LANGUAGES CXX C)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
 include(GNUInstallDirs)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 find_program(MAKE_NSIS_EXE makensis)
 find_program(RPMBUILD_EXE rpmbuild)
@@ -140,8 +140,6 @@ message("-- ${Cyan}     -D ENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE} [Enable 
 # Set supported GPU Targets
 set(DEFAULT_GPU_TARGETS "gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201")
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --offload-arch=native")
-
 # Set AMD GPU_TARGETS
 if((AMDGPU_TARGETS OR DEFINED ENV{AMDGPU_TARGETS}) AND (NOT GPU_TARGETS))
     message("-- ${Red}${PROJECT_NAME} DEPRECATION -- AMDGPU_TARGETS use is deprecated. Use GPU_TARGETS${ColourReset}")
@@ -161,17 +159,45 @@ else()
 endif()
 message("-- ${White}${PROJECT_NAME} -- AMD GPU_TARGETS: ${GPU_TARGETS}${ColourReset}")
 
-# Do not warn on unused function results.
-add_compile_options("-Wno-unused-result")
-
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
+
+# Determine if we are building using the TheRock install of ROCm.
+set(USING_THE_ROCK OFF)
+if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
+    set(USING_THE_ROCK ON)
+endif()
+message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
+
+# Set device library path for TheRock install of ROCm.
+if (USING_THE_ROCK)
+    if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
+        set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
+    endif()
+endif()
+
+# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
+if (NOT DEFINED ENV{HIP_PLATFORM})
+    set(ENV{HIP_PLATFORM} "amd")
+endif()
 
 # Find dependencies
 find_package(HIP QUIET)
 find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
 find_package(OpenMP COMPONENTS CXX QUIET)
+
+# Auto-detect Python3 executable if not specified
+if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR)
+    find_program(PYTHON3_EXECUTABLE_PATH python3)
+    if(PYTHON3_EXECUTABLE_PATH)
+        set(Python3_EXECUTABLE ${PYTHON3_EXECUTABLE_PATH})
+        get_filename_component(Python3_ROOT_DIR "${PYTHON3_EXECUTABLE_PATH}" DIRECTORY)
+        get_filename_component(Python3_ROOT_DIR "${Python3_ROOT_DIR}" DIRECTORY)
+    endif()
+endif()
+
 if(PYTHON_VERSION_SUGGESTED)
     find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
 else()
@@ -221,11 +247,12 @@ if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
-add_subdirectory(src)
-
 # Flag to signal that other components requiring roccv can link against roccv
 # rather than looking for a global installation.
 set(BUILD_FROM_SOURCE ON)
+set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(src)
 
 if(SAMPLES)
     add_subdirectory(samples)
@@ -250,13 +277,9 @@ endif(TESTS)
 
 # Build Python package if BUILD_PYPACKAGE is set.
 if(BUILD_PYPACKAGE)
-    # Include third party dependencies for Python package.
-    # * pybind11
-    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/pybind11")
-    # * dlpack
-    add_subdirectory("${CMAKE_SOURCE_DIR}/third_party/dlpack")
-    # * Python package
-    add_subdirectory("${CMAKE_SOURCE_DIR}/python")
+    add_subdirectory("third_party/pybind11")
+    add_subdirectory("third_party/dlpack" EXCLUDE_FROM_ALL)
+    add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
 # Set package information.

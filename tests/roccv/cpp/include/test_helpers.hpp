@@ -376,13 +376,14 @@ void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref,
                                  ") does not match reference size (" + std::to_string(ref.size()) + ")");
     }
 
+    T thresh = detail::RangeCast<T>(delta);
+    // Clamp error threshold to at least 1 if the delta ends up being 0 after the RangeCast. This is to ensure that
+    // integers which get rounded down to 0 still have some sort of proper error threshold to compare against.
+    thresh = thresh == 0 ? 1 : thresh;
+
     for (size_t i = 0; i < ref.size(); ++i) {
         // Compute the absolute difference between reference and result vector values.
         T error = result[i] < ref[i] ? ref[i] - result[i] : result[i] - ref[i];
-        T thresh = detail::RangeCast<T>(delta);
-        // Clamp error threshold to at least 1 if the delta ends up being 0 after the RangeCast. This is to ensure that
-        // integers which get rounded down to 0 still have some sort of proper error threshold to compare against.
-        thresh = thresh == 0 ? 1 : thresh;
 
         if (error > thresh) {
             std::stringstream errorMsg;
