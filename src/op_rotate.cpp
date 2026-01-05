@@ -82,7 +82,8 @@ void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor 
                                                        const double2, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_rotate_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
-            {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_rotate_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>}
+            {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_rotate_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_rotate_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}
         };
     // clang-format on
 

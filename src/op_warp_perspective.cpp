@@ -67,7 +67,8 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
     static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor &, const Tensor &, const PerspectiveTransform, const T, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST,   dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
-            {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>}
+            {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_CUBIC>}
         };  // clang-format on
 
     if (!funcs.contains(interpolation)) {
