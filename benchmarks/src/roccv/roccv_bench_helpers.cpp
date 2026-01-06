@@ -26,21 +26,48 @@
 #include <roccvbench/utils.hpp>
 #include <vector>
 
+struct MemcpyParams {
+    void* basePtr = nullptr;  // Base pointer to the tensor data
+    size_t rowPitch = 0;      // Number of bytes per row, including padding
+    size_t rowBytes = 0;      // Number of bytes per row, not including padding
+    size_t imageBytes = 0;    // Number of bytes per image, including padding (rowBytes * height)
+};
+
+/**
+ * @brief Gets the memcpy parameters for a tensor to perform a memcpy2D operation.
+ *
+ * @param tensor The tensor to get the memcpy parameters for.
+ * @return The memcpy parameters to perform a memcpy2D operation.
+ */
+inline MemcpyParams GetMemcpyParams(const roccv::Tensor& tensor) {
+    MemcpyParams params;
+
+    roccv::TensorDataStrided tensorData = tensor.exportData<roccv::TensorDataStrided>();
+    params.rowPitch = tensorData.stride(tensor.layout().height_index());
+    params.rowBytes = tensor.shape(tensor.layout().width_index()) * tensor.shape(tensor.layout().channels_index()) *
+                      tensor.dtype().size();
+    params.imageBytes = params.rowPitch * tensor.shape(tensor.layout().height_index());
+    params.basePtr = tensorData.basePtr();
+
+    return params;
+}
+
 template <typename T>
 void MoveToTensor(const roccv::Tensor& tensor, const std::vector<T>& vec) {
-    auto tensor_data = tensor.exportData<roccv::TensorDataStrided>();
-    switch (tensor.device()) {
-        case eDeviceType::GPU: {
-            HIP_VALIDATE_NO_ERRORS(hipMemcpy(tensor_data.basePtr(), vec.data(),
-                                             tensor.shape().size() * tensor.dtype().size(), hipMemcpyHostToDevice));
-            break;
-        }
+    const hipMemcpyKind kind = (tensor.device() == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
 
-        case eDeviceType::CPU: {
-            HIP_VALIDATE_NO_ERRORS(hipMemcpy(tensor_data.basePtr(), vec.data(),
-                                             tensor.shape().size() * tensor.dtype().size(), hipMemcpyHostToHost));
-            break;
-        }
+    if (tensor.isContiguous()) {
+        // Contiguous data, so we can use a simple memcpy.
+        const size_t totalBytes = tensor.dataSize();
+        void* basePtr = tensor.exportData<roccv::TensorDataStrided>().basePtr();
+        HIP_VALIDATE_NO_ERRORS(hipMemcpy(basePtr, vec.data(), totalBytes, kind));
+    } else {
+        // Data is padded, so we need to use a memcpy2D.
+        const MemcpyParams params = GetMemcpyParams(tensor);
+        const size_t batchSize = tensor.shape(tensor.layout().batch_index());
+        const size_t totalRows = batchSize * tensor.shape(tensor.layout().height_index());
+        HIP_VALIDATE_NO_ERRORS(hipMemcpy2D(params.basePtr, params.rowPitch, vec.data(), params.rowBytes,
+                                           params.rowBytes, totalRows, kind));
     }
 }
 
