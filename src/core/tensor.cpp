@@ -125,21 +125,7 @@ TensorData Tensor::exportData() const {
     }
 }
 
-Tensor Tensor::reshape(const TensorShape& new_shape) const {
-    if (!isContiguous()) {
-        throw Exception("Tensor is not contiguous. Reshape can only be performed on contiguous tensors.",
-                        eStatusType::INVALID_VALUE);
-    }
-
-    // New tensor shape must have the same number of elements
-    if (new_shape.size() != this->shape().size()) {
-        throw Exception("New tensor shape does not match the number of elements of the old shape.",
-                        eStatusType::INVALID_VALUE);
-    }
-
-    Tensor::Requirements reqs = CalcRequirements(new_shape, this->dtype(), this->device());
-    return Tensor(reqs, m_data);
-}
+Tensor Tensor::reshape(const TensorShape& new_shape) const { return this->reshape(new_shape, this->dtype()); }
 
 Tensor Tensor::reshape(const TensorShape& new_shape, const DataType& new_dtype) const {
     if (!isContiguous()) {
