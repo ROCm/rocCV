@@ -42,6 +42,21 @@ THE SOFTWARE.
 
 namespace roccv {
 
+namespace {
+int GetFirstPackedDimension(const TensorLayout& layout) {
+    const int rank = layout.rank();
+    switch (layout.elayout()) {
+        case eTensorLayout::TENSOR_LAYOUT_NHWC:
+        case eTensorLayout::TENSOR_LAYOUT_LNHWC:
+        case eTensorLayout::TENSOR_LAYOUT_HWC:
+        case eTensorLayout::TENSOR_LAYOUT_NWC:
+            return std::max(0, rank - 2);
+        default:
+            return rank - 1;
+    }
+}
+}  // namespace
+
 // Constructor definitions
 Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_requirements(reqs) {
     m_data = std::make_shared<TensorStorage>(this->dataSize(), reqs.device, alloc);
@@ -230,15 +245,20 @@ std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape
                                                                int32_t rowAlign) {
     // Calculate strides based on the given tensor shape. Strides are byte-wise.
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+
+    const int firstPackedDim = GetFirstPackedDimension(shape.layout());
+
     strides[shape.layout().rank() - 1] = dtype.size();
     for (int i = shape.layout().rank() - 2; i >= 0; i--) {
-        // Ensure strides for the row are padded to the next multiple of the alignment.
-        if (i == shape.layout().height_index()) {
+        // The stride dimension preceeding the first packed dimension is padded to the next multiple of the row
+        // alignment.
+        if (i == firstPackedDim - 1) {
             strides[i] = detail::AlignUp(strides[i + 1] * shape[i + 1], rowAlign);
         } else {
             strides[i] = strides[i + 1] * shape[i + 1];
         }
     }
+
     return strides;
 }
 
