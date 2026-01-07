@@ -164,7 +164,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
 
 }  // namespace
 
-eTestStatusType test_op_bilateral_filter(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests

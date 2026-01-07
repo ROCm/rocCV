@@ -163,7 +163,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat fmt, Imag
 }
 }  // namespace
 
-eTestStatusType test_op_composite(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // Test RGB8 input/output

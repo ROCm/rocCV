@@ -27,7 +27,7 @@ using namespace roccv::detail;
 using namespace roccv::tests;
 using namespace roccv;
 
-eTestStatusType test_range_cast(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off

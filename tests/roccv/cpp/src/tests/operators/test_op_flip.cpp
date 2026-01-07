@@ -173,7 +173,7 @@ void TestNegativeFlip() {
 
 }  // namespace
 
-eTestStatusType test_op_flip(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // Test negative Flip operator cases
