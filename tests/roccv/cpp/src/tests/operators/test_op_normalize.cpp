@@ -197,7 +197,7 @@ void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool 
 
 }
 
-eTestStatusType test_op_normalize(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests

@@ -197,7 +197,7 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
 }
 }  // namespace
 
-eTestStatusType test_border_wrapper(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off

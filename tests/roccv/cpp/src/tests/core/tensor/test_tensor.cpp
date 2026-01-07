@@ -142,7 +142,7 @@ void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype
 
 }  // namespace
 
-eTestStatusType test_tensor(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // Negative tests

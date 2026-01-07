@@ -274,7 +274,7 @@ void TestCorrectness(int batchSize, int width, int height, double threshVal, dou
 }
 } // namespace
 
-eTestStatusType test_op_thresholding(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests    

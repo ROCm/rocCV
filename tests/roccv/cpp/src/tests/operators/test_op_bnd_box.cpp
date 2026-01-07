@@ -176,7 +176,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
 
 }  // namespace
 
-eTestStatusType test_op_bnd_box(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests

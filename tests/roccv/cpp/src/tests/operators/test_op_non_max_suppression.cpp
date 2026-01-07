@@ -196,7 +196,7 @@ void TestCorrectness(int batchSize, int numBoxes, float scoreThreshold, float io
 
 }  // namespace
 
-eTestStatusType test_op_non_max_suppression(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // GPU conformance tests

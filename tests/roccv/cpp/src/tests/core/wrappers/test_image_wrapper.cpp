@@ -69,7 +69,7 @@ void TestImageWrapperConstructor(int imageCount, Size2D imageSize, ImageFormat f
 }
 }  // namespace
 
-eTestStatusType test_image_wrapper(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     TEST_CASE(TestImageWrapperConstructor<uchar3>(2, {54, 67}, FMT_RGB8));

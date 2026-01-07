@@ -143,7 +143,7 @@ void TestNegative() {
 
 }
 
-eTestStatusType test_op_center_crop(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // Test negative CenterCrop operator cases

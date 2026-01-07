@@ -46,7 +46,7 @@ void TestCorrectness(T input, T expected) {
 }
 }  // namespace
 
-eTestStatusType test_swizzling(int argc, char **argv) {
+int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
     // ZYXW swizzling

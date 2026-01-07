@@ -124,7 +124,7 @@ void TestCorrectness(int batchSize, int width, int height, float gamma, ImageFor
 }
 } // namespace
 
-eTestStatusType test_op_gamma_contrast(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests
