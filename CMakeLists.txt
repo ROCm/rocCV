@@ -189,7 +189,7 @@ find_package(rocm_smi QUIET)
 find_package(OpenMP COMPONENTS CXX QUIET)
 
 # Auto-detect Python3 executable if not specified
-if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR)
+if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR AND NOT PYTHON_VERSION_SUGGESTED)
     find_program(PYTHON3_EXECUTABLE_PATH python3)
     if(PYTHON3_EXECUTABLE_PATH)
         set(Python3_EXECUTABLE ${PYTHON3_EXECUTABLE_PATH})
