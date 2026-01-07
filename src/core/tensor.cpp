@@ -43,6 +43,16 @@ THE SOFTWARE.
 namespace roccv {
 
 namespace {
+
+/*
+ * @brief Returns the index of the first packed dimension in the given tensor layout.
+ *
+ * In most cases, the first packed dimension is the last dimension. However, for layouts ending in WC, the first packed
+ * dimension is the second to last dimension.
+ *
+ * @param[in] layout The tensor layout to get the first packed dimension for.
+ * @return The index of the first packed dimension in the given tensor layout.
+ */
 int GetFirstPackedDimension(const TensorLayout& layout) {
     const int rank = layout.rank();
     switch (layout.elayout()) {
