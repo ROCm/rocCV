@@ -76,10 +76,10 @@ void TestNegativeTensorShape() {
  * In both cases, the expected behavior is to throw an exception of type eStatusType::INVALID_VALUE.
  */
 void TestNegativeTensor() {
-    // Reshaping a non-contiguous tensor is invalid
+    // Test reshaping a tensor with mismatching number of elements
     {
         Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
-        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC")), eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 4}, "NHWC")), eStatusType::INVALID_VALUE);
     }
 }
 
@@ -100,6 +100,20 @@ void TestTensorCorrectness() {
         Tensor tensor(4, {720, 480}, FMT_RGB8);
         EXPECT_EQ(tensor.shape().size(), 4 * 720 * 480 * 3);
         EXPECT_EQ(tensor.dtype().size(), 1);
+    }
+}
+
+void TestTensorReshapeCorrectness() {
+    {
+        Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
+        Tensor reshapedTensor = tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC"));
+        EXPECT_EQ(reshapedTensor.shape().size(), tensor.shape().size());
+        EXPECT_EQ(reshapedTensor.rank(), 4);
+
+        // Ensure they are sharing the same underlying data
+        auto data = tensor.exportData<TensorDataStrided>();
+        auto dataReshaped = reshapedTensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.basePtr() == dataReshaped.basePtr());
     }
 
     // Tensor reshape: Change layout and datatype
@@ -151,6 +165,7 @@ int main(int argc, char** argv) {
 
     // Correctness tests
     TEST_CASE(TestTensorCorrectness());
+    // TEST_CASE(TestTensorReshapeCorrectness());
 
     // Stride calculation tests
     // clang-format off

@@ -53,7 +53,7 @@ namespace {
  * @param[in] layout The tensor layout to get the first packed dimension for.
  * @return The index of the first packed dimension in the given tensor layout.
  */
-int GetFirstPackedDimension(const TensorLayout& layout) {
+static int GetFirstPackedDimension(const TensorLayout& layout) {
     const int rank = layout.rank();
     switch (layout.elayout()) {
         case eTensorLayout::TENSOR_LAYOUT_NHWC:
@@ -65,6 +65,61 @@ int GetFirstPackedDimension(const TensorLayout& layout) {
             return rank - 1;
     }
 }
+
+static bool ReshapeSimplified(int inRank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& inShape,
+                              const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& inStrides, int targetRank,
+                              const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& targetShape,
+                              std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& outStrides) {
+    int i = 0, j = 0;
+    for (; i < inRank && j < targetRank; i++) {
+        int64_t inE = inShape[i];
+        int64_t outV = 1;
+        int group_start = j;
+        while (j < targetRank && (outV * targetShape[j]) <= inE) outV *= targetShape[j++];
+
+        if (outV != inE) {
+            return false;
+        }
+
+        int64_t s = inStrides[i];
+        for (int d = j - 1; d >= group_start; d--) {
+            outStrides[d] = s;
+            s *= targetShape[d];
+        }
+    }
+    return true;
+}
+
+static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                    const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& stride,
+                    std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& outShape,
+                    std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& outStrides) {
+    if (rank <= 1) {
+        if (rank == 1) {
+            outShape[0] = shape[0];
+            outStrides[0] = stride[0];
+        }
+        return rank;
+    }
+
+    int outRank = 0;
+    int64_t vol = shape[0];
+    for (int d = 1; d < rank; d++) {
+        if (stride[d - 1] != shape[d] * stride[d]) {
+            outStrides[outRank] = stride[d - 1];
+            outShape[outRank] = vol;
+            vol = shape[d];
+            outRank++;
+        } else {
+            vol *= shape[d];
+        }
+    }
+    outStrides[outRank] = stride[rank - 1];
+    outShape[outRank] = vol;
+    outRank++;
+    return outRank;
+}
+
 }  // namespace
 
 // Constructor definitions
@@ -125,19 +180,12 @@ TensorData Tensor::exportData() const {
     }
 }
 
-Tensor Tensor::reshape(const TensorShape& new_shape) const { return this->reshape(new_shape, this->dtype()); }
-
-Tensor Tensor::reshape(const TensorShape& new_shape, const DataType& new_dtype) const {
-    if (!isContiguous()) {
-        throw Exception("Tensor is not contiguous. Reshape can only be performed on contiguous tensors.",
-                        eStatusType::INVALID_VALUE);
-    }
-
-    if (new_shape.size() * new_dtype.size() != this->shape().size() * this->dtype().size()) {
+Tensor Tensor::reshape(const TensorShape& new_shape) const {
+    if (new_shape.size() * dtype().size() != this->shape().size() * this->dtype().size()) {
         throw Exception("New tensor view must have the same underlying number of bytes.", eStatusType::INVALID_VALUE);
     }
 
-    Tensor::Requirements reqs = CalcRequirements(new_shape, new_dtype, this->device());
+    Tensor::Requirements reqs = CalcRequirements(new_shape, dtype(), this->device());
     return Tensor(reqs, m_data);
 }
 

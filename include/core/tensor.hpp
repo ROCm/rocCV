@@ -190,14 +190,15 @@ class Tensor {
     Tensor reshape(const TensorShape &new_shape) const;
 
     /**
-     * @brief Creates a vew of this tensor with a new shape, layout, and data type. The number of bytes allocated must
-     * match the original tensor.
+     * @brief Creates a view of this tensor with a new data type.
      *
-     * @param new_shape The new tensor shape.
-     * @param new_dtype The new data type of the underlying tensor data.
+     * This will attempt to reinterpret the tensor's base data type to the new data type by reshaping the tensor if
+     * necessary. If the reinterpretation is not possible, an exception will be thrown.
+     *
+     * @param newDtype The new data type of the underlying tensor data.
      * @return Tensor
      */
-    Tensor reshape(const TensorShape &new_shape, const DataType &new_dtype) const;
+    Tensor reinterpret(const DataType &newDtype) const;
 
     /**
      * @brief Performs a shallow copy of the tensor (creates a view).
