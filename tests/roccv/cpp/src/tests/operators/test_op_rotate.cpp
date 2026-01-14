@@ -152,7 +152,7 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
 
 }  // namespace
 
-eTestStatusType test_op_rotate(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // clang-format off

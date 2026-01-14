@@ -73,6 +73,7 @@ option(FULL_BUILD               "Build with all tests and samples"              
 option(SAMPLES                  "Build with samples"                            OFF)
 option(TESTS                    "Build with tests"                              OFF)
 option(BENCHMARKS               "Build with benchmarks"                         OFF)
+option(ENABLE_CODE_COVERAGE      "Enable LLVM code coverage"                    OFF)
 set(PYTHON_VERSION_SUGGESTED    ""          CACHE STRING "Python version to build rocCV")
 set(DEFAULT_BUILD_TYPE          "Release"   CACHE STRING "Default build type for rocCV")
 
@@ -110,12 +111,22 @@ else()
 endif()
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
 
+# Enable LLVM code coverage if build type is Debug and ENABLE_CODE_COVERAGE is set.
+if(ENABLE_CODE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES Debug)
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
+elseif(ENABLE_CODE_COVERAGE AND NOT CMAKE_BUILD_TYPE MATCHES Debug)
+    message("-- ${Yellow}LLVM code coverage enabled, but build type is not Debug. Code coverage will be disabled.${ColourReset}")
+    set(ENABLE_CODE_COVERAGE OFF)
+endif()
+
 # Set all build flags if FULL_BUILD is set.
 if(FULL_BUILD)
     set(SAMPLES ON)
     set(TESTS ON)
 endif()
 
+# Print developer options.
 message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColourReset}")
 message("-- ${Cyan}     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} [Select rocCV build type [options:Debug/Release](default:Release)]${ColourReset}")
 message("-- ${Cyan}     -D FULL_BUILD=${FULL_BUILD} [Compile with samples, and tests [options:ON/OFF](default:OFF)]${ColourReset}")
@@ -124,6 +135,7 @@ message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](d
 message("-- ${Cyan}     -D BENCHMARKS=${BENCHMARKS} [Compile with benchmarks [options:ON/OFF](default:OFF)]${ColourReset}")
 message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build for rocCV Python Package(default:ON)]${ColourReset}")
 message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColourReset}")
+message("-- ${Cyan}     -D ENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE} [Enable LLVM code coverage [options:ON/OFF](default:OFF)]${ColourReset}")
 
 # Set supported GPU Targets
 set(DEFAULT_GPU_TARGETS "gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201")
@@ -176,21 +188,39 @@ find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
 find_package(OpenMP COMPONENTS CXX QUIET)
 
-# Auto-detect Python3 executable if not specified
-if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR)
-    find_program(PYTHON3_EXECUTABLE_PATH python3)
-    if(PYTHON3_EXECUTABLE_PATH)
-        set(Python3_EXECUTABLE ${PYTHON3_EXECUTABLE_PATH})
-        get_filename_component(Python3_ROOT_DIR "${PYTHON3_EXECUTABLE_PATH}" DIRECTORY)
-        get_filename_component(Python3_ROOT_DIR "${Python3_ROOT_DIR}" DIRECTORY)
+if (BUILD_PYPACKAGE)
+    # Auto-detect Python3 executable if not specified
+    if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR AND NOT PYTHON_VERSION_SUGGESTED)
+        find_program(PYTHON3_EXECUTABLE_PATH python3)
+        if(PYTHON3_EXECUTABLE_PATH)
+            set(Python3_EXECUTABLE ${PYTHON3_EXECUTABLE_PATH})
+            get_filename_component(Python3_ROOT_DIR "${PYTHON3_EXECUTABLE_PATH}" DIRECTORY)
+            get_filename_component(Python3_ROOT_DIR "${Python3_ROOT_DIR}" DIRECTORY)
+        endif()
     endif()
-endif()
 
-if(PYTHON_VERSION_SUGGESTED)
-    find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
-else()
-    set(Python3_FIND_VIRTUALENV FIRST)
-    find_package(Python3 QUIET COMPONENTS Interpreter Development)
+    if(PYTHON_VERSION_SUGGESTED)
+        find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
+    else()
+        set(Python3_FIND_VIRTUALENV FIRST)
+        find_package(Python3 QUIET COMPONENTS Interpreter Development)
+    endif()
+
+    # Python3
+    if(NOT Python3_Interpreter_FOUND)
+        set(BUILD_PYPACKAGE OFF)
+        message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} interpreter, Not Found${ColourReset}")
+    else()
+        message("-- ${Green}rocpycv -- Found python${PYTHON_VERSION_SUGGESTED} interpreter: ${Python3_EXECUTABLE}${ColourReset}")
+    endif()
+
+    # Python3 Development
+    if(NOT Python3_Development_FOUND)
+        set(BUILD_PYPACKAGE OFF)
+        message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColourReset}")
+    else()
+        message("-- ${Green}rocpycv -- Found python${PYTHON_VERSION_SUGGESTED} development headers: ${Python3_INCLUDE_DIRS}${ColourReset}")
+    endif()
 endif()
 find_package(OpenCV QUIET)
 
@@ -210,11 +240,6 @@ endif()
 if (NOT rocm_smi_FOUND)
 	set(BUILD_ROCCV false)
 	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires rocm_smi, Not Found ${ColourReset}")
-endif()
-# Python3
-if(NOT Python3_FOUND)
-    set(BUILD_PYPACKAGE OFF)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} rocPyCV requires Python3, Not Found${ColourReset}")
 endif()
 # OpenCV
 if(NOT OpenCV_FOUND)
@@ -263,13 +288,14 @@ if(TESTS)
 	)
 endif(TESTS)
 
+# Build Python package if BUILD_PYPACKAGE is set.
 if(BUILD_PYPACKAGE)
     add_subdirectory("third_party/pybind11")
     add_subdirectory("third_party/dlpack" EXCLUDE_FROM_ALL)
     add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
-# set package information
+# Set package information.
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})

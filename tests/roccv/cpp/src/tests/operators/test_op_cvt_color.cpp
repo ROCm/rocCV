@@ -195,7 +195,7 @@ void TestCorrectness(int samples, int width, int height, ImageFormat inFmt, Imag
 }
 }  // namespace
 
-eTestStatusType test_op_cvt_color(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // // GPU correctness tests

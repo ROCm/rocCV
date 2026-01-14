@@ -165,7 +165,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, f
 }
 }  // namespace
 
-eTestStatusType test_op_remap(int argc, char** argv) {
+int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     TEST_CASE((TestCorrectness<uchar1, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_NEAREST,

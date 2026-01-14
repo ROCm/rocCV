@@ -48,25 +48,88 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
 
-project(roccv-cpp-test)
+project(roccv-cpp-tests)
 
-add_subdirectory(common)
+# Find required libraries
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 
-file(GLOB CPP_ROCCV_TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "test_*.cpp") 
-create_test_sourcelist(CppRocCVTests 
-                            system_test_main.cpp 
-                            ${CPP_ROCCV_TEST_SOURCES}
-)
-add_executable(${PROJECT_NAME} ${CppRocCVTests})
+# Check if we are building using the TheRock install of ROCm.
+set(USING_THE_ROCK OFF)
+if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
+    set(USING_THE_ROCK ON)
+endif()
+message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
 
-# roccv-test-helper exposes all required libraries/include directories
-target_link_libraries(${PROJECT_NAME} PRIVATE roccv-test-helper)
+# Set device library path for TheRock install of ROCm.
+if (USING_THE_ROCK)
+    if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
+        set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
+    endif()
+endif()
 
-# make test with CTest
+# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
+if (NOT DEFINED ENV{HIP_PLATFORM})
+    set(ENV{HIP_PLATFORM} "amd")
+endif()
+
+# find HIP
+find_package(HIP REQUIRED)
+set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
+set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${HIP_INCLUDE_DIR})
+# find rocCV
+find_library(roccv_LIBRARY roccv PATHS ${ROCM_PATH}/lib)
+find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include/roccv)
+
+# Add current source directory as an include
+set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# If building from source, ensure we use the locally built version of roccv. Otherwise, look for an installed version to link against.
+if(BUILD_FROM_SOURCE)
+        message("-- ${Green}${PROJECT_NAME} -- Building CPP tests using roccv source build${ColourReset}")
+        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_SOURCE_DIR}/include)
+        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
+else()
+    if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
+        message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
+        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
+        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${roccv_INCLUDE_DIR})
+        set(roccv_FOUND TRUE)
+    else()
+        message(FATAL_ERROR "${Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
+    endif()
+endif()
+
+# Gather test helper sources
+file(GLOB TEST_HELPER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+# Create a static library for test helpers (so we don't recompile for every test)
+add_library(roccv-test-helpers STATIC ${TEST_HELPER_SOURCES})
+target_link_libraries(roccv-test-helpers PUBLIC ${LINK_LIBRARY_LIST})
+target_include_directories(roccv-test-helpers PUBLIC ${INCLUDE_DIR_LIST})
+
+# Gather actual test sources
+file(GLOB_RECURSE CPP_ROCCV_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*.cpp")
+
+# Enable CTest
 enable_testing()
 include(CTest)
 
-foreach(test ${CPP_ROCCV_TEST_SOURCES})
-    get_filename_component(TName ${test} NAME_WE)
-    add_test(NAME ${TName} COMMAND ${PROJECT_NAME} ${TName})
+# Build each test as a separate executable
+foreach(test_source ${CPP_ROCCV_TEST_SOURCES})
+    get_filename_component(test_name ${test_source} NAME_WE)
+    
+    # Get relative path from src/tests/ to determine output directory structure
+    file(RELATIVE_PATH test_rel_path "${CMAKE_CURRENT_SOURCE_DIR}/src/tests" ${test_source})
+    get_filename_component(test_subdir ${test_rel_path} DIRECTORY)
+    
+    add_executable(${test_name} ${test_source})
+    target_link_libraries(${test_name} PRIVATE roccv-test-helpers)
+    
+    # Set output directory to match source structure: bin/tests/<subdir>/
+    set_target_properties(${test_name} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests/${test_subdir}"
+    )
+    
+    add_test(NAME ${test_name} COMMAND ${test_name})
 endforeach()

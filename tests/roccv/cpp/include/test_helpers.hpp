@@ -79,7 +79,7 @@ namespace tests {
  * proceeding TEST_CASE macros in order to keep track of the overall final result.
  *
  */
-#define TEST_CASES_BEGIN() eTestStatusType _testSuiteStatus = eTestStatusType::TEST_SUCCESS
+#define TEST_CASES_BEGIN() int _testSuiteStatus = 0
 
 /**
  * @brief A macro to be placed at the end of a collection of test cases. Will return the final result of the collected
@@ -102,7 +102,7 @@ namespace tests {
         } catch (const std::exception& e) {                                                                         \
             std::cerr << "Test Failed: " << #call << "\n    Line: " << ERROR_PREFIX << "\n    Reason: " << e.what() \
                       << "\n\n";                                                                                    \
-            _testSuiteStatus = eTestStatusType::TEST_FAILURE;                                                       \
+            _testSuiteStatus = 1;                                                                                   \
         }                                                                                                           \
     }
 

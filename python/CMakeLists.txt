@@ -56,13 +56,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
-if (PYTHON_VERSION_SUGGESTED)
-    find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
-else()
-    set(Python3_FIND_VIRTUALENV FIRST)
-    find_package(Python3 QUIET COMPONENTS Interpreter Development)
-endif()
-
 list(APPEND CMAKE_MODULE_PATH $ENV{PROJECT_ROOT}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
@@ -79,12 +72,12 @@ if(NOT HIP_FOUND)
 endif()
 # OpenMP
 if (NOT OpenMP_CXX_FOUND)
-    set(BUILD_ROCCV false)
+    set(BUILD_ROCCV_PYPACKAGE false)
     message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires OpenMP, Not Found${ColourReset}")
 endif()
 
 # Check that all dependencies have been met
-if(NOT BUILD_ROCCV)
+if(NOT BUILD_ROCCV_PYPACKAGE)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
