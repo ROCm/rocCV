@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/reformat_device.hpp"
+#include "kernels/host/reformat_host.hpp"
 
 namespace roccv {
 
@@ -47,7 +48,7 @@ void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Ten
         }
 
         case eDeviceType::CPU: {
-            throw Exception("Reformat is not supported on CPU", eStatusType::NOT_IMPLEMENTED);
+            Kernels::Host::reformat<Channels, T>(inputWrap, outputWrap);
             break;
         }
     }
@@ -84,8 +85,10 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,
                            eDataType::DATA_TYPE_S16, eDataType::DATA_TYPE_U32, eDataType::DATA_TYPE_S32,
                            eDataType::DATA_TYPE_F32, eDataType::DATA_TYPE_F64);
-    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW);
-    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW);
+    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW,
+                        eTensorLayout::TENSOR_LAYOUT_HWC);
+    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW,
+                        eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_CHANNELS(output, 1, 3, 4);
 
