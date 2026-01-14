@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 namespace roccv {
 /**
- * @brief Class for managing the Warp Perspective operator.
+ * @brief Class for managing the Convert To operator.
  *
  */
 class ConvertTo final : public IOperator {

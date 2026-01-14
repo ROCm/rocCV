@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 #include "core/detail/casting.hpp"
-#include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include "core/detail/type_traits.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 
 namespace Kernels {
 namespace Host {
@@ -33,9 +33,8 @@ template <typename SrcWrapper, typename DstWrapper, typename DT_AB>
 void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_AB beta) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using dst_type = typename DstWrapper::ValueType;
-    
-    for (int batch = 0; batch < output.batches(); batch++) {
 #pragma omp parallel for
+    for (int batch = 0; batch < output.batches(); batch++) {
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
                 output.at(batch, y, x, 0) = SaturateCast<dst_type>(alpha * (input.at(batch, y, x, 0)) + beta);

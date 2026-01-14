@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -103,8 +103,6 @@ void dispatch_convert_to_input_dtype(hipStream_t stream, const Tensor &input, co
             {eDataType::DATA_TYPE_F32, dispatch_convert_to_output_dtype<SRC_DT, float>},
             {eDataType::DATA_TYPE_F64, dispatch_convert_to_output_dtype<SRC_DT, double>}
         };
-    // clang-format on
-    // std make pair possibly needed
     auto func = funcs.at(output_dtype);
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, alpha, beta, device);
@@ -147,8 +145,6 @@ void ConvertTo::operator()(hipStream_t stream, const Tensor &input, const Tensor
             {eDataType::DATA_TYPE_F32, dispatch_convert_to_input_dtype<float>},
             {eDataType::DATA_TYPE_F64, dispatch_convert_to_input_dtype<double>}
         };
-    // clang-format on
-    // std make pair possibly needed
     auto func = funcs.at(input_dtype);
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, alpha, beta, device);
