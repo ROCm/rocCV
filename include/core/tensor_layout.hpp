@@ -79,7 +79,9 @@ class TensorLayout {
         {TENSOR_LAYOUT_NW, {2, 0, 1, -1, -1, -1, -1, -1}}, {TENSOR_LAYOUT_NHWC, {4, 0, 2, 1, 3, -1, -1, -1}},
         {TENSOR_LAYOUT_NMC, {3, 0, -1, -1, -1, 1, 2, -1}}, {TENSOR_LAYOUT_NMD, {3, 0, -1, -1, -1, 1, 2, -1}},
         {TENSOR_LAYOUT_LNHWC, {5, 1, 3, 2, 4, -1, -1, 0}}, {TENSOR_LAYOUT_NCHW, {4, 0, 3, 2, 1, -1, -1, -1}},
-        {TENSOR_LAYOUT_N, {1, 0, -1, -1, -1, -1, -1, -1}}, {TENSOR_LAYOUT_NWC, {3, 0, 1, -1, 2, -1, -1, -1}}};
+        {TENSOR_LAYOUT_N, {1, 0, -1, -1, -1, -1, -1, -1}}, {TENSOR_LAYOUT_NWC, {3, 0, 1, -1, 2, -1, -1, -1}},
+        {TENSOR_LAYOUT_CHW, {3, -1, 2, 1, 0, -1, -1, -1}},
+    };
 
     /**
      * @brief Returns the layout enum stored in the TensorLayout object.

@@ -50,7 +50,8 @@ class ImageWrapper {
     ImageWrapper(const Tensor& tensor) {
         if (tensor.layout() != eTensorLayout::TENSOR_LAYOUT_NHWC &&
             tensor.layout() != eTensorLayout::TENSOR_LAYOUT_NCHW &&
-            tensor.layout() != eTensorLayout::TENSOR_LAYOUT_HWC) {
+            tensor.layout() != eTensorLayout::TENSOR_LAYOUT_HWC &&
+            tensor.layout() != eTensorLayout::TENSOR_LAYOUT_CHW) {
             throw Exception("The given tensor layout is not supported for ImageWrapper", eStatusType::NOT_IMPLEMENTED);
         }
 
@@ -61,8 +62,8 @@ class ImageWrapper {
 
         // Handle HWC layout, which doesn't have shapes/strides for the batch dimension. We set the batch shape to 1 and
         // the strides to 0.
-        int64_t num_batches = indexes.n < 0 ? 1 : tensor.shape(indexes.n);
-        int64_t batch_stride = indexes.n < 0 ? 0 : tdata.stride(indexes.n);
+        int64_t num_batches = indexes.n == -1 ? 1 : tensor.shape(indexes.n);
+        int64_t batch_stride = indexes.n == -1 ? 0 : tdata.stride(indexes.n);
 
         shape = {num_batches, tdata.shape(indexes.h), tdata.shape(indexes.w), tdata.shape(indexes.c)};
         stride = {batch_stride, tdata.stride(indexes.h), tdata.stride(indexes.w), tdata.stride(indexes.c)};
