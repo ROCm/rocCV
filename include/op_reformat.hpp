@@ -71,7 +71,9 @@ class Reformat final : public IOperator {
      * @param[in] stream The HIP stream to run this operation on.
      * @param[in] input The input tensor to reformat.
      * @param[out] output The output tensor to store the result.
+     * @param[in] device The device to run this operation on. Default is GPU.
      */
-    void operator()(hipStream_t stream, const Tensor& input, const Tensor& output);
+    void operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
+                    const eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv
