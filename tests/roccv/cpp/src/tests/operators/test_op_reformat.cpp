@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <core/tensor.hpp>
 #include <core/wrappers/generic_tensor_wrapper.hpp>
 
+#include "op_reformat.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -112,9 +113,69 @@ static std::vector<T> GoldenReformat(std::vector<T>& input, int32_t batchSize, i
 
     return outputData;
 }
+
+/**
+ * @brief Tests correctness of the Reformat operator, comparing it against a generated golden result.
+ *
+ * @tparam T The datatype of the tensor.
+ * @param[in] batchSize The batch size of the tensor.
+ * @param[in] width The width of the tensor.
+ * @param[in] height The height of the tensor.
+ * @param[in] channels The channels of the tensor.
+ * @param[in] inLayout The input layout of the tensor.
+ * @param[in] outLayout The output layout of the tensor.
+ * @param[in] dtype The datatype of the tensor.
+ * @param[in] device The device to run the roccv::Reformat operator on.
+ * @throws std::runtime_error on test failure.
+ */
+template <typename T>
+static void TestCorrectness(int batchSize, int width, int height, int channels, const TensorLayout& inLayout,
+                            const TensorLayout& outLayout, const DataType& dtype, eDeviceType device) {
+    // Create input and output tensors based on test parameters
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> inputShapeData =
+        GetShapeFromLayout(inLayout, batchSize, width, height, channels);
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> outputShapeData =
+        GetShapeFromLayout(outLayout, batchSize, width, height, channels);
+
+    TensorShape inputShape(inputShapeData, inLayout.rank(), inLayout.elayout());
+    TensorShape outputShape(outputShapeData, outLayout.rank(), outLayout.elayout());
+
+    Tensor input(inputShape, dtype, device);
+    Tensor output(outputShape, dtype, device);
+
+    // Create a vector and fill it with random data.
+    std::vector<T> inputData(input.shape().size());
+    FillVector(inputData);
+
+    CopyVectorIntoTensor(input, inputData);
+
+    // Obtain golden results
+    std::vector<T> goldenOutput =
+        GoldenReformat<T>(inputData, batchSize, width, height, channels, dtype, inLayout, outLayout);
+
+    // Call roccv::Reformat operator to obtain actual results
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    Reformat op;
+    op(stream, input, output, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    // Copy actual results into host allocated vector
+    std::vector<T> actualOutput(output.shape().size());
+    CopyTensorIntoVector(actualOutput, output);
+
+    // Compare actual results with golden results
+    CompareVectors(actualOutput, goldenOutput);
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
+    TEST_CASE(TestCorrectness<unsigned char>(1, 1024, 1024, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
+                                             TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW),
+                                             DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU));
     TEST_CASES_END();
 }

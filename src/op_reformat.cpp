@@ -92,9 +92,18 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_CHANNELS(output, 1, 3, 4);
 
-    CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.layout() != output.layout());
+
+    if (input.layout().batch_index() != -1) {
+        CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
+                                output.shape(output.layout().batch_index()));
+    }
+
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().channels_index()) ==
+                            output.shape(output.layout().channels_index()));
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) == output.shape(output.layout().width_index()));
+    CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) == output.shape(output.layout().height_index()));
 
     // Select kernel dispatcher based on the input and output datatypes.
     // clang-format off
