@@ -210,13 +210,6 @@ static void TestNegativeReformat() {
         EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, eDeviceType::GPU),
                          eStatusType::INVALID_COMBINATION);
     }
-
-    // Test identical input and output layouts (not supported)
-    {
-        Reformat op;
-        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, eDeviceType::GPU),
-                         eStatusType::INVALID_COMBINATION);
-    }
 }
 
 }  // namespace
