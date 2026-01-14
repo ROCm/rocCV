@@ -83,8 +83,8 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     CHECK_TENSOR_DEVICE(output, device);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16, eDataType::DATA_TYPE_S16, eDataType::DATA_TYPE_U32, eDataType::DATA_TYPE_S32, eDataType::DATA_TYPE_F32, eDataType::DATA_TYPE_F64);
     CHECK_TENSOR_DATATYPES(output, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16, eDataType::DATA_TYPE_S16, eDataType::DATA_TYPE_U32, eDataType::DATA_TYPE_S32, eDataType::DATA_TYPE_F32, eDataType::DATA_TYPE_F64);
-    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW, eTensorLayout::TENSOR_LAYOUT_HWC);
-    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW, eTensorLayout::TENSOR_LAYOUT_HWC);
+    CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW, eTensorLayout::TENSOR_LAYOUT_HWC, eTensorLayout::TENSOR_LAYOUT_CHW);
+    CHECK_TENSOR_LAYOUT(output, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_NCHW, eTensorLayout::TENSOR_LAYOUT_HWC, eTensorLayout::TENSOR_LAYOUT_CHW);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_CHANNELS(output, 1, 3, 4);
 

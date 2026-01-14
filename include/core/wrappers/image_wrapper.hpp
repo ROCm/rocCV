@@ -60,8 +60,8 @@ class ImageWrapper {
         ImageShape indexes = {tensor.layout().batch_index(), tensor.layout().height_index(),
                               tensor.layout().width_index(), tensor.layout().channels_index()};
 
-        // Handle HWC layout, which doesn't have shapes/strides for the batch dimension. We set the batch shape to 1 and
-        // the strides to 0.
+        // Handle HWC/CHW layout, which doesn't have shapes/strides for the batch dimension. We set the batch shape to 1
+        // and the strides to 0.
         int64_t num_batches = indexes.n == -1 ? 1 : tensor.shape(indexes.n);
         int64_t batch_stride = indexes.n == -1 ? 0 : tdata.stride(indexes.n);
 

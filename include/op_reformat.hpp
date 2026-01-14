@@ -41,19 +41,24 @@ class Reformat final : public IOperator {
     /**
      * @brief Executes the Reformat operation on the given HIP stream.
      *
-     * Reformat changes the layout of the input tensor to that of the output tensor by rearranging memory. Supported
-     * layout conversions include:
-     * - NHWC to NCHW (and vice versa)
+     * Reformat changes the layout of the input tensor to that of the output tensor by rearranging memory. All
+     * combinations of supported input and output layouts are supported. Note that reformatting to the same layout is
+     * essentially a tensor copy.
+     *
+     * Although reformating from HWC to NHWC, or CHW to NCHW is supported, it is not recommended as it will result in a
+     * direct copy of the data without any rearrangement. To do these conversions, it is recommended to use the
+     * `Tensor::reshape()` method instead, as these will create zero-copy views pointing to the same data and is
+     * typically more efficient in most use cases.
      *
      * Limitations:
      *
      * Input:
-     *       Supported TensorLayout(s): [NHWC, NCHW, HWC]
+     *       Supported TensorLayout(s): [NHWC, NCHW, HWC, CHW]
      *                        Channels: [1, 3, 4]
      *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Output:
-     *       Supported TensorLayout(s): [NHWC, NCHW, HWC]
+     *       Supported TensorLayout(s): [NHWC, NCHW, HWC, CHW]
      *                        Channels: [1, 3, 4]
      *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
