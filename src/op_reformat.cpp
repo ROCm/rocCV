@@ -95,7 +95,7 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.layout() != output.layout());
 
-    if (input.layout().batch_index() != -1) {
+    if (input.layout().batch_index() != -1 && output.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
                                 output.shape(output.layout().batch_index()));
     }

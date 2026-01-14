@@ -46,7 +46,10 @@ namespace {
 static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> GetShapeFromLayout(const TensorLayout& layout, int32_t batchSize,
                                                                      int32_t width, int32_t height, int32_t channels) {
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shape;
-    shape[layout.batch_index()] = batchSize;
+    if (layout.batch_index() != -1) {
+        shape[layout.batch_index()] = batchSize;
+    }
+
     shape[layout.height_index()] = height;
     shape[layout.width_index()] = width;
     shape[layout.channels_index()] = channels;
@@ -100,6 +103,30 @@ static std::vector<T> GoldenReformat(std::vector<T>& input, int32_t batchSize, i
                              outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC) {
                         // NCHW to NHWC
                         outputWrapper.at(b, y, x, c) = inputWrapper.at(b, c, y, x);
+                    }
+
+                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC &&
+                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC) {
+                        // HWC to NHWC
+                        outputWrapper.at(b, y, x, c) = inputWrapper.at(y, x, c);
+                    }
+
+                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC &&
+                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC) {
+                        // NHWC to HWC
+                        outputWrapper.at(y, x, c) = inputWrapper.at(b, y, x, c);
+                    }
+
+                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NCHW &&
+                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC) {
+                        // NCHW to HWC
+                        outputWrapper.at(y, x, c) = inputWrapper.at(b, c, y, x);
+                    }
+
+                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC &&
+                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NCHW) {
+                        // HWC to NCHW
+                        outputWrapper.at(b, c, y, x) = inputWrapper.at(y, x, c);
                     }
 
                     else {
@@ -170,12 +197,74 @@ static void TestCorrectness(int batchSize, int width, int height, int channels, 
     CompareVectors(actualOutput, goldenOutput);
 }
 
+static void TestNegativeReformat() {
+    TensorShape validLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
+    Tensor validGPUTensor(validLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+    Tensor validCPUTensor(validLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
+
+    // Test unsupported layout
+    {
+        TensorShape invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
+        Tensor invalidTensor(invalidLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+        Reformat op;
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    // Test identical input and output layouts (not supported)
+    {
+        Reformat op;
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
-    TEST_CASE(TestCorrectness<unsigned char>(1, 1024, 1024, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                                             TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW),
-                                             DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU));
+
+    // clang-format off
+
+    // GPU Tests - NHWC to NCHW
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(3, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(7, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+
+    // GPU Tests - NCHW to NHWC
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(3, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(7, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+
+    // GPU Tests - HWC to NHWC
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(1, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(1, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+
+    // GPU Tests - NHWC to HWC
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(1, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(1, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+
+    // GPU Tests - HWC to NCHW
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(1, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(1, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+    
+    // CPU Tests - NHWC to NCHW
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<signed  short >(3, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_S16),  eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<double        >(7, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_F64),  eDeviceType::CPU));
+
+    // CPU Tests - NCHW to NHWC
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<signed  short >(3, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_S16),  eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<double        >(7, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_F64),  eDeviceType::CPU));
+
+    // clang-format on
+
+    // Negative Tests
+    TEST_CASE(TestNegativeReformat());
+
     TEST_CASES_END();
 }
