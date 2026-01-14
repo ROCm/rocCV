@@ -44,6 +44,20 @@ class GenericTensorWrapper {
         data = static_cast<unsigned char*>(tensorData.basePtr());
     }
 
+    /**
+     * @brief Constructs a generic tensor wrapper from a void pointer, shape, strides, and rank.
+     *
+     * @param data The data pointer to wrap.
+     * @param shape The shape of the tensor.
+     * @param strides The strides of the tensor.
+     * @param rank The rank of the tensor.
+     */
+    __device__ __host__ GenericTensorWrapper(void* data, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                                             const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& strides, int rank)
+        : shape(shape), strides(strides), rank(rank) {
+        this->data = static_cast<unsigned char*>(data);
+    }
+
     template <typename... ARGS>
     __device__ __host__ T& at(ARGS... idx) {
         int64_t coords[] = {idx...};
