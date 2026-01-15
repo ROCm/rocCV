@@ -97,12 +97,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARY_LIST})
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET "hidden" CUDA_VISIBILITY_PRESET "hidden")
 
 if(USING_THE_ROCK)
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/..;$ORIGIN;$ORIGIN/../rocm_sysdeps/lib" BUILD_WITH_INSTALL_RPATH TRUE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/rocm_sysdeps/lib" BUILD_WITH_INSTALL_RPATH TRUE)
 endif()
 
 # install rocpycv lib -- {ROCM_PATH)/lib
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME} COMPONENT runtime)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv.pyi DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
 message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
 
 # PyBind Test - Installed

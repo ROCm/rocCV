@@ -48,7 +48,7 @@ else()
 endif()
 
 set(ROCCV_PYBIND_SCRIPTS OFF)
-if(EXISTS "${ROCM_PATH}/lib/rocpycv/rocpycv.pyi")
+if(EXISTS "${ROCM_PATH}/lib/rocpycv.pyi")
   set(ROCCV_PYBIND_SCRIPTS ON)
 endif()
 
