@@ -57,6 +57,35 @@ static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> GetShapeFromLayout(const Tenso
 }
 
 /**
+ * @brief Gets an element from a generic tensor wrapper based on a layout.
+ *
+ * @tparam T The datatype of the tensor.
+ * @param[in] wrapper The generic tensor wrapper.
+ * @param[in] layout The layout of the tensor.
+ * @param[in] batchIndex The batch index of the element.
+ * @param[in] heightIndex The height index of the element.
+ * @param[in] widthIndex The width index of the element.
+ * @param[in] channelsIndex The channels index of the element.
+ * @return The element from the generic tensor wrapper based on the layout.
+ */
+template <typename T>
+static T& GetElement(GenericTensorWrapper<T>& wrapper, const TensorLayout& layout, int32_t batchIndex,
+                     int32_t heightIndex, int32_t widthIndex, int32_t channelsIndex) {
+    switch (layout.elayout()) {
+        case eTensorLayout::TENSOR_LAYOUT_NHWC:
+            return wrapper.at(batchIndex, heightIndex, widthIndex, channelsIndex);
+        case eTensorLayout::TENSOR_LAYOUT_NCHW:
+            return wrapper.at(batchIndex, channelsIndex, heightIndex, widthIndex);
+        case eTensorLayout::TENSOR_LAYOUT_HWC:
+            return wrapper.at(heightIndex, widthIndex, channelsIndex);
+        case eTensorLayout::TENSOR_LAYOUT_CHW:
+            return wrapper.at(channelsIndex, heightIndex, widthIndex);
+        default:
+            throw Exception("Unsupported layout for Reformat", eStatusType::INVALID_VALUE);
+    }
+}
+
+/**
  * @brief Golden model for reformatting a tensor from one layout to another.
  *
  * @tparam T The datatype of the tensor.
@@ -87,52 +116,11 @@ static std::vector<T> GoldenReformat(std::vector<T>& input, int32_t batchSize, i
     GenericTensorWrapper<T> outputWrapper(outputData.data(), outShape, outStrides, outLayout.rank());
     GenericTensorWrapper<T> inputWrapper(input.data(), inShape, inStrides, inLayout.rank());
 
-    // TODO: Support HWC <-> CHW conversions.
-
     for (int32_t b = 0; b < batchSize; b++) {
         for (int32_t y = 0; y < height; y++) {
             for (int32_t x = 0; x < width; x++) {
                 for (int32_t c = 0; c < channels; c++) {
-                    if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC &&
-                        outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NCHW) {
-                        // NHWC to NCHW
-                        outputWrapper.at(b, c, y, x) = inputWrapper.at(b, y, x, c);
-                    }
-
-                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NCHW &&
-                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC) {
-                        // NCHW to NHWC
-                        outputWrapper.at(b, y, x, c) = inputWrapper.at(b, c, y, x);
-                    }
-
-                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC &&
-                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC) {
-                        // HWC to NHWC
-                        outputWrapper.at(b, y, x, c) = inputWrapper.at(y, x, c);
-                    }
-
-                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NHWC &&
-                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC) {
-                        // NHWC to HWC
-                        outputWrapper.at(y, x, c) = inputWrapper.at(b, y, x, c);
-                    }
-
-                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NCHW &&
-                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC) {
-                        // NCHW to HWC
-                        outputWrapper.at(y, x, c) = inputWrapper.at(b, c, y, x);
-                    }
-
-                    else if (inLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_HWC &&
-                             outLayout.elayout() == eTensorLayout::TENSOR_LAYOUT_NCHW) {
-                        // HWC to NCHW
-                        outputWrapper.at(b, c, y, x) = inputWrapper.at(y, x, c);
-                    }
-
-                    else {
-                        throw Exception("Invalid layout conversion requested in GoldenReformat",
-                                        eStatusType::INVALID_VALUE);
-                    }
+                    GetElement(outputWrapper, outLayout, b, y, x, c) = GetElement(inputWrapper, inLayout, b, y, x, c);
                 }
             }
         }
