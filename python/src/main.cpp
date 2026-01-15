@@ -25,16 +25,17 @@ THE SOFTWARE.
 
 #include "operators/py_op_bilateral_filter.hpp"
 #include "operators/py_op_bnd_box.hpp"
+#include "operators/py_op_center_crop.hpp"
 #include "operators/py_op_composite.hpp"
 #include "operators/py_op_copy_make_border.hpp"
 #include "operators/py_op_custom_crop.hpp"
-#include "operators/py_op_center_crop.hpp"
 #include "operators/py_op_cvt_color.hpp"
 #include "operators/py_op_flip.hpp"
 #include "operators/py_op_gamma_contrast.hpp"
 #include "operators/py_op_histogram.hpp"
 #include "operators/py_op_non_max_suppression.hpp"
 #include "operators/py_op_normalize.hpp"
+#include "operators/py_op_reformat.hpp"
 #include "operators/py_op_remap.hpp"
 #include "operators/py_op_resize.hpp"
 #include "operators/py_op_rotate.hpp"
@@ -76,4 +77,5 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpCopyMakeBorder::Export(m);
     PyOpCenterCrop::Export(m);
     PyOpHistogram::Export(m);
+    PyOpReformat::Export(m);
 }

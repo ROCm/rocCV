@@ -51,6 +51,11 @@ void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Ten
             Kernels::Host::reformat<Channels, T>(inputWrap, outputWrap);
             break;
         }
+
+        default: {
+            throw Exception("Unsupported device type for Reformat operation.", eStatusType::INVALID_OPERATION);
+            break;
+        }
     }
 }
 
@@ -67,7 +72,7 @@ void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor&
 
     auto func = funcs.at(input.shape(input.layout().channels_index()) - 1);
     if (func == nullptr) {
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+        throw Exception("Unsupported channel count for Reformat operation.", eStatusType::INVALID_OPERATION);
     }
 
     func(stream, input, output, device);
@@ -117,7 +122,7 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     auto func = funcs.at(input.dtype().etype());
 
     if (func == nullptr) {
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+        throw Exception("Unsupported datatype for Reformat operation.", eStatusType::INVALID_OPERATION);
     }
 
     func(stream, input, output, device);
