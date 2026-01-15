@@ -232,6 +232,16 @@ int main(int argc, char** argv) {
     TEST_CASE(TestCorrectness<unsigned short>(1, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
     TEST_CASE(TestCorrectness<float         >(1, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_HWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
     
+    // GPU Tests - CHW to NHWC
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_CHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(1, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_CHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(1, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_CHW), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+
+    // GPU Tests - NHWC to CHW
+    TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_CHW), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<unsigned short>(1, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_CHW), DataType(eDataType::DATA_TYPE_U16),  eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float         >(1, 16,  8, 1, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_CHW), DataType(eDataType::DATA_TYPE_F32),  eDeviceType::GPU));
+
     // CPU Tests - NHWC to NCHW
     TEST_CASE(TestCorrectness<unsigned char >(1, 32, 24, 3, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_U8 ),  eDeviceType::CPU));
     TEST_CASE(TestCorrectness<signed  short >(3, 64, 48, 4, TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), TensorLayout(eTensorLayout::TENSOR_LAYOUT_NCHW), DataType(eDataType::DATA_TYPE_S16),  eDeviceType::CPU));
