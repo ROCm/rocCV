@@ -87,6 +87,16 @@ void TestTensorShapeCorrectness() {
         shape2 = shape1;
         EXPECT_TRUE(shape1 == shape2);
     }
+
+    // Test TensorShape index operator
+    {
+        TensorShape shape({1, 2, 3, 4}, "NHWC");
+        EXPECT_EQ(shape["N"], 1);
+        EXPECT_EQ(shape["H"], 2);
+        EXPECT_EQ(shape["W"], 3);
+        EXPECT_EQ(shape["C"], 4);
+        EXPECT_EXCEPTION(shape["X"], eStatusType::OUT_OF_BOUNDS);
+    }
 }
 }  // namespace
 
