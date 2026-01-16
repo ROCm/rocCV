@@ -61,7 +61,7 @@ __device__ __host__ T ScalarSaturateCast(U v) {
         // Any integral signed -> Any integral unsigned, big -> small
         return v <= static_cast<U>(std::numeric_limits<T>::min())
                    ? std::numeric_limits<T>::min()
-                   : (v >= static_cast<U>(std::numeric_limits<T>::max()) ? std::numeric_limits<T>::max
+                   : (v >= static_cast<U>(std::numeric_limits<T>::max()) ? std::numeric_limits<T>::max()
                                                                          : static_cast<T>(v));
     } else {
         // All other cases fall into this
