@@ -96,6 +96,14 @@ class TensorShape {
      */
     const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &shape() const;
 
+    /**
+     * @brief Permutes the tensor shape to the given layout.
+     *
+     * @param[in] layout The layout to permute the tensor shape to.
+     * @return The permuted tensor shape.
+     */
+    TensorShape permute(const TensorLayout &layout) const;
+
     // Operators
     int64_t operator[](int32_t i) const;
     int64_t operator[](std::string_view dimension) const;

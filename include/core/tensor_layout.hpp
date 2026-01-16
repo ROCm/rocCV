@@ -73,6 +73,13 @@ class TensorLayout {
     int32_t indexOf(std::string_view dim) const;
 
     /**
+     * @brief Returns the layout string representing the layout.
+     *
+     * @return The layout string.
+     */
+    inline const std::string &string() const { return m_layoutString; }
+
+    /**
      * @brief Returns the layout enum stored in the TensorLayout object.
      *
      * @return eTensorLayout
