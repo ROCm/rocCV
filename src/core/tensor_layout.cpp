@@ -46,4 +46,6 @@ int32_t TensorLayout::indexOf(std::string_view dim) const {
     return index;
 }
 
+std::string_view TensorLayout::dimAt(int32_t index) const { return std::string_view(&m_layoutString[index], 1); }
+
 }  // namespace roccv

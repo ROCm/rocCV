@@ -152,10 +152,9 @@ const TensorLayout &TensorShape::layout() const { return m_layout; }
 const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &TensorShape::shape() const { return m_shape; }
 
 TensorShape TensorShape::permute(const TensorLayout &layout) const {
-    const std::string &layoutString = layout.string();
     std::vector<int64_t> permutedShape(layout.rank());
     for (int32_t i = 0; i < layout.rank(); i++) {
-        permutedShape[i] = operator[](std::to_string(layoutString[i]));
+        permutedShape[i] = operator[](layout.dimAt(i));
     }
     return TensorShape(layout, permutedShape);
 }

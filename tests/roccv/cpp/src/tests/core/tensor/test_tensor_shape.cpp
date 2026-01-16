@@ -97,6 +97,17 @@ void TestTensorShapeCorrectness() {
         EXPECT_EQ(shape["C"], 4);
         EXPECT_EXCEPTION(shape["X"], eStatusType::OUT_OF_BOUNDS);
     }
+
+    // Test TensorShape permute operator
+    {
+        TensorShape shape({1, 2, 3, 4}, "NHWC");
+        TensorShape permutedShape = shape.permute(TensorLayout(TENSOR_LAYOUT_NCHW));
+        EXPECT_TRUE(permutedShape.layout() == eTensorLayout::TENSOR_LAYOUT_NCHW);
+        EXPECT_EQ(permutedShape["N"], 1);
+        EXPECT_EQ(permutedShape["C"], 4);
+        EXPECT_EQ(permutedShape["H"], 2);
+        EXPECT_EQ(permutedShape["W"], 3);
+    }
 }
 }  // namespace
 

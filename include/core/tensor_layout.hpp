@@ -73,6 +73,14 @@ class TensorLayout {
     int32_t indexOf(std::string_view dim) const;
 
     /**
+     * @brief Returns the dimension at the given index in the layout.
+     *
+     * @param[in] index The index of the dimension to get.
+     * @return The dimension at the given index.
+     */
+    std::string_view dimAt(int32_t index) const;
+
+    /**
      * @brief Returns the layout string representing the layout.
      *
      * @return The layout string.
