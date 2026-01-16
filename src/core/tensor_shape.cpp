@@ -113,6 +113,8 @@ int64_t TensorShape::operator[](int32_t i) const {
     return m_shape[i];
 }
 
+int64_t TensorShape::operator[](std::string_view dimension) const { return operator[](m_layout.indexOf(dimension)); }
+
 bool TensorShape::operator==(const TensorShape &rhs) const {
     if (this->m_layout != rhs.m_layout) {
         return false;

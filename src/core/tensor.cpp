@@ -77,6 +77,8 @@ TensorShape Tensor::shape() const { return TensorShape(m_requirements.shape, m_r
 
 int64_t Tensor::shape(int d) const& { return shape()[d]; }
 
+int64_t Tensor::shape(std::string_view dimension) const& { return shape()[dimension]; }
+
 DataType Tensor::dtype() const { return DataType(m_requirements.dtype); }
 
 TensorLayout Tensor::layout() const { return TensorLayout(m_requirements.layout); }

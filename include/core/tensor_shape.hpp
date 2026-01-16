@@ -98,6 +98,7 @@ class TensorShape {
 
     // Operators
     int64_t operator[](int32_t i) const;
+    int64_t operator[](std::string_view dimension) const;
     TensorShape &operator=(const TensorShape &other);
     bool operator==(const TensorShape &rhs) const;
     bool operator!=(const TensorShape &rhs) const;

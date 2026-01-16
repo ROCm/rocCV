@@ -120,6 +120,14 @@ class Tensor {
     int64_t shape(int d) const &;
 
     /**
+     * @brief Retrieves a specific dimension size from the tensor shape using a character representing the dimension.
+     *
+     * @param[in] dimension The dimension to get the size of. This is a character representing the dimension.
+     * @return The size of the specified dimension.
+     */
+    int64_t shape(std::string_view dimension) const &;
+
+    /**
      * @brief Returns the data type of the tensor
      *
      * @return Data type of the tensor
