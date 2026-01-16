@@ -99,6 +99,10 @@ class TensorShape {
     /**
      * @brief Permutes the tensor shape to the given layout.
      *
+     * @note This operation requires that the set of dimensions in the new layout are a subset of the dimensions in the
+     * current layout. For example, a tensor shape with layout HWC cannot be permuted to layout NCHW because NCHW has
+     * dimension N that is not present in HWC.
+
      * @param[in] layout The layout to permute the tensor shape to.
      * @return The permuted tensor shape.
      */
