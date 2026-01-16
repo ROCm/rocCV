@@ -20,22 +20,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "op_bilateral_filter.hpp"
-#include "op_bnd_box.hpp"
-#include "op_composite.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_custom_crop.hpp"
-#include "op_center_crop.hpp"
-#include "op_cvt_color.hpp"
-#include "op_flip.hpp"
-#include "op_gamma_contrast.hpp"
-#include "op_histogram.hpp"
-#include "op_non_max_suppression.hpp"
-#include "op_normalize.hpp"
-#include "op_remap.hpp"
-#include "op_resize.hpp"
-#include "op_rotate.hpp"
-#include "op_thresholding.hpp"
-#include "op_warp_affine.hpp"
-#include "op_warp_perspective.hpp"
-#include "op_convert_to.hpp"
+#pragma once
+
+#include <hip/hip_runtime.h>
+#include "core/detail/casting.hpp"
+#include "core/detail/type_traits.hpp"
+#include "core/wrappers/image_wrapper.hpp"
+
+namespace Kernels {
+namespace Device {
+template <typename SrcWrapper, typename DstWrapper, typename DT_AB>
+__global__ void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_AB beta) {
+    using namespace roccv::detail;  // For RangeCast, NumElements, etc.
+    using dst_type = typename DstWrapper::ValueType;
+
+    const int x = threadIdx.x + blockIdx.x * blockDim.x;
+    const int y = threadIdx.y + blockIdx.y * blockDim.y;
+    const int batch = blockIdx.z;
+
+    if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
+
+    output.at(batch, y, x, 0) = SaturateCast<dst_type>(alpha * (input.at(batch, y, x, 0)) + beta);
+
+}
+}   // namespace Device
+}   // namespace Kernels

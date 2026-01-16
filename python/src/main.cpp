@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "operators/py_op_bnd_box.hpp"
 #include "operators/py_op_center_crop.hpp"
 #include "operators/py_op_composite.hpp"
+#include "operators/py_op_convert_to.hpp"
 #include "operators/py_op_copy_make_border.hpp"
 #include "operators/py_op_custom_crop.hpp"
 #include "operators/py_op_cvt_color.hpp"
@@ -78,4 +79,5 @@ PYBIND11_MODULE(_rocpycv, m) {
     PyOpCenterCrop::Export(m);
     PyOpHistogram::Export(m);
     PyOpReformat::Export(m);
+    PyOpConvertTo::Export(m);
 }
