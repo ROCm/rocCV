@@ -88,6 +88,14 @@ class TensorLayout {
     inline const std::string &string() const { return m_layoutString; }
 
     /**
+     * @brief Returns true if the layout contains the given dimension, false otherwise.
+     *
+     * @param[in] dim The dimension to check for.
+     * @return True if the layout contains the dimension, false otherwise.
+     */
+    inline bool containsDim(std::string_view dim) const { return indexOf(dim) != -1; }
+
+    /**
      * @brief Returns the layout enum stored in the TensorLayout object.
      *
      * @return eTensorLayout

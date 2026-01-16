@@ -108,6 +108,14 @@ class TensorShape {
      */
     TensorShape permute(const TensorLayout &layout) const;
 
+    /**
+     * @brief Returns true if the tensor shape contains the given dimension, false otherwise.
+     *
+     * @param[in] dim The dimension to check for.
+     * @return True if the tensor shape contains the dimension, false otherwise.
+     */
+    inline bool containsDim(std::string_view dim) const { return m_layout.containsDim(dim); }
+
     // Operators
     int64_t operator[](int32_t i) const;
     int64_t operator[](std::string_view dimension) const;

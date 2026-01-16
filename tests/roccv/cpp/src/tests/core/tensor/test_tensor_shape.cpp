@@ -114,6 +114,15 @@ void TestTensorShapeCorrectness() {
         EXPECT_EQ(permutedShape["H"], 2);
         EXPECT_EQ(permutedShape["W"], 3);
     }
+
+    // Test TensorShape containsDim operator
+    {
+        TensorShape shape({1, 2, 3}, "HWC");
+        EXPECT_TRUE(shape.containsDim("H"));
+        EXPECT_TRUE(shape.containsDim("W"));
+        EXPECT_TRUE(shape.containsDim("C"));
+        EXPECT_FALSE(shape.containsDim("N"));
+    }
 }
 }  // namespace
 
