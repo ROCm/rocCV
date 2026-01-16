@@ -46,6 +46,14 @@ int32_t TensorLayout::indexOf(std::string_view dim) const {
     return index;
 }
 
-std::string_view TensorLayout::dimAt(int32_t index) const { return std::string_view(&m_layoutString[index], 1); }
+std::string_view TensorLayout::dimAt(int32_t index) const {
+    if (index < 0 || index >= m_rank) {
+        throw Exception(
+            "Invalid index: " + std::to_string(index) + ". Index must be >= 0 and < " + std::to_string(m_rank),
+            eStatusType::OUT_OF_BOUNDS);
+    }
+
+    return std::string_view(&m_layoutString[index], 1);
+}
 
 }  // namespace roccv

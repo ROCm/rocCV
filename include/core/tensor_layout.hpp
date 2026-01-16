@@ -137,6 +137,6 @@ class TensorLayout {
    private:
     eTensorLayout m_layout;
     std::string m_layoutString;
-    int m_rank;
+    int32_t m_rank;
 };
 }  // namespace roccv
