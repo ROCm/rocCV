@@ -7,6 +7,7 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 ### Added
 - Reflect 101 border mode.
 - Bicubic interpolation.
+- Convert To operator.
 
 ### Changed
 
