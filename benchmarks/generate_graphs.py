@@ -106,7 +106,7 @@ if __name__ == "__main__":
     for category in data["results"]:
         benchmarks_in_category = data["results"][category]
 
-        fig, ax = plt.subplots(1, 2, dpi=200, figsize=(10, 6))
+        fig, ax = plt.subplots(1, 3, dpi=200, figsize=(15, 6))
 
         # Setup execution time axis
         ex_time_ax = ax[0]
@@ -122,6 +122,13 @@ if __name__ == "__main__":
         fps_ax.set_title("Frames per Second")
         fps_ax.set_yscale('log')
 
+        # Setup throughput axis
+        throughput_ax = ax[2]
+        throughput_ax.set_ylabel("Throughput (GB/s) [Log Scale]\n(Higher is better)")
+        throughput_ax.set_xlabel("Batch Size")
+        throughput_ax.set_title("Total Memory Throughput")
+        throughput_ax.set_yscale('log')
+
         # Gather data and plot results
         benchmark_names = []
         execution_time_data = []
@@ -129,19 +136,22 @@ if __name__ == "__main__":
         image_height = data["results"][category][0]["height"][0]
         image_width = data["results"][category][0]["width"][0]
         fps_data = []
+        throughput_data = []
 
         for benchmark in benchmarks_in_category:
             benchmark_names.append(benchmark["name"])
             execution_time_data.append(benchmark["execution_time"])
             fps_data.append([1000 / (benchmark["execution_time"][i] / samples[i])
                             for i in range(len(benchmark["execution_time"]))])
+            throughput_data.append([(samples[i] * image_width * image_height * 3) / (benchmark["execution_time"][i] / 1000.0) / 1e9 for i in range(len(benchmark["execution_time"]))])
 
         plot_annotated_bars(ex_time_ax, samples, execution_time_data, benchmark_names)
         plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names)
+        plot_annotated_bars(throughput_ax, samples, throughput_data, benchmark_names)
 
         ex_time_ax.legend()
         fps_ax.legend()
-
+        throughput_ax.legend()
         # Set bottom text for entire figure
         fig.subplots_adjust(bottom=0.2)  # Adjust bottom to make space for footnote
         fig.text(0.5, 0.04, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote

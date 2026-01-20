@@ -27,6 +27,8 @@
 
 namespace roccvbench {
 
+static constexpr int NUM_WARMUP_RUNS = 5;
+
 /**
  * @brief Generates a one-dimensional vector of the given size and type.
  *
@@ -62,16 +64,20 @@ std::vector<T> RandVector(size_t size) {
  * the mean of the results. The resulting mean is written to <executionTime>.
  *
  */
-#define ROCCV_BENCH_RECORD_BLOCK(code, executionTime, numRuns)                                              \
-    {                                                                                                       \
-        double totalExecutionTime = 0.0;                                                                    \
-        for (int i = 0; i < numRuns; i++) {                                                                 \
-            auto blockStart = std::chrono::high_resolution_clock::now();                                    \
-            code;                                                                                           \
-            auto blockEnd = std::chrono::high_resolution_clock::now();                                      \
-            totalExecutionTime += std::chrono::duration<double, std::milli>(blockEnd - blockStart).count(); \
-        }                                                                                                   \
-        executionTime = totalExecutionTime / numRuns;                                                       \
+#define ROCCV_BENCH_RECORD_BLOCK(code, executionTime, numRuns)                                                  \
+    {                                                                                                           \
+        double totalExecutionTime = 0.0;                                                                        \
+        int numValidRuns = 0;                                                                                   \
+        for (int i = 0; i < numRuns; i++) {                                                                     \
+            auto blockStart = std::chrono::high_resolution_clock::now();                                        \
+            code;                                                                                               \
+            auto blockEnd = std::chrono::high_resolution_clock::now();                                          \
+            if (i >= roccvbench::NUM_WARMUP_RUNS) {                                                             \
+                totalExecutionTime += std::chrono::duration<double, std::milli>(blockEnd - blockStart).count(); \
+                numValidRuns++;                                                                                 \
+            }                                                                                                   \
+        }                                                                                                       \
+        executionTime = totalExecutionTime / numValidRuns;                                                      \
     }
 
 }  // namespace roccvbench
