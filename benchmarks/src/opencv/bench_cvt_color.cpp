@@ -31,6 +31,9 @@ BENCHMARK(CvtColor, OpenCV) {
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
     std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC1);
 
+    RegisterMemoryUsage(mats, results.inputMemoryBytes);
+    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
+
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {

@@ -34,6 +34,10 @@ BENCHMARK(WarpPerspective, OpenCV) {
     std::vector<float> transformData = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
     cv::Mat transform(3, 3, CV_32F, transformData.data());
 
+    RegisterMemoryUsage(mats, results.inputMemoryBytes);
+    RegisterMemoryUsage(transform, results.inputMemoryBytes);
+    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
+
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (const auto& mat : mats) {

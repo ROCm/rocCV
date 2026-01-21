@@ -34,6 +34,10 @@ BENCHMARK(WarpAffine, OpenCV) {
     std::vector<float> affineMatData = {1, 0, 0, 1, -1, 120};
     cv::Mat affineMat(2, 3, CV_32F, affineMatData.data());
 
+    RegisterMemoryUsage(mats, results.inputMemoryBytes);
+    RegisterMemoryUsage(affineMat, results.inputMemoryBytes);
+    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
+
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (const auto& mat : mats) {

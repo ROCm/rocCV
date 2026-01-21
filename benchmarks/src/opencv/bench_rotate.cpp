@@ -30,6 +30,9 @@ BENCHMARK(Rotate, OpenCV) {
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
     std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
+    RegisterMemoryUsage(mats, results.inputMemoryBytes);
+    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
+
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (const auto& mat : mats) {
