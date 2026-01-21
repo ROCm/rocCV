@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(CopyMakeBorder, GPU_Constant) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -45,6 +44,9 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
         Tensor::CalcRequirements(config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -67,7 +69,6 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
 
 BENCHMARK(CopyMakeBorder, CPU_Constant) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -80,6 +81,9 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
         config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

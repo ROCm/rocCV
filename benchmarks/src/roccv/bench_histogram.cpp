@@ -34,7 +34,6 @@ using namespace roccv;
 
 BENCHMARK(Histogram, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
@@ -42,6 +41,9 @@ BENCHMARK(Histogram, GPU) {
 
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -63,7 +65,6 @@ BENCHMARK(Histogram, GPU) {
 
 BENCHMARK(Histogram, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements inReqs =
         Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
@@ -73,6 +74,9 @@ BENCHMARK(Histogram, CPU) {
 
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -44,6 +43,11 @@ BENCHMARK(ThresholdBinary, GPU) {
         Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64));
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(thresh, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);
@@ -67,7 +71,6 @@ BENCHMARK(ThresholdBinary, GPU) {
 
 BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -79,6 +82,11 @@ BENCHMARK(ThresholdBinary, CPU) {
         TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64), eDeviceType::CPU);
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(thresh, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);

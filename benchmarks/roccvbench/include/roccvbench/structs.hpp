@@ -21,7 +21,9 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstddef>
+#include <functional>
+#include <string>
 
 namespace roccvbench {
 
@@ -30,7 +32,9 @@ namespace roccvbench {
  *
  */
 struct BenchmarkResults {
-    double executionTime;
+    double executionTime = 0.0;
+    size_t inputMemoryBytes = 0;
+    size_t outputMemoryBytes = 0;
 };
 
 /**

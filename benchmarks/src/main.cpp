@@ -312,6 +312,8 @@ int main(int argc, char** argv) {
                     runResultsJson["runs"].push_back(config.runs);
                     runResultsJson["execution_time"].push_back(result.executionTime);
                     runResultsJson["samples"].push_back(config.samples);
+                    runResultsJson["input_memory_bytes"].push_back(result.inputMemoryBytes);
+                    runResultsJson["output_memory_bytes"].push_back(result.outputMemoryBytes);
                 }
                 std::cout << std::endl;
 

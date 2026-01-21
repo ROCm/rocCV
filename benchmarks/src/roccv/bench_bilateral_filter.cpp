@@ -33,12 +33,14 @@ using namespace roccv;
 
 BENCHMARK(BilateralFilter, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs =
         Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
     Tensor input(reqs);
     Tensor output(reqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -61,12 +63,14 @@ BENCHMARK(BilateralFilter, GPU) {
 
 BENCHMARK(BilateralFilter, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs =
         Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

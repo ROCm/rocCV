@@ -48,13 +48,16 @@ double2 ComputeCenterShift(const double centerX, const double centerY, const dou
 
 BENCHMARK(Rotate, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8));
     Tensor input(reqs);
     Tensor output(reqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+
     FillTensor(input);
 
     const double angle = 180;
@@ -80,13 +83,16 @@ BENCHMARK(Rotate, GPU) {
 
 BENCHMARK(Rotate, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
         DataType(DATA_TYPE_U8), eDeviceType::CPU);
     Tensor input(reqs);
     Tensor output(reqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+
     FillTensor(input);
 
     const double angle = 180;

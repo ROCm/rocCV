@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(Normalize, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -44,6 +43,11 @@ BENCHMARK(Normalize, GPU) {
         TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}), DataType(eDataType::DATA_TYPE_F32));
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(scale, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(base, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);
@@ -67,7 +71,6 @@ BENCHMARK(Normalize, GPU) {
 
 BENCHMARK(Normalize, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -80,6 +83,11 @@ BENCHMARK(Normalize, CPU) {
                                  DataType(eDataType::DATA_TYPE_F32), eDeviceType::CPU);
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(scale, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(base, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);

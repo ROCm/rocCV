@@ -34,7 +34,6 @@ using namespace roccv;
 
 BENCHMARK(Composite, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -45,6 +44,11 @@ BENCHMARK(Composite, GPU) {
     Tensor foreground(reqs);
     Tensor mask(maskReqs);
     Tensor output(reqs);
+
+    roccvbench::RegisterMemoryUsage(background, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(foreground, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(mask, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);
@@ -69,7 +73,6 @@ BENCHMARK(Composite, GPU) {
 
 BENCHMARK(Composite, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -82,6 +85,11 @@ BENCHMARK(Composite, CPU) {
     Tensor foreground(reqs);
     Tensor mask(maskReqs);
     Tensor output(reqs);
+
+    roccvbench::RegisterMemoryUsage(background, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(foreground, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(mask, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);

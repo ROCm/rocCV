@@ -22,6 +22,7 @@
 #pragma once
 
 #include <chrono>
+#include <core/tensor.hpp>
 #include <random>
 #include <vector>
 
@@ -57,6 +58,10 @@ std::vector<T> RandVector(size_t size) {
     }
 
     return result;
+}
+
+static void RegisterMemoryUsage(const roccv::Tensor& tensor, size_t& memoryUsage) {
+    memoryUsage += tensor.shape().size() * tensor.dtype().size();
 }
 
 /**

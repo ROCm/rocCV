@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(CvtColor, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements inReqs =
         Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
@@ -41,6 +40,9 @@ BENCHMARK(CvtColor, GPU) {
         Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8);
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -62,7 +64,6 @@ BENCHMARK(CvtColor, GPU) {
 
 BENCHMARK(CvtColor, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements inReqs =
         Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
@@ -70,6 +71,9 @@ BENCHMARK(CvtColor, CPU) {
         Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

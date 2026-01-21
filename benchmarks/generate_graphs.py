@@ -143,7 +143,7 @@ if __name__ == "__main__":
             execution_time_data.append(benchmark["execution_time"])
             fps_data.append([1000 / (benchmark["execution_time"][i] / samples[i])
                             for i in range(len(benchmark["execution_time"]))])
-            throughput_data.append([(samples[i] * image_width * image_height * 3) / (benchmark["execution_time"][i] / 1000.0) / 1e9 for i in range(len(benchmark["execution_time"]))])
+            throughput_data.append([(benchmark["input_memory_bytes"][i] + benchmark["output_memory_bytes"][i]) / (benchmark["execution_time"][i] / 1000.0) / 1e9 for i in range(len(benchmark["execution_time"]))])
 
         plot_annotated_bars(ex_time_ax, samples, execution_time_data, benchmark_names)
         plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names)
@@ -153,7 +153,7 @@ if __name__ == "__main__":
         fps_ax.legend()
         throughput_ax.legend()
         # Set bottom text for entire figure
-        fig.subplots_adjust(bottom=0.2)  # Adjust bottom to make space for footnote
+        fig.subplots_adjust(bottom=0.2, wspace=0.35)
         fig.text(0.5, 0.04, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
         fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit Images)")
 

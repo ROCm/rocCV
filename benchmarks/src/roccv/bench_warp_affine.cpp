@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(WarpAffine, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -43,6 +42,9 @@ BENCHMARK(WarpAffine, GPU) {
     AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
 
     FillTensor(input);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     WarpAffine op;
     hipStream_t stream;
@@ -63,7 +65,6 @@ BENCHMARK(WarpAffine, GPU) {
 
 BENCHMARK(WarpAffine, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -74,6 +75,9 @@ BENCHMARK(WarpAffine, CPU) {
     AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
 
     FillTensor(input);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     WarpAffine op;
     ROCCV_BENCH_RECORD_BLOCK(

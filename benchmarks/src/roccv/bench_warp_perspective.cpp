@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(WarpPerspective, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -43,6 +42,9 @@ BENCHMARK(WarpPerspective, GPU) {
     PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
     FillTensor(input);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     WarpPerspective op;
     hipStream_t stream;
@@ -63,7 +65,6 @@ BENCHMARK(WarpPerspective, GPU) {
 
 BENCHMARK(WarpPerspective, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -74,6 +75,9 @@ BENCHMARK(WarpPerspective, CPU) {
     PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
     FillTensor(input);
+
+    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
+    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     WarpPerspective op;
     ROCCV_BENCH_RECORD_BLOCK(
