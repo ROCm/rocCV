@@ -41,8 +41,8 @@ BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            for (const auto& mat : mats) {
-                cv::copyMakeBorder(mat, outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::copyMakeBorder(mats[i], outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
             }
         },
         results.executionTime, config.runs);

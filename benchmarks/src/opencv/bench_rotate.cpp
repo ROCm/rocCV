@@ -35,8 +35,8 @@ BENCHMARK(Rotate, OpenCV) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            for (const auto& mat : mats) {
-                cv::rotate(mat, outputs[i], cv::ROTATE_180);
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::rotate(mats[i], outputs[i], cv::ROTATE_180);
             }
         },
         results.executionTime, config.runs);

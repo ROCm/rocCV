@@ -40,8 +40,8 @@ BENCHMARK(WarpPerspective, OpenCV) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            for (const auto& mat : mats) {
-                cv::warpPerspective(mat, outputs[i], transform, outputs[i].size(), cv::INTER_LINEAR,
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::warpPerspective(mats[i], outputs[i], transform, outputs[i].size(), cv::INTER_LINEAR,
                                     cv::BORDER_CONSTANT, 0);
             }
         },
