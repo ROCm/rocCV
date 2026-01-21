@@ -29,7 +29,7 @@ BENCHMARK(WarpAffine, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    cv::Mat outputMat(config.height, config.width, CV_8UC3);
+    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
     std::vector<float> affineMatData = {1, 0, 0, 1, -1, 120};
     cv::Mat affineMat(2, 3, CV_32F, affineMatData.data());
@@ -37,7 +37,7 @@ BENCHMARK(WarpAffine, OpenCV) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (const auto& mat : mats) {
-                cv::warpAffine(mat, outputMat, affineMat, outputMat.size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
+                cv::warpAffine(mat, outputs[i], affineMat, outputs[i].size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
             }
         },
         results.executionTime, config.runs);

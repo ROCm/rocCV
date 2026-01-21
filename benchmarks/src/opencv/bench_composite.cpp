@@ -32,18 +32,18 @@ BENCHMARK(Composite, OpenCV) {
     std::vector<cv::Mat> foregrounds = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
     std::vector<cv::Mat> weights1 = GenerateMats<float>(config.samples, config.width, config.height, CV_32F);
     std::vector<cv::Mat> weights2 = GenerateMats<float>(config.samples, config.width, config.height, CV_32F);
-    cv::Mat outputMat(config.height, config.width, CV_8UC3);
+    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
     RegisterMemoryUsage(backgrounds, results.inputMemoryBytes);
     RegisterMemoryUsage(foregrounds, results.inputMemoryBytes);
     RegisterMemoryUsage(weights1, results.inputMemoryBytes);
     RegisterMemoryUsage(weights2, results.inputMemoryBytes);
-    RegisterMemoryUsage(outputMat, results.outputMemoryBytes);
+    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < backgrounds.size(); i++) {
-                cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputMat);
+                cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputs[i]);
             }
         },
         results.executionTime, config.runs);

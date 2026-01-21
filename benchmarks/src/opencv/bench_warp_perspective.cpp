@@ -29,7 +29,7 @@ BENCHMARK(WarpPerspective, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    cv::Mat outputMat(config.height, config.width, CV_8UC3);
+    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
     std::vector<float> transformData = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
     cv::Mat transform(3, 3, CV_32F, transformData.data());
@@ -37,8 +37,8 @@ BENCHMARK(WarpPerspective, OpenCV) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (const auto& mat : mats) {
-                cv::warpPerspective(mat, outputMat, transform, outputMat.size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT,
-                                    0);
+                cv::warpPerspective(mat, outputs[i], transform, outputs[i].size(), cv::INTER_LINEAR,
+                                    cv::BORDER_CONSTANT, 0);
             }
         },
         results.executionTime, config.runs);

@@ -29,12 +29,12 @@ BENCHMARK(Flip, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    cv::Mat outputMat(config.height, config.width, CV_8UC3);
+    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::flip(mats[i], outputMat, -1);
+                cv::flip(mats[i], outputs[i], -1);
             }
         },
         results.executionTime, config.runs);

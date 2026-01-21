@@ -34,12 +34,30 @@
  * @return A cv::Mat with randomly generated data.
  */
 template <typename T>
-cv::Mat GenerateMat(int width, int height, int datatype) {
+inline cv::Mat GenerateMat(int width, int height, int datatype) {
     const size_t vecSize = width * height * CV_MAT_CN(datatype);
     std::vector<T> data = roccvbench::RandVector<T>(vecSize);
 
     cv::Mat mat(height, width, datatype, data.data());
     return mat.clone();
+}
+
+/**
+ * @brief Creates a list of empty cv::Mat's to be used as output matrices.
+ *
+ * @param samples Number of images in the batch.
+ * @param width Image width.
+ * @param height Image height.
+ * @param datatype OpenCV datatype for the image. (e.g. CV_U8C3)
+ * @return A list of cv::Mat.
+ */
+inline std::vector<cv::Mat> CreateOutputMats(int samples, int width, int height, int datatype) {
+    std::vector<cv::Mat> mats;
+    mats.reserve(samples);
+    for (int i = 0; i < samples; i++) {
+        mats.push_back(cv::Mat(height, width, datatype));
+    }
+    return mats;
 }
 
 /**
@@ -53,7 +71,7 @@ cv::Mat GenerateMat(int width, int height, int datatype) {
  * @return A list of cv::Mat with randomly generated data.
  */
 template <typename T>
-std::vector<cv::Mat> GenerateMats(int samples, int width, int height, int datatype) {
+inline std::vector<cv::Mat> GenerateMats(int samples, int width, int height, int datatype) {
     std::vector<cv::Mat> batch;
     batch.reserve(samples);
     for (int i = 0; i < samples; i++) {
