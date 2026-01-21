@@ -55,8 +55,8 @@ BENCHMARK(Rotate, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -90,8 +90,8 @@ BENCHMARK(Rotate, CPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

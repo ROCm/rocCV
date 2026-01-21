@@ -44,10 +44,10 @@ BENCHMARK(Normalize, GPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(scale, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(base, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(scale, results.inputMemoryBytes);
+    RegisterMemoryUsage(base, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);
@@ -84,10 +84,10 @@ BENCHMARK(Normalize, CPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(scale, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(base, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(scale, results.inputMemoryBytes);
+    RegisterMemoryUsage(base, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);

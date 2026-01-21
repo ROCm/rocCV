@@ -44,10 +44,10 @@ BENCHMARK(ThresholdBinary, GPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(thresh, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
+    RegisterMemoryUsage(thresh, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);
@@ -83,10 +83,10 @@ BENCHMARK(ThresholdBinary, CPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(thresh, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
+    RegisterMemoryUsage(thresh, results.inputMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);

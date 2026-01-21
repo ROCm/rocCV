@@ -43,8 +43,8 @@ BENCHMARK(WarpPerspective, GPU) {
 
     FillTensor(input);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     WarpPerspective op;
     hipStream_t stream;
@@ -76,8 +76,8 @@ BENCHMARK(WarpPerspective, CPU) {
 
     FillTensor(input);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     WarpPerspective op;
     ROCCV_BENCH_RECORD_BLOCK(

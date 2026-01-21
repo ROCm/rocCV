@@ -41,8 +41,8 @@ BENCHMARK(Resize, GPU) {
     Tensor input(inputReqs);
     Tensor output(outputReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -72,8 +72,8 @@ BENCHMARK(Resize, CPU) {
     Tensor input(inputReqs);
     Tensor output(outputReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

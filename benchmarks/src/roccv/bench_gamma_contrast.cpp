@@ -40,8 +40,8 @@ BENCHMARK(GammaContrast, GPU) {
     Tensor output(reqs);
     float gamma = 2.2f;
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -71,8 +71,8 @@ BENCHMARK(GammaContrast, CPU) {
     Tensor output(reqs);
     float gamma = 2.2f;
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

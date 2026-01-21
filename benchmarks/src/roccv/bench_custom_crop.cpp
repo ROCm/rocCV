@@ -43,8 +43,8 @@ BENCHMARK(CustomCrop, GPU) {
                               {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype());
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -77,8 +77,8 @@ BENCHMARK(CustomCrop, CPU) {
                               {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype(), eDeviceType::CPU);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

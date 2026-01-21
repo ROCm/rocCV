@@ -60,10 +60,6 @@ std::vector<T> RandVector(size_t size) {
     return result;
 }
 
-static void RegisterMemoryUsage(const roccv::Tensor& tensor, size_t& memoryUsage) {
-    memoryUsage += tensor.shape().size() * tensor.dtype().size();
-}
-
 /**
  * @brief Records the execution time in milliseconds of a block of code <code> by running it <numRuns> times and taking
  * the mean of the results. The resulting mean is written to <executionTime>.

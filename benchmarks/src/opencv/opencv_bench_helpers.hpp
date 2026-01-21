@@ -61,3 +61,25 @@ std::vector<cv::Mat> GenerateMats(int samples, int width, int height, int dataty
     }
     return batch;
 }
+
+/**
+ * @brief Registers the memory usage of a cv::Mat.
+ *
+ * @param mat The cv::Mat to register the memory usage of.
+ * @param memoryUsage The memory usage to register.
+ */
+inline void RegisterMemoryUsage(const cv::Mat& mat, size_t& memoryUsage) {
+    memoryUsage += mat.total() * mat.elemSize();
+}
+
+/**
+ * @brief Registers the memory usage of a list of cv::Mat.
+ *
+ * @param mats The list of cv::Mat to register the memory usage of.
+ * @param memoryUsage The memory usage to register.
+ */
+inline void RegisterMemoryUsage(const std::vector<cv::Mat>& mats, size_t& memoryUsage) {
+    for (const auto& mat : mats) {
+        RegisterMemoryUsage(mat, memoryUsage);
+    }
+}

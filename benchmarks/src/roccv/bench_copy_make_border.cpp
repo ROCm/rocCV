@@ -45,8 +45,8 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 
@@ -82,8 +82,8 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    roccvbench::RegisterMemoryUsage(input, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

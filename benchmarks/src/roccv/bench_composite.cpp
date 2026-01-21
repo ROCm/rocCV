@@ -45,10 +45,10 @@ BENCHMARK(Composite, GPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
-    roccvbench::RegisterMemoryUsage(background, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(foreground, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(mask, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(background, results.inputMemoryBytes);
+    RegisterMemoryUsage(foreground, results.inputMemoryBytes);
+    RegisterMemoryUsage(mask, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);
@@ -86,10 +86,10 @@ BENCHMARK(Composite, CPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
-    roccvbench::RegisterMemoryUsage(background, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(foreground, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(mask, results.inputMemoryBytes);
-    roccvbench::RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(background, results.inputMemoryBytes);
+    RegisterMemoryUsage(foreground, results.inputMemoryBytes);
+    RegisterMemoryUsage(mask, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);
