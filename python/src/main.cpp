@@ -49,7 +49,7 @@ THE SOFTWARE.
 #include "py_structs.hpp"
 #include "py_tensor.hpp"
 
-PYBIND11_MODULE(_rocpycv, m) {
+PYBIND11_MODULE(rocpycv, m) {
     m.doc() = R"pbdoc(
         Python API reference
         -----------------------

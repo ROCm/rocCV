@@ -154,7 +154,13 @@ const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &TensorShape::shape() const { r
 TensorShape TensorShape::permute(const TensorLayout &layout) const {
     std::vector<int64_t> permutedShape(layout.rank());
     for (int32_t i = 0; i < layout.rank(); i++) {
-        permutedShape[i] = operator[](layout.dimAt(i));
+        std::string_view dim = layout.dimAt(i);
+        int32_t index = m_layout.indexOf(dim);
+        if (index == -1) {
+            permutedShape[i] = 1;
+        } else {
+            permutedShape[i] = operator[](index);
+        }
     }
     return TensorShape(layout, permutedShape);
 }
