@@ -34,7 +34,9 @@ PyTensor PyOpReformat::Execute(PyTensor& input, eTensorLayout outLayout,
                                std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     // TODO: Construct output tensor with the correct layout.
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
-    auto outputTensor = std::make_shared<roccv::Tensor>(input.getTensor()->shape(), input.getTensor()->dtype(), device);
+    roccv::TensorShape inputShape = input.getTensor()->shape();
+    roccv::TensorShape outputShape = inputShape.permute(roccv::TensorLayout(outLayout));
+    auto outputTensor = std::make_shared<roccv::Tensor>(outputShape, input.getTensor()->dtype(), device);
 
     roccv::Reformat op;
     op(hipStream, *input.getTensor(), *outputTensor, device);

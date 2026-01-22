@@ -40,8 +40,28 @@ class PyOpReformat {
      */
     static void Export(py::module& m);
 
+    /**
+     * @brief Defines the python wrapper for `roccv::Reformat`. Executes the Reformat operation and returns the result
+     * as a new tensor.
+     *
+     * @param[in] input The input tensor to reformat.
+     * @param[in] outLayout The layout to reformat the input tensor to.
+     * @param[in] stream The HIP stream to run this operation on.
+     * @param[in] device The device to run the operation on.
+     * @return The result tensor.
+     */
     static PyTensor Execute(PyTensor& input, eTensorLayout outLayout,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
+
+    /**
+     * @brief Defines the python wrapper for `roccv::Reformat`. Executes the Reformat operation and stores the result in
+     * the output tensor.
+     *
+     * @param[out] output The output tensor to store the result.
+     * @param[in] input The input tensor to reformat.
+     * @param[in] stream The HIP stream to run this operation on.
+     * @param[in] device The device to run the operation on.
+     */
     static void ExecuteInto(PyTensor& output, PyTensor& input, std::optional<std::reference_wrapper<PyStream>> stream,
                             eDeviceType device);
 };
