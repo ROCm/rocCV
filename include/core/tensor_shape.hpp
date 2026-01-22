@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -96,8 +96,29 @@ class TensorShape {
      */
     const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &shape() const;
 
+    /**
+     * @brief Permutes the tensor shape to the given layout.
+     *
+     * @note This operation requires that the set of dimensions in the new layout are a subset of the dimensions in the
+     * current layout. For example, a tensor shape with layout HWC cannot be permuted to layout NCHW because NCHW has
+     * dimension N that is not present in HWC.
+
+     * @param[in] layout The layout to permute the tensor shape to.
+     * @return The permuted tensor shape.
+     */
+    TensorShape permute(const TensorLayout &layout) const;
+
+    /**
+     * @brief Returns true if the tensor shape contains the given dimension, false otherwise.
+     *
+     * @param[in] dim The dimension to check for.
+     * @return True if the tensor shape contains the dimension, false otherwise.
+     */
+    inline bool containsDim(std::string_view dim) const { return m_layout.containsDim(dim); }
+
     // Operators
     int64_t operator[](int32_t i) const;
+    int64_t operator[](std::string_view dimension) const;
     TensorShape &operator=(const TensorShape &other);
     bool operator==(const TensorShape &rhs) const;
     bool operator!=(const TensorShape &rhs) const;

@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,21 +36,6 @@ THE SOFTWARE.
 
 namespace roccv {
 /**
- * @brief Descriptors used to specify features of a specific tensor layout type.
- *
- */
-struct TensorLayoutDesc {
-    int32_t rank;
-    int32_t batch_index;
-    int32_t width_index;
-    int32_t height_index;
-    int32_t channel_index;
-    int32_t max_features_index;
-    int32_t sift_features_index;
-    int32_t sift_octave_layer_index;
-};
-
-/**
  * @brief TensorLayout class.
  *
  */
@@ -62,38 +47,64 @@ class TensorLayout {
      * @param[in] layout The desired layout of the TensorLayout object. See
      * eTensorLayout for information on supported layouts.
      */
-    explicit TensorLayout(eTensorLayout layout) {
-        if (TensorLayout::layoutDescriptorTable.count(layout) == 0) {
-            throw Exception("Invalid TensorLayout type", eStatusType::INVALID_VALUE);
-        }
+    explicit TensorLayout(eTensorLayout layout);
 
-        layout_ = layout;
-        layout_desc_ = TensorLayout::layoutDescriptorTable.at(layout);
-    }
+    // clang-format off
+    inline static const std::unordered_map<eTensorLayout, std::string> layoutStringTable = {
+        {TENSOR_LAYOUT_HWC,     "HWC"},
+        {TENSOR_LAYOUT_NC,      "NC"},
+        {TENSOR_LAYOUT_NW,      "NW"},
+        {TENSOR_LAYOUT_NHWC,    "NHWC"},
+        {TENSOR_LAYOUT_NMC,     "NMC"},
+        {TENSOR_LAYOUT_NMD,     "NMD"},
+        {TENSOR_LAYOUT_LNHWC,   "LNHWC"},
+        {TENSOR_LAYOUT_NCHW,    "NCHW"},
+        {TENSOR_LAYOUT_N,       "N"},
+        {TENSOR_LAYOUT_NWC,     "NWC"},
+    };
+    // clang-format on
 
     /**
-     * @brief Provides descriptors for each feature of a specified layout type.
+     * @brief Returns the index of the given dimension in the layout.
+     *
+     * @param[in] dimension The dimension to get the index of.
+     * @return The index of the dimension, or -1 if the dimension is not found in the layout.
      */
-    inline static const std::unordered_map<eTensorLayout, TensorLayoutDesc> layoutDescriptorTable = {
-        {TENSOR_LAYOUT_HWC, {3, -1, 1, 0, 2, -1, -1, -1}}, {TENSOR_LAYOUT_NC, {2, 0, -1, -1, 1, -1, -1, -1}},
-        {TENSOR_LAYOUT_NW, {2, 0, 1, -1, -1, -1, -1, -1}}, {TENSOR_LAYOUT_NHWC, {4, 0, 2, 1, 3, -1, -1, -1}},
-        {TENSOR_LAYOUT_NMC, {3, 0, -1, -1, -1, 1, 2, -1}}, {TENSOR_LAYOUT_NMD, {3, 0, -1, -1, -1, 1, 2, -1}},
-        {TENSOR_LAYOUT_LNHWC, {5, 1, 3, 2, 4, -1, -1, 0}}, {TENSOR_LAYOUT_NCHW, {4, 0, 3, 2, 1, -1, -1, -1}},
-        {TENSOR_LAYOUT_N, {1, 0, -1, -1, -1, -1, -1, -1}}, {TENSOR_LAYOUT_NWC, {3, 0, 1, -1, 2, -1, -1, -1}}};
+    int32_t indexOf(std::string_view dim) const;
+
+    /**
+     * @brief Returns the dimension at the given index in the layout.
+     *
+     * @param[in] index The index of the dimension to get.
+     * @return The dimension at the given index.
+     */
+    std::string_view dimAt(int32_t index) const;
+
+    /**
+     * @brief Returns the layout string representing the layout.
+     *
+     * @return The layout string.
+     */
+    inline const std::string &string() const { return m_layoutString; }
+
+    /**
+     * @brief Returns true if the layout contains the given dimension, false otherwise.
+     *
+     * @param[in] dim The dimension to check for.
+     * @return True if the layout contains the dimension, false otherwise.
+     */
+    inline bool containsDim(std::string_view dim) const { return indexOf(dim) != -1; }
 
     /**
      * @brief Returns the layout enum stored in the TensorLayout object.
      *
      * @return eTensorLayout
      */
-    eTensorLayout elayout() const { return layout_; }
+    eTensorLayout elayout() const { return m_layout; }
 
-    bool operator==(const eTensorLayout &rhs) const { return this->layout_ == rhs; }
-
+    bool operator==(const eTensorLayout &rhs) const { return this->m_layout == rhs; }
     bool operator!=(const eTensorLayout &rhs) const { return !operator==(rhs); }
-
-    bool operator==(const TensorLayout &rhs) const { return this->layout_ == rhs.layout_; }
-
+    bool operator==(const TensorLayout &rhs) const { return this->m_layout == rhs.m_layout; }
     bool operator!=(const TensorLayout &rhs) const { return !operator==(rhs); }
 
     /**
@@ -101,60 +112,39 @@ class TensorLayout {
      *
      * @return int32_t
      */
-    int32_t rank() const { return layout_desc_.rank; }
+    int32_t rank() const { return m_rank; }
 
     /**
      * @brief Index of the batch dimension specified by layout. E.g. returns 0
      * for TENSOR_LAYOUT_NHWC.
      * @return Index or -1 if the layout does not have a batch dimension.
      */
-    int32_t batch_index() const { return layout_desc_.batch_index; }
+    int32_t batch_index() const { return indexOf("N"); }
 
     /**
      * @brief Index of the height dimension specified by layout. E.g. returns 1
      * for TENSOR_LAYOUT_NHWC.
      * @return Index of the height dimension.
      */
-    int32_t height_index() const { return layout_desc_.height_index; }
+    int32_t height_index() const { return indexOf("H"); }
 
     /**
      * @brief Index of the width dimension specified by layout. E.g. returns 2
      * for TENSOR_LAYOUT_NHWC.
      * @return Index of the width dimension.
      */
-    int32_t width_index() const { return layout_desc_.width_index; }
+    int32_t width_index() const { return indexOf("W"); }
 
     /**
      * @brief Index of the channels dimension specified by layout. E.g. returns
      * 3 for TENSOR_LAYOUT_NHWC.
      * @return Index of the channels dimension.
      */
-    int32_t channels_index() const { return layout_desc_.channel_index; }
-
-    /**
-     * @brief Index of the max features dimension specified by layout
-     *
-     * @return Index of the max features dimension or -1 if the layout does not
-     * contain it.
-     */
-    int32_t max_features_index() const { return layout_desc_.max_features_index; }
-
-    /**
-     * @brief Index of the sift features dimension specified by layout
-     *
-     * @return int32_t
-     */
-    int32_t sift_features_index() const { return layout_desc_.sift_features_index; }
-
-    /**
-     * @brief Index of the sift octave layer dimension specified by layout
-     *
-     * @return int32_t
-     */
-    int32_t sift_octave_layer_index() const { return layout_desc_.sift_octave_layer_index; }
+    int32_t channels_index() const { return indexOf("C"); }
 
    private:
-    eTensorLayout layout_;
-    TensorLayoutDesc layout_desc_;
+    eTensorLayout m_layout;
+    std::string m_layoutString;
+    int32_t m_rank;
 };
 }  // namespace roccv
