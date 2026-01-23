@@ -70,7 +70,7 @@ void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor&
     };
     // clang-format on
 
-    auto func = funcs.at(input.shape(input.layout().channels_index()) - 1);
+    auto func = funcs.at(input.shape("C") - 1);
     if (func == nullptr) {
         throw Exception("Unsupported channel count for Reformat operation.", eStatusType::INVALID_OPERATION);
     }
@@ -95,14 +95,17 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
 
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
 
+    const TensorShape inputShape = input.shape();
+    const TensorShape outputShape = output.shape();
+
     // Validate the input and output shapes
-    const int inputBatchSize = input.layout().batch_index() != -1 ? input.shape(input.layout().batch_index()) : 1;
-    const int outputBatchSize = output.layout().batch_index() != -1 ? output.shape(output.layout().batch_index()) : 1;
+    const int inputBatchSize = inputShape.containsDim("N") ? inputShape["N"] : 1;
+    const int outputBatchSize = outputShape.containsDim("N") ? outputShape["N"] : 1;
     
     CHECK_TENSOR_COMPARISON(inputBatchSize == outputBatchSize);
-    CHECK_TENSOR_COMPARISON(input.shape(input.layout().channels_index()) == output.shape(output.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) == output.shape(output.layout().width_index()));
-    CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) == output.shape(output.layout().height_index()));
+    CHECK_TENSOR_COMPARISON(inputShape["C"] == outputShape["C"]);
+    CHECK_TENSOR_COMPARISON(inputShape["W"] == outputShape["W"]);
+    CHECK_TENSOR_COMPARISON(inputShape["H"] == outputShape["H"]);
 
     // Select kernel dispatcher based on the input and output datatypes.
     static const std::unordered_map<eDataType, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,
