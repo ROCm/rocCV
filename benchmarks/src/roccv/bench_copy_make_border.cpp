@@ -110,6 +110,9 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
+
     FillTensor(input);
 
     CopyMakeBorder op;
@@ -144,6 +147,9 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
         config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    RegisterMemoryUsage(input, results.inputMemoryBytes);
+    RegisterMemoryUsage(output, results.outputMemoryBytes);
 
     FillTensor(input);
 

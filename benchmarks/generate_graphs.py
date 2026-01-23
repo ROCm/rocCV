@@ -149,12 +149,13 @@ if __name__ == "__main__":
         plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names)
         plot_annotated_bars(throughput_ax, samples, throughput_data, benchmark_names)
 
-        ex_time_ax.legend()
-        fps_ax.legend()
-        throughput_ax.legend()
+        
+        handles, labels = ex_time_ax.get_legend_handles_labels()
+        fig.legend(handles, labels, loc='lower center', ncol=len(labels), bbox_to_anchor=(0.5, 0.10))
+
         # Set bottom text for entire figure
-        fig.subplots_adjust(bottom=0.2, wspace=0.35)
-        fig.text(0.5, 0.04, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)  # Centered footnote
+        fig.subplots_adjust(bottom=0.25, wspace=0.35)
+        fig.text(0.5, 0.02, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)
         fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit Images)")
 
         output_filename = os.path.join(args.output_dir, f"bench_{category}.png")
