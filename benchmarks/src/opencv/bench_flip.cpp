@@ -40,6 +40,6 @@ BENCHMARK(Flip, OpenCV) {
                 cv::flip(mats[i], outputs[i], -1);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
     return results;
 }

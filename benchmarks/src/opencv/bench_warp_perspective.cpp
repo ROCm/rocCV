@@ -45,6 +45,6 @@ BENCHMARK(WarpPerspective, OpenCV) {
                                     cv::BORDER_CONSTANT, 0);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
     return results;
 }

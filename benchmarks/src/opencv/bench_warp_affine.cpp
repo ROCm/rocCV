@@ -45,6 +45,6 @@ BENCHMARK(WarpAffine, OpenCV) {
                                0);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
     return results;
 }

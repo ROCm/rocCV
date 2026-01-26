@@ -54,7 +54,7 @@ BENCHMARK(BilateralFilter, GPU) {
                make_float4(1.0f, 0.0f, 1.0f, 1.0f));
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -80,7 +80,7 @@ BENCHMARK(BilateralFilter, CPU) {
             op(nullptr, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
                make_float4(1.0f, 0.0f, 1.0f, 1.0f), eDeviceType::CPU);
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

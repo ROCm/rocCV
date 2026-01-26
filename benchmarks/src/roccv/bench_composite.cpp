@@ -64,7 +64,7 @@ BENCHMARK(Composite, GPU) {
             op(stream, foreground, background, mask, output);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -97,7 +97,8 @@ BENCHMARK(Composite, CPU) {
 
     Composite op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }

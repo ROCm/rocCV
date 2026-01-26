@@ -60,7 +60,7 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
             op(stream, input, output, top, left, borderType, borderVal);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -90,7 +90,7 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     CopyMakeBorder op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        config.runs, config.warmupRuns);
 
     return results;
 }
@@ -125,7 +125,7 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
             op(stream, input, output, top, left, borderType, borderVal);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -156,7 +156,7 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     CopyMakeBorder op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        config.runs, config.warmupRuns);
 
     return results;
 }

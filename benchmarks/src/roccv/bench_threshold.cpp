@@ -62,7 +62,7 @@ BENCHMARK(ThresholdBinary, GPU) {
             op(stream, input, output, thresh, maxVal);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -94,7 +94,8 @@ BENCHMARK(ThresholdBinary, CPU) {
 
     Threshold op(eThresholdType::THRESH_BINARY, config.samples);
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }

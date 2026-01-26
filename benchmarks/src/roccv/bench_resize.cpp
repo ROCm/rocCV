@@ -55,7 +55,7 @@ BENCHMARK(Resize, GPU) {
             op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -80,7 +80,7 @@ BENCHMARK(Resize, CPU) {
     Resize op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

@@ -42,7 +42,7 @@ struct BenchmarkResults {
  *
  */
 struct BenchmarkConfig {
-    int samples, width, height, runs;
+    int samples, width, height, runs, warmupRuns;
 };
 
 /**

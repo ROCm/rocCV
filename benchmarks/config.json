@@ -4,31 +4,36 @@
             "samples": 1,
             "height": 1080,
             "width": 1920,
-            "runs": 10
+            "runs": 10,
+            "warmup_runs": 5
         },
         {
             "samples": 16,
             "height": 1080,
             "width": 1920,
-            "runs": 10
+            "runs": 10,
+            "warmup_runs": 5
         },
         {
             "samples": 32,
             "height": 1080,
             "width": 1920,
-            "runs": 10
+            "runs": 10,
+            "warmup_runs": 5
         },
         {
             "samples": 64,
             "height": 1080,
             "width": 1920,
-            "runs": 10
+            "runs": 10,
+            "warmup_runs": 5
         },
         {
             "samples": 128,
             "height": 1080,
             "width": 1920,
-            "runs": 10
+            "runs": 10,
+            "warmup_runs": 5
         }
     ]
 }

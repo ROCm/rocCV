@@ -56,7 +56,7 @@ BENCHMARK(WarpAffine, GPU) {
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -85,7 +85,7 @@ BENCHMARK(WarpAffine, CPU) {
             op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

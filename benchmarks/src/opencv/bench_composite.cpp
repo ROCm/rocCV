@@ -46,6 +46,6 @@ BENCHMARK(Composite, OpenCV) {
                 cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputs[i]);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
     return results;
 }

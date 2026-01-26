@@ -40,6 +40,6 @@ BENCHMARK(CvtColor, OpenCV) {
                 cv::cvtColor(mats[i], outputs[i], cv::COLOR_RGB2GRAY);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
     return results;
 }

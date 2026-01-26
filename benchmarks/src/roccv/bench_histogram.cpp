@@ -56,7 +56,7 @@ BENCHMARK(Histogram, GPU) {
             op(stream, input, std::nullopt, output);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -82,7 +82,8 @@ BENCHMARK(Histogram, CPU) {
 
     Histogram op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }

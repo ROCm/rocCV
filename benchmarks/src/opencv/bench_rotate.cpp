@@ -39,7 +39,7 @@ BENCHMARK(Rotate, OpenCV) {
                 cv::rotate(mats[i], outputs[i], cv::ROTATE_180);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

@@ -45,7 +45,7 @@ BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
                 cv::copyMakeBorder(mats[i], outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

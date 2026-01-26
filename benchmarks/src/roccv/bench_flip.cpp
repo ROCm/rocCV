@@ -53,7 +53,7 @@ BENCHMARK(Flip, GPU) {
             op(stream, input, output, -1);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -75,7 +75,8 @@ BENCHMARK(Flip, CPU) {
     FillTensor(input);
 
     Flip op;
-    ROCCV_BENCH_RECORD_BLOCK({ op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

@@ -83,7 +83,7 @@ std::vector<roccvbench::BenchmarkConfig> loadConfig(const std::string& filepath)
         config.height = benchParams["height"];
         config.width = benchParams["width"];
         config.runs = benchParams["runs"];
-
+        config.warmupRuns = benchParams["warmup_runs"];
         result.push_back(config);
     }
 
@@ -303,7 +303,8 @@ int main(int argc, char** argv) {
                 // Iterate through each benchmark configuration
                 for (auto config : configs) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
-                              << ", width=" << config.width << ", runs=" << config.runs << "]" << std::endl;
+                              << ", width=" << config.width << ", runs=" << config.runs
+                              << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
                     auto result = benchmark.func(config);
 
                     // Write run results to output JSON

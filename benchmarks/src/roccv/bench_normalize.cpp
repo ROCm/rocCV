@@ -62,7 +62,7 @@ BENCHMARK(Normalize, GPU) {
             op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -96,7 +96,7 @@ BENCHMARK(Normalize, CPU) {
     Normalize op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        config.runs, config.warmupRuns);
 
     return results;
 }
