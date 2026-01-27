@@ -79,11 +79,11 @@ std::vector<roccvbench::BenchmarkConfig> loadConfig(const std::string& filepath)
 
     for (auto benchParams : data["params"]) {
         roccvbench::BenchmarkConfig config;
-        config.samples = benchParams["samples"];
-        config.height = benchParams["height"];
-        config.width = benchParams["width"];
-        config.runs = benchParams["runs"];
-        config.warmupRuns = benchParams["warmup_runs"];
+        config.samples = benchParams.value("samples", 1);
+        config.height = benchParams.value("height", 1080);
+        config.width = benchParams.value("width", 1920);
+        config.runs = benchParams.value("runs", 5);
+        config.warmupRuns = benchParams.value("warmup_runs", 5);
         result.push_back(config);
     }
 
