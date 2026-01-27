@@ -22,7 +22,6 @@
 #pragma once
 
 #include <chrono>
-#include <core/tensor.hpp>
 #include <random>
 #include <vector>
 
