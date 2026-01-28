@@ -40,7 +40,7 @@ void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, c
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(64, 16);
+            dim3 block(32, 8);
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
             Kernels::Device::composite<<<grid, block, 0, stream>>>(fgWrapper, bgWrapper, maskWrapper, outputWrapper);

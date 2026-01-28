@@ -36,36 +36,48 @@ __device__ __host__ T ScalarSaturateCast(U v) {
     constexpr bool bigToSmall = !smallToBig;
 
     if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U>) {
-        // Any float -> any integral
-        return static_cast<T>(std::clamp<U>(std::round(v), static_cast<U>(std::numeric_limits<T>::min()),
-                                            static_cast<U>(std::numeric_limits<T>::max())));
-    } else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> && std::is_signed_v<T> &&
-                         smallToBig) {
-        // Any integral signed -> Any integral unsigned, small -> big or equal
-        return v <= 0 ? 0 : static_cast<T>(v);
-    } else if constexpr (std::is_integral_v<U> && std::is_integral_v<T> &&
-                         ((std::is_signed_v<U> && std::is_signed_v<T>) ||
-                          (std::is_unsigned_v<U> && std::is_unsigned_v<T>)) &&
-                         bigToSmall) {
-        // Any integral signed -> Any integral signed, big -> small
-        // Any integral unsigned -> Any integral unsigned, big -> small
-        return v <= std::numeric_limits<T>::min()
-                   ? std::numeric_limits<T>::min()
-                   : (v >= std::numeric_limits<T>::max() ? std::numeric_limits<T>::max() : static_cast<T>(v));
-    } else if constexpr (std::is_integral_v<U> && std::is_unsigned_v<U> && std::is_integral_v<T> &&
-                         std::is_signed_v<T>) {
-        // Any integral unsigned -> Any integral signed, small -> big or equal
-        return v >= std::numeric_limits<T>::max() ? std::numeric_limits<T>::max() : static_cast<T>(v);
-    } else if constexpr (std::is_integral_v<U> && std::is_signed_v<U> && std::is_integral_v<T> &&
-                         std::is_unsigned_v<T> && bigToSmall) {
-        // Any integral signed -> Any integral unsigned, big -> small
-        return v <= static_cast<U>(std::numeric_limits<T>::min())
-                   ? std::numeric_limits<T>::min()
-                   : (v >= static_cast<U>(std::numeric_limits<T>::max()) ? std::numeric_limits<T>::max()
-                                                                         : static_cast<T>(v));
-    } else {
-        // All other cases fall into this
-        return v;
+        // Float -> integral: clamp then round
+        constexpr U minVal = static_cast<U>(std::numeric_limits<T>::min());
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+#ifdef __HIP_DEVICE_COMPILE__
+        return static_cast<T>(rintf(fminf(fmaxf(v, minVal), maxVal)));
+#else
+        return static_cast<T>(std::round(std::clamp(v, minVal, maxVal)));
+#endif
+    }
+
+    else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> && std::is_unsigned_v<T> &&
+                       smallToBig) {
+        // Signed -> unsigned, small to big: clamp negative to 0
+        // Branchless: max(v, 0) handles negative values
+        return static_cast<T>(max(v, U{0}));
+    }
+
+    else if constexpr (std::is_integral_v<U> && std::is_integral_v<T> &&
+                       ((std::is_signed_v<U> && std::is_signed_v<T>) ||
+                        (std::is_unsigned_v<U> && std::is_unsigned_v<T>)) &&
+                       bigToSmall) {
+        // Same signedness, big -> small: clamp to [min, max]
+        constexpr U minVal = static_cast<U>(std::numeric_limits<T>::min());
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+        return static_cast<T>(min(max(v, minVal), maxVal));
+    }
+
+    else if constexpr (std::is_integral_v<U> && std::is_unsigned_v<U> && std::is_integral_v<T> && std::is_signed_v<T>) {
+        // Unsigned -> signed: clamp to max (can't exceed min since unsigned)
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+        return static_cast<T>(min(v, maxVal));
+    }
+
+    else if constexpr (std::is_integral_v<U> && std::is_signed_v<U> && std::is_integral_v<T> && std::is_unsigned_v<T> &&
+                       bigToSmall) {
+        // Signed -> unsigned, big -> small: clamp to [0, max]
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+        return static_cast<T>(min(max(v, U{0}), maxVal));
+    }
+
+    else {
+        return static_cast<T>(v);
     }
 }
 
@@ -117,9 +129,21 @@ __device__ __host__ T ScalarRangeCast(U v) {
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_unsigned_v<T>) {
         // float to unsigned integers
-        return v >= T{1}   ? std::numeric_limits<T>::max()
-               : v <= T{0} ? 0
-                           : static_cast<T>(lrintf(static_cast<U>(std::numeric_limits<T>::max()) * v));
+        constexpr U scale = static_cast<U>(std::numeric_limits<T>::max());
+
+        if constexpr (sizeof(T) <= 2) {
+            // 8/16 bit integer cases. These can be represented exactly in floating point.
+#ifdef __HIP_DEVICE_COMPILE__
+            return static_cast<T>(__float2int_rn(__saturatef(v) * scale));
+#else
+            return static_cast<T>(lrintf(fminf(fmaxf(v, 0.0f), 1.0f) * scale));
+#endif
+        } else {
+            // 32/64 bit integer cases.
+            return v >= U{1}    ? std::numeric_limits<T>::max()
+                   : v <= U{-1} ? std::numeric_limits<T>::min()
+                                : static_cast<T>(std::round(v * scale));
+        }
     }
 
     else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U> && std::is_signed_v<U>) {
