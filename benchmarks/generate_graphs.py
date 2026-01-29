@@ -143,7 +143,7 @@ if __name__ == "__main__":
             execution_time_data.append(benchmark["execution_time"])
             fps_data.append([1000 / (benchmark["execution_time"][i] / samples[i])
                             for i in range(len(benchmark["execution_time"]))])
-            throughput_data.append([(benchmark["input_memory_bytes"][i] + benchmark["output_memory_bytes"][i]) / (benchmark["execution_time"][i] / 1000.0) / 1e9 for i in range(len(benchmark["execution_time"]))])
+            throughput_data.append([(benchmark["read_memory_bytes"][i] + benchmark["written_memory_bytes"][i]) / (benchmark["execution_time"][i] / 1000.0) / 1e9 for i in range(len(benchmark["execution_time"]))])
 
         plot_annotated_bars(ex_time_ax, samples, execution_time_data, benchmark_names)
         plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names)

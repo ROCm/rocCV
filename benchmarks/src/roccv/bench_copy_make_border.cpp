@@ -45,8 +45,8 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -82,8 +82,8 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -110,8 +110,8 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -148,8 +148,8 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 

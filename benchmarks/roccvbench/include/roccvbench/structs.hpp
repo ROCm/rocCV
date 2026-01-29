@@ -33,8 +33,8 @@ namespace roccvbench {
  */
 struct BenchmarkResults {
     double executionTime = 0.0;
-    size_t inputMemoryBytes = 0;
-    size_t outputMemoryBytes = 0;
+    size_t readMemoryBytes = 0;
+    size_t writtenMemoryBytes = 0;
 };
 
 /**

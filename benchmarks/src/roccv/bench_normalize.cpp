@@ -44,10 +44,10 @@ BENCHMARK(Normalize, GPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
-    RegisterMemoryUsage(scale, results.inputMemoryBytes);
-    RegisterMemoryUsage(base, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(scale, results.readMemoryBytes);
+    RegisterMemoryUsage(base, results.readMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);
@@ -84,10 +84,10 @@ BENCHMARK(Normalize, CPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
-    RegisterMemoryUsage(scale, results.inputMemoryBytes);
-    RegisterMemoryUsage(base, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(scale, results.readMemoryBytes);
+    RegisterMemoryUsage(base, results.readMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);

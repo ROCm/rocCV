@@ -45,10 +45,10 @@ BENCHMARK(Composite, GPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
-    RegisterMemoryUsage(background, results.inputMemoryBytes);
-    RegisterMemoryUsage(foreground, results.inputMemoryBytes);
-    RegisterMemoryUsage(mask, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(background, results.readMemoryBytes);
+    RegisterMemoryUsage(foreground, results.readMemoryBytes);
+    RegisterMemoryUsage(mask, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);
@@ -86,10 +86,10 @@ BENCHMARK(Composite, CPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
-    RegisterMemoryUsage(background, results.inputMemoryBytes);
-    RegisterMemoryUsage(foreground, results.inputMemoryBytes);
-    RegisterMemoryUsage(mask, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(background, results.readMemoryBytes);
+    RegisterMemoryUsage(foreground, results.readMemoryBytes);
+    RegisterMemoryUsage(mask, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);

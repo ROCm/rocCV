@@ -313,8 +313,8 @@ int main(int argc, char** argv) {
                     runResultsJson["runs"].push_back(config.runs);
                     runResultsJson["execution_time"].push_back(result.executionTime);
                     runResultsJson["samples"].push_back(config.samples);
-                    runResultsJson["input_memory_bytes"].push_back(result.inputMemoryBytes);
-                    runResultsJson["output_memory_bytes"].push_back(result.outputMemoryBytes);
+                    runResultsJson["read_memory_bytes"].push_back(result.readMemoryBytes);
+                    runResultsJson["written_memory_bytes"].push_back(result.writtenMemoryBytes);
                 }
                 std::cout << std::endl;
 

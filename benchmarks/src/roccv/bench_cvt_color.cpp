@@ -41,8 +41,8 @@ BENCHMARK(CvtColor, GPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -72,8 +72,8 @@ BENCHMARK(CvtColor, CPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 

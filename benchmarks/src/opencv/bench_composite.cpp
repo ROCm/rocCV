@@ -34,11 +34,11 @@ BENCHMARK(Composite, OpenCV) {
     std::vector<cv::Mat> weights2 = GenerateMats<float>(config.samples, config.width, config.height, CV_32F);
     std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
-    RegisterMemoryUsage(backgrounds, results.inputMemoryBytes);
-    RegisterMemoryUsage(foregrounds, results.inputMemoryBytes);
-    RegisterMemoryUsage(weights1, results.inputMemoryBytes);
-    RegisterMemoryUsage(weights2, results.inputMemoryBytes);
-    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
+    RegisterMemoryUsage(backgrounds, results.readMemoryBytes);
+    RegisterMemoryUsage(foregrounds, results.readMemoryBytes);
+    RegisterMemoryUsage(weights1, results.readMemoryBytes);
+    RegisterMemoryUsage(weights2, results.readMemoryBytes);
+    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {

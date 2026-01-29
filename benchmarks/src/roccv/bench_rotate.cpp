@@ -55,8 +55,8 @@ BENCHMARK(Rotate, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -90,8 +90,8 @@ BENCHMARK(Rotate, CPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 

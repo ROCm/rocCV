@@ -36,8 +36,8 @@ BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
     std::vector<cv::Mat> outputs =
         CreateOutputMats(config.samples, config.width + left + right, config.height + top + bottom, CV_8UC3);
 
-    RegisterMemoryUsage(mats, results.inputMemoryBytes);
-    RegisterMemoryUsage(outputs, results.outputMemoryBytes);
+    RegisterMemoryUsage(mats, results.readMemoryBytes);
+    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {

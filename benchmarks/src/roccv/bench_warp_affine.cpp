@@ -43,8 +43,8 @@ BENCHMARK(WarpAffine, GPU) {
 
     FillTensor(input);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     WarpAffine op;
     hipStream_t stream;
@@ -76,8 +76,8 @@ BENCHMARK(WarpAffine, CPU) {
 
     FillTensor(input);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     WarpAffine op;
     ROCCV_BENCH_RECORD_BLOCK(

@@ -44,10 +44,10 @@ BENCHMARK(ThresholdBinary, GPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
-    RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
-    RegisterMemoryUsage(thresh, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(maxVal, results.readMemoryBytes);
+    RegisterMemoryUsage(thresh, results.readMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);
@@ -83,10 +83,10 @@ BENCHMARK(ThresholdBinary, CPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
-    RegisterMemoryUsage(input, results.inputMemoryBytes);
-    RegisterMemoryUsage(output, results.outputMemoryBytes);
-    RegisterMemoryUsage(maxVal, results.inputMemoryBytes);
-    RegisterMemoryUsage(thresh, results.inputMemoryBytes);
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(maxVal, results.readMemoryBytes);
+    RegisterMemoryUsage(thresh, results.readMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);
