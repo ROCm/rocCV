@@ -32,7 +32,6 @@ using namespace roccv;
 
 BENCHMARK(GammaContrast, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
@@ -40,6 +39,9 @@ BENCHMARK(GammaContrast, GPU) {
     Tensor input(reqs);
     Tensor output(reqs);
     float gamma = 2.2f;
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -52,7 +54,7 @@ BENCHMARK(GammaContrast, GPU) {
             op(stream, input, output, gamma);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -61,7 +63,6 @@ BENCHMARK(GammaContrast, GPU) {
 
 BENCHMARK(GammaContrast, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
@@ -70,11 +71,15 @@ BENCHMARK(GammaContrast, CPU) {
     Tensor output(reqs);
     float gamma = 2.2f;
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     GammaContrast op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, gamma, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, output, gamma, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }

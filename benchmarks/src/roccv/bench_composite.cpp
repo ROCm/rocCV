@@ -34,7 +34,6 @@ using namespace roccv;
 
 BENCHMARK(Composite, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -45,6 +44,11 @@ BENCHMARK(Composite, GPU) {
     Tensor foreground(reqs);
     Tensor mask(maskReqs);
     Tensor output(reqs);
+
+    RegisterMemoryUsage(background, results.readMemoryBytes);
+    RegisterMemoryUsage(foreground, results.readMemoryBytes);
+    RegisterMemoryUsage(mask, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(background);
     FillTensor(foreground);
@@ -60,7 +64,7 @@ BENCHMARK(Composite, GPU) {
             op(stream, foreground, background, mask, output);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -69,7 +73,6 @@ BENCHMARK(Composite, GPU) {
 
 BENCHMARK(Composite, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -83,13 +86,19 @@ BENCHMARK(Composite, CPU) {
     Tensor mask(maskReqs);
     Tensor output(reqs);
 
+    RegisterMemoryUsage(background, results.readMemoryBytes);
+    RegisterMemoryUsage(foreground, results.readMemoryBytes);
+    RegisterMemoryUsage(mask, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(background);
     FillTensor(foreground);
     FillTensor(mask);
 
     Composite op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }
