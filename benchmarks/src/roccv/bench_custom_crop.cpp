@@ -32,7 +32,6 @@ using namespace roccv;
 
 BENCHMARK(CustomCrop, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
@@ -43,6 +42,9 @@ BENCHMARK(CustomCrop, GPU) {
     Tensor output(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
                               {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype());
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -55,7 +57,7 @@ BENCHMARK(CustomCrop, GPU) {
             op(stream, input, output, cropRect);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -64,7 +66,6 @@ BENCHMARK(CustomCrop, GPU) {
 
 BENCHMARK(CustomCrop, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
@@ -76,11 +77,15 @@ BENCHMARK(CustomCrop, CPU) {
                               {config.samples, cropRect.height, cropRect.width, 3}),
                   input.dtype(), eDeviceType::CPU);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     CustomCrop op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, cropRect, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, output, cropRect, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }

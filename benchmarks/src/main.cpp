@@ -79,11 +79,11 @@ std::vector<roccvbench::BenchmarkConfig> loadConfig(const std::string& filepath)
 
     for (auto benchParams : data["params"]) {
         roccvbench::BenchmarkConfig config;
-        config.samples = benchParams["samples"];
-        config.height = benchParams["height"];
-        config.width = benchParams["width"];
-        config.runs = benchParams["runs"];
-
+        config.samples = benchParams.value("samples", 1);
+        config.height = benchParams.value("height", 1080);
+        config.width = benchParams.value("width", 1920);
+        config.runs = benchParams.value("runs", 5);
+        config.warmupRuns = benchParams.value("warmup_runs", 5);
         result.push_back(config);
     }
 
@@ -303,7 +303,8 @@ int main(int argc, char** argv) {
                 // Iterate through each benchmark configuration
                 for (auto config : configs) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
-                              << ", width=" << config.width << ", runs=" << config.runs << "]" << std::endl;
+                              << ", width=" << config.width << ", runs=" << config.runs
+                              << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
                     auto result = benchmark.func(config);
 
                     // Write run results to output JSON
@@ -312,6 +313,8 @@ int main(int argc, char** argv) {
                     runResultsJson["runs"].push_back(config.runs);
                     runResultsJson["execution_time"].push_back(result.executionTime);
                     runResultsJson["samples"].push_back(config.samples);
+                    runResultsJson["read_memory_bytes"].push_back(result.readMemoryBytes);
+                    runResultsJson["written_memory_bytes"].push_back(result.writtenMemoryBytes);
                 }
                 std::cout << std::endl;
 

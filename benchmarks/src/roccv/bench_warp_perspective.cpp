@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(WarpPerspective, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -43,6 +42,9 @@ BENCHMARK(WarpPerspective, GPU) {
     PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
     FillTensor(input);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     WarpPerspective op;
     hipStream_t stream;
@@ -54,7 +56,7 @@ BENCHMARK(WarpPerspective, GPU) {
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -63,7 +65,6 @@ BENCHMARK(WarpPerspective, GPU) {
 
 BENCHMARK(WarpPerspective, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -75,13 +76,16 @@ BENCHMARK(WarpPerspective, CPU) {
 
     FillTensor(input);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     WarpPerspective op;
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(nullptr, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

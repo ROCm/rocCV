@@ -33,15 +33,19 @@ BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
     const int right = 9;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    cv::Mat outMat(config.height + top + bottom, config.width + left + right, CV_8UC3);
+    std::vector<cv::Mat> outputs =
+        CreateOutputMats(config.samples, config.width + left + right, config.height + top + bottom, CV_8UC3);
+
+    RegisterMemoryUsage(mats, results.readMemoryBytes);
+    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            for (const auto& mat : mats) {
-                cv::copyMakeBorder(mat, outMat, top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::copyMakeBorder(mats[i], outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }
