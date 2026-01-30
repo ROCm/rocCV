@@ -33,12 +33,14 @@ using namespace roccv;
 
 BENCHMARK(Flip, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
     Tensor input(reqs);
     Tensor output(reqs);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -51,7 +53,7 @@ BENCHMARK(Flip, GPU) {
             op(stream, input, output, -1);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -60,7 +62,6 @@ BENCHMARK(Flip, GPU) {
 
 BENCHMARK(Flip, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -68,10 +69,14 @@ BENCHMARK(Flip, CPU) {
     Tensor input(reqs);
     Tensor output(reqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     Flip op;
-    ROCCV_BENCH_RECORD_BLOCK({ op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs);
+    ROCCV_BENCH_RECORD_BLOCK(
+        { op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

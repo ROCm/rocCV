@@ -29,14 +29,17 @@ BENCHMARK(CvtColor, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    cv::Mat outputMat(config.height, config.width, CV_8UC1);
+    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC1);
+
+    RegisterMemoryUsage(mats, results.readMemoryBytes);
+    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::cvtColor(mats[i], outputMat, cv::COLOR_RGB2GRAY);
+                cv::cvtColor(mats[i], outputs[i], cv::COLOR_RGB2GRAY);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
     return results;
 }

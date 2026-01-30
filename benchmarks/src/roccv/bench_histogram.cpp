@@ -34,7 +34,6 @@ using namespace roccv;
 
 BENCHMARK(Histogram, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
@@ -42,6 +41,9 @@ BENCHMARK(Histogram, GPU) {
 
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -54,7 +56,7 @@ BENCHMARK(Histogram, GPU) {
             op(stream, input, std::nullopt, output);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -63,7 +65,6 @@ BENCHMARK(Histogram, GPU) {
 
 BENCHMARK(Histogram, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     Tensor::Requirements inReqs =
         Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
@@ -74,11 +75,15 @@ BENCHMARK(Histogram, CPU) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     Histogram op;
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }

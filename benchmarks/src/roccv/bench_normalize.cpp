@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(Normalize, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -44,6 +43,11 @@ BENCHMARK(Normalize, GPU) {
         TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}), DataType(eDataType::DATA_TYPE_F32));
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(scale, results.readMemoryBytes);
+    RegisterMemoryUsage(base, results.readMemoryBytes);
 
     FillTensor(input);
     FillTensor(scale);
@@ -58,7 +62,7 @@ BENCHMARK(Normalize, GPU) {
             op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -67,7 +71,6 @@ BENCHMARK(Normalize, GPU) {
 
 BENCHMARK(Normalize, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -81,6 +84,11 @@ BENCHMARK(Normalize, CPU) {
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(scale, results.readMemoryBytes);
+    RegisterMemoryUsage(base, results.readMemoryBytes);
+
     FillTensor(input);
     FillTensor(scale);
     FillTensor(base);
@@ -88,7 +96,7 @@ BENCHMARK(Normalize, CPU) {
     Normalize op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        config.runs, config.warmupRuns);
 
     return results;
 }

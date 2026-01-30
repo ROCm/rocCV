@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(CopyMakeBorder, GPU_Constant) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -45,6 +44,9 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
         Tensor::CalcRequirements(config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
     Tensor input(inReqs);
     Tensor output(outReqs);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
@@ -58,7 +60,7 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
             op(stream, input, output, top, left, borderType, borderVal);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -67,7 +69,6 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
 
 BENCHMARK(CopyMakeBorder, CPU_Constant) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     const int top = 9;
     const int left = 9;
@@ -81,12 +82,15 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     CopyMakeBorder op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        config.runs, config.warmupRuns);
 
     return results;
 }
@@ -106,6 +110,9 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     CopyMakeBorder op;
@@ -118,7 +125,7 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
             op(stream, input, output, top, left, borderType, borderVal);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -141,12 +148,15 @@ BENCHMARK(CopyMakeBorder, CPU_Reflect) {
     Tensor input(inReqs);
     Tensor output(outReqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     FillTensor(input);
 
     CopyMakeBorder op;
     ROCCV_BENCH_RECORD_BLOCK(
         { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
-        config.runs);
+        config.runs, config.warmupRuns);
 
     return results;
 }

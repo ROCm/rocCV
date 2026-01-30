@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(ThresholdBinary, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -44,6 +43,11 @@ BENCHMARK(ThresholdBinary, GPU) {
         Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {config.samples}), DataType(DATA_TYPE_F64));
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(maxVal, results.readMemoryBytes);
+    RegisterMemoryUsage(thresh, results.readMemoryBytes);
 
     FillTensor(input);
     FillTensor(maxVal);
@@ -58,7 +62,7 @@ BENCHMARK(ThresholdBinary, GPU) {
             op(stream, input, output, thresh, maxVal);
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -67,7 +71,6 @@ BENCHMARK(ThresholdBinary, GPU) {
 
 BENCHMARK(ThresholdBinary, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -80,13 +83,19 @@ BENCHMARK(ThresholdBinary, CPU) {
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+    RegisterMemoryUsage(maxVal, results.readMemoryBytes);
+    RegisterMemoryUsage(thresh, results.readMemoryBytes);
+
     FillTensor(input);
     FillTensor(maxVal);
     FillTensor(thresh);
 
     Threshold op(eThresholdType::THRESH_BINARY, config.samples);
     ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs);
+        { op(nullptr, input, output, thresh, maxVal, eDeviceType::CPU); }, results.executionTime, config.runs,
+        config.warmupRuns);
 
     return results;
 }
