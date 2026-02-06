@@ -30,22 +30,25 @@ using namespace roccv;
 int main(int argc, char **argv) {
     TEST_CASES_BEGIN();
 
-    EXPECT_EQ(SaturateCast<int>(1.0f), 1);
-    EXPECT_EQ(SaturateCast<int>(-1.0f), -1);
-    EXPECT_EQ(SaturateCast<uint>(1.0f), 1);
-    EXPECT_EQ(SaturateCast<uint>(-1.0f), 0);
-    EXPECT_EQ(SaturateCast<float>(1), 1.0f);
-    EXPECT_EQ(SaturateCast<float>(-1), -1.0f);
-    EXPECT_EQ(SaturateCast<double>(1), 1.0);
-    EXPECT_EQ(SaturateCast<double>(-1), -1.0);
+    TEST_CASE(EXPECT_EQ(SaturateCast<int>(1.0f), 1));
+    TEST_CASE(EXPECT_EQ(SaturateCast<int>(-1.0f), -1));
+    TEST_CASE(EXPECT_EQ(SaturateCast<uint>(1.0f), 1));
+    TEST_CASE(EXPECT_EQ(SaturateCast<uint>(-1.0f), 0));
+    TEST_CASE(EXPECT_EQ(SaturateCast<float>(1), 1.0f));
+    TEST_CASE(EXPECT_EQ(SaturateCast<float>(-1), -1.0f));
+    TEST_CASE(EXPECT_EQ(SaturateCast<double>(1), 1.0));
+    TEST_CASE(EXPECT_EQ(SaturateCast<double>(-1), -1.0));
 
     // Test numeric limits
-    EXPECT_EQ(SaturateCast<int>(std::numeric_limits<float>::max()), std::numeric_limits<int>::max());
-    EXPECT_EQ(SaturateCast<uint8_t>(std::numeric_limits<float>::max()), std::numeric_limits<uint8_t>::max());
+    TEST_CASE(EXPECT_EQ(SaturateCast<int>(std::numeric_limits<float>::max()), std::numeric_limits<int>::max()));
+    TEST_CASE(EXPECT_EQ(SaturateCast<uint8_t>(std::numeric_limits<float>::max()), std::numeric_limits<uint8_t>::max()));
+    TEST_CASE(EXPECT_EQ(SaturateCast<long>(std::numeric_limits<float>::max()), std::numeric_limits<long>::max()));
+    TEST_CASE(EXPECT_EQ(SaturateCast<ulong>(std::numeric_limits<float>::lowest()), 0UL));
 
     // Test vectorized types
-    EXPECT_TRUE((SaturateCast<float4>(uchar4{255, 128, 0, 255}) == float4{255.0f, 128.0f, 0.0f, 255.0f}));
-    EXPECT_TRUE((SaturateCast<float4>(char4{-128, -128, -128, -128}) == float4{-128.0f, -128.0f, -128.0f, -128.0f}));
+    TEST_CASE(EXPECT_TRUE((SaturateCast<float4>(uchar4{255, 128, 0, 255}) == float4{255.0f, 128.0f, 0.0f, 255.0f})));
+    TEST_CASE(EXPECT_TRUE(
+        (SaturateCast<float4>(char4{-128, -128, -128, -128}) == float4{-128.0f, -128.0f, -128.0f, -128.0f})));
 
     TEST_CASES_END();
 }

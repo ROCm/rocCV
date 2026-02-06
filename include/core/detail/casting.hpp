@@ -21,8 +21,6 @@
 
 #pragma once
 
-#include <algorithm>
-
 #include "core/detail/type_traits.hpp"
 
 namespace roccv::detail {
@@ -36,14 +34,29 @@ __device__ __host__ T ScalarSaturateCast(U v) {
     constexpr bool bigToSmall = !smallToBig;
 
     if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U>) {
-        // Float -> integral: clamp then round
-        constexpr U minVal = static_cast<U>(std::numeric_limits<T>::min());
+        // Float -> integral: clamp to [min, max] then round.
+        constexpr U minVal = static_cast<U>(std::numeric_limits<T>::lowest());
         constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+
+        if constexpr (sizeof(T) <= 2) {
+            // 8/16 bit integer cases. These can be represented exactly in floating point.
 #ifdef __HIP_DEVICE_COMPILE__
-        return static_cast<T>(rintf(fminf(fmaxf(v, minVal), maxVal)));
+            return static_cast<T>(rintf(fminf(fmaxf(v, minVal), maxVal)));
 #else
-        return static_cast<T>(std::round(std::clamp(v, minVal, maxVal)));
+            return static_cast<T>(std::round(std::clamp(v, minVal, maxVal)));
 #endif
+        } else {
+            // 32/64 bit integer cases.
+#ifdef __HIP_DEVICE_COMPILE__
+            U rounded = rintf(v);
+#else
+            U rounded = std::round(v);
+#endif
+
+            return rounded >= maxVal   ? std::numeric_limits<T>::max()
+                   : rounded <= minVal ? std::numeric_limits<T>::min()
+                                       : static_cast<T>(rounded);
+        }
     }
 
     else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> && std::is_unsigned_v<T> &&
