@@ -37,6 +37,8 @@ int main(int argc, char **argv) {
     TEST_CASE(EXPECT_EQ(RangeCast<int>(-1.0f), std::numeric_limits<int>::min()));
     TEST_CASE(EXPECT_EQ(RangeCast<uint>(1.0f), std::numeric_limits<uint>::max()));
     TEST_CASE(EXPECT_EQ(RangeCast<uint>(-1.0f), 0));
+    TEST_CASE(EXPECT_EQ(RangeCast<uint>(0.0f), 0));
+
 
     // Test unsigned/signed integer -> float casting
     TEST_CASE(EXPECT_EQ(RangeCast<float>(std::numeric_limits<int>::max()), 1.0f));
