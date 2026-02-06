@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "core/detail/type_traits.hpp"
 
 namespace roccv::detail {
@@ -153,9 +155,7 @@ __device__ __host__ T ScalarRangeCast(U v) {
 #endif
         } else {
             // 32/64 bit integer cases.
-            return v >= U{1}    ? std::numeric_limits<T>::max()
-                   : v <= U{-1} ? std::numeric_limits<T>::min()
-                                : static_cast<T>(std::round(v * scale));
+            return v >= U{1} ? std::numeric_limits<T>::max() : v <= U{0} ? 0 : static_cast<T>(std::round(v * scale));
         }
     }
 
