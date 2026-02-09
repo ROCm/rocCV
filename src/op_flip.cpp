@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include <unordered_map>
 
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/exception.hpp"
 #include "core/status_type.h"
 #include "core/wrappers/image_wrapper.hpp"
@@ -42,9 +43,10 @@ void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& o
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(64, 16);
-            dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                      outputWrapper.batches());
+            dim3 block = detail::GetMaximumPotentialBlockSize2D(
+                Kernels::Device::flip<FlipType, ImageWrapper<T>, ImageWrapper<T>>, 0);
+            dim3 grid =
+                detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::flip<FlipType><<<grid, block, 0, stream>>>(inputWrapper, outputWrapper);
             break;
         }

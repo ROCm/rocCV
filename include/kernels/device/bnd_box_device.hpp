@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include <core/detail/type_traits.hpp>
 
+#include "common/math_vector.hpp"
 #include "kernels/kernel_helpers.hpp"
 #include "operator_types.h"
 

@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/rotate_device.hpp"
 #include "kernels/host/rotate_host.hpp"
@@ -59,9 +60,9 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(32, 16);
-            dim3 grid((outputWrap.width() + block.x - 1) / block.x, (outputWrap.height() + block.y - 1) / block.y,
-                      outputWrap.batches());
+            dim3 block = detail::GetMaximumPotentialBlockSize2D(
+                Kernels::Device::rotate<ImageWrapper<T>, ImageWrapper<T>, ArrayWrapper<double, 6>>, 0);
+            dim3 grid = detail::GetGridSize2D(outputWrap.width(), outputWrap.height(), outputWrap.batches(), block);
             Kernels::Device::rotate<<<grid, block, 0, stream>>>(inputWrap, outputWrap, matWrap);
             break;
         }

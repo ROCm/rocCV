@@ -24,15 +24,11 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
-#include <algorithm>
 #include <cstring>
 #include <functional>
-#include <iostream>
-#include <vector>
 
-#include "common/array_wrapper.hpp"
-#include "common/math_vector.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/gamma_contrast_device.hpp"
@@ -47,9 +43,10 @@ void dispatch_gamma_contrast_dtype(hipStream_t stream, const Tensor &input, cons
     ImageWrapper<T> outputWrapper(output);
 
     if (device == eDeviceType::GPU) {
-        dim3 block(64, 16);
-        dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                  outputWrapper.batches());
+        dim3 block = detail::GetMaximumPotentialBlockSize2D(
+            Kernels::Device::gamma_contrast<ImageWrapper<T>, ImageWrapper<T>>, 0);
+        dim3 grid =
+            detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
 
         Kernels::Device::gamma_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, gamma);
     } else if (device == eDeviceType::CPU) {

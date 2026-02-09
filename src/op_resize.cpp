@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <unordered_map>
 
 #include "common/validation_helpers.hpp"
-#include "core/detail/casting.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/exception.hpp"
 #include "core/status_type.h"
 #include "core/wrappers/interpolation_wrapper.hpp"
@@ -45,9 +45,10 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(64, 16);
-            dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                      outputWrapper.batches());
+            dim3 block =
+                detail::GetMaximumPotentialBlockSize2D(Kernels::Device::resize<ImageWrapper<T>, ImageWrapper<T>>, 0);
+            dim3 grid =
+                detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::resize<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
             break;
         }
@@ -65,10 +66,11 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
     static const std::unordered_map<
         eInterpolationType,
         std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device)>>
-        funcs = {{eInterpolationType::INTERP_TYPE_NEAREST, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
-                 {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
-                 {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}
-                };
+        funcs = {
+            {eInterpolationType::INTERP_TYPE_NEAREST,
+             dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
+            {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}};
 
     if (!funcs.contains(interpolation)) {
         throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
