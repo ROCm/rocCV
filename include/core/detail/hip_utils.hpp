@@ -70,4 +70,18 @@ dim3 GetMaximumPotentialBlockSize2D(KernalFunc kernel, size_t sharedMemSizePerBl
 
     return dim3(warpSize, blockSize / warpSize, 1);
 }
+
+/**
+ * @brief Get the grid size for a 2D kernel.
+ *
+ * @param[in] width The width of the image.
+ * @param[in] height The height of the image.
+ * @param[in] batchSize The batch size of the image.
+ * @param[in] blockSize The block size of the kernel.
+ * @return The grid size.
+ */
+static inline dim3 GetGridSize2D(size_t width, size_t height, size_t batchSize, dim3 blockSize) {
+    return dim3((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batchSize);
+}
+
 }  // namespace roccv::detail
