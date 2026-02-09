@@ -28,7 +28,7 @@
 #include "core/hip_assert.h"
 
 namespace roccv::detail {
-static void StreamCallback(void* userData) {
+static inline void StreamCallback(void* userData) {
     std::function<void()>* func = static_cast<std::function<void()>*>(userData);
     (*func)();
     delete func;
