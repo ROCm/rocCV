@@ -25,6 +25,8 @@
 #include <functional>
 #include <memory>
 
+#include "core/hip_assert.h"
+
 namespace roccv::detail {
 static void StreamCallback(void* userData) {
     std::function<void()>* func = static_cast<std::function<void()>*>(userData);
@@ -45,5 +47,27 @@ void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
     std::unique_ptr<std::function<void()>> data = std::make_unique<std::function<void()>>(std::forward<Callable>(cb));
     HIP_VALIDATE_NO_ERRORS(hipLaunchHostFunc(stream, StreamCallback, data.get()));
     data.release();  // Release ownership, StreamCallback is responsible for it now
+}
+
+/**
+ * @brief Get the maximum potential block size for a 2D kernel.
+ *
+ * @param[in] kernel The kernel function to get the maximum potential block size for.
+ * @param[in] sharedMemSizePerBlock The shared memory size per block.
+ * @return The maximum potential block size.
+ */
+template <typename KernalFunc>
+dim3 GetMaximumPotentialBlockSize2D(KernalFunc kernel, size_t sharedMemSizePerBlock) {
+    int minimumGridSize;
+    int blockSize;
+    int deviceId;
+    int warpSize;
+
+    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
+    HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&warpSize, hipDeviceAttributeWarpSize, deviceId));
+    HIP_VALIDATE_NO_ERRORS(
+        hipOccupancyMaxPotentialBlockSize(&minimumGridSize, &blockSize, kernel, sharedMemSizePerBlock, warpSize));
+
+    return dim3(warpSize, blockSize / warpSize, 1);
 }
 }  // namespace roccv::detail
