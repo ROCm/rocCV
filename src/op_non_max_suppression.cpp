@@ -24,7 +24,6 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include "common/validation_helpers.hpp"
-#include "core/hip_assert.h"
 #include "kernels/device/non_max_suppression_device.hpp"
 #include "kernels/host/non_max_suppression_host.hpp"
 

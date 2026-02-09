@@ -24,14 +24,11 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include <functional>
-#include <iostream>
 #include <numeric>
 
-#include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
-#include "core/detail/math/math.hpp"
-#include "core/detail/type_traits.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "kernels/device/bilateral_filter_device.hpp"
 #include "kernels/host/bilateral_filter_host.hpp"
 
@@ -72,7 +69,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
 
     if (device == eDeviceType::GPU) {
-        dim3 block(8, 8);
+        dim3 block = detail::GetMaximumPotentialBlockSize2D(
+            Kernels::Device::bilateral_filter<T, ImageWrapper<T>, ImageWrapper<T>>, 0);
         uint32_t xGridSize = (outputWrapper.width() + (block.x * 2) - 1) / (block.x * 2);
         uint32_t yGridSize = (outputWrapper.height() + (block.y * 2) - 1) / (block.y * 2);
         uint32_t zGridSize = outputWrapper.batches();

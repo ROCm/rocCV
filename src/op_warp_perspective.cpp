@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "core/detail/casting.hpp"
 #include "core/detail/hip_utils.hpp"
 #include "core/detail/math/math.hpp"
-#include "core/detail/type_traits.hpp"
 #include "kernels/device/warp_perspective_device.hpp"
 #include "kernels/host/warp_perspective_host.hpp"
 
