@@ -22,6 +22,7 @@
 #include <core/hip_assert.h>
 #include <hip/hip_runtime.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <map>
