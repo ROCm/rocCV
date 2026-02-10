@@ -111,6 +111,8 @@ void printHelp(const char* programName) {
     std::cout << "                                  For example: --select Rotate,Flip\n";
     std::cout << "  --exclude, -e <cat1,cat2,...>:  Excludes categories from the benchmark. Must be a comma separated list.\n";
     std::cout << "                                  For example: --exclude Rotate,Flip\n";
+    std::cout << "  --types, -t <t1,t2,...>:        Selects benchmark types to run for each category. Must be a comma separated list.\n";
+    std::cout << "                                  For example: --types CPU,GPU\n";
     std::cout << "Examples:\n";
     std::cout << "  1. Run all benchmarks using 'config.json', save results to 'results.json'\n";
     std::cout << "      " << programName << " --config config.json --output results.json\n";
@@ -145,6 +147,7 @@ int main(int argc, char** argv) {
     std::string outputFilepath = "roccv_bench_results.json";
     std::vector<std::string> selectedCategories;
     std::vector<std::string> excludedCategories;
+    std::vector<std::string> selectedTypes;
 
     // Collect all available benchmark categories
     std::vector<std::string> availableCategories;
@@ -223,6 +226,15 @@ int main(int argc, char** argv) {
             }
         }
 
+        else if (arg == "-t" || arg == "--types") {
+            if (i + 1 < argc) {
+                selectedTypes = splitStringByComma(argv[++i]);
+            } else {
+                std::cerr << "Error: --types requires a value." << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
         else {
             std::cerr << "Error: Unrecognized argument: " << arg << std::endl;
             return EXIT_FAILURE;
@@ -295,6 +307,11 @@ int main(int argc, char** argv) {
             // Iterate through each benchmark in the category
             for (const auto& benchmark :
                  roccvbench::BenchmarkRegistry::instance().getBenchmarks().at(selectedCategory)) {
+                // If --types was used, only run benchmarks that are in the selected types.
+                if (!selectedTypes.empty() &&
+                    std::find(selectedTypes.begin(), selectedTypes.end(), benchmark.name) == selectedTypes.end()) {
+                    continue;
+                }
                 std::cout << "Running benchmark " << benchmark.category << "::" << benchmark.name << std::endl;
 
                 nlohmann::json runResultsJson;
