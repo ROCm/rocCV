@@ -34,7 +34,10 @@ endif()
 
 project(roccv_bench)
 
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
+add_subdirectory(roccvbench)
+
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
+set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccvbench-utils)
 
 # Include roccv benchmark units
 set(BUILD_ROCCV_BENCHMARKS ON)
