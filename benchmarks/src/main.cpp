@@ -251,6 +251,18 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Create serializer based on the output file extension
+    std::filesystem::path outputPath(outputFilepath);
+    roccvbench::IBenchmarkSerializer* serializer;
+    if (outputPath.extension() == ".json") {
+        serializer = new roccvbench::JsonBenchmarkSerializer();
+    } else if (outputPath.extension() == ".csv") {
+        serializer = new roccvbench::CsvBenchmarkSerializer();
+    } else {
+        std::cerr << "Error: Unsupported output file extension: " << outputPath.extension() << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Load benchmark configuration file
     std::vector<roccvbench::BenchmarkConfig> configs = loadConfig(configFilepath);
 
@@ -261,15 +273,9 @@ int main(int argc, char** argv) {
     HIP_VALIDATE_NO_ERRORS(hipGetDeviceProperties(&props, device_id));
 
     roccvbench::Results results;
-    // nlohmann::json resultsJson;
-
-    // Write device information to output JSON
-    // resultsJson["device_info"]["gpu"]["name"] = props.name;
-    // resultsJson["device_info"]["cpu"]["name"] = getCPUName();
-    // resultsJson["device_info"]["cpu"]["threads"] = std::thread::hardware_concurrency();
 
     results.setMetadata(
-        {{"gpu_name", props.name}, {"cpu_name", getCPUName()}, {"cpu_threads", std::thread::hardware_concurrency()}});
+        {{"gpu", props.name}, {"cpu", getCPUName()}, {"cpu_threads", std::thread::hardware_concurrency()}});
 
     // Determine the final list of categories to run and store it in selectedCategories.
 
@@ -354,10 +360,15 @@ int main(int argc, char** argv) {
 
     // Write benchmark results to disk
     std::filesystem::path resultPath(outputFilepath);
-    roccvbench::CsvBenchmarkSerializer serializer;
-    serializer.serialize(results, resultPath);
+    try {
+        serializer->serialize(results, resultPath);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Failed to serialize benchmark results: " << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::cout << "Wrote benchmark results to " << std::filesystem::absolute(resultPath) << std::endl;
+    delete serializer;
 
     return 0;
 }

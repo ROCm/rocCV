@@ -22,12 +22,46 @@
 #include "roccvbench/serializers.hpp"
 
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include <stdexcept>
 
 namespace roccvbench {
 
-// TODO: Implement JSON and CSV serializers.
-void JsonBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) { return; }
+void JsonBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) {
+    nlohmann::json json;
+
+    const auto metadata = results.getMetadata();
+
+    json["device_info"]["cpu"]["name"] = std::get<std::string>(metadata.at("cpu"));
+    json["device_info"]["cpu"]["threads"] = std::get<size_t>(metadata.at("cpu_threads"));
+    json["device_info"]["gpu"]["name"] = std::get<std::string>(metadata.at("gpu"));
+
+    json["results"] = nlohmann::json::object();
+
+    for (const auto& run : results.getRuns()) {
+        const auto& values = run.getValues();
+        std::string name = std::get<std::string>(values.at("name"));
+        std::string category = std::get<std::string>(values.at("category"));
+
+        if (json["results"].find(category) == json["results"].end()) {
+            json["results"][category] = nlohmann::json::object();
+        }
+        if (json["results"][category].find(name) == json["results"][category].end()) {
+            json["results"][category][name] = nlohmann::json::array();
+        }
+
+        auto runData = nlohmann::json::object();
+        for (const auto& [key, value] : values) {
+            runData[key] = std::visit([](const auto& val) -> nlohmann::json { return val; }, value);
+        }
+        json["results"][category][name].emplace_back(runData);
+    }
+
+    std::ofstream file(filepath);
+    file << json.dump(4);
+    file.close();
+}
+
 void CsvBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) {
     std::ofstream file(filepath);
 
