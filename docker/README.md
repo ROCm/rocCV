@@ -76,6 +76,33 @@ docker run --rm \
   ctest -R '^test_' --output-on-failure -V
 ```
 
+### Run Python tests
+
+Python tests use pytest and need GPU access so `rocpycv` can run on the device:
+
+```bash
+docker run --rm \
+  --device=/dev/kfd --device=/dev/dri \
+  --security-opt seccomp=unconfined \
+  --group-add=video \
+  -w /workspace/roccv/tests/roccv/python \
+  roccv:dev-ubuntu-24.04-$(date +%Y%m%d) \
+  python3 -m pytest -v
+```
+
+Run a single test file:
+
+```bash
+docker run --rm \
+  --device=/dev/kfd --device=/dev/dri \
+  --security-opt seccomp=unconfined \
+  -w /workspace/roccv/tests/roccv/python \
+  roccv:dev-ubuntu-24.04-$(date +%Y%m%d) \
+  python3 -m pytest -v test_op_resize.py
+```
+
+`PYTHONPATH` is set in the image so `rocpycv` is found; the working directory is the Python test directory.
+
 ### Run benchmarks
 
 Benchmarks need GPU access. Mount a directory to get results on the host:

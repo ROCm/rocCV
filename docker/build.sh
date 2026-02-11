@@ -19,6 +19,6 @@ docker build -t "${IMAGE_TAG}" \
   --build-arg IMAGE_TAG_SUFFIX="${IMAGE_TAG_SUFFIX}" \
   --build-arg BUILD_DATE="${DATE}" \
   -f docker/Dockerfile \
-  "$@"
+  "$@" .
 
 echo "Built ${IMAGE_TAG}"
