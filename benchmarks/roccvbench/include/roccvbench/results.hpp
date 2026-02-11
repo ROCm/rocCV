@@ -22,13 +22,14 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <variant>
 #include <vector>
 
 namespace roccvbench {
 
-using BenchValue = std::variant<double, size_t, std::string>;
+using BenchValue = std::variant<double, size_t, std::string, int>;
 
 /**
  * @brief Class for storing and managing benchmark run data.
@@ -52,14 +53,23 @@ class RunData {
  */
 class Results {
    public:
-    void RegisterRun(const RunData& runData) { m_runData.push_back(runData); }
-    void SetMetadata(const std::map<std::string, BenchValue>& metadata) { m_metadata = metadata; }
+    Results() = default;
+
+    void registerRun(const RunData& runData) {
+        m_runData.push_back(runData);
+        for (const auto& [key, _] : runData.getValues()) {
+            m_registeredKeys.insert(key);
+        }
+    }
+    void setMetadata(const std::map<std::string, BenchValue>& metadata) { m_metadata = metadata; }
 
     const std::vector<RunData>& getRuns() const { return m_runData; }
     const std::map<std::string, BenchValue>& getMetadata() const { return m_metadata; }
+    const std::set<std::string>& getRegisteredKeys() const { return m_registeredKeys; }
 
    private:
     std::vector<RunData> m_runData;
     std::map<std::string, BenchValue> m_metadata;
+    std::set<std::string> m_registeredKeys;
 };
 }  // namespace roccvbench

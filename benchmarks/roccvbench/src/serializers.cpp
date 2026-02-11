@@ -21,9 +21,39 @@
 
 #include "roccvbench/serializers.hpp"
 
+#include <fstream>
+#include <stdexcept>
+
 namespace roccvbench {
 
 // TODO: Implement JSON and CSV serializers.
 void JsonBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) { return; }
-void CsvBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) { return; }
+void CsvBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) {
+    std::ofstream file(filepath);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for writing: " + filepath.string());
+    }
+
+    for (const auto& key : results.getRegisteredKeys()) {
+        file << key << ",";
+    }
+    for (const auto& [key, value] : results.getMetadata()) {
+        file << key << ",";
+    }
+
+    file << std::endl;
+
+    for (const auto& run : results.getRuns()) {
+        for (const auto& key : results.getRegisteredKeys()) {
+            std::visit([&file](const auto& val) { file << val << ","; }, run.getValues().at(key));
+        }
+        for (const auto& [key, value] : results.getMetadata()) {
+            std::visit([&file](const auto& val) { file << val << ","; }, value);
+        }
+        file << std::endl;
+    }
+
+    file.close();
+}
 }  // namespace roccvbench
