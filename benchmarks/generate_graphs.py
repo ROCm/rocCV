@@ -147,7 +147,6 @@ if __name__ == "__main__":
             tp_vals = []
 
             for run in runs:
-                ex_time_ms = run["execution_time"]
                 n_samples = run["samples"]
                 total_bytes = run["read_memory_bytes"] + run["written_memory_bytes"]
 
