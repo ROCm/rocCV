@@ -105,8 +105,8 @@ void printHelp(const char* programName) {
     std::cout << "Required Arguments:\n";
     std::cout << "  --config, -c:                   The JSON configuration file to run the benchmarks.\n";
     std::cout << "Optional Arguments:\n";
-    std::cout << "  --output, -o:                   The output JSON filepath for benchmark results. Defaults to\n";
-    std::cout << "                                  roccv_bench_results.json.\n";
+    std::cout << "  --output, -o:                   The output filepath for benchmark results. Defaults to\n";
+    std::cout << "                                  roccv_bench_results.json. Supported file extensions: .json, .csv\n";
     std::cout << "Options:\n";
     std::cout << "  --help, -h:                     Displays this help message.\n";
     std::cout << "  --list, -l:                     Lists the available benchmark categories and exits the program.\n";
