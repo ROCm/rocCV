@@ -63,6 +63,7 @@ void FillTensorImpl(const roccv::Tensor& tensor) {
         throw std::runtime_error("Unsupported data type.");
     }
     HIP_VALIDATE_NO_ERRORS(hipDeviceSynchronize());
+    rocrand_destroy_generator(generator);
 }
 }  // namespace
 
