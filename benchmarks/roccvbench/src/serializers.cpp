@@ -70,21 +70,36 @@ void CsvBenchmarkSerializer::serialize(const Results& results, std::filesystem::
         throw std::runtime_error("Failed to open file for writing: " + filepath.string());
     }
 
+    // Write header
+    std::string sep;
     for (const auto& key : results.getRegisteredKeys()) {
-        file << key << ",";
+        file << sep << key;
+        sep = ",";
     }
     for (const auto& [key, value] : results.getMetadata()) {
-        file << key << ",";
+        file << sep << key;
+        sep = ",";
     }
 
     file << std::endl;
 
+    // Write data rows
     for (const auto& run : results.getRuns()) {
+        sep = "";
         for (const auto& key : results.getRegisteredKeys()) {
-            std::visit([&file](const auto& val) { file << val << ","; }, run.getValues().at(key));
+            if (!run.getValues().contains(key)) {
+                file << sep;
+                sep = ",";
+                continue;
+            }
+            file << sep;
+            std::visit([&file](const auto& val) { file << val; }, run.getValues().at(key));
+            sep = ",";
         }
         for (const auto& [key, value] : results.getMetadata()) {
-            std::visit([&file](const auto& val) { file << val << ","; }, value);
+            file << sep;
+            std::visit([&file](const auto& val) { file << val; }, value);
+            sep = ",";
         }
         file << std::endl;
     }

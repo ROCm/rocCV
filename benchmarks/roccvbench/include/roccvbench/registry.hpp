@@ -41,7 +41,7 @@ class BenchmarkRegistry {
     }
 
     void registerBenchmark(const std::string& category, const std::string& name,
-                           std::function<BenchmarkResults(const BenchmarkConfig&)> func) {
+                           std::function<BenchmarkResults(const BenchmarkConfig&, roccvbench::RunData&)> func) {
         if (m_benchmarks.count(category) == 0) {
             m_benchmarks.emplace(category, std::vector<Benchmark>());
         }
@@ -65,8 +65,10 @@ class BenchmarkRegistry {
  * @brief Creates a benchmark unit for roccv with a provided name.
  *
  */
-#define BENCHMARK(category, name)                                                                       \
-    roccvbench::BenchmarkResults Benchmark_##category##name(const roccvbench::BenchmarkConfig& config); \
-    REGISTER_BENCHMARK(Benchmark_##category##name, name, category);                                     \
-    roccvbench::BenchmarkResults Benchmark_##category##name(const roccvbench::BenchmarkConfig& config)
+#define BENCHMARK(category, name)                                                                      \
+    roccvbench::BenchmarkResults Benchmark_##category##name(const roccvbench::BenchmarkConfig& config, \
+                                                            roccvbench::RunData& runData);             \
+    REGISTER_BENCHMARK(Benchmark_##category##name, name, category);                                    \
+    roccvbench::BenchmarkResults Benchmark_##category##name(const roccvbench::BenchmarkConfig& config, \
+                                                            roccvbench::RunData& runData)
 }  // namespace roccvbench

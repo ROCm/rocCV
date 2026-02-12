@@ -335,9 +335,9 @@ int main(int argc, char** argv) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
                               << ", width=" << config.width << ", runs=" << config.runs
                               << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
-                    auto result = benchmark.func(config);
-
                     roccvbench::RunData runData;
+                    auto result = benchmark.func(config, runData);
+
                     runData.addValue("name", benchmark.name);
                     runData.addValue("category", benchmark.category);
                     runData.addValue("width", config.width);

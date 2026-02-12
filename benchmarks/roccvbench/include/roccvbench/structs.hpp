@@ -25,6 +25,8 @@
 #include <functional>
 #include <string>
 
+#include "results.hpp"
+
 namespace roccvbench {
 
 /**
@@ -53,6 +55,6 @@ struct BenchmarkConfig {
 struct Benchmark {
     std::string category;
     std::string name;
-    std::function<BenchmarkResults(const BenchmarkConfig&)> func;
+    std::function<BenchmarkResults(const BenchmarkConfig&, roccvbench::RunData&)> func;
 };
 }  // namespace roccvbench
