@@ -30,48 +30,61 @@
 #include <unordered_map>
 
 namespace {
-static rocrand_generator GetGenerator(eDeviceType device) {
-    rocrand_generator gen;
-    switch (device) {
-        case eDeviceType::GPU: {
-            rocrand_create_generator(&gen, ROCRAND_RNG_PSEUDO_DEFAULT);
-            break;
-        }
-        case eDeviceType::CPU: {
-            rocrand_create_generator_host_blocking(&gen, ROCRAND_RNG_PSEUDO_DEFAULT);
-            break;
-        }
 
-        default: {
-            throw std::runtime_error("Unsupported device type.");
+class RandomGenerator {
+   public:
+    RandomGenerator(eDeviceType device) {
+        switch (device) {
+            case eDeviceType::GPU: {
+                rocrand_create_generator(&m_gen, ROCRAND_RNG_PSEUDO_DEFAULT);
+                break;
+            }
+            case eDeviceType::CPU: {
+                rocrand_create_generator_host_blocking(&m_gen, ROCRAND_RNG_PSEUDO_DEFAULT);
+                break;
+            }
+            default: {
+                throw std::runtime_error("Unsupported device type.");
+            }
         }
     }
 
-    return gen;
-}
+    /**
+     * @brief Generates random data into a tensor.
+     *
+     * @tparam T The type of the data to generate.
+     * @param tensor The tensor to generate data into.
+     */
+    template <typename T>
+    void generate(const roccv::Tensor& tensor) {
+        const auto tensor_data = tensor.exportData<roccv::TensorDataStrided>();
+
+        if constexpr (std::is_integral_v<T>) {
+            rocrand_generate_char(m_gen, static_cast<unsigned char*>(tensor_data.basePtr()),
+                                  tensor.shape().size() * tensor.dtype().size());
+        } else if constexpr (std::is_same_v<T, float>) {
+            rocrand_generate_uniform(m_gen, static_cast<float*>(tensor_data.basePtr()), tensor.shape().size());
+        } else if constexpr (std::is_same_v<T, double>) {
+            rocrand_generate_uniform_double(m_gen, static_cast<double*>(tensor_data.basePtr()), tensor.shape().size());
+        } else {
+            throw std::runtime_error("Unsupported data type.");
+        }
+
+        if (tensor.device() == eDeviceType::GPU) {
+            HIP_VALIDATE_NO_ERRORS(hipDeviceSynchronize());
+        }
+    }
+
+    ~RandomGenerator() { rocrand_destroy_generator(m_gen); }
+
+   private:
+    rocrand_generator m_gen;
+};
 
 template <typename T>
 void FillTensorImpl(const roccv::Tensor& tensor) {
-    const auto tensor_data = tensor.exportData<roccv::TensorDataStrided>();
-    const auto generator = GetGenerator(tensor.device());
-
-    if constexpr (std::is_integral_v<T>) {
-        rocrand_generate_char(generator, static_cast<unsigned char*>(tensor_data.basePtr()),
-                              tensor.shape().size() * tensor.dtype().size());
-    } else if constexpr (std::is_same_v<T, float>) {
-        rocrand_generate_uniform(generator, static_cast<float*>(tensor_data.basePtr()), tensor.shape().size());
-    } else if constexpr (std::is_same_v<T, double>) {
-        rocrand_generate_uniform_double(generator, static_cast<double*>(tensor_data.basePtr()), tensor.shape().size());
-    } else {
-        throw std::runtime_error("Unsupported data type.");
-    }
-
-    // Synchronize the GPU to ensure that the data is ready to be used.
-    if (tensor.device() == eDeviceType::GPU) {
-        HIP_VALIDATE_NO_ERRORS(hipDeviceSynchronize());
-    }
-
-    rocrand_destroy_generator(generator);
+    RandomGenerator generator(tensor.device());
+    generator.generate<T>(tensor);
 }
 }  // namespace
 
