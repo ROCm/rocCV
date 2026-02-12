@@ -33,7 +33,7 @@ namespace roccvbench {
  */
 class IBenchmarkSerializer {
    public:
-    virtual void serialize(const Results& results, std::filesystem::path& filepath) = 0;
+    virtual void serialize(const Results& results, const std::filesystem::path& filepath) = 0;
     virtual ~IBenchmarkSerializer() = default;
 };
 
@@ -43,7 +43,7 @@ class IBenchmarkSerializer {
  */
 class JsonBenchmarkSerializer : public IBenchmarkSerializer {
    public:
-    void serialize(const Results& results, std::filesystem::path& filepath) override;
+    void serialize(const Results& results, const std::filesystem::path& filepath) override;
 };
 
 /**
@@ -52,6 +52,6 @@ class JsonBenchmarkSerializer : public IBenchmarkSerializer {
  */
 class CsvBenchmarkSerializer : public IBenchmarkSerializer {
    public:
-    void serialize(const Results& results, std::filesystem::path& filepath) override;
+    void serialize(const Results& results, const std::filesystem::path& filepath) override;
 };
 }  // namespace roccvbench

@@ -24,10 +24,32 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
+#include <type_traits>
 
 namespace roccvbench {
 
-void JsonBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) {
+namespace {
+/**
+ * @brief Writes a value to a CSV file, ensuring that strings are quoted.
+ *
+ * @param file The file to write the value to.
+ * @param value The value to write.
+ */
+void WriteCsvValue(std::ofstream& file, const BenchValue& value) {
+    std::visit(
+        [&file](const auto& val) {
+            using T = std::decay_t<decltype(val)>;
+            if constexpr (std::is_same_v<T, std::string>) {
+                file << "\"" << val << "\"";
+            } else {
+                file << val;
+            }
+        },
+        value);
+}
+}  // namespace
+
+void JsonBenchmarkSerializer::serialize(const Results& results, const std::filesystem::path& filepath) {
     nlohmann::json json;
 
     const auto metadata = results.getMetadata();
@@ -59,11 +81,16 @@ void JsonBenchmarkSerializer::serialize(const Results& results, std::filesystem:
     }
 
     std::ofstream file(filepath);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for writing: " + filepath.string());
+    }
+
     file << json.dump(4);
     file.close();
 }
 
-void CsvBenchmarkSerializer::serialize(const Results& results, std::filesystem::path& filepath) {
+void CsvBenchmarkSerializer::serialize(const Results& results, const std::filesystem::path& filepath) {
     std::ofstream file(filepath);
 
     if (!file.is_open()) {
@@ -93,12 +120,12 @@ void CsvBenchmarkSerializer::serialize(const Results& results, std::filesystem::
                 continue;
             }
             file << sep;
-            std::visit([&file](const auto& val) { file << val; }, run.getValues().at(key));
+            WriteCsvValue(file, run.getValues().at(key));
             sep = ",";
         }
         for (const auto& [key, value] : results.getMetadata()) {
             file << sep;
-            std::visit([&file](const auto& val) { file << val; }, value);
+            WriteCsvValue(file, value);
             sep = ",";
         }
         file << std::endl;

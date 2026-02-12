@@ -274,8 +274,9 @@ int main(int argc, char** argv) {
 
     roccvbench::Results results;
 
-    results.setMetadata(
-        {{"gpu", props.name}, {"cpu", getCPUName()}, {"cpu_threads", std::thread::hardware_concurrency()}});
+    results.setMetadata({{"gpu", props.name},
+                         {"cpu", getCPUName()},
+                         {"cpu_threads", static_cast<size_t>(std::thread::hardware_concurrency())}});
 
     // Determine the final list of categories to run and store it in selectedCategories.
 

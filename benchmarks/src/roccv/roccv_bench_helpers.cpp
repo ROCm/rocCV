@@ -25,6 +25,9 @@
 #include <rocrand/rocrand.h>
 
 #include <roccvbench/utils.hpp>
+#include <stdexcept>
+#include <type_traits>
+#include <unordered_map>
 
 namespace {
 static rocrand_generator GetGenerator(eDeviceType device) {
