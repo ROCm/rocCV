@@ -31,10 +31,11 @@ void JsonBenchmarkSerializer::serialize(const Results& results, std::filesystem:
     nlohmann::json json;
 
     const auto metadata = results.getMetadata();
-
-    json["device_info"]["cpu"]["name"] = std::get<std::string>(metadata.at("cpu"));
-    json["device_info"]["cpu"]["threads"] = std::get<size_t>(metadata.at("cpu_threads"));
-    json["device_info"]["gpu"]["name"] = std::get<std::string>(metadata.at("gpu"));
+    auto metadata_json = nlohmann::json::object();
+    for (const auto& [key, value] : metadata) {
+        metadata_json[key] = std::visit([](const auto& val) -> nlohmann::json { return val; }, value);
+    }
+    json["metadata"] = metadata_json;
 
     json["results"] = nlohmann::json::object();
 

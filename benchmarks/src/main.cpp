@@ -347,6 +347,7 @@ int main(int argc, char** argv) {
                     runData.addValue("samples", config.samples);
                     runData.addValue("read_memory_bytes", result.readMemoryBytes);
                     runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
+                    runData.addValue("warmup_runs", config.warmupRuns);
 
                     results.registerRun(runData);
                 }
