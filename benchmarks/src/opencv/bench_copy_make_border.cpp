@@ -24,7 +24,7 @@
 
 #include "opencv_bench_helpers.hpp"
 
-BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
+BENCHMARK(CopyMakeBorderConstant, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     const int top = 9;
