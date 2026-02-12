@@ -1,3 +1,5 @@
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 # rocCV Docker
 
 Build and run [rocCV](https://github.com/ROCm/rocCV) in a container on AMD GPUs using the ROCm stack.
