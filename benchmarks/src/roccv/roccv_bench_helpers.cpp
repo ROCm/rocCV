@@ -75,5 +75,8 @@ void FillTensor(const roccv::Tensor& tensor) {
         {eDataType::DATA_TYPE_F32, FillTensorImpl<float>},    {eDataType::DATA_TYPE_F64, FillTensorImpl<double>},
     };
 
+    if (!fillTensorImpls.contains(tensor.dtype().etype())) {
+        throw std::runtime_error("Unsupported data type.");
+    }
     fillTensorImpls.at(tensor.dtype().etype())(tensor);
 }
