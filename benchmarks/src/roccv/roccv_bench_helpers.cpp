@@ -62,7 +62,12 @@ void FillTensorImpl(const roccv::Tensor& tensor) {
     } else {
         throw std::runtime_error("Unsupported data type.");
     }
-    HIP_VALIDATE_NO_ERRORS(hipDeviceSynchronize());
+
+    // Synchronize the GPU to ensure that the data is ready to be used.
+    if (tensor.device() == eDeviceType::GPU) {
+        HIP_VALIDATE_NO_ERRORS(hipDeviceSynchronize());
+    }
+
     rocrand_destroy_generator(generator);
 }
 }  // namespace
