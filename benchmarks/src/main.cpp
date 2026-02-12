@@ -253,11 +253,11 @@ int main(int argc, char** argv) {
 
     // Create serializer based on the output file extension
     std::filesystem::path outputPath(outputFilepath);
-    roccvbench::IBenchmarkSerializer* serializer;
+    std::unique_ptr<roccvbench::IBenchmarkSerializer> serializer;
     if (outputPath.extension() == ".json") {
-        serializer = new roccvbench::JsonBenchmarkSerializer();
+        serializer = std::make_unique<roccvbench::JsonBenchmarkSerializer>();
     } else if (outputPath.extension() == ".csv") {
-        serializer = new roccvbench::CsvBenchmarkSerializer();
+        serializer = std::make_unique<roccvbench::CsvBenchmarkSerializer>();
     } else {
         std::cerr << "Error: Unsupported output file extension: " << outputPath.extension() << std::endl;
         return EXIT_FAILURE;
@@ -369,7 +369,6 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "Wrote benchmark results to " << std::filesystem::absolute(resultPath) << std::endl;
-    delete serializer;
 
     return 0;
 }
