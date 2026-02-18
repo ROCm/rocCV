@@ -73,40 +73,18 @@ if (NOT DEFINED ENV{HIP_PLATFORM})
     set(ENV{HIP_PLATFORM} "amd")
 endif()
 
-# find HIP
-find_package(HIP REQUIRED)
-set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
-set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${HIP_INCLUDE_DIR})
-# find rocCV
-find_library(roccv_LIBRARY roccv PATHS ${ROCM_PATH}/lib)
-find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include/roccv)
-
-# Add current source directory as an include
-set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# If building from source, ensure we use the locally built version of roccv. Otherwise, look for an installed version to link against.
-if(BUILD_FROM_SOURCE)
-        message("-- ${Green}${PROJECT_NAME} -- Building CPP tests using roccv source build${ColourReset}")
-        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_SOURCE_DIR}/include)
-        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
-else()
-    if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
-        message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
-        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
-        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${roccv_INCLUDE_DIR})
-        set(roccv_FOUND TRUE)
-    else()
-        message(FATAL_ERROR "${Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
-    endif()
+# Find rocCV
+if (NOT TARGET roccv::roccv)
+    find_package(roccv REQUIRED)
 endif()
+message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
 
-# Gather test helper sources
+
+# Compile test helper library
 file(GLOB TEST_HELPER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-
-# Create a static library for test helpers (so we don't recompile for every test)
 add_library(roccv-test-helpers STATIC ${TEST_HELPER_SOURCES})
-target_link_libraries(roccv-test-helpers PUBLIC ${LINK_LIBRARY_LIST})
-target_include_directories(roccv-test-helpers PUBLIC ${INCLUDE_DIR_LIST})
+target_link_libraries(roccv-test-helpers PUBLIC roccv::roccv)
+target_include_directories(roccv-test-helpers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Gather actual test sources
 file(GLOB_RECURSE CPP_ROCCV_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*.cpp")

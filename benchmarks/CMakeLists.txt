@@ -23,6 +23,7 @@
 
 cmake_minimum_required(VERSION 3.15)
 
+# Enhanced Message
 if(NOT DEFINED ENHANCED_MESSAGE)
   string(ASCII 27 Esc)
   set(ColourReset "${Esc}[m")
@@ -30,25 +31,50 @@ if(NOT DEFINED ENHANCED_MESSAGE)
   set(Green       "${Esc}[32m")
   set(Yellow      "${Esc}[33m")
   set(White       "${Esc}[37m")
+  set(Cyan        "${Esc}[36m")
+endif()
+
+# ROCM Path
+if(DEFINED ENV{ROCM_PATH})
+    set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Default ROCm installation path")
+elseif(ROCM_PATH)
+    message("-- INFO:ROCM_PATH Set -- ${ROCM_PATH}")
+else()
+    set(ROCM_PATH /opt/rocm CACHE PATH "Default ROCm installation path")
+endif()
+
+# Set AMD Clang as default compiler
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
+set(CMAKE_CXX_EXTENSIONS ON)
+if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang++")
+    set(CMAKE_C_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang)
+    set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
 
 project(roccv_bench)
 
+# Print benchmark CMake configuration information
+message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColourReset}")
+message("--    ${Cyan}CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}${ColourReset}")
+message("--    ${Cyan}CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}${ColourReset}")
+message("--    ${Cyan}CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}${ColourReset}")
+
 set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
 
 # Include roccv benchmark units
-if(BUILD_FROM_SOURCE)
-    message("-- ${Green}${PROJECT_NAME} -- Found rocCV")
-    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
-    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv" "${ROCCV_SOURCE_DIR}/include")
-    set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv)
-else()
-    message("-- ${Yellow}${PROJECT_NAME} -- Could not find rocCV, it will not be included in the benchmarks${ColorReset}")
+if (NOT TARGET roccv::roccv)
+    find_package(roccv REQUIRED)
 endif()
+message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
+set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv")
+set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv::roccv)
 
 # Include OpenCV benchmark units
+find_package(OpenCV QUIET)
 if(${OpenCV_FOUND})
-    message("-- ${Green}${PROJECT_NAME} -- Found OpenCV. Including in benchmarks${ColorReset}")
+    message("-- ${Green}${PROJECT_NAME} -- Found OpenCV version: ${OpenCV_VERSION}${ColorReset}")
     set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/opencv/*.cpp")
     set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/opencv" ${OpenCV_INCLUDE_DIRS})
     set(BENCHMARK_LIBS ${BENCHMARK_LIBS} ${OpenCV_LIBRARIES})
