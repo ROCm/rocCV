@@ -182,59 +182,19 @@ if (NOT DEFINED ENV{HIP_PLATFORM})
     set(ENV{HIP_PLATFORM} "amd")
 endif()
 
-# Find dependencies
+# --- Find dependencies ---
 find_package(HIP QUIET)
 find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
 find_package(OpenMP COMPONENTS CXX QUIET)
-
-if (BUILD_PYPACKAGE)
-    # Auto-detect Python3 executable if not specified
-    if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR AND NOT PYTHON_VERSION_SUGGESTED)
-        find_program(PYTHON3_EXECUTABLE_PATH python3)
-        if(PYTHON3_EXECUTABLE_PATH)
-            set(Python3_EXECUTABLE ${PYTHON3_EXECUTABLE_PATH})
-            get_filename_component(Python3_ROOT_DIR "${PYTHON3_EXECUTABLE_PATH}" DIRECTORY)
-            get_filename_component(Python3_ROOT_DIR "${Python3_ROOT_DIR}" DIRECTORY)
-        endif()
-    endif()
-
-    if(PYTHON_VERSION_SUGGESTED)
-        find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
-    else()
-        set(Python3_FIND_VIRTUALENV FIRST)
-        find_package(Python3 QUIET COMPONENTS Interpreter Development)
-    endif()
-
-    # Python3
-    if(NOT Python3_Interpreter_FOUND)
-        set(BUILD_PYPACKAGE OFF)
-        message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} interpreter, Not Found${ColourReset}")
-    else()
-        message("-- ${Green}rocpycv -- Found python${PYTHON_VERSION_SUGGESTED} interpreter: ${Python3_EXECUTABLE}${ColourReset}")
-    endif()
-
-    # Python3 Development
-    if(NOT Python3_Development_FOUND)
-        set(BUILD_PYPACKAGE OFF)
-        message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColourReset}")
-    else()
-        message("-- ${Green}rocpycv -- Found python${PYTHON_VERSION_SUGGESTED} development headers: ${Python3_INCLUDE_DIRS}${ColourReset}")
-    endif()
-endif()
 find_package(OpenCV QUIET)
 
-# Dependency checks
+# --- Dependency checks ---
 set(BUILD_ROCCV true)
 # HIP
 if(NOT HIP_FOUND)
     set(BUILD_ROCCV false)
     message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires HIP, Not Found${ColourReset}")
-endif()
-# Filesystem
-if(NOT FILESYSTEM_FOUND)
-    set(BUILD_ROCCV false)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires FileSystem, Not Found ${ColourReset}")
 endif()
 # rocm_smi
 if (NOT rocm_smi_FOUND)
@@ -265,37 +225,32 @@ endif()
 set(BUILD_FROM_SOURCE ON)
 set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+# --- Source code ---
 add_subdirectory(src)
 
+# --- Samples ---
 if(SAMPLES)
     add_subdirectory(samples)
 endif(SAMPLES)
 
+# --- Benchmarks ---
 if(BENCHMARKS)
     add_subdirectory(benchmarks)
 endif(BENCHMARKS)
 
-# Enable output to stdout by default when tests fail
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-enable_testing()
-include(CTest)
-
+# --- Tests ---
 if(TESTS)
+    include(CTest)
+    enable_testing()
 	add_subdirectory(tests)
-	add_custom_target(test_correctness
-		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure
-        COMMENT "Running correctness tests for rocCV."
-	)
 endif(TESTS)
 
-# Build Python package if BUILD_PYPACKAGE is set.
+# --- Python package ---
 if(BUILD_PYPACKAGE)
-    add_subdirectory("third_party/pybind11")
-    add_subdirectory("third_party/dlpack" EXCLUDE_FROM_ALL)
     add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
-# Set package information.
+# --- Packaging configuration ---
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
