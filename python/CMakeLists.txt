@@ -101,6 +101,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(dlpack)
 
+if(NOT TARGET roccv::roccv)
+    find_package(roccv REQUIRED)
+endif()
+
 # --- Dependency checks ---
 set(BUILD_ROCCV_PYPACKAGE true)
 
@@ -133,7 +137,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        roccv
+        roccv::roccv
         dlpack::dlpack
         pybind11::headers
 )
