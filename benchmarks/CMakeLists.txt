@@ -32,6 +32,7 @@ if(NOT DEFINED ENHANCED_MESSAGE)
   set(Yellow      "${Esc}[33m")
   set(White       "${Esc}[37m")
   set(Cyan        "${Esc}[36m")
+  set(BoldBlue    "${Esc}[1;34m")
 endif()
 
 # ROCM Path
@@ -52,13 +53,12 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
 
-project(roccv_bench)
+project(roccv_bench VERSION 1.0 LANGUAGES CXX)
 
 # Print benchmark CMake configuration information
-message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColourReset}")
-message("--    ${Cyan}CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}${ColourReset}")
-message("--    ${Cyan}CMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}${ColourReset}")
-message("--    ${Cyan}CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
 
 set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
 

@@ -24,6 +24,18 @@
 # rocCV pybind wheel install
 cmake_minimum_required(VERSION 3.28)
 
+# Enhanced Message
+if(NOT DEFINED ENHANCED_MESSAGE)
+    string(ASCII 27 Esc)
+    set(ColourReset "${Esc}[m")
+    set(Red         "${Esc}[31m")
+    set(Green       "${Esc}[32m")
+    set(Yellow      "${Esc}[33m")
+    set(White       "${Esc}[37m")
+    set(Cyan        "${Esc}[36m")
+    set(BoldBlue    "${Esc}[1;34m")
+endif()
+
 # ROCM Path
 if(DEFINED ENV{ROCM_PATH})
     set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Default ROCm installation path")
@@ -48,6 +60,10 @@ endif()
 #       * python CMakeLists.txt
 set(VERSION "0.4.0")
 project(rocpycv VERSION ${VERSION} LANGUAGES CXX)
+
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")

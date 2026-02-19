@@ -29,6 +29,8 @@ if(NOT DEFINED ENHANCED_MESSAGE)
     set(Green       "${Esc}[32m")
     set(Yellow      "${Esc}[33m")
     set(White       "${Esc}[37m")
+    set(Cyan        "${Esc}[36m")
+    set(BoldBlue    "${Esc}[1;34m")
 endif()
 
 # ROCM Path
@@ -48,7 +50,7 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
 
-project(roccv-cpp-tests)
+project(roccv-cpp-tests VERSION 1.0 LANGUAGES CXX)
 
 # Find required libraries
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
@@ -58,7 +60,6 @@ set(USING_THE_ROCK OFF)
 if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
     set(USING_THE_ROCK ON)
 endif()
-message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
 
 # Set device library path for TheRock install of ROCm.
 if (USING_THE_ROCK)
@@ -72,6 +73,11 @@ endif()
 if (NOT DEFINED ENV{HIP_PLATFORM})
     set(ENV{HIP_PLATFORM} "amd")
 endif()
+
+# Print test CMake configuration information
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColourReset}")
 
 # Find rocCV
 if (NOT TARGET roccv::roccv)
