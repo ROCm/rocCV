@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -28,6 +28,8 @@
 #include <map>
 #include <nlohmann/json.hpp>
 #include <roccvbench/registry.hpp>
+#include <roccvbench/results.hpp>
+#include <roccvbench/serializers.hpp>
 #include <thread>
 
 /**
@@ -103,8 +105,8 @@ void printHelp(const char* programName) {
     std::cout << "Required Arguments:\n";
     std::cout << "  --config, -c:                   The JSON configuration file to run the benchmarks.\n";
     std::cout << "Optional Arguments:\n";
-    std::cout << "  --output, -o:                   The output JSON filepath for benchmark results. Defaults to\n";
-    std::cout << "                                  roccv_bench_results.json.\n";
+    std::cout << "  --output, -o:                   The output filepath for benchmark results. Defaults to\n";
+    std::cout << "                                  roccv_bench_results.json. Supported file extensions: .json, .csv\n";
     std::cout << "Options:\n";
     std::cout << "  --help, -h:                     Displays this help message.\n";
     std::cout << "  --list, -l:                     Lists the available benchmark categories and exits the program.\n";
@@ -249,6 +251,18 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Create serializer based on the output file extension
+    std::filesystem::path outputPath(outputFilepath);
+    std::unique_ptr<roccvbench::IBenchmarkSerializer> serializer;
+    if (outputPath.extension() == ".json") {
+        serializer = std::make_unique<roccvbench::JsonBenchmarkSerializer>();
+    } else if (outputPath.extension() == ".csv") {
+        serializer = std::make_unique<roccvbench::CsvBenchmarkSerializer>();
+    } else {
+        std::cerr << "Error: Unsupported output file extension: " << outputPath.extension() << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Load benchmark configuration file
     std::vector<roccvbench::BenchmarkConfig> configs = loadConfig(configFilepath);
 
@@ -258,12 +272,11 @@ int main(int argc, char** argv) {
     hipDeviceProp_t props;
     HIP_VALIDATE_NO_ERRORS(hipGetDeviceProperties(&props, device_id));
 
-    nlohmann::json resultsJson;
+    roccvbench::Results results;
 
-    // Write device information to output JSON
-    resultsJson["device_info"]["gpu"]["name"] = props.name;
-    resultsJson["device_info"]["cpu"]["name"] = getCPUName();
-    resultsJson["device_info"]["cpu"]["threads"] = std::thread::hardware_concurrency();
+    results.setMetadata({{"gpu", props.name},
+                         {"cpu", getCPUName()},
+                         {"cpu_threads", static_cast<size_t>(std::thread::hardware_concurrency())}});
 
     // Determine the final list of categories to run and store it in selectedCategories.
 
@@ -323,20 +336,23 @@ int main(int argc, char** argv) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
                               << ", width=" << config.width << ", runs=" << config.runs
                               << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
-                    auto result = benchmark.func(config);
+                    roccvbench::RunData runData;
+                    auto result = benchmark.func(config, runData);
 
-                    // Write run results to output JSON
-                    runResultsJson["width"].push_back(config.width);
-                    runResultsJson["height"].push_back(config.height);
-                    runResultsJson["runs"].push_back(config.runs);
-                    runResultsJson["execution_time"].push_back(result.executionTime);
-                    runResultsJson["samples"].push_back(config.samples);
-                    runResultsJson["read_memory_bytes"].push_back(result.readMemoryBytes);
-                    runResultsJson["written_memory_bytes"].push_back(result.writtenMemoryBytes);
+                    runData.addValue("name", benchmark.name);
+                    runData.addValue("category", benchmark.category);
+                    runData.addValue("width", config.width);
+                    runData.addValue("height", config.height);
+                    runData.addValue("runs", config.runs);
+                    runData.addValue("execution_time", result.executionTime);
+                    runData.addValue("samples", config.samples);
+                    runData.addValue("read_memory_bytes", result.readMemoryBytes);
+                    runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
+                    runData.addValue("warmup_runs", config.warmupRuns);
+
+                    results.registerRun(runData);
                 }
                 std::cout << std::endl;
-
-                resultsJson["results"][benchmark.category].push_back(runResultsJson);
             }
         }
     } catch (roccv::Exception e) {
@@ -346,15 +362,12 @@ int main(int argc, char** argv) {
 
     // Write benchmark results to disk
     std::filesystem::path resultPath(outputFilepath);
-    std::ofstream resultFile(resultPath);
-
-    if (!resultFile.is_open()) {
-        std::cerr << "Unable to open " << resultPath << " for writing results" << std::endl;
+    try {
+        serializer->serialize(results, resultPath);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Failed to serialize benchmark results: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-
-    resultFile << std::setw(4) << resultsJson << std::endl;
-    resultFile.close();
 
     std::cout << "Wrote benchmark results to " << std::filesystem::absolute(resultPath) << std::endl;
 

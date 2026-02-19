@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -58,7 +58,7 @@ std::vector<T> RandVector(size_t size) {
 }
 
 /**
- * @brief Records the execution time in milliseconds of a block of code <code> by running it <numRuns> times and taking
+ * @brief Records the execution time in seconds of a block of code <code> by running it <numRuns> times and taking
  * the mean of the results. The resulting mean is written to <executionTime>.
  *
  */
@@ -75,7 +75,7 @@ std::vector<T> RandVector(size_t size) {
                 numValidRuns++;                                                                                 \
             }                                                                                                   \
         }                                                                                                       \
-        executionTime = totalExecutionTime / numValidRuns;                                                      \
+        executionTime = (totalExecutionTime / numValidRuns) / 1000.0;                                           \
     }
 
 }  // namespace roccvbench
