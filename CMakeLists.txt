@@ -228,6 +228,16 @@ set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # --- Source code ---
 add_subdirectory(src)
 
+# Rewrite find_package to point to the local build of roccv if being requested from a subdirectory.
+# This allows for seamless standalone/in-tree builds.
+macro(find_package pkg_name)
+    if(${pkg_name} STREQUAL "roccv" AND TARGET roccv::roccv)
+        set(roccv_FOUND TRUE)
+    else()
+        _find_package(${pkg_name} ${ARGN})
+    endif()
+endmacro()
+
 # --- Samples ---
 if(SAMPLES)
     add_subdirectory(samples)

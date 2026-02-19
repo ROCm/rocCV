@@ -21,51 +21,73 @@
 #
 # ##############################################################################
 
+cmake_minimum_required(VERSION 3.15)
+
+# Enable enhanced message
+if(NOT DEFINED ENHANCED_MESSAGE)
+    string(ASCII 27 Esc)
+    set(ColourReset "${Esc}[m")
+    set(Red         "${Esc}[31m")
+    set(Green       "${Esc}[32m")
+    set(Yellow      "${Esc}[33m")
+    set(White       "${Esc}[37m")
+    set(Cyan        "${Esc}[36m")
+    set(BoldBlue    "${Esc}[1;34m")
+endif()
+
+set(VERSION "1.0")
+project(roccv-samples VERSION ${VERSION} LANGUAGES CXX)
+
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
+
 # Copy sample images to relative data directory
 set(DESTINATION_DIR "${CMAKE_CURRENT_BINARY_DIR}/data")
+# TODO: This will not work in standalone build, must fix this.
 file(GLOB SAMPLE_DATA_FILES "${ROCCV_SOURCE_DIR}/data/samples/*")
 
-include_directories(${ROCCV_SOURCE_DIR}/include ${ROCM_PATH}/include)
+# Function for defining a sample executable
+function(define_sample_executable NAME)
+    add_executable(${NAME} ${NAME}.cpp)
+    target_link_libraries(${NAME} PRIVATE roccv::roccv ${OpenCV_LIBS})
+    target_include_directories(${NAME} PRIVATE ${Open_CV_INCLUDE_DIRS})
+endfunction()
 
 file(MAKE_DIRECTORY ${DESTINATION_DIR})
 foreach(FILE ${SAMPLE_DATA_FILES})
     file(COPY ${FILE} DESTINATION ${DESTINATION_DIR})
 endforeach()
 
-add_executable(bilateral_filter bilateral_filter.cpp)
-target_link_libraries(bilateral_filter PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(bilateral_filter PRIVATE ${Open_CV_INCLUDE_DIRS})
+find_package(roccv QUIET)
+find_package(OpenCV QUIET)
 
-add_executable(custom_crop custom_crop.cpp)
-target_link_libraries(custom_crop PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(custom_crop PRIVATE ${Open_CV_INCLUDE_DIRS})
+set(BUILD_SAMPLES ON)
+if (NOT roccv_FOUND)
+    message("-- ${Red}roccv-samples -- require roccv, but it was not found${ColourReset}")
+    set(BUILD_SAMPLES OFF)
+else()
+    message("-- ${Green}roccv-samples -- found roccv version: ${roccv_VERSION}${ColourReset}")
+endif()
+if (NOT OpenCV_FOUND)
+    message("-- ${Red}roccv-samples -- require OpenCV, but it was not found${ColourReset}")
+    set(BUILD_SAMPLES OFF)
+else()
+    message("-- ${Green}roccv-samples -- found OpenCV version: ${OpenCV_VERSION}${ColourReset}")
+endif()
 
-add_executable(center_crop center_crop.cpp)
-target_link_libraries(center_crop PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(center_crop PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_executable(normalize normalize.cpp)
-target_link_libraries(normalize PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(normalize PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_executable(bnd_box bnd_box.cpp)
-target_link_libraries(bnd_box PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(bnd_box PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_executable(copy_make_border copy_make_border.cpp)
-target_link_libraries(copy_make_border PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(copy_make_border PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_executable(warp_perspective warp_perspective.cpp)
-target_link_libraries(warp_perspective PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(warp_perspective PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_executable(composite composite.cpp)
-target_link_libraries(composite PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(composite PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_executable(gamma_contrast gamma_contrast.cpp)
-target_link_libraries(gamma_contrast PRIVATE roccv ${OpenCV_LIBS})
-target_include_directories(gamma_contrast PRIVATE ${Open_CV_INCLUDE_DIRS})
-
-add_subdirectory(cropandresize/cpp)
+if (BUILD_SAMPLES)
+    define_sample_executable(bilateral_filter)
+    define_sample_executable(custom_crop)
+    define_sample_executable(center_crop)
+    define_sample_executable(normalize)
+    define_sample_executable(bnd_box)
+    define_sample_executable(copy_make_border)
+    define_sample_executable(warp_perspective)
+    define_sample_executable(composite)
+    define_sample_executable(gamma_contrast)
+    add_subdirectory(cropandresize/cpp)
+else()
+    message("-- ${Yellow}roccv-samples -- missing required dependencies, will not be built${ColourReset}")
+endif()
+# add_subdirectory(cropandresize/cpp)

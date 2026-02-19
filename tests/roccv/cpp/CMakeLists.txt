@@ -80,9 +80,7 @@ message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${Colour
 message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColourReset}")
 
 # Find rocCV
-if (NOT TARGET roccv::roccv)
-    find_package(roccv REQUIRED)
-endif()
+find_package(roccv REQUIRED)
 message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
 
 

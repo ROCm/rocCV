@@ -63,9 +63,7 @@ message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${Colour
 set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
 
 # Include roccv benchmark units
-if (NOT TARGET roccv::roccv)
-    find_package(roccv REQUIRED)
-endif()
+find_package(roccv REQUIRED)
 message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
 set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
 set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv")

@@ -117,9 +117,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(dlpack)
 
-if(NOT TARGET roccv::roccv)
-    find_package(roccv REQUIRED)
-endif()
+find_package(roccv REQUIRED)
 
 # --- Dependency checks ---
 set(BUILD_ROCCV_PYPACKAGE true)
