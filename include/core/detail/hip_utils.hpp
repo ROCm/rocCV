@@ -68,12 +68,7 @@ dim3 GetMaximumPotentialBlockSize2D(KernelFunc kernel, size_t sharedMemSizePerBl
     HIP_VALIDATE_NO_ERRORS(
         hipOccupancyMaxPotentialBlockSize(&minimumGridSize, &blockSize, kernel, sharedMemSizePerBlock, 0));
 
-    if (blockSize >= warpSize && (blockSize % warpSize) == 0) {
-        return dim3(warpSize, blockSize / warpSize, 1);
-    }
-
-    // Fallback to block size if it's not a multiple of the warp size
-    return dim3(blockSize, 1, 1);
+    return dim3(warpSize, blockSize / warpSize, 1);
 }
 
 /**
