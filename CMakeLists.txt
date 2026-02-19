@@ -220,9 +220,6 @@ if(NOT BUILD_ROCCV)
 	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
 endif()
 
-# Flag to signal that other components requiring roccv can link against roccv
-# rather than looking for a global installation.
-set(BUILD_FROM_SOURCE ON)
 set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # --- Source code ---
@@ -260,6 +257,39 @@ if(BUILD_PYPACKAGE)
     add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
+# --- Mark test files for installation ---
+
+# Pybind tests - Mark for installation
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/pybind
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
+
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/python
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test/pybind
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
+
+# CPP Test - Mark for installation
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/data
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+)
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/cpp
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+)
+
+# Samples - Mark for installation
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/samples
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv
+        COMPONENT dev
+)
+
 # --- Packaging configuration ---
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
@@ -283,11 +313,8 @@ if(DEFINED ENV{ROCM_LIBPATCH_VERSION})
     set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.$ENV{ROCM_LIBPATCH_VERSION}")
 endif()
 
-# set license information
-set(CPACK_RPM_PACKAGE_LICENSE    "MIT")
-set(CPACK_RESOURCE_FILE_LICENSE  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-
 # set license information - {ROCM_PATH}/share/doc/roccv
+set(CPACK_RPM_PACKAGE_LICENSE    "MIT")
 set(CPACK_RESOURCE_FILE_LICENSE  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR}-asan COMPONENT asan)
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT runtime)

@@ -91,7 +91,3 @@ install(FILES
 
 # install rocCV include files -- {ROCM_PATH}/include/roccv/
 install(DIRECTORY ${ROCCV_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/roccv COMPONENT dev)
-# CPP Test - Installed
-# TODO: Move this to tests/CMakeLists.txt
-install(DIRECTORY ${ROCCV_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
-install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/cpp DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
