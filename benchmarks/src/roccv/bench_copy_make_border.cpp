@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -31,7 +31,7 @@
 
 using namespace roccv;
 
-BENCHMARK(CopyMakeBorder, GPU_Constant) {
+BENCHMARK(CopyMakeBorderConstant, GPU) {
     roccvbench::BenchmarkResults results;
 
     const int top = 9;
@@ -67,7 +67,7 @@ BENCHMARK(CopyMakeBorder, GPU_Constant) {
     return results;
 }
 
-BENCHMARK(CopyMakeBorder, CPU_Constant) {
+BENCHMARK(CopyMakeBorderConstant, CPU) {
     roccvbench::BenchmarkResults results;
 
     const int top = 9;
@@ -95,7 +95,7 @@ BENCHMARK(CopyMakeBorder, CPU_Constant) {
     return results;
 }
 
-BENCHMARK(CopyMakeBorder, GPU_Reflect) {
+BENCHMARK(CopyMakeBorderReflect, GPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
@@ -132,7 +132,7 @@ BENCHMARK(CopyMakeBorder, GPU_Reflect) {
     return results;
 }
 
-BENCHMARK(CopyMakeBorder, CPU_Reflect) {
+BENCHMARK(CopyMakeBorderReflect, CPU) {
     roccvbench::BenchmarkResults results;
     results.executionTime = 0.0f;
 
