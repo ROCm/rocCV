@@ -44,8 +44,7 @@ void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& inp
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                Kernels::Device::copy_make_border<BorderWrapper<T, BorderMode>, ImageWrapper<T>>, 0);
+            dim3 block = detail::GetBlockSize2D();
             dim3 grid = detail::GetGridSize2D(out_desc.width(), out_desc.height(), out_desc.batches(), block);
             Kernels::Device::copy_make_border<<<grid, block, 0, stream>>>(in_desc, out_desc, top, left);
             break;

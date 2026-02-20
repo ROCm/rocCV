@@ -51,8 +51,7 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
     if (device == eDeviceType::GPU) {
         switch (m_threshType) {
             case THRESH_BINARY: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::binary_generic<ImageWrapper<T>, ImageWrapper<T>>, 0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
                 Kernels::Device::binary_generic<<<grid, block, 0, stream>>>(
                     inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
@@ -60,8 +59,7 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
                 break;
             }
             case THRESH_BINARY_INV: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::binary_inv_generic<ImageWrapper<T>, ImageWrapper<T>>, 0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
                 Kernels::Device::binary_inv_generic<<<grid, block, 0, stream>>>(
                     inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
@@ -69,24 +67,21 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
                 break;
             }
             case THRESH_TRUNC: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::trunc_generic<ImageWrapper<T>, ImageWrapper<T>>, 0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
                 Kernels::Device::trunc_generic<<<grid, block, 0, stream>>>(
                     inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh), m_maxBatchSize);
                 break;
             }
             case THRESH_TOZERO: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::tozero_generic<ImageWrapper<T>, ImageWrapper<T>>, 0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
                 Kernels::Device::tozero_generic<<<grid, block, 0, stream>>>(
                     inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh), m_maxBatchSize);
                 break;
             }
             case THRESH_TOZERO_INV: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::tozeroinv_generic<ImageWrapper<T>, ImageWrapper<T>>, 0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
                 Kernels::Device::tozeroinv_generic<<<grid, block, 0, stream>>>(
                     inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh), m_maxBatchSize);

@@ -69,8 +69,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
 
     if (device == eDeviceType::GPU) {
-        dim3 block = detail::GetMaximumPotentialBlockSize2D(
-            Kernels::Device::bilateral_filter<T, ImageWrapper<T>, ImageWrapper<T>>, 0);
+        dim3 block = detail::GetBlockSize2D();
         uint32_t xGridSize = (outputWrapper.width() + (block.x * 2) - 1) / (block.x * 2);
         uint32_t yGridSize = (outputWrapper.height() + (block.y * 2) - 1) / (block.y * 2);
         uint32_t zGridSize = outputWrapper.batches();

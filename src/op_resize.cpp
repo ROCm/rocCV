@@ -45,8 +45,7 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block =
-                detail::GetMaximumPotentialBlockSize2D(Kernels::Device::resize<ImageWrapper<T>, ImageWrapper<T>>, 0);
+            dim3 block = detail::GetBlockSize2D();
             dim3 grid =
                 detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::resize<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);

@@ -43,8 +43,7 @@ void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& o
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                Kernels::Device::flip<FlipType, ImageWrapper<T>, ImageWrapper<T>>, 0);
+            dim3 block = detail::GetBlockSize2D();
             dim3 grid =
                 detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::flip<FlipType><<<grid, block, 0, stream>>>(inputWrapper, outputWrapper);

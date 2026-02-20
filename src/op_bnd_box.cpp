@@ -50,8 +50,7 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
     auto batchSize = inputWrapper.batches();
     switch (device) {
         case eDeviceType::GPU: {
-            const dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                Kernels::Device::bndbox_kernel<has_alpha, T, ImageWrapper<T>, ImageWrapper<T>>, 0);
+            const dim3 block = detail::GetBlockSize2D();
             const dim3 grid = detail::GetGridSize2D(width, height, batchSize, block);
 
             Rect_t *rects_ptr = nullptr;

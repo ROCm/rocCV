@@ -43,8 +43,7 @@ void dispatch_warp_perspective_interp(hipStream_t stream, const Tensor &input, c
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                Kernels::Device::warp_perspective<ImageWrapper<T>, ImageWrapper<T>, ArrayWrapper<float, 9>>, 0);
+            dim3 block = detail::GetBlockSize2D();
             dim3 grid =
                 detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::warp_perspective<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, transform);

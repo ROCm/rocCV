@@ -50,25 +50,19 @@ void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
 }
 
 /**
- * @brief Get the maximum potential block size for a 2D kernel.
+ * @brief Get the block size for a 2D kernel.
  *
- * @param[in] kernel The kernel function to get the maximum potential block size for.
- * @param[in] sharedMemSizePerBlock The shared memory size per block.
- * @return The maximum potential block size.
+ * @param[in] targetBlockSize The target block size.
+ * @return The block size.
  */
-template <typename KernelFunc>
-dim3 GetMaximumPotentialBlockSize2D(KernelFunc kernel, size_t sharedMemSizePerBlock) {
-    int minimumGridSize;
-    int blockSize;
+static inline dim3 GetBlockSize2D(int targetBlockSize = 512) {
     int deviceId;
     int warpSize;
 
     HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
     HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&warpSize, hipDeviceAttributeWarpSize, deviceId));
-    HIP_VALIDATE_NO_ERRORS(
-        hipOccupancyMaxPotentialBlockSize(&minimumGridSize, &blockSize, kernel, sharedMemSizePerBlock, 0));
 
-    return dim3(warpSize, blockSize / warpSize, 1);
+    return dim3(warpSize, targetBlockSize / warpSize, 1);
 }
 
 /**

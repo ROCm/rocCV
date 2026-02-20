@@ -82,10 +82,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
 
         switch (conversionCode) {
             case eColorConversionCode::COLOR_BGR2GRAY: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>,
-                                                             ImageWrapper<uchar1>>,
-                    0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
@@ -93,10 +90,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
             }
 
             case eColorConversionCode::COLOR_RGB2GRAY: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW, ImageWrapper<uchar3>,
-                                                             ImageWrapper<uchar1>>,
-                    0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
@@ -105,8 +99,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
 
             case eColorConversionCode::COLOR_BGR2RGB:
             case eColorConversionCode::COLOR_RGB2BGR: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::reorder<uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>, ImageWrapper<uchar3>>, 0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::reorder<uchar3, eSwizzle::ZYXW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output));
@@ -114,10 +107,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
             }
 
             case eColorConversionCode::COLOR_BGR2YUV: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>,
-                                                       ImageWrapper<uchar3>>,
-                    0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
@@ -125,10 +115,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
             }
 
             case eColorConversionCode::COLOR_RGB2YUV: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW, ImageWrapper<uchar3>,
-                                                       ImageWrapper<uchar3>>,
-                    0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
@@ -136,10 +123,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
             }
 
             case eColorConversionCode::COLOR_YUV2BGR: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>,
-                                                       ImageWrapper<uchar3>>,
-                    0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
@@ -147,10 +131,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
             }
 
             case eColorConversionCode::COLOR_YUV2RGB: {
-                dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                    Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW, ImageWrapper<uchar3>,
-                                                       ImageWrapper<uchar3>>,
-                    0);
+                dim3 block = detail::GetBlockSize2D();
                 dim3 grid = detail::GetGridSize2D(width, height, samples, block);
                 Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW>
                     <<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);

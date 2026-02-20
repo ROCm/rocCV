@@ -41,8 +41,7 @@ void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, c
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetMaximumPotentialBlockSize2D(
-                Kernels::Device::composite<ImageWrapper<SrcType>, ImageWrapper<MaskType>, ImageWrapper<DstType>>, 0);
+            dim3 block = detail::GetBlockSize2D();
             dim3 grid =
                 detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::composite<<<grid, block, 0, stream>>>(fgWrapper, bgWrapper, maskWrapper, outputWrapper);

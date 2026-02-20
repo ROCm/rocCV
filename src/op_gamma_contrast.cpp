@@ -43,8 +43,7 @@ void dispatch_gamma_contrast_dtype(hipStream_t stream, const Tensor &input, cons
     ImageWrapper<T> outputWrapper(output);
 
     if (device == eDeviceType::GPU) {
-        dim3 block = detail::GetMaximumPotentialBlockSize2D(
-            Kernels::Device::gamma_contrast<ImageWrapper<T>, ImageWrapper<T>>, 0);
+        dim3 block = detail::GetBlockSize2D();
         dim3 grid =
             detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
 
