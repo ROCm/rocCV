@@ -19,33 +19,39 @@
  * THE SOFTWARE.
  */
 
-#include <roccvbench/registry.hpp>
-#include <roccvbench/utils.hpp>
+#pragma once
 
-#include "opencv_bench_helpers.hpp"
+#include <filesystem>
 
-BENCHMARK(CopyMakeBorderConstant, OpenCV) {
-    roccvbench::BenchmarkResults results;
+#include "results.hpp"
 
-    const int top = 9;
-    const int left = 9;
-    const int bottom = 9;
-    const int right = 9;
+namespace roccvbench {
 
-    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    std::vector<cv::Mat> outputs =
-        CreateOutputMats(config.samples, config.width + left + right, config.height + top + bottom, CV_8UC3);
+/**
+ * @brief Interface for benchmark serializers.
+ *
+ */
+class IBenchmarkSerializer {
+   public:
+    virtual void serialize(const Results& results, const std::filesystem::path& filepath) = 0;
+    virtual ~IBenchmarkSerializer() = default;
+};
 
-    RegisterMemoryUsage(mats, results.readMemoryBytes);
-    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
+/**
+ * @brief JSON benchmark serializer.
+ *
+ */
+class JsonBenchmarkSerializer : public IBenchmarkSerializer {
+   public:
+    void serialize(const Results& results, const std::filesystem::path& filepath) override;
+};
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::copyMakeBorder(mats[i], outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
-            }
-        },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+/**
+ * @brief CSV benchmark serializer.
+ *
+ */
+class CsvBenchmarkSerializer : public IBenchmarkSerializer {
+   public:
+    void serialize(const Results& results, const std::filesystem::path& filepath) override;
+};
+}  // namespace roccvbench
