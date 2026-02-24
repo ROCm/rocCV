@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c)  - 2025 Advanced Micro Devices, Inc.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -85,14 +85,39 @@ message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourRese
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
 message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
 
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
+add_subdirectory(roccvbench)
+
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
+set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccvbench-utils)
+
+set(BUILD_ROCCV_BENCHMARKS ON)
 
 # Include roccv benchmark units
-find_package(roccv REQUIRED)
-message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
-set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv")
-set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv::roccv)
+find_package(roccv QUIET)
+if(NOT roccv_FOUND)
+    message("-- ${Yellow}${PROJECT_NAME} -- rocCV not found.${ColorReset}")
+    set(BUILD_ROCCV_BENCHMARKS OFF)
+else()
+    
+    message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
+endif()
+
+# Include rocRAND for rocCV benchmarks
+find_package(rocrand QUIET)
+if(NOT rocrand_FOUND)
+    message("-- ${Yellow}${PROJECT_NAME} -- rocRAND not found.${ColorReset}")
+    set(BUILD_ROCCV_BENCHMARKS OFF)
+else()
+    message("-- ${Green}${PROJECT_NAME} -- Found rocRAND version ${rocrand_VERSION}.${ColorReset}")
+endif()
+
+if(BUILD_ROCCV_BENCHMARKS)
+    set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
+    set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv")
+    set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roc::rocrand roccv::roccv)
+else()
+    message("-- ${Yellow}${PROJECT_NAME} -- Missing required dependencies for rocCV benchmarks. rocCV benchmarks will not be included in the benchmarks${ColorReset}")
+endif()
 
 # Include OpenCV benchmark units
 find_package(OpenCV QUIET)

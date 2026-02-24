@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c)  - 2025 Advanced Micro Devices, Inc.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ BAR_COLORS = [
 GRAPH_STYLE = "dark_background"
 
 
-def plot_annotated_bars(ax, x, y, labels):
+def plot_annotated_bars(ax, x, y, labels, format_string="%.2f"):
     num_benchmarks_in_group = len(y)
     x_indices = np.arange(len(x))  # Positions for the groups of bars
 
@@ -75,7 +75,7 @@ def plot_annotated_bars(ax, x, y, labels):
             # Position text slightly above the bar
             text_y = bar_height
 
-            ax.text(text_x, text_y, f'{bar_height:.2f}',  # Format to 2 decimal places
+            ax.text(text_x, text_y, format_string % bar_height,  # Format to decimal places
                     ha='center', va='bottom', fontsize=6, color='lightgray', zorder=10)
 
     ax.set_xticks(x_indices)
@@ -97,21 +97,19 @@ if __name__ == "__main__":
         data = json.load(file)
 
     # Get device information from results file
-    cpu_name = data["device_info"]["cpu"]["name"]
-    cpu_threads = data["device_info"]["cpu"]["threads"]
-    gpu_name = data["device_info"]["gpu"]["name"]
+    cpu_name = data["metadata"]["cpu"]
+    cpu_threads = data["metadata"]["cpu_threads"]
+    gpu_name = data["metadata"]["gpu"]
 
     graph_footnote = f"Benchmarks performed with {gpu_name} (GPU) and {cpu_name} (CPU) with {cpu_threads} threads. Execution time does not include data transfer latency from CPU to GPU and vice-versa."
 
     for category in data["results"]:
-        benchmarks_in_category = data["results"][category]
-
         fig, ax = plt.subplots(1, 3, dpi=200, figsize=(15, 6))
 
         # Setup execution time axis
         ex_time_ax = ax[0]
         ex_time_ax.set_xlabel("Batch Size")
-        ex_time_ax.set_ylabel("Execution Time (ms) [Log Scale]\n(Lower is better)")
+        ex_time_ax.set_ylabel("Execution Time (s) [Log Scale]\n(Lower is better)")
         ex_time_ax.set_title("Execution Time")
         ex_time_ax.set_yscale('log')
 
@@ -128,26 +126,41 @@ if __name__ == "__main__":
         throughput_ax.set_xlabel("Batch Size")
         throughput_ax.set_title("Total Memory Throughput")
         throughput_ax.set_yscale('log')
+        
+        benchmarks_in_category = data["results"][category]
+        
+        # Shared x-axis: sample counts (taken from the first benchmark's runs)
+        first_benchmark = next(iter(benchmarks_in_category.values()))
+        samples = [run["samples"] for run in first_benchmark]
 
-        # Gather data and plot results
-        benchmark_names = []
-        execution_time_data = []
-        samples = data["results"][category][0]["samples"]
-        image_height = data["results"][category][0]["height"][0]
-        image_width = data["results"][category][0]["width"][0]
+        # One entry per benchmark name (e.g. "GPU", and potentially "CPU" later)
+        benchmark_names = []          # labels for the legend
+        execution_time_data = []      # list of lists: one list of values per benchmark
         fps_data = []
         throughput_data = []
 
-        for benchmark in benchmarks_in_category:
-            benchmark_names.append(benchmark["name"])
-            execution_time_data.append(benchmark["execution_time"])
-            fps_data.append([1000 / (benchmark["execution_time"][i] / samples[i])
-                            for i in range(len(benchmark["execution_time"]))])
-            throughput_data.append([(benchmark["read_memory_bytes"][i] + benchmark["written_memory_bytes"][i]) / (benchmark["execution_time"][i] / 1000.0) / 1e9 for i in range(len(benchmark["execution_time"]))])
+        for bench_name, runs in benchmarks_in_category.items():
+            benchmark_names.append(bench_name)
 
-        plot_annotated_bars(ex_time_ax, samples, execution_time_data, benchmark_names)
-        plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names)
-        plot_annotated_bars(throughput_ax, samples, throughput_data, benchmark_names)
+            ex_times = []
+            fps_vals = []
+            tp_vals = []
+
+            for run in runs:
+                n_samples = run["samples"]
+                total_bytes = run["read_memory_bytes"] + run["written_memory_bytes"]
+
+                ex_times.append(run["execution_time"])
+                fps_vals.append(n_samples / run["execution_time"])
+                tp_vals.append(total_bytes / run["execution_time"] / 1e9)  # GB/s
+
+            execution_time_data.append(ex_times)
+            fps_data.append(fps_vals)
+            throughput_data.append(tp_vals)
+
+        plot_annotated_bars(ex_time_ax, samples, execution_time_data, benchmark_names, format_string="%.4g")
+        plot_annotated_bars(fps_ax, samples, fps_data, benchmark_names, format_string="%.2f")
+        plot_annotated_bars(throughput_ax, samples, throughput_data, benchmark_names, format_string="%.2f")
 
         
         handles, labels = ex_time_ax.get_legend_handles_labels()
@@ -156,7 +169,7 @@ if __name__ == "__main__":
         # Set bottom text for entire figure
         fig.subplots_adjust(bottom=0.25, wspace=0.35)
         fig.text(0.5, 0.02, graph_footnote, wrap=True, ha='center', fontsize=8, alpha=0.7)
-        fig.suptitle(f"{category} Benchmarks (Batches of {image_width}x{image_height} 8-bit Images)")
+        fig.suptitle(f"{category} Benchmarks")
 
         output_filename = os.path.join(args.output_dir, f"bench_{category}.png")
 
