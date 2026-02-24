@@ -21,7 +21,8 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
+
 
 # ROCM Path
 if(DEFINED ENV{ROCM_PATH})
@@ -33,6 +34,7 @@ else()
 endif()
 # Set AMD Clang as default compiler
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS ON)
 if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang++")
@@ -45,6 +47,8 @@ endif()
 #       * python CMakeLists.txt
 set(VERSION "0.4.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/rocCV_provider.cmake")
 
 # Set Project Version and Language
 project(roccv VERSION ${VERSION} LANGUAGES CXX C)
@@ -224,16 +228,6 @@ set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # --- Source code ---
 add_subdirectory(src)
-
-# Rewrite find_package to point to the local build of roccv if being requested from a subdirectory.
-# This allows for seamless standalone/in-tree builds.
-macro(find_package pkg_name)
-    if(${pkg_name} STREQUAL "roccv" AND TARGET roccv::roccv)
-        set(roccv_FOUND TRUE)
-    else()
-        _find_package(${pkg_name} ${ARGN})
-    endif()
-endmacro()
 
 # --- Samples ---
 if(SAMPLES)
