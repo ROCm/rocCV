@@ -108,7 +108,7 @@ if(NOT rocrand_FOUND)
     message("-- ${Yellow}${PROJECT_NAME} -- rocRAND not found.${ColorReset}")
     set(BUILD_ROCCV_BENCHMARKS OFF)
 else()
-    message("-- ${Green}${PROJECT_NAME} -- Found rocRAND version ${rocrand_VERSION}.${ColorReset}")
+    message("-- ${Green}${PROJECT_NAME} -- Found rocRAND version ${rocrand_VERSION}${ColorReset}")
 endif()
 
 if(BUILD_ROCCV_BENCHMARKS)
