@@ -21,12 +21,12 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 
 # Enable enhanced message
 if(NOT DEFINED ENHANCED_MESSAGE)
     string(ASCII 27 Esc)
-    set(ColourReset "${Esc}[m")
+    set(ColorReset "${Esc}[m")
     set(Red         "${Esc}[31m")
     set(Green       "${Esc}[32m")
     set(Yellow      "${Esc}[33m")
@@ -81,15 +81,15 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 set(VERSION "1.0")
 project(roccv-samples VERSION ${VERSION} LANGUAGES CXX)
 
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColorReset}")
 
 # Function for defining a sample executable
 function(define_sample_executable NAME)
     add_executable(${NAME} ${NAME}.cpp)
     target_link_libraries(${NAME} PRIVATE roccv::roccv ${OpenCV_LIBS})
-    target_include_directories(${NAME} PRIVATE ${Open_CV_INCLUDE_DIRS})
+    target_include_directories(${NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
 endfunction()
 
 if (NOT TARGET roccv::roccv)
@@ -102,16 +102,16 @@ find_package(OpenCV QUIET)
 
 set(BUILD_SAMPLES ON)
 if (NOT roccv_FOUND)
-    message("-- ${Red}roccv-samples -- require roccv, but it was not found${ColourReset}")
+    message("-- ${Red}roccv-samples -- require roccv, but it was not found${ColorReset}")
     set(BUILD_SAMPLES OFF)
 else()
-    message("-- ${Green}roccv-samples -- found roccv version: ${roccv_VERSION}${ColourReset}")
+    message("-- ${Green}roccv-samples -- found roccv version: ${roccv_VERSION}${ColorReset}")
 endif()
 if (NOT OpenCV_FOUND)
-    message("-- ${Red}roccv-samples -- require OpenCV, but it was not found${ColourReset}")
+    message("-- ${Red}roccv-samples -- require OpenCV, but it was not found${ColorReset}")
     set(BUILD_SAMPLES OFF)
 else()
-    message("-- ${Green}roccv-samples -- found OpenCV version: ${OpenCV_VERSION}${ColourReset}")
+    message("-- ${Green}roccv-samples -- found OpenCV version: ${OpenCV_VERSION}${ColorReset}")
 endif()
 
 if (BUILD_SAMPLES)
@@ -126,6 +126,5 @@ if (BUILD_SAMPLES)
     define_sample_executable(gamma_contrast)
     add_subdirectory(cropandresize/cpp)
 else()
-    message("-- ${Yellow}roccv-samples -- missing required dependencies, will not be built${ColourReset}")
+    message("-- ${Yellow}roccv-samples -- missing required dependencies, will not be built${ColorReset}")
 endif()
-# add_subdirectory(cropandresize/cpp)

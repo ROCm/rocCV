@@ -20,11 +20,11 @@
 # SOFTWARE.
 #
 # ##############################################################################
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED ENHANCED_MESSAGE)
     string(ASCII 27 Esc)
-    set(ColourReset "${Esc}[m")
+    set(ColorReset "${Esc}[m")
     set(Red         "${Esc}[31m")
     set(Green       "${Esc}[32m")
     set(Yellow      "${Esc}[33m")
@@ -75,9 +75,9 @@ if (NOT DEFINED ENV{HIP_PLATFORM})
 endif()
 
 # Print test CMake configuration information
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColorReset}")
 
 # Find rocCV
 if (NOT TARGET roccv::roccv)

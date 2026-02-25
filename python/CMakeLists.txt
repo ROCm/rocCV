@@ -22,12 +22,12 @@
 # ##############################################################################
 
 # rocCV pybind wheel install
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.24)
 
 # Enhanced Message
 if(NOT DEFINED ENHANCED_MESSAGE)
     string(ASCII 27 Esc)
-    set(ColourReset "${Esc}[m")
+    set(ColorReset "${Esc}[m")
     set(Red         "${Esc}[31m")
     set(Green       "${Esc}[32m")
     set(Yellow      "${Esc}[33m")
@@ -86,9 +86,9 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 set(VERSION "0.4.0")
 project(rocpycv VERSION ${VERSION} LANGUAGES CXX)
 
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColorReset}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
@@ -153,31 +153,31 @@ set(BUILD_ROCCV_PYPACKAGE true)
 
 # rocCV
 if (NOT roccv_FOUND)
-    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColourReset}")
+    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColorReset}")
     set(BUILD_ROCCV_PYPACKAGE OFF)
 else()
-    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColourReset}")
+    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColorReset}")
 endif()
 
 # Python3
 if(NOT Python3_Interpreter_FOUND)
     set(BUILD_ROCCV_PYPACKAGE OFF)
-    message("-- ${Red}NOTE: ${PROJECT_NAME} requires the python${PYTHON_VERSION_SUGGESTED} interpreter, Not Found${ColourReset}")
+    message("-- ${Red}NOTE: ${PROJECT_NAME} requires the python${PYTHON_VERSION_SUGGESTED} interpreter, Not Found${ColorReset}")
 else()
-    message("-- ${Green}${PROJECT_NAME} -- Found python${PYTHON_VERSION_SUGGESTED} interpreter: ${Python3_EXECUTABLE}${ColourReset}")
+    message("-- ${Green}${PROJECT_NAME} -- Found python${PYTHON_VERSION_SUGGESTED} interpreter: ${Python3_EXECUTABLE}${ColorReset}")
 endif()
 
 # Python3 Development
 if(NOT Python3_Development_FOUND)
     set(BUILD_ROCCV_PYPACKAGE OFF)
-    message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColourReset}")
+    message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColorReset}")
 else()
-    message("-- ${Green}${PROJECT_NAME} -- Found python${PYTHON_VERSION_SUGGESTED} development headers: ${Python3_INCLUDE_DIRS}${ColourReset}")
+    message("-- ${Green}${PROJECT_NAME} -- Found python${PYTHON_VERSION_SUGGESTED} development headers: ${Python3_INCLUDE_DIRS}${ColorReset}")
 endif()
 
 # Check that all dependencies have been met
 if(NOT BUILD_ROCCV_PYPACKAGE)
-	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
+	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColorReset}")
 endif()
 
 file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -198,4 +198,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/..;$ORIG
 # install rocpycv lib -- {ROCM_PATH)/lib
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME} COMPONENT runtime)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
-message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
+message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColorReset}")

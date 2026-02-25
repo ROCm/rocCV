@@ -21,12 +21,12 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 
 # Enhanced Message
 if(NOT DEFINED ENHANCED_MESSAGE)
   string(ASCII 27 Esc)
-  set(ColourReset "${Esc}[m")
+  set(ColorReset "${Esc}[m")
   set(Red         "${Esc}[31m")
   set(Green       "${Esc}[32m")
   set(Yellow      "${Esc}[33m")
@@ -81,9 +81,9 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 project(roccv_bench VERSION 1.0 LANGUAGES CXX)
 
 # Print benchmark CMake configuration information
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColorReset}")
 
 add_subdirectory(roccvbench)
 
@@ -103,17 +103,17 @@ find_package(rocrand QUIET)
 # Dependency checks
 set(BUILD_ROCCV_BENCHMARKS ON)
 if (NOT roccv_FOUND)
-    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColourReset}")
+    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColorReset}")
     set(BUILD_ROCCV_BENCHMARKS OFF)
 else()
-    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColourReset}")
+    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColorReset}")
 endif()
 
 if (NOT rocrand_FOUND)
-    message("-- ${Red}${PROJECT_NAME} -- require rocRAND, but it was not found${ColourReset}")
+    message("-- ${Red}${PROJECT_NAME} -- require rocRAND, but it was not found${ColorReset}")
     set(BUILD_ROCCV_BENCHMARKS OFF)
 else()
-    message("-- ${Green}${PROJECT_NAME} -- found rocRAND version: ${rocrand_VERSION}${ColourReset}")
+    message("-- ${Green}${PROJECT_NAME} -- found rocRAND version: ${rocrand_VERSION}${ColorReset}")
 endif()
 
 if (NOT BUILD_ROCCV_BENCHMARKS)
