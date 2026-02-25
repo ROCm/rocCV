@@ -17,6 +17,7 @@ See below for a list of Computer Vision operators rocCV supports.
 |Histogram|Calculates a histogram of values from a grayscale image.|U8|NHWC, HWC|Both|
 |NonMaximumSuppression|Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.|S16, 4S16|NW, NWC|Both|
 |Normalize|Normalizes image pixels' range using the provided shift and scale parameters.|U8, S8, U16, S16, U32, S32, F32|NHWC, HWC|Both|
+|Reformat|Converts a tensor between different memory layouts (e.g., NHWC, NCHW, HWC, CHW).|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, NCHW, HWC, CHW|Both|
 |Remap|Maps pixels in an image from one projection to another projection in a new image.|U8|NHWC, HWC|Both|
 |Resize|Resizes input images using an interpolation mode for upscaling/downscaling.|U8, F32|NHWC, HWC|Both|
 |Rotate|Rotates (and optionally shifts) an input tensor by given angle in degrees counter-clockwise.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
