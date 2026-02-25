@@ -122,25 +122,27 @@ endif()
 include(FetchContent)
 
 # --- pybind11 ---
+set(FETCHCONTENT_QUIET OFF)
+message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching pybind11 v3.0.2${ColorReset}")
 FetchContent_Declare(
     pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11.git
-    GIT_TAG v3.0.2
-    GIT_SHALLOW TRUE
+    URL https://github.com/pybind/pybind11/archive/refs/tags/v3.0.2.tar.gz
+    URL_HASH SHA256=2f20a0af0b921815e0e169ea7fec63909869323581b89d7de1553468553f6a2d
     EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(pybind11)
 
 # --- dlpack ---
+message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching dlpack v1.3${ColorReset}")
 FetchContent_Declare(
     dlpack
-    GIT_REPOSITORY https://github.com/dmlc/dlpack.git
-    GIT_TAG v1.3
-    GIT_SHALLOW TRUE
+    URL https://github.com/dmlc/dlpack/archive/refs/tags/v1.3.tar.gz
+    URL_HASH SHA256=f3d567f885f6c142183afc91a58873b31d0e0b36faa2e45c232b98c74596404f
     CMAKE_ARGS -DBUILD_MOCK=OFF
     EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(dlpack)
+set(FETCHCONTENT_QUIET ON)
 
 if (NOT TARGET roccv::roccv)
     find_package(roccv QUIET)
