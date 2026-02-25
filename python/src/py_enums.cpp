@@ -35,6 +35,7 @@ void PyEnums::Export(py::module& m) {
         .value("N", TENSOR_LAYOUT_N)
         .value("NCHW", TENSOR_LAYOUT_NCHW)
         .value("NWC", TENSOR_LAYOUT_NWC)
+        .value("CHW", TENSOR_LAYOUT_CHW)
         .export_values();
 
     // eDataType Bindings
@@ -106,7 +107,7 @@ void PyEnums::Export(py::module& m) {
         .value("COLOR_RGB2GRAY", COLOR_RGB2GRAY)
         .value("COLOR_BGR2GRAY", COLOR_BGR2GRAY)
         .export_values();
-        
+
     // eRemapType Enum Bindings
     py::enum_<eRemapType>(m, "eRemapType")
         .value("REMAP_ABSOLUTE", REMAP_ABSOLUTE)
