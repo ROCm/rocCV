@@ -90,33 +90,38 @@ add_subdirectory(roccvbench)
 set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
 set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccvbench-utils)
 
-set(BUILD_ROCCV_BENCHMARKS ON)
-
 # Include roccv benchmark units
-find_package(roccv QUIET)
-if(NOT roccv_FOUND)
-    message("-- ${Yellow}${PROJECT_NAME} -- rocCV not found.${ColorReset}")
-    set(BUILD_ROCCV_BENCHMARKS OFF)
+if (NOT TARGET roccv::roccv)
+    find_package(roccv QUIET)
 else()
-    
-    message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
+    set(roccv_FOUND TRUE)
 endif()
 
 # Include rocRAND for rocCV benchmarks
 find_package(rocrand QUIET)
-if(NOT rocrand_FOUND)
-    message("-- ${Yellow}${PROJECT_NAME} -- rocRAND not found.${ColorReset}")
+
+# Dependency checks
+set(BUILD_ROCCV_BENCHMARKS ON)
+if (NOT roccv_FOUND)
+    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColourReset}")
     set(BUILD_ROCCV_BENCHMARKS OFF)
 else()
-    message("-- ${Green}${PROJECT_NAME} -- Found rocRAND version ${rocrand_VERSION}${ColorReset}")
+    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColourReset}")
 endif()
 
-if(BUILD_ROCCV_BENCHMARKS)
+if (NOT rocrand_FOUND)
+    message("-- ${Red}${PROJECT_NAME} -- require rocRAND, but it was not found${ColourReset}")
+    set(BUILD_ROCCV_BENCHMARKS OFF)
+else()
+    message("-- ${Green}${PROJECT_NAME} -- found rocRAND version: ${rocrand_VERSION}${ColourReset}")
+endif()
+
+if (NOT BUILD_ROCCV_BENCHMARKS)
+    message("-- ${Yellow}${PROJECT_NAME} -- Missing required dependencies for rocCV benchmarks. rocCV benchmarks will not be included in the benchmarks${ColorReset}")
+else()
     set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
     set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv")
     set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roc::rocrand roccv::roccv)
-else()
-    message("-- ${Yellow}${PROJECT_NAME} -- Missing required dependencies for rocCV benchmarks. rocCV benchmarks will not be included in the benchmarks${ColorReset}")
 endif()
 
 # Include OpenCV benchmark units

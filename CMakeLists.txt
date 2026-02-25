@@ -48,8 +48,6 @@ endif()
 set(VERSION "0.4.0")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/rocCV_provider.cmake")
-
 # Set Project Version and Language
 project(roccv VERSION ${VERSION} LANGUAGES CXX C)
 

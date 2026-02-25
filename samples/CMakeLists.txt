@@ -92,7 +92,12 @@ function(define_sample_executable NAME)
     target_include_directories(${NAME} PRIVATE ${Open_CV_INCLUDE_DIRS})
 endfunction()
 
-find_package(roccv QUIET)
+if (NOT TARGET roccv::roccv)
+    find_package(roccv QUIET)
+else()
+    set(roccv_FOUND TRUE)
+endif()
+
 find_package(OpenCV QUIET)
 
 set(BUILD_SAMPLES ON)

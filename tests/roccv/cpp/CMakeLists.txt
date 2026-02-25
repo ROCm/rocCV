@@ -80,9 +80,9 @@ message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${Colour
 message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColourReset}")
 
 # Find rocCV
-find_package(roccv REQUIRED)
-message("-- ${Green}${PROJECT_NAME} -- Found rocCV version: ${roccv_VERSION}${ColourReset}")
-
+if (NOT TARGET roccv::roccv)
+    find_package(roccv REQUIRED)
+endif()
 
 # Compile test helper library
 file(GLOB TEST_HELPER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -110,7 +110,7 @@ foreach(test_source ${CPP_ROCCV_TEST_SOURCES})
     
     # Set output directory to match source structure: bin/tests/<subdir>/
     set_target_properties(${test_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests/${test_subdir}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${test_subdir}"
     )
     
     add_test(NAME ${test_name} COMMAND ${test_name})

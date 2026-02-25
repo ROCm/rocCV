@@ -94,9 +94,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
 include(GNUInstallDirs)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
@@ -142,10 +142,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(dlpack)
 
-find_package(roccv REQUIRED)
+if (NOT TARGET roccv::roccv)
+    find_package(roccv QUIET)
+else()
+    set(roccv_FOUND TRUE)
+endif()
 
 # --- Dependency checks ---
 set(BUILD_ROCCV_PYPACKAGE true)
+
+# rocCV
+if (NOT roccv_FOUND)
+    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColourReset}")
+    set(BUILD_ROCCV_PYPACKAGE OFF)
+else()
+    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColourReset}")
+endif()
 
 # Python3
 if(NOT Python3_Interpreter_FOUND)
