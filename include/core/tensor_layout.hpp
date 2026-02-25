@@ -61,6 +61,7 @@ class TensorLayout {
         {TENSOR_LAYOUT_NCHW,    "NCHW"},
         {TENSOR_LAYOUT_N,       "N"},
         {TENSOR_LAYOUT_NWC,     "NWC"},
+        {TENSOR_LAYOUT_CHW,     "CHW"},
     };
     // clang-format on
 

@@ -49,6 +49,7 @@ typedef enum eTensorLayout {
                             Width, Channels */
     TENSOR_LAYOUT_NCHW,  /* Number of Samples, Channels, Height, Width */
     TENSOR_LAYOUT_NWC,   /* Number of Samples, Width, Channels */
+    TENSOR_LAYOUT_CHW,   /* Channels, Height, Width */
 } eTensorLayout;
 
 typedef enum eChannelType {

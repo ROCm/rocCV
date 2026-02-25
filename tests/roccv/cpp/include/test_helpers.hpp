@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <random>
 #include <span>
 
+#include "core/tensor_layout.hpp"
+
 namespace roccv {
 namespace tests {
 
@@ -470,6 +472,23 @@ void CopyTensorIntoVector(std::vector<T>& dst, const Tensor& src) {
             break;
         }
     }
+}
+/**
+ * @brief Computes the strides for a tensor with a given shape and data type.
+ *
+ * @param shape The shape of the tensor.
+ * @param dtype The data type of the tensor.
+ * @param rank The rank of the tensor.
+ * @return The strides for the tensor.
+ */
+std::array<int64_t, ROCCV_TENSOR_MAX_RANK> ComputePackedStrides(const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                                                                const DataType& dtype, int rank) {
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    strides[rank - 1] = dtype.size();
+    for (int i = rank - 2; i >= 0; i--) {
+        strides[i] = strides[i + 1] * shape[i + 1];
+    }
+    return strides;
 }
 
 }  // namespace tests
