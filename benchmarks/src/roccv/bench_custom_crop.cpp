@@ -44,9 +44,9 @@ static roccvbench::BenchmarkResults RunCustomCropBenchmark(roccvbench::Benchmark
     ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
     Box_t cropRect = roccvbench::GetParamValue<Box_t>(params, "crop_rect");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
-    TensorRequirements outReqs = Tensor::CalcRequirements(
-        samples, {static_cast<int>(cropRect.width), static_cast<int>(cropRect.height)}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(
+        samples, {static_cast<int>(cropRect.width), static_cast<int>(cropRect.height)}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 

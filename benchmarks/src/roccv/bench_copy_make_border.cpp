@@ -48,8 +48,9 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
 
     const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width + left * 2, height + top * 2}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs =
+        Tensor::CalcRequirements(samples, {width + left * 2, height + top * 2}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 

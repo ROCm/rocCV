@@ -43,14 +43,14 @@ static roccvbench::BenchmarkResults RunNormalizeBenchmark(roccvbench::BenchmarkP
     ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
     ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
-    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
     Tensor::Requirements paramTensorReqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, in_format.channels()}),
-        DataType(eDataType::DATA_TYPE_F32));
+        DataType(eDataType::DATA_TYPE_F32), DeviceType);
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 

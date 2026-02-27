@@ -44,9 +44,9 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
     ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format);
-    Tensor::Requirements maskReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, FMT_U8);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format, DeviceType);
+    Tensor::Requirements maskReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, FMT_U8, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format, DeviceType);
 
     Tensor background(inReqs);
     Tensor foreground(inReqs);

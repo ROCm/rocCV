@@ -45,9 +45,9 @@ static roccvbench::BenchmarkResults RunResizeBenchmark(roccvbench::BenchmarkPara
     eInterpolationType interpolation = roccvbench::GetParamValue<eInterpolationType>(params, "interpolation");
     int scale_factor = roccvbench::GetParamValue<int>(params, "scale_factor");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
-    TensorRequirements outReqs =
-        Tensor::CalcRequirements(samples, {width * scale_factor, height * scale_factor}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs =
+        Tensor::CalcRequirements(samples, {width * scale_factor, height * scale_factor}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 

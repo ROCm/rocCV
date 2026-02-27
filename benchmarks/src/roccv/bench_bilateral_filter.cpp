@@ -49,8 +49,8 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
 
     float4 borderValue = make_float4(1.0f, 0.0f, 1.0f, 1.0f);
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
-    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format);
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -67,7 +67,7 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
         {
             op(stream, input, output, diameter, sigmaColor, sigmaSpace, borderType, borderValue, DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
-                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }
         },
         results.executionTime, runs, warmupRuns);

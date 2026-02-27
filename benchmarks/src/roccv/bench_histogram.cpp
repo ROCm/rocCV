@@ -44,8 +44,8 @@ static roccvbench::BenchmarkResults RunHistogramBenchmark(roccvbench::BenchmarkP
     ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
     eDataType out_format = roccvbench::GetParamValue<eDataType>(params, "out_format");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    TensorRequirements outReqs = Tensor::CalcRequirements(
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(
         TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {samples, 256, 1}), DataType(out_format), DeviceType);
 
     Tensor input(inReqs);

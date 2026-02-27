@@ -45,8 +45,8 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     eColorConversionCode conversionCode =
         roccvbench::GetParamValue<eColorConversionCode>(params, "color_conversion_code");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
-    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 

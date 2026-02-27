@@ -44,13 +44,13 @@ static roccvbench::BenchmarkResults RunThresholdBenchmark(roccvbench::BenchmarkP
     ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
     eThresholdType thresholdType = roccvbench::GetParamValue<eThresholdType>(params, "threshold_type");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    TensorRequirements paramReqs = Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {samples}),
-                                                            DataType(eDataType::DATA_TYPE_F64), DeviceType);
+    Tensor::Requirements paramReqs = Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_N), {samples}),
+                                                              DataType(eDataType::DATA_TYPE_F64), DeviceType);
     Tensor maxVal(paramReqs);
     Tensor thresh(paramReqs);
 

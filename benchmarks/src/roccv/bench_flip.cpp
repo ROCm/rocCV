@@ -45,8 +45,8 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format);
-    TensorRequirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
