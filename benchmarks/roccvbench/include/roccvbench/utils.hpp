@@ -25,6 +25,8 @@
 #include <random>
 #include <vector>
 
+#include "structs.hpp"
+
 namespace roccvbench {
 
 /**
@@ -55,6 +57,24 @@ std::vector<T> RandVector(size_t size) {
     }
 
     return result;
+}
+
+/**
+ * @brief Gets the value of a parameter from a list of parameters.
+ *
+ * @tparam T The type of the value to get.
+ * @param params The list of parameters to get the value from.
+ * @param key The key of the parameter to get the value from.
+ * @return The value of the parameter.
+ */
+template <typename T>
+T GetParamValue(const BenchmarkParamsList& params, const std::string& key) {
+    for (const auto& param : params) {
+        if (param.key == key) {
+            return std::any_cast<T>(param.value);
+        }
+    }
+    throw std::runtime_error("Parameter not found: " + key);
 }
 
 /**

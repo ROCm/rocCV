@@ -326,7 +326,7 @@ int main(int argc, char** argv) {
                     std::find(selectedTypes.begin(), selectedTypes.end(), benchmark.name) == selectedTypes.end()) {
                     continue;
                 }
-                std::cout << "Running benchmark " << benchmark.category << "::" << benchmark.name << std::endl;
+                std::cout << "Running benchmark " << benchmark.getDisplayName() << std::endl;
 
                 nlohmann::json runResultsJson;
                 runResultsJson["name"] = benchmark.name;
@@ -336,8 +336,14 @@ int main(int argc, char** argv) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
                               << ", width=" << config.width << ", runs=" << config.runs
                               << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
+                    auto result = benchmark.func(config, benchmark.params);
+
                     roccvbench::RunData runData;
-                    auto result = benchmark.func(config, runData);
+
+                    // Inject params into runData
+                    for (const auto& param : benchmark.params) {
+                        runData.addValue(param.key, param.strValue);
+                    }
 
                     runData.addValue("name", benchmark.name);
                     runData.addValue("category", benchmark.category);

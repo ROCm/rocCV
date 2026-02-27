@@ -21,7 +21,9 @@
 
 #pragma once
 
+#include <any>
 #include <cstddef>
+#include <format>
 #include <functional>
 #include <string>
 
@@ -47,6 +49,15 @@ struct BenchmarkConfig {
     int samples, width, height, runs, warmupRuns;
 };
 
+struct BenchmarkParam {
+    std::string key;
+    std::any value;
+    std::string strValue;
+};
+
+using BenchmarkParamsList = std::vector<BenchmarkParam>;
+using BenchmarkFunc = std::function<BenchmarkResults(const BenchmarkConfig&, BenchmarkParamsList)>;
+
 /**
  * @brief Contains information pertaining to a benchmark. This is created automatically using parameters supplied
  * through a BENCHMARK macro.
@@ -55,6 +66,22 @@ struct BenchmarkConfig {
 struct Benchmark {
     std::string category;
     std::string name;
-    std::function<BenchmarkResults(const BenchmarkConfig&, roccvbench::RunData&)> func;
+    BenchmarkFunc func;
+    BenchmarkParamsList params;
+
+    /**
+     * @brief Returns the display name of the benchmark.
+     *
+     * @return The display name of the benchmark.
+     */
+    inline std::string getDisplayName() const {
+        std::string paramsStr = "[";
+        for (size_t i = 0; i < params.size(); ++i) {
+            paramsStr += std::format("{}={}", params[i].key, params[i].strValue);
+            if (i + 1 < params.size()) paramsStr += ", ";
+        }
+        paramsStr += "]";
+        return std::format("{}::{}{}", category, name, paramsStr);
+    }
 };
 }  // namespace roccvbench

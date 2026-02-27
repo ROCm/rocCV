@@ -28,6 +28,13 @@
 
 namespace roccvbench {
 
+#define ROCCVBENCH_CONCAT_(a, b) a##b
+#define ROCCVBENCH_CONCAT(a, b) ROCCVBENCH_CONCAT_(a, b)
+#define BENCHMARK_FUNC_NAME(cat, name) \
+    ROCCVBENCH_CONCAT(ROCCVBENCH_CONCAT(ROCCVBENCH_CONCAT(Benchmark_, cat), name), __LINE__)
+#define BENCHMARK_VAR_NAME(cat, name) \
+    ROCCVBENCH_CONCAT(ROCCVBENCH_CONCAT(ROCCVBENCH_CONCAT(_benchmark_, cat), name), __LINE__)
+
 /**
  * @brief Benchmark registry singleton. This object is responsible for keeping track of all benchmarks defined through
  * the BENCHMARK macro.
@@ -40,12 +47,12 @@ class BenchmarkRegistry {
         return reg;
     }
 
-    void registerBenchmark(const std::string& category, const std::string& name,
-                           std::function<BenchmarkResults(const BenchmarkConfig&, roccvbench::RunData&)> func) {
+    void registerBenchmark(const std::string& category, const std::string& name, BenchmarkFunc func,
+                           BenchmarkParamsList params) {
         if (m_benchmarks.count(category) == 0) {
             m_benchmarks.emplace(category, std::vector<Benchmark>());
         }
-        m_benchmarks.at(category).emplace_back(Benchmark{category, name, func});
+        m_benchmarks.at(category).emplace_back(Benchmark{category, name, func, params});
     }
 
     std::unordered_map<std::string, std::vector<Benchmark>>& getBenchmarks() { return m_benchmarks; }
@@ -55,20 +62,31 @@ class BenchmarkRegistry {
     std::unordered_map<std::string, std::vector<Benchmark>> m_benchmarks;
 };
 
-#define REGISTER_BENCHMARK(func, name, category)                                             \
-    static bool _benchmark_##category##name = [] {                                           \
-        roccvbench::BenchmarkRegistry::instance().registerBenchmark(#category, #name, func); \
-        return true;                                                                         \
+#define REGISTER_BENCHMARK(func, name, category, _params_)                                             \
+    static bool BENCHMARK_VAR_NAME(category, name) = [] {                                              \
+        roccvbench::BenchmarkRegistry::instance().registerBenchmark(#category, #name, func, _params_); \
+        return true;                                                                                   \
     }()
+
+#define BENCH_PARAMS(...) roccvbench::BenchmarkParamsList({__VA_ARGS__})
+#define BENCH_PARAM(key, value) roccvbench::BenchmarkParam({key, value, #value})
 
 /**
  * @brief Creates a benchmark unit for roccv with a provided name.
  *
  */
-#define BENCHMARK(category, name)                                                                      \
-    roccvbench::BenchmarkResults Benchmark_##category##name(const roccvbench::BenchmarkConfig& config, \
-                                                            roccvbench::RunData& runData);             \
-    REGISTER_BENCHMARK(Benchmark_##category##name, name, category);                                    \
-    roccvbench::BenchmarkResults Benchmark_##category##name(const roccvbench::BenchmarkConfig& config, \
-                                                            roccvbench::RunData& runData)
+#define BENCHMARK(category, name)                                                                               \
+    roccvbench::BenchmarkResults BENCHMARK_FUNC_NAME(category, name)(const roccvbench::BenchmarkConfig& config, \
+                                                                     roccvbench::BenchmarkParamsList params);   \
+    REGISTER_BENCHMARK(BENCHMARK_FUNC_NAME(category, name), name, category, {});                                \
+    roccvbench::BenchmarkResults BENCHMARK_FUNC_NAME(category, name)(const roccvbench::BenchmarkConfig& config, \
+                                                                     roccvbench::BenchmarkParamsList params)
+
+#define BENCHMARK_P(category, name, _params_)                                                                   \
+    roccvbench::BenchmarkResults BENCHMARK_FUNC_NAME(category, name)(const roccvbench::BenchmarkConfig& config, \
+                                                                     roccvbench::BenchmarkParamsList params);   \
+    REGISTER_BENCHMARK(BENCHMARK_FUNC_NAME(category, name), name, category, _params_);                          \
+    roccvbench::BenchmarkResults BENCHMARK_FUNC_NAME(category, name)(const roccvbench::BenchmarkConfig& config, \
+                                                                     roccvbench::BenchmarkParamsList params)
+
 }  // namespace roccvbench
