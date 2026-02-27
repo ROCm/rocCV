@@ -32,40 +32,52 @@
 using namespace roccv;
 
 template <eDeviceType DeviceType>
-static roccvbench::BenchmarkResults RunFlipBenchmark(const auto& config, roccvbench::BenchmarkParamsList params) {
+static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
     // Get parameters
-    ImageFormat format = roccvbench::GetParamValue<ImageFormat>(params, "format");
-    int32_t flip_code = roccvbench::GetParamValue<int32_t>(params, "flip_code");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    int32_t flipCode = roccvbench::GetParamValue<int32_t>(params, "flip_code");
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, format);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format);
+    TensorRequirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
+
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
     FillTensor(input);
+
     Flip op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, flip_code, DeviceType);
+            op(stream, input, output, flipCode, DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
     return results;
 }
 
-#define DEFINE_FLIP_BENCHMARK(name, device, format, flip_code)                                                  \
-    BENCHMARK_P(Flip, name, BENCH_PARAMS(BENCH_PARAM("format", format), BENCH_PARAM("flip_code", flip_code))) { \
-        return RunFlipBenchmark<device>(config, params);                                                        \
+#define DEFINE_FLIP_BENCHMARK(name, device, in_format, out_format, flipCode)                             \
+    BENCHMARK_P(Flip, name,                                                                              \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
+                             BENCH_PARAM("flip_code", flipCode))) {                                      \
+        return RunFlipBenchmark<device>(params);                                                         \
     }
 
-DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, 0);
-DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, 0);
-DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, 0);
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 0);
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, 0);
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, 0);
+
+DEFINE_FLIP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 0);

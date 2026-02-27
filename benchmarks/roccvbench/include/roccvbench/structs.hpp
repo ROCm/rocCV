@@ -56,7 +56,7 @@ struct BenchmarkParam {
 };
 
 using BenchmarkParamsList = std::vector<BenchmarkParam>;
-using BenchmarkFunc = std::function<BenchmarkResults(const BenchmarkConfig&, BenchmarkParamsList)>;
+using BenchmarkFunc = std::function<BenchmarkResults(BenchmarkParamsList)>;
 
 /**
  * @brief Contains information pertaining to a benchmark. This is created automatically using parameters supplied

@@ -31,13 +31,23 @@
 
 using namespace roccv;
 
-BENCHMARK(WarpPerspective, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    // Get parameters
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format);
+    TensorRequirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
 
@@ -53,39 +63,26 @@ BENCHMARK(WarpPerspective, GPU) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(stream, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(WarpPerspective, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_WARP_PERSPECTIVE_BENCHMARK(name, device, in_format, out_format)                              \
+    BENCHMARK_P(WarpPerspective, name,                                                                      \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
+        return RunWarpPerspectiveBenchmark<device>(params);                                                 \
+    }
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
-        eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8);
 
-    PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
-
-    FillTensor(input);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    WarpPerspective op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(nullptr, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
-        },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);

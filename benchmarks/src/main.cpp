@@ -171,14 +171,13 @@ int main(int argc, char** argv) {
             // List all available categories and exit the program
             std::cout << "Available benchmarks:\n";
             for (const auto& category : availableCategories) {
-                std::cout << "  \033[1m" << category << ":\033[0m\n    ";
+                std::cout << "  \033[1m" << category << ":\033[0m\n";
 
                 std::vector<roccvbench::Benchmark> benchmarks =
                     roccvbench::BenchmarkRegistry::instance().getBenchmarks().at(category);
 
-                for (int i = 0; i < benchmarks.size(); i++) {
-                    std::cout << benchmarks[i].name;
-                    if (i < benchmarks.size() - 1) std::cout << ", ";
+                for (const auto& benchmark : benchmarks) {
+                    std::cout << "    " << benchmark.getDisplayName() << std::endl;
                 }
                 std::cout << std::endl;
             }
@@ -336,25 +335,34 @@ int main(int argc, char** argv) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
                               << ", width=" << config.width << ", runs=" << config.runs
                               << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
-                    auto result = benchmark.func(config, benchmark.params);
+                    roccvbench::BenchmarkParamsList params = benchmark.params;
+
+                    // Inject config parameters into params
+                    params.push_back(roccvbench::BenchmarkParam("samples", config.samples));
+                    params.push_back(roccvbench::BenchmarkParam("height", config.height));
+                    params.push_back(roccvbench::BenchmarkParam("width", config.width));
+                    params.push_back(roccvbench::BenchmarkParam("runs", config.runs));
+                    params.push_back(roccvbench::BenchmarkParam("warmupRuns", config.warmupRuns));
+
+                    auto result = benchmark.func(params);
 
                     roccvbench::RunData runData;
 
-                    // Inject params into runData
+                    // Inject benchmark params into runData
                     for (const auto& param : benchmark.params) {
                         runData.addValue(param.key, param.strValue);
                     }
 
+                    runData.addValue("samples", config.samples);
+                    runData.addValue("height", config.height);
+                    runData.addValue("width", config.width);
+                    runData.addValue("runs", config.runs);
+                    runData.addValue("warmupRuns", config.warmupRuns);
                     runData.addValue("name", benchmark.name);
                     runData.addValue("category", benchmark.category);
-                    runData.addValue("width", config.width);
-                    runData.addValue("height", config.height);
-                    runData.addValue("runs", config.runs);
                     runData.addValue("execution_time", result.executionTime);
-                    runData.addValue("samples", config.samples);
                     runData.addValue("read_memory_bytes", result.readMemoryBytes);
                     runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
-                    runData.addValue("warmup_runs", config.warmupRuns);
 
                     results.registerRun(runData);
                 }

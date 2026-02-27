@@ -31,13 +31,22 @@
 
 using namespace roccv;
 
-BENCHMARK(CvtColor, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    eColorConversionCode conversionCode =
+        roccvbench::GetParamValue<eColorConversionCode>(params, "color_conversion_code");
+
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
+    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -52,35 +61,24 @@ BENCHMARK(CvtColor, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, eColorConversionCode::COLOR_RGB2GRAY);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, conversionCode, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(CvtColor, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_CVT_COLOR_BENCHMARK(name, device, in_format, out_format, conversion_code)                 \
+    BENCHMARK_P(CvtColor, name,                                                                          \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
+                             BENCH_PARAM("color_conversion_code", conversion_code))) {                   \
+        return RunCvtColorBenchmark<device>(params);                                                     \
+    }
 
-    TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_U8, eDeviceType::CPU);
-    Tensor input(inReqs);
-    Tensor output(outReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    CvtColor op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, eColorConversionCode::COLOR_RGB2GRAY, eDeviceType::CPU); }, results.executionTime,
-        config.runs, config.warmupRuns);
-
-    return results;
-}
+DEFINE_CVT_COLOR_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY);
+DEFINE_CVT_COLOR_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY);

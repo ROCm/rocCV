@@ -32,12 +32,21 @@
 
 using namespace roccv;
 
-BENCHMARK(Histogram, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunHistogramBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}), DataType(eDataType::DATA_TYPE_S32));
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    eDataType out_format = roccvbench::GetParamValue<eDataType>(params, "out_format");
+
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    TensorRequirements outReqs = Tensor::CalcRequirements(
+        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {samples, 256, 1}), DataType(out_format), DeviceType);
 
     Tensor input(inReqs);
     Tensor output(outReqs);
@@ -53,37 +62,25 @@ BENCHMARK(Histogram, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, std::nullopt, output);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, std::nullopt, output, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(Histogram, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_HISTOGRAM_BENCHMARK(name, device, in_format, out_format)                                     \
+    BENCHMARK_P(Histogram, name,                                                                            \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
+        return RunHistogramBenchmark<device>(params);                                                       \
+    }
 
-    Tensor::Requirements inReqs =
-        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_U8, eDeviceType::CPU);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {config.samples, 256, 1}),
-                                 DataType(eDataType::DATA_TYPE_S32), eDeviceType::CPU);
-
-    Tensor input(inReqs);
-    Tensor output(outReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    Histogram op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, std::nullopt, output, eDeviceType::CPU); }, results.executionTime, config.runs,
-        config.warmupRuns);
-
-    return results;
-}
+DEFINE_HISTOGRAM_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, eDataType::DATA_TYPE_S32);
+DEFINE_HISTOGRAM_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, eDataType::DATA_TYPE_U32);
+DEFINE_HISTOGRAM_BENCHMARK(CPU, eDeviceType::CPU, FMT_U8, eDataType::DATA_TYPE_S32);
+DEFINE_HISTOGRAM_BENCHMARK(CPU, eDeviceType::CPU, FMT_U8, eDataType::DATA_TYPE_U32);

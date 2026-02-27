@@ -31,15 +31,25 @@
 
 using namespace roccv;
 
-BENCHMARK(Resize, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunResizeBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8);
-    Tensor input(inputReqs);
-    Tensor output(outputReqs);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    eInterpolationType interpolation = roccvbench::GetParamValue<eInterpolationType>(params, "interpolation");
+    int scale_factor = roccvbench::GetParamValue<int>(params, "scale_factor");
+
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
+    TensorRequirements outReqs =
+        Tensor::CalcRequirements(samples, {width * scale_factor, height * scale_factor}, out_format);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
@@ -52,35 +62,25 @@ BENCHMARK(Resize, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, interpolation, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(Resize, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_RESIZE_BENCHMARK(name, device, in_format, out_format, interpolation, scale_factor)               \
+    BENCHMARK_P(                                                                                                \
+        Resize, name,                                                                                           \
+        BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),                \
+                     BENCH_PARAM("interpolation", interpolation), BENCH_PARAM("scale_factor", scale_factor))) { \
+        return RunResizeBenchmark<device>(params);                                                              \
+    }
 
-    Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outputReqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8, eDeviceType::CPU);
-    Tensor input(inputReqs);
-    Tensor output(outputReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    Resize op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+DEFINE_RESIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 2);
+DEFINE_RESIZE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 2);

@@ -31,13 +31,28 @@
 
 using namespace roccv;
 
-BENCHMARK(BilateralFilter, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    Tensor::Requirements reqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    int diameter = roccvbench::GetParamValue<int>(params, "diameter");
+    float sigmaColor = roccvbench::GetParamValue<float>(params, "sigma_color");
+    float sigmaSpace = roccvbench::GetParamValue<float>(params, "sigma_space");
+    eBorderType borderType = roccvbench::GetParamValue<eBorderType>(params, "border_type");
+
+    float4 borderValue = make_float4(1.0f, 0.0f, 1.0f, 1.0f);
+
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
+    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
@@ -50,37 +65,28 @@ BENCHMARK(BilateralFilter, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
-               make_float4(1.0f, 0.0f, 1.0f, 1.0f));
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, diameter, sigmaColor, sigmaSpace, borderType, borderValue, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(BilateralFilter, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_BILATERAL_FILTER_BENCHMARK(name, device, in_format, out_format, diameter, sigmaColor, sigmaSpace, \
+                                          borderType)                                                            \
+    BENCHMARK_P(BilateralFilter, name,                                                                           \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),         \
+                             BENCH_PARAM("diameter", diameter), BENCH_PARAM("sigma_color", sigmaColor),          \
+                             BENCH_PARAM("sigma_space", sigmaSpace), BENCH_PARAM("border_type", borderType))) {  \
+        return RunBilateralFilterBenchmark<device>(params);                                                      \
+    }
 
-    Tensor::Requirements reqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    BilateralFilter op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(nullptr, input, output, 30, 75, 75, eBorderType::BORDER_TYPE_CONSTANT,
-               make_float4(1.0f, 0.0f, 1.0f, 1.0f), eDeviceType::CPU);
-        },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 15, 75.0f, 75.0f,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_BILATERAL_FILTER_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 15, 75.0f, 75.0f,
+                                  eBorderType::BORDER_TYPE_CONSTANT);

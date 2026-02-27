@@ -32,18 +32,26 @@
 
 using namespace roccv;
 
-BENCHMARK(Composite, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    Tensor::Requirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
-    Tensor::Requirements maskReqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
 
-    Tensor background(reqs);
-    Tensor foreground(reqs);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format);
+    Tensor::Requirements maskReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, FMT_U8);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format);
+
+    Tensor background(inReqs);
+    Tensor foreground(inReqs);
     Tensor mask(maskReqs);
-    Tensor output(reqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(background, results.readMemoryBytes);
     RegisterMemoryUsage(foreground, results.readMemoryBytes);
@@ -61,44 +69,25 @@ BENCHMARK(Composite, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, foreground, background, mask, output);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, foreground, background, mask, output, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(Composite, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_COMPOSITE_BENCHMARK(name, device, in_format, out_format)                                     \
+    BENCHMARK_P(Composite, name,                                                                            \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
+        return RunCompositeBenchmark<device>(params);                                                       \
+    }
 
-    Tensor::Requirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
-        eDeviceType::CPU);
-    Tensor::Requirements maskReqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_U8,
-        eDeviceType::CPU);
+DEFINE_COMPOSITE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
+DEFINE_COMPOSITE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGBA8);
 
-    Tensor background(reqs);
-    Tensor foreground(reqs);
-    Tensor mask(maskReqs);
-    Tensor output(reqs);
-
-    RegisterMemoryUsage(background, results.readMemoryBytes);
-    RegisterMemoryUsage(foreground, results.readMemoryBytes);
-    RegisterMemoryUsage(mask, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(background);
-    FillTensor(foreground);
-    FillTensor(mask);
-
-    Composite op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, foreground, background, mask, output, eDeviceType::CPU); }, results.executionTime, config.runs,
-        config.warmupRuns);
-
-    return results;
-}
+DEFINE_COMPOSITE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);

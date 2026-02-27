@@ -31,17 +31,25 @@
 
 using namespace roccv;
 
-BENCHMARK(CopyMakeBorderConstant, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    const int top = 9;
-    const int left = 9;
-    const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
-    const eBorderType borderType = eBorderType::BORDER_TYPE_CONSTANT;
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
+    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    eBorderType borderType = roccvbench::GetParamValue<eBorderType>(params, "border_type");
+    int top = roccvbench::GetParamValue<int>(params, "border_top");
+    int left = roccvbench::GetParamValue<int>(params, "border_left");
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
+    const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width + left * 2, height + top * 2}, out_format);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -57,106 +65,28 @@ BENCHMARK(CopyMakeBorderConstant, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, top, left, borderType, borderVal);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, top, left, borderType, borderVal, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(CopyMakeBorderConstant, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, device, in_format, out_format, border_type, border_top, border_left) \
+    BENCHMARK_P(CopyMakeBorder, name,                                                                                \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),             \
+                             BENCH_PARAM("border_type", border_type), BENCH_PARAM("border_top", border_top),         \
+                             BENCH_PARAM("border_left", border_left))) {                                             \
+        return RunCopyMakeBorderBenchmark<device>(params);                                                           \
+    }
 
-    const int top = 9;
-    const int left = 9;
-    const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
-    const eBorderType borderType = eBorderType::BORDER_TYPE_CONSTANT;
-
-    TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
-    Tensor input(inReqs);
-    Tensor output(outReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
-        config.runs, config.warmupRuns);
-
-    return results;
-}
-
-BENCHMARK(CopyMakeBorderReflect, GPU) {
-    roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
-
-    const int top = 9;
-    const int left = 9;
-    const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
-    const eBorderType borderType = eBorderType::BORDER_TYPE_REFLECT;
-
-    TensorRequirements inReqs = Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8);
-    Tensor input(inReqs);
-    Tensor output(outReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    CopyMakeBorder op;
-
-    hipStream_t stream;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(stream, input, output, top, left, borderType, borderVal);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
-        },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
-    return results;
-}
-
-BENCHMARK(CopyMakeBorderReflect, CPU) {
-    roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
-
-    const int top = 9;
-    const int left = 9;
-    const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
-    const eBorderType borderType = eBorderType::BORDER_TYPE_REFLECT;
-
-    TensorRequirements inReqs =
-        Tensor::CalcRequirements(config.samples, {config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        config.samples, {config.width + left * 2, config.height + top * 2}, FMT_RGB8, eDeviceType::CPU);
-    Tensor input(inReqs);
-    Tensor output(outReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    CopyMakeBorder op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, top, left, borderType, borderVal, eDeviceType::CPU); }, results.executionTime,
-        config.runs, config.warmupRuns);
-
-    return results;
-}
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eBorderType::BORDER_TYPE_CONSTANT, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eBorderType::BORDER_TYPE_REPLICATE, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eBorderType::BORDER_TYPE_REFLECT, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eBorderType::BORDER_TYPE_REFLECT101, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eBorderType::BORDER_TYPE_WRAP, 9, 9);
