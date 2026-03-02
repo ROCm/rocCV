@@ -88,5 +88,8 @@ static roccvbench::BenchmarkResults RunThresholdBenchmark(roccvbench::BenchmarkP
         return RunThresholdBenchmark<device>(params);                                                    \
     }
 
+// GPU benchmarks
 DEFINE_THRESHOLD_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eThresholdType::THRESH_BINARY);
+
+// CPU benchmarks
 DEFINE_THRESHOLD_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eThresholdType::THRESH_BINARY);

@@ -80,7 +80,10 @@ static roccvbench::BenchmarkResults RunHistogramBenchmark(roccvbench::BenchmarkP
         return RunHistogramBenchmark<device>(params);                                                       \
     }
 
+// GPU benchmarks
 DEFINE_HISTOGRAM_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, eDataType::DATA_TYPE_S32);
 DEFINE_HISTOGRAM_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, eDataType::DATA_TYPE_U32);
+
+// CPU benchmarks
 DEFINE_HISTOGRAM_BENCHMARK(CPU, eDeviceType::CPU, FMT_U8, eDataType::DATA_TYPE_S32);
 DEFINE_HISTOGRAM_BENCHMARK(CPU, eDeviceType::CPU, FMT_U8, eDataType::DATA_TYPE_U32);

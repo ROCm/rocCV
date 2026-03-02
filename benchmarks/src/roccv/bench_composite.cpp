@@ -87,7 +87,9 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
         return RunCompositeBenchmark<device>(params);                                                       \
     }
 
+// GPU benchmarks
 DEFINE_COMPOSITE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
 DEFINE_COMPOSITE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGBA8);
 
+// CPU benchmarks
 DEFINE_COMPOSITE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);

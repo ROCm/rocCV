@@ -81,6 +81,12 @@ static roccvbench::BenchmarkResults RunCustomCropBenchmark(roccvbench::Benchmark
         return RunCustomCropBenchmark<device>(params);                                                   \
     }
 
+// GPU benchmarks
 DEFINE_CUSTOM_CROP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, ((Box_t){150, 50, 400, 300}));
 DEFINE_CUSTOM_CROP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, ((Box_t){150, 50, 400, 300}));
 DEFINE_CUSTOM_CROP_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, ((Box_t){150, 50, 400, 300}));
+
+// CPU benchmarks
+DEFINE_CUSTOM_CROP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, ((Box_t){150, 50, 400, 300}));
+DEFINE_CUSTOM_CROP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGBA8, FMT_RGBA8, ((Box_t){150, 50, 400, 300}));
+DEFINE_CUSTOM_CROP_BENCHMARK(CPU, eDeviceType::CPU, FMT_U8, FMT_U8, ((Box_t){150, 50, 400, 300}));

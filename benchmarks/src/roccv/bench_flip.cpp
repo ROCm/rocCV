@@ -76,8 +76,10 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
         return RunFlipBenchmark<device>(params);                                                         \
     }
 
+// GPU benchmarks
 DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 0);
 DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, 0);
 DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, 0);
 
+// CPU benchmarks
 DEFINE_FLIP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 0);

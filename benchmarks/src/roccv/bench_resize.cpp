@@ -82,5 +82,8 @@ static roccvbench::BenchmarkResults RunResizeBenchmark(roccvbench::BenchmarkPara
         return RunResizeBenchmark<device>(params);                                                              \
     }
 
+// GPU benchmarks
 DEFINE_RESIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 2);
+
+// CPU benchmarks
 DEFINE_RESIZE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 2);

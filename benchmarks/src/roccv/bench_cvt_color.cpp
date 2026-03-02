@@ -80,5 +80,8 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
         return RunCvtColorBenchmark<device>(params);                                                     \
     }
 
+// GPU benchmarks
 DEFINE_CVT_COLOR_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY);
+
+// CPU benchmarks
 DEFINE_CVT_COLOR_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_U8, COLOR_RGB2GRAY);

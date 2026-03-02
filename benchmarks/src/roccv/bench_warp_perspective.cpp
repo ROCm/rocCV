@@ -81,8 +81,10 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
         return RunWarpPerspectiveBenchmark<device>(params);                                                 \
     }
 
+// GPU benchmarks
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8);
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8);
 
+// CPU benchmarks
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);

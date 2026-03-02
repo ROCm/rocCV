@@ -86,7 +86,10 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
         return RunBilateralFilterBenchmark<device>(params);                                                      \
     }
 
+// GPU benchmarks
 DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 15, 75.0f, 75.0f,
                                   eBorderType::BORDER_TYPE_CONSTANT);
+
+// CPU benchmarks
 DEFINE_BILATERAL_FILTER_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 15, 75.0f, 75.0f,
                                   eBorderType::BORDER_TYPE_CONSTANT);
