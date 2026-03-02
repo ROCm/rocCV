@@ -57,9 +57,10 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
 }
 #define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, T, in_format, out_format, border_type, border_top, border_left) \
     BENCHMARK_P(CopyMakeBorder, name,                                                                           \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),        \
-                             BENCH_PARAM("border_type", border_type), BENCH_PARAM("border_top", border_top),    \
-                             BENCH_PARAM("border_left", border_left))) {                                        \
+                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),                               \
+                             BENCH_PARAM_STR("out_format", out_format, #out_format),                            \
+                             BENCH_PARAM_STR("border_type", border_type, #border_type),                         \
+                             BENCH_PARAM("border_top", border_top), BENCH_PARAM("border_left", border_left))) { \
         return RunCopyMakeBorderBenchmark<T>(params);                                                           \
     }
 

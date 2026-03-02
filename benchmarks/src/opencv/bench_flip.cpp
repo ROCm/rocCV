@@ -54,11 +54,12 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     return results;
 }
 
-#define DEFINE_FLIP_BENCHMARK(name, T, in_format, out_format, flip_code)                                 \
-    BENCHMARK_P(Flip, name,                                                                              \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("flip_code", flip_code))) {                                     \
-        return RunFlipBenchmark<T>(params);                                                              \
+#define DEFINE_FLIP_BENCHMARK(name, T, in_format, out_format, flip_code)                                             \
+    BENCHMARK_P(                                                                                                     \
+        Flip, name,                                                                                                  \
+        BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),                                            \
+                     BENCH_PARAM_STR("out_format", out_format, #out_format), BENCH_PARAM("flip_code", flip_code))) { \
+        return RunFlipBenchmark<T>(params);                                                                          \
     }
 
 DEFINE_FLIP_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, -1);

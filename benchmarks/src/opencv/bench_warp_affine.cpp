@@ -58,10 +58,11 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     return results;
 }
 
-#define DEFINE_WARP_AFFINE_BENCHMARK(name, T, in_format, out_format)                                        \
-    BENCHMARK_P(WarpAffine, name,                                                                           \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
-        return RunWarpAffineBenchmark<T>(params);                                                           \
+#define DEFINE_WARP_AFFINE_BENCHMARK(name, T, in_format, out_format)                    \
+    BENCHMARK_P(WarpAffine, name,                                                       \
+                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),       \
+                             BENCH_PARAM_STR("out_format", out_format, #out_format))) { \
+        return RunWarpAffineBenchmark<T>(params);                                       \
     }
 
 DEFINE_WARP_AFFINE_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3);

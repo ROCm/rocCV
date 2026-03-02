@@ -60,11 +60,12 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     return results;
 }
 
-#define DEFINE_COMPOSITE_BENCHMARK(name, T, WeightType, in_format, alpha_format, out_format)                 \
-    BENCHMARK_P(Composite, name,                                                                             \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("alpha_format", alpha_format), \
-                             BENCH_PARAM("out_format", out_format))) {                                       \
-        return RunCompositeBenchmark<T, WeightType>(params);                                                 \
+#define DEFINE_COMPOSITE_BENCHMARK(name, T, WeightType, in_format, alpha_format, out_format) \
+    BENCHMARK_P(Composite, name,                                                             \
+                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),            \
+                             BENCH_PARAM_STR("alpha_format", alpha_format, #alpha_format),   \
+                             BENCH_PARAM_STR("out_format", out_format, #out_format))) {      \
+        return RunCompositeBenchmark<T, WeightType>(params);                                 \
     }
 
 DEFINE_COMPOSITE_BENCHMARK(OpenCV, uint8_t, float, CV_8UC3, CV_32F, CV_8UC3);

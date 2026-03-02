@@ -70,6 +70,7 @@ class BenchmarkRegistry {
 
 #define BENCH_PARAMS(...) roccvbench::BenchmarkParamsList({__VA_ARGS__})
 #define BENCH_PARAM(key, value) roccvbench::BenchmarkParam({key, value, #value})
+#define BENCH_PARAM_STR(key, value, strValue) roccvbench::BenchmarkParam({key, value, strValue})
 
 /**
  * @brief Creates a benchmark unit for roccv with a provided name.

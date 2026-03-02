@@ -54,11 +54,11 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
     return results;
 }
 
-#define DEFINE_ROTATE_BENCHMARK(name, T, in_format, out_format, angle)                                   \
-    BENCHMARK_P(Rotate, name,                                                                            \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("angle", angle))) {                                             \
-        return RunRotateBenchmark<T>(params);                                                            \
+#define DEFINE_ROTATE_BENCHMARK(name, T, in_format, out_format, angle)                                               \
+    BENCHMARK_P(Rotate, name,                                                                                        \
+                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),                                    \
+                             BENCH_PARAM_STR("out_format", out_format, #out_format), BENCH_PARAM("angle", angle))) { \
+        return RunRotateBenchmark<T>(params);                                                                        \
     }
 
 DEFINE_ROTATE_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, cv::ROTATE_180);

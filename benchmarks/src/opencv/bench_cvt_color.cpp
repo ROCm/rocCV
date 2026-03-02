@@ -55,11 +55,12 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     return results;
 }
 
-#define DEFINE_CVT_COLOR_BENCHMARK(name, T, in_format, out_format, color_conversion_code)                \
-    BENCHMARK_P(CvtColor, name,                                                                          \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("color_conversion_code", color_conversion_code))) {             \
-        return RunCvtColorBenchmark<T>(params);                                                          \
+#define DEFINE_CVT_COLOR_BENCHMARK(name, T, in_format, out_format, color_conversion_code)    \
+    BENCHMARK_P(CvtColor, name,                                                              \
+                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),            \
+                             BENCH_PARAM_STR("out_format", out_format, #out_format),         \
+                             BENCH_PARAM("color_conversion_code", color_conversion_code))) { \
+        return RunCvtColorBenchmark<T>(params);                                              \
     }
 
 DEFINE_CVT_COLOR_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC1, cv::COLOR_RGB2GRAY);
