@@ -171,7 +171,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&streamMask));
 
     Histogram maskOp;
-    maskOp(stream, input, mask, histogramWithMask, device);
+    maskOp(streamMask, input, mask, histogramWithMask, device);
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(streamMask));
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(streamMask));
 
