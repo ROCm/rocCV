@@ -25,14 +25,24 @@
 
 #include "opencv_bench_helpers.hpp"
 
-BENCHMARK(Composite, OpenCV) {
+template <typename T, typename WeightType>
+static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    std::vector<cv::Mat> backgrounds = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    std::vector<cv::Mat> foregrounds = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    std::vector<cv::Mat> weights1 = GenerateMats<float>(config.samples, config.width, config.height, CV_32F);
-    std::vector<cv::Mat> weights2 = GenerateMats<float>(config.samples, config.width, config.height, CV_32F);
-    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
+    int alpha_format = roccvbench::GetParamValue<int>(params, "alpha_format");
+    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
+
+    std::vector<cv::Mat> backgrounds = GenerateMats<T>(samples, width, height, in_format);
+    std::vector<cv::Mat> foregrounds = GenerateMats<T>(samples, width, height, in_format);
+    std::vector<cv::Mat> weights1 = GenerateMats<WeightType>(samples, width, height, alpha_format);
+    std::vector<cv::Mat> weights2 = GenerateMats<WeightType>(samples, width, height, alpha_format);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
 
     RegisterMemoryUsage(backgrounds, results.readMemoryBytes);
     RegisterMemoryUsage(foregrounds, results.readMemoryBytes);
@@ -46,6 +56,15 @@ BENCHMARK(Composite, OpenCV) {
                 cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputs[i]);
             }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
     return results;
 }
+
+#define DEFINE_COMPOSITE_BENCHMARK(name, T, WeightType, in_format, alpha_format, out_format)                 \
+    BENCHMARK_P(Composite, name,                                                                             \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("alpha_format", alpha_format), \
+                             BENCH_PARAM("out_format", out_format))) {                                       \
+        return RunCompositeBenchmark<T, WeightType>(params);                                                 \
+    }
+
+DEFINE_COMPOSITE_BENCHMARK(OpenCV, uint8_t, float, CV_8UC3, CV_32F, CV_8UC3);

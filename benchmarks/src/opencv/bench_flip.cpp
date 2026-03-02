@@ -25,26 +25,40 @@
 
 #include "opencv_bench_helpers.hpp"
 
-BENCHMARK(WarpAffine, OpenCV) {
+template <typename T>
+static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
+    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
+    int flip_code = roccvbench::GetParamValue<int>(params, "flip_code");
 
-    std::vector<float> affineMatData = {1, 0, 0, 1, -1, 120};
-    cv::Mat affineMat(2, 3, CV_32F, affineMatData.data());
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, in_format);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
 
     RegisterMemoryUsage(mats, results.readMemoryBytes);
-    RegisterMemoryUsage(affineMat, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::warpAffine(mats[i], outputs[i], affineMat, outputs[i].size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT,
-                               0);
+                cv::flip(mats[i], outputs[i], flip_code);
             }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
     return results;
 }
+
+#define DEFINE_FLIP_BENCHMARK(name, T, in_format, out_format, flip_code)                                 \
+    BENCHMARK_P(Flip, name,                                                                              \
+                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
+                             BENCH_PARAM("flip_code", flip_code))) {                                     \
+        return RunFlipBenchmark<T>(params);                                                              \
+    }
+
+DEFINE_FLIP_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, -1);
