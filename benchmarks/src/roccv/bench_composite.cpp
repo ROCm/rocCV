@@ -41,12 +41,12 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, inFormat, DeviceType);
     Tensor::Requirements maskReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, FMT_U8, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, outFormat, DeviceType);
 
     Tensor background(inReqs);
     Tensor foreground(inReqs);
@@ -81,10 +81,10 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     return results;
 }
 
-#define DEFINE_COMPOSITE_BENCHMARK(name, device, in_format, out_format)                                     \
-    BENCHMARK_P(Composite, name,                                                                            \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
-        return RunCompositeBenchmark<device>(params);                                                       \
+#define DEFINE_COMPOSITE_BENCHMARK(name, device, inFormat, outFormat)                                   \
+    BENCHMARK_P(Composite, name,                                                                        \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat))) { \
+        return RunCompositeBenchmark<device>(params);                                                   \
     }
 
 // GPU benchmarks

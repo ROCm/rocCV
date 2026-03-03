@@ -40,13 +40,13 @@ static roccvbench::BenchmarkResults RunCustomCropBenchmark(roccvbench::Benchmark
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
-    Box_t cropRect = roccvbench::GetParamValue<Box_t>(params, "crop_rect");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    Box_t cropRect = roccvbench::GetParamValue<Box_t>(params, "cropRect");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        samples, {static_cast<int>(cropRect.width), static_cast<int>(cropRect.height)}, out_format, DeviceType);
+        samples, {static_cast<int>(cropRect.width), static_cast<int>(cropRect.height)}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -74,11 +74,11 @@ static roccvbench::BenchmarkResults RunCustomCropBenchmark(roccvbench::Benchmark
     return results;
 }
 
-#define DEFINE_CUSTOM_CROP_BENCHMARK(name, device, in_format, out_format, crop_rect)                     \
-    BENCHMARK_P(CustomCrop, name,                                                                        \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("crop_rect", crop_rect))) {                                     \
-        return RunCustomCropBenchmark<device>(params);                                                   \
+#define DEFINE_CUSTOM_CROP_BENCHMARK(name, device, inFormat, outFormat, cropRect)                    \
+    BENCHMARK_P(CustomCrop, name,                                                                    \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("cropRect", cropRect))) {                                   \
+        return RunCustomCropBenchmark<device>(params);                                               \
     }
 
 // GPU benchmarks

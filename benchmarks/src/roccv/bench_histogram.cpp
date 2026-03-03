@@ -41,12 +41,12 @@ static roccvbench::BenchmarkResults RunHistogramBenchmark(roccvbench::BenchmarkP
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    eDataType out_format = roccvbench::GetParamValue<eDataType>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    eDataType outFormat = roccvbench::GetParamValue<eDataType>(params, "outFormat");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
     Tensor::Requirements outReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {samples, 256, 1}), DataType(out_format), DeviceType);
+        TensorShape(TensorLayout(TENSOR_LAYOUT_HWC), {samples, 256, 1}), DataType(outFormat), DeviceType);
 
     Tensor input(inReqs);
     Tensor output(outReqs);
@@ -74,10 +74,10 @@ static roccvbench::BenchmarkResults RunHistogramBenchmark(roccvbench::BenchmarkP
     return results;
 }
 
-#define DEFINE_HISTOGRAM_BENCHMARK(name, device, in_format, out_format)                                     \
-    BENCHMARK_P(Histogram, name,                                                                            \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
-        return RunHistogramBenchmark<device>(params);                                                       \
+#define DEFINE_HISTOGRAM_BENCHMARK(name, device, inFormat, outFormat)                                   \
+    BENCHMARK_P(Histogram, name,                                                                        \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat))) { \
+        return RunHistogramBenchmark<device>(params);                                                   \
     }
 
 // GPU benchmarks

@@ -40,12 +40,12 @@ static roccvbench::BenchmarkResults RunGammaContrastBenchmark(roccvbench::Benchm
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
     float gamma = roccvbench::GetParamValue<float>(params, "gamma");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -72,11 +72,11 @@ static roccvbench::BenchmarkResults RunGammaContrastBenchmark(roccvbench::Benchm
     return results;
 }
 
-#define DEFINE_GAMMA_CONTRAST_BENCHMARK(name, device, in_format, out_format, gamma)                      \
-    BENCHMARK_P(GammaContrast, name,                                                                     \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("gamma", gamma))) {                                             \
-        return RunGammaContrastBenchmark<device>(params);                                                \
+#define DEFINE_GAMMA_CONTRAST_BENCHMARK(name, device, inFormat, outFormat, gamma)                    \
+    BENCHMARK_P(GammaContrast, name,                                                                 \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("gamma", gamma))) {                                         \
+        return RunGammaContrastBenchmark<device>(params);                                            \
     }
 
 // GPU benchmarks

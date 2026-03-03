@@ -34,13 +34,12 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
-    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
-    cv::ColorConversionCodes color_conversion_code =
-        roccvbench::GetParamValue<cv::ColorConversionCodes>(params, "color_conversion_code");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
+    cv::ColorConversionCodes code = roccvbench::GetParamValue<cv::ColorConversionCodes>(params, "code");
 
-    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, in_format);
-    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, outFormat);
 
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
@@ -48,19 +47,18 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::cvtColor(mats[i], outputs[i], color_conversion_code);
+                cv::cvtColor(mats[i], outputs[i], code);
             }
         },
         results.executionTime, runs, warmupRuns);
     return results;
 }
 
-#define DEFINE_CVT_COLOR_BENCHMARK(name, T, in_format, out_format, color_conversion_code)    \
-    BENCHMARK_P(CvtColor, name,                                                              \
-                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),            \
-                             BENCH_PARAM_STR("out_format", out_format, #out_format),         \
-                             BENCH_PARAM("color_conversion_code", color_conversion_code))) { \
-        return RunCvtColorBenchmark<T>(params);                                              \
+#define DEFINE_CVT_COLOR_BENCHMARK(name, T, inFormat, outFormat, code)                                          \
+    BENCHMARK_P(CvtColor, name,                                                                                 \
+                BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),                                  \
+                             BENCH_PARAM_STR("outFormat", outFormat, #outFormat), BENCH_PARAM("code", code))) { \
+        return RunCvtColorBenchmark<T>(params);                                                                 \
     }
 
 DEFINE_CVT_COLOR_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC1, cv::COLOR_RGB2GRAY);

@@ -34,12 +34,12 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
-    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
-    int flip_code = roccvbench::GetParamValue<int>(params, "flip_code");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
+    int flipType = roccvbench::GetParamValue<int>(params, "flipType");
 
-    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, in_format);
-    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, outFormat);
 
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
@@ -47,19 +47,19 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::flip(mats[i], outputs[i], flip_code);
+                cv::flip(mats[i], outputs[i], flipType);
             }
         },
         results.executionTime, runs, warmupRuns);
     return results;
 }
 
-#define DEFINE_FLIP_BENCHMARK(name, T, in_format, out_format, flip_code)                                             \
-    BENCHMARK_P(                                                                                                     \
-        Flip, name,                                                                                                  \
-        BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),                                            \
-                     BENCH_PARAM_STR("out_format", out_format, #out_format), BENCH_PARAM("flip_code", flip_code))) { \
-        return RunFlipBenchmark<T>(params);                                                                          \
+#define DEFINE_FLIP_BENCHMARK(name, T, inFormat, outFormat, flipType)                                           \
+    BENCHMARK_P(                                                                                                \
+        Flip, name,                                                                                             \
+        BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),                                          \
+                     BENCH_PARAM_STR("outFormat", outFormat, #outFormat), BENCH_PARAM("flipType", flipType))) { \
+        return RunFlipBenchmark<T>(params);                                                                     \
     }
 
 DEFINE_FLIP_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, -1);

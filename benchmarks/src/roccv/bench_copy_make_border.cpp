@@ -40,17 +40,17 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
-    eBorderType borderType = roccvbench::GetParamValue<eBorderType>(params, "border_type");
-    int top = roccvbench::GetParamValue<int>(params, "border_top");
-    int left = roccvbench::GetParamValue<int>(params, "border_left");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    eBorderType borderType = roccvbench::GetParamValue<eBorderType>(params, "border");
+    int top = roccvbench::GetParamValue<int>(params, "borderTop");
+    int left = roccvbench::GetParamValue<int>(params, "borderLeft");
 
     const float4 borderVal = make_float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(samples, {width + left * 2, height + top * 2}, out_format, DeviceType);
+        Tensor::CalcRequirements(samples, {width + left * 2, height + top * 2}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -78,12 +78,12 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
     return results;
 }
 
-#define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, device, in_format, out_format, border_type, border_top, border_left) \
-    BENCHMARK_P(CopyMakeBorder, name,                                                                                \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),             \
-                             BENCH_PARAM("border_type", border_type), BENCH_PARAM("border_top", border_top),         \
-                             BENCH_PARAM("border_left", border_left))) {                                             \
-        return RunCopyMakeBorderBenchmark<device>(params);                                                           \
+#define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, device, inFormat, outFormat, border, borderTop, borderLeft) \
+    BENCHMARK_P(CopyMakeBorder, name,                                                                       \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat),        \
+                             BENCH_PARAM("border", border), BENCH_PARAM("borderTop", borderTop),            \
+                             BENCH_PARAM("borderLeft", borderLeft))) {                                      \
+        return RunCopyMakeBorderBenchmark<device>(params);                                                  \
     }
 
 // GPU benchmarks

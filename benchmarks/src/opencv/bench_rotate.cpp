@@ -33,12 +33,12 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
-    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
     cv::RotateFlags rotate_flag = roccvbench::GetParamValue<cv::RotateFlags>(params, "angle");
 
-    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, in_format);
-    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, outFormat);
 
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
@@ -54,11 +54,11 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
     return results;
 }
 
-#define DEFINE_ROTATE_BENCHMARK(name, T, in_format, out_format, angle)                                               \
-    BENCHMARK_P(Rotate, name,                                                                                        \
-                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),                                    \
-                             BENCH_PARAM_STR("out_format", out_format, #out_format), BENCH_PARAM("angle", angle))) { \
-        return RunRotateBenchmark<T>(params);                                                                        \
+#define DEFINE_ROTATE_BENCHMARK(name, T, inFormat, outFormat, angle)                                              \
+    BENCHMARK_P(Rotate, name,                                                                                     \
+                BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),                                    \
+                             BENCH_PARAM_STR("outFormat", outFormat, #outFormat), BENCH_PARAM("angle", angle))) { \
+        return RunRotateBenchmark<T>(params);                                                                     \
     }
 
 DEFINE_ROTATE_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, cv::ROTATE_180);

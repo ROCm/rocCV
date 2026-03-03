@@ -40,14 +40,14 @@ static roccvbench::BenchmarkResults RunResizeBenchmark(roccvbench::BenchmarkPara
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
     eInterpolationType interpolation = roccvbench::GetParamValue<eInterpolationType>(params, "interpolation");
-    int scale_factor = roccvbench::GetParamValue<int>(params, "scale_factor");
+    int scale = roccvbench::GetParamValue<int>(params, "scale");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
     Tensor::Requirements outReqs =
-        Tensor::CalcRequirements(samples, {width * scale_factor, height * scale_factor}, out_format, DeviceType);
+        Tensor::CalcRequirements(samples, {width * scale, height * scale}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -74,12 +74,11 @@ static roccvbench::BenchmarkResults RunResizeBenchmark(roccvbench::BenchmarkPara
     return results;
 }
 
-#define DEFINE_RESIZE_BENCHMARK(name, device, in_format, out_format, interpolation, scale_factor)               \
-    BENCHMARK_P(                                                                                                \
-        Resize, name,                                                                                           \
-        BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),                \
-                     BENCH_PARAM("interpolation", interpolation), BENCH_PARAM("scale_factor", scale_factor))) { \
-        return RunResizeBenchmark<device>(params);                                                              \
+#define DEFINE_RESIZE_BENCHMARK(name, device, inFormat, outFormat, interpolation, scale)                  \
+    BENCHMARK_P(Resize, name,                                                                             \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat),      \
+                             BENCH_PARAM("interpolation", interpolation), BENCH_PARAM("scale", scale))) { \
+        return RunResizeBenchmark<device>(params);                                                        \
     }
 
 // GPU benchmarks

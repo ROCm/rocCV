@@ -363,6 +363,7 @@ int main(int argc, char** argv) {
                     runData.addValue("execution_time", result.executionTime);
                     runData.addValue("read_memory_bytes", result.readMemoryBytes);
                     runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
+                    runData.addValue("shape", std::format("{}x{}x{}", config.samples, config.height, config.width));
 
                     results.registerRun(runData);
                 }

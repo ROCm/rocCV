@@ -40,17 +40,17 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
     int diameter = roccvbench::GetParamValue<int>(params, "diameter");
-    float sigmaColor = roccvbench::GetParamValue<float>(params, "sigma_color");
-    float sigmaSpace = roccvbench::GetParamValue<float>(params, "sigma_space");
-    eBorderType borderType = roccvbench::GetParamValue<eBorderType>(params, "border_type");
+    float sigmaColor = roccvbench::GetParamValue<float>(params, "sigmaColor");
+    float sigmaSpace = roccvbench::GetParamValue<float>(params, "sigmaSpace");
+    eBorderType border = roccvbench::GetParamValue<eBorderType>(params, "border");
 
     float4 borderValue = make_float4(1.0f, 0.0f, 1.0f, 1.0f);
 
-    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
+    TensorRequirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    TensorRequirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -65,7 +65,7 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, diameter, sigmaColor, sigmaSpace, borderType, borderValue, DeviceType);
+            op(stream, input, output, diameter, sigmaColor, sigmaSpace, border, borderValue, DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }
@@ -77,13 +77,12 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
     return results;
 }
 
-#define DEFINE_BILATERAL_FILTER_BENCHMARK(name, device, in_format, out_format, diameter, sigmaColor, sigmaSpace, \
-                                          borderType)                                                            \
-    BENCHMARK_P(BilateralFilter, name,                                                                           \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format),         \
-                             BENCH_PARAM("diameter", diameter), BENCH_PARAM("sigma_color", sigmaColor),          \
-                             BENCH_PARAM("sigma_space", sigmaSpace), BENCH_PARAM("border_type", borderType))) {  \
-        return RunBilateralFilterBenchmark<device>(params);                                                      \
+#define DEFINE_BILATERAL_FILTER_BENCHMARK(name, device, inFormat, outFormat, diameter, sigmaColor, sigmaSpace, border) \
+    BENCHMARK_P(BilateralFilter, name,                                                                                 \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat),                   \
+                             BENCH_PARAM("diameter", diameter), BENCH_PARAM("sigmaColor", sigmaColor),                 \
+                             BENCH_PARAM("sigmaSpace", sigmaSpace), BENCH_PARAM("border", border))) {                  \
+        return RunBilateralFilterBenchmark<device>(params);                                                            \
     }
 
 // GPU benchmarks

@@ -33,14 +33,14 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
-    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
-    int border_type = roccvbench::GetParamValue<int>(params, "border_type");
-    int top = roccvbench::GetParamValue<int>(params, "border_top");
-    int left = roccvbench::GetParamValue<int>(params, "border_left");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
+    int border = roccvbench::GetParamValue<int>(params, "border");
+    int top = roccvbench::GetParamValue<int>(params, "borderTop");
+    int left = roccvbench::GetParamValue<int>(params, "borderLeft");
 
-    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, in_format);
-    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width + left * 2, height + top * 2, out_format);
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width + left * 2, height + top * 2, outFormat);
 
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
@@ -48,20 +48,20 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::copyMakeBorder(mats[i], outputs[i], top, top, left, left, border_type, 0);
+                cv::copyMakeBorder(mats[i], outputs[i], top, top, left, left, border, 0);
             }
         },
         results.executionTime, runs, warmupRuns);
 
     return results;
 }
-#define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, T, in_format, out_format, border_type, border_top, border_left) \
-    BENCHMARK_P(CopyMakeBorder, name,                                                                           \
-                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),                               \
-                             BENCH_PARAM_STR("out_format", out_format, #out_format),                            \
-                             BENCH_PARAM_STR("border_type", border_type, #border_type),                         \
-                             BENCH_PARAM("border_top", border_top), BENCH_PARAM("border_left", border_left))) { \
-        return RunCopyMakeBorderBenchmark<T>(params);                                                           \
+#define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, T, inFormat, outFormat, border, borderTop, borderLeft)                \
+    BENCHMARK_P(                                                                                                      \
+        CopyMakeBorder, name,                                                                                         \
+        BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),                                                \
+                     BENCH_PARAM_STR("outFormat", outFormat, #outFormat), BENCH_PARAM_STR("border", border, #border), \
+                     BENCH_PARAM("borderTop", borderTop), BENCH_PARAM("borderLeft", borderLeft))) {                   \
+        return RunCopyMakeBorderBenchmark<T>(params);                                                                 \
     }
 
 DEFINE_COPY_MAKE_BORDER_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, CV_HAL_BORDER_CONSTANT, 9, 9);

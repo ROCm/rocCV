@@ -34,15 +34,15 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
     int alpha_format = roccvbench::GetParamValue<int>(params, "alpha_format");
-    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
 
-    std::vector<cv::Mat> backgrounds = GenerateMats<T>(samples, width, height, in_format);
-    std::vector<cv::Mat> foregrounds = GenerateMats<T>(samples, width, height, in_format);
+    std::vector<cv::Mat> backgrounds = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> foregrounds = GenerateMats<T>(samples, width, height, inFormat);
     std::vector<cv::Mat> weights1 = GenerateMats<WeightType>(samples, width, height, alpha_format);
     std::vector<cv::Mat> weights2 = GenerateMats<WeightType>(samples, width, height, alpha_format);
-    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, outFormat);
 
     RegisterMemoryUsage(backgrounds, results.readMemoryBytes);
     RegisterMemoryUsage(foregrounds, results.readMemoryBytes);
@@ -60,12 +60,12 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     return results;
 }
 
-#define DEFINE_COMPOSITE_BENCHMARK(name, T, WeightType, in_format, alpha_format, out_format) \
-    BENCHMARK_P(Composite, name,                                                             \
-                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),            \
-                             BENCH_PARAM_STR("alpha_format", alpha_format, #alpha_format),   \
-                             BENCH_PARAM_STR("out_format", out_format, #out_format))) {      \
-        return RunCompositeBenchmark<T, WeightType>(params);                                 \
+#define DEFINE_COMPOSITE_BENCHMARK(name, T, WeightType, inFormat, alpha_format, outFormat) \
+    BENCHMARK_P(Composite, name,                                                           \
+                BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),             \
+                             BENCH_PARAM_STR("alpha_format", alpha_format, #alpha_format), \
+                             BENCH_PARAM_STR("outFormat", outFormat, #outFormat))) {       \
+        return RunCompositeBenchmark<T, WeightType>(params);                               \
     }
 
 DEFINE_COMPOSITE_BENCHMARK(OpenCV, uint8_t, float, CV_8UC3, CV_32F, CV_8UC3);

@@ -40,13 +40,12 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
-    eColorConversionCode conversionCode =
-        roccvbench::GetParamValue<eColorConversionCode>(params, "color_conversion_code");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    eColorConversionCode conversionCode = roccvbench::GetParamValue<eColorConversionCode>(params, "code");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -73,11 +72,11 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     return results;
 }
 
-#define DEFINE_CVT_COLOR_BENCHMARK(name, device, in_format, out_format, conversion_code)                 \
-    BENCHMARK_P(CvtColor, name,                                                                          \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("color_conversion_code", conversion_code))) {                   \
-        return RunCvtColorBenchmark<device>(params);                                                     \
+#define DEFINE_CVT_COLOR_BENCHMARK(name, device, inFormat, outFormat, code)                          \
+    BENCHMARK_P(CvtColor, name,                                                                      \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("code", code))) {                                           \
+        return RunCvtColorBenchmark<device>(params);                                                 \
     }
 
 // GPU benchmarks

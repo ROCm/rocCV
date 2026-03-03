@@ -40,16 +40,16 @@ static roccvbench::BenchmarkResults RunNormalizeBenchmark(roccvbench::BenchmarkP
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
     Tensor::Requirements paramTensorReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, in_format.channels()}),
+        TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, inFormat.channels()}),
         DataType(eDataType::DATA_TYPE_F32), DeviceType);
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
@@ -81,10 +81,10 @@ static roccvbench::BenchmarkResults RunNormalizeBenchmark(roccvbench::BenchmarkP
     return results;
 }
 
-#define DEFINE_NORMALIZE_BENCHMARK(name, device, in_format, out_format)                                     \
-    BENCHMARK_P(Normalize, name,                                                                            \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
-        return RunNormalizeBenchmark<device>(params);                                                       \
+#define DEFINE_NORMALIZE_BENCHMARK(name, device, inFormat, outFormat)                                   \
+    BENCHMARK_P(Normalize, name,                                                                        \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat))) { \
+        return RunNormalizeBenchmark<device>(params);                                                   \
     }
 
 // GPU benchmarks

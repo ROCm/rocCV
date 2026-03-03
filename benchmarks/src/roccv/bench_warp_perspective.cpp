@@ -41,11 +41,13 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    eInterpolationType interpolation = roccvbench::GetParamValue<eInterpolationType>(params, "interpolation");
+    eBorderType border = roccvbench::GetParamValue<eBorderType>(params, "border");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -62,8 +64,8 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, transformMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
-               eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), DeviceType);
+            op(stream, input, output, transformMatrix, false, interpolation, border,
+               make_float4(0.0f, 0.0f, 0.0f, 1.0f), DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }
@@ -75,16 +77,21 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
     return results;
 }
 
-#define DEFINE_WARP_PERSPECTIVE_BENCHMARK(name, device, in_format, out_format)                              \
+#define DEFINE_WARP_PERSPECTIVE_BENCHMARK(name, device, inFormat, outFormat, interpolation, border)         \
     BENCHMARK_P(WarpPerspective, name,                                                                      \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format))) { \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat),        \
+                             BENCH_PARAM("interpolation", interpolation), BENCH_PARAM("border", border))) { \
         return RunWarpPerspectiveBenchmark<device>(params);                                                 \
     }
 
 // GPU benchmarks
-DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
-DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8);
-DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
 
 // CPU benchmarks
-DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);

@@ -36,17 +36,17 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     roccvbench::BenchmarkResults results;
 
     // Get parameters
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
-    int32_t flipCode = roccvbench::GetParamValue<int32_t>(params, "flip_code");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    int32_t flipCode = roccvbench::GetParamValue<int32_t>(params, "flipType");
     int samples = roccvbench::GetParamValue<int>(params, "samples");
     int width = roccvbench::GetParamValue<int>(params, "width");
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, in_format, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -69,11 +69,11 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     return results;
 }
 
-#define DEFINE_FLIP_BENCHMARK(name, device, in_format, out_format, flipCode)                             \
-    BENCHMARK_P(Flip, name,                                                                              \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("flip_code", flipCode))) {                                      \
-        return RunFlipBenchmark<device>(params);                                                         \
+#define DEFINE_FLIP_BENCHMARK(name, device, inFormat, outFormat, flipType)                           \
+    BENCHMARK_P(Flip, name,                                                                          \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("flipType", flipType))) {                                   \
+        return RunFlipBenchmark<device>(params);                                                     \
     }
 
 // GPU benchmarks

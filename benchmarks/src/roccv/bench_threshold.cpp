@@ -40,12 +40,12 @@ static roccvbench::BenchmarkResults RunThresholdBenchmark(roccvbench::BenchmarkP
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    ImageFormat in_format = roccvbench::GetParamValue<ImageFormat>(params, "in_format");
-    ImageFormat out_format = roccvbench::GetParamValue<ImageFormat>(params, "out_format");
-    eThresholdType thresholdType = roccvbench::GetParamValue<eThresholdType>(params, "threshold_type");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    eThresholdType thresholdType = roccvbench::GetParamValue<eThresholdType>(params, "thresholdType");
 
-    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, in_format, DeviceType);
-    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, out_format, DeviceType);
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
     Tensor input(inReqs);
     Tensor output(outReqs);
 
@@ -81,11 +81,11 @@ static roccvbench::BenchmarkResults RunThresholdBenchmark(roccvbench::BenchmarkP
     return results;
 }
 
-#define DEFINE_THRESHOLD_BENCHMARK(name, device, in_format, out_format, thresholdType)                   \
-    BENCHMARK_P(Threshold, name,                                                                         \
-                BENCH_PARAMS(BENCH_PARAM("in_format", in_format), BENCH_PARAM("out_format", out_format), \
-                             BENCH_PARAM("threshold_type", thresholdType))) {                            \
-        return RunThresholdBenchmark<device>(params);                                                    \
+#define DEFINE_THRESHOLD_BENCHMARK(name, device, inFormat, outFormat, thresholdType)                 \
+    BENCHMARK_P(Threshold, name,                                                                     \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("thresholdType", thresholdType))) {                         \
+        return RunThresholdBenchmark<device>(params);                                                \
     }
 
 // GPU benchmarks

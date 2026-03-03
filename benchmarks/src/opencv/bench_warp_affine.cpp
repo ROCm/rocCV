@@ -34,11 +34,11 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     int height = roccvbench::GetParamValue<int>(params, "height");
     int runs = roccvbench::GetParamValue<int>(params, "runs");
     int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
-    int in_format = roccvbench::GetParamValue<int>(params, "in_format");
-    int out_format = roccvbench::GetParamValue<int>(params, "out_format");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
 
-    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, in_format);
-    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, out_format);
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, outFormat);
 
     std::vector<float> affineMatData = {1, 0, 0, 1, -1, 120};
     cv::Mat affineMat(2, 3, CV_32F, affineMatData.data());
@@ -58,11 +58,11 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     return results;
 }
 
-#define DEFINE_WARP_AFFINE_BENCHMARK(name, T, in_format, out_format)                    \
-    BENCHMARK_P(WarpAffine, name,                                                       \
-                BENCH_PARAMS(BENCH_PARAM_STR("in_format", in_format, #in_format),       \
-                             BENCH_PARAM_STR("out_format", out_format, #out_format))) { \
-        return RunWarpAffineBenchmark<T>(params);                                       \
+#define DEFINE_WARP_AFFINE_BENCHMARK(name, T, inFormat, outFormat)                   \
+    BENCHMARK_P(WarpAffine, name,                                                    \
+                BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),       \
+                             BENCH_PARAM_STR("outFormat", outFormat, #outFormat))) { \
+        return RunWarpAffineBenchmark<T>(params);                                    \
     }
 
 DEFINE_WARP_AFFINE_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3);
