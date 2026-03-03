@@ -26,9 +26,9 @@ THE SOFTWARE.
 
 #include "py_helpers.hpp"
 
-PyTensor PyOpWarpAffine::Execute(PyTensor& input, py::list xform, bool isInverted, const eInterpolationType interp,
-                                 const eBorderType borderMode, py::list borderValue,
-                                 std::optional<std::reference_wrapper<PyStream>> stream, const eDeviceType device) {
+PyTensor PyOpWarpAffine::Execute(PyTensor& input, py::list xform, bool isInverted, eInterpolationType interp,
+                                 eBorderType borderMode, py::list borderValue,
+                                 std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     auto inputTensor = input.getTensor();
     auto outputTensor = std::make_shared<roccv::Tensor>(inputTensor->shape(), inputTensor->dtype(), device);
@@ -51,8 +51,8 @@ PyTensor PyOpWarpAffine::Execute(PyTensor& input, py::list xform, bool isInverte
 }
 
 void PyOpWarpAffine::ExecuteInto(PyTensor& output, PyTensor& input, py::list xform, bool isInverted,
-                                 const eInterpolationType interp, const eBorderType borderMode, py::list borderValue,
-                                 std::optional<std::reference_wrapper<PyStream>> stream, const eDeviceType device) {
+                                 eInterpolationType interp, eBorderType borderMode, py::list borderValue,
+                                 std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
     if (xform.size() != 6) {

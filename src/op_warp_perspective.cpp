@@ -34,8 +34,8 @@ THE SOFTWARE.
 namespace roccv {
 template <typename T, eBorderType B, eInterpolationType I>
 void dispatch_warp_perspective_interp(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                      const PerspectiveTransform transMatrix, const T borderValue,
-                                      const eDeviceType device) {
+                                      PerspectiveTransform transMatrix, T borderValue,
+                                      eDeviceType device) {
     ArrayWrapper<float, 9> transform(transMatrix);
     ImageWrapper<T> outputWrapper(output);
     InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);
@@ -59,12 +59,12 @@ void dispatch_warp_perspective_interp(hipStream_t stream, const Tensor &input, c
 
 template <typename T, eBorderType B>
 void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                           const PerspectiveTransform transMatrix,
-                                           const eInterpolationType interpolation, const T borderValue,
-                                           const eDeviceType device) {
+                                           PerspectiveTransform transMatrix,
+                                           eInterpolationType interpolation, T borderValue,
+                                           eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor &, const Tensor &, const PerspectiveTransform, const T, const eDeviceType)>>
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor &, const Tensor &, PerspectiveTransform, T, eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST,   dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR,    dispatch_warp_perspective_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>},
@@ -81,11 +81,11 @@ void dispatch_warp_perspective_border_mode(hipStream_t stream, const Tensor &inp
 
 template <typename T>
 void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                     const PerspectiveTransform transMatrix, const eInterpolationType interpolation,
-                                     const eBorderType borderType, const float4 borderValue, const eDeviceType device) {
+                                     PerspectiveTransform transMatrix, eInterpolationType interpolation,
+                                     eBorderType borderType, float4 borderValue, eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const PerspectiveTransform, const eInterpolationType, T, const eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, PerspectiveTransform, eInterpolationType, T, eDeviceType)>>
         funcs = {
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_warp_perspective_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
@@ -104,9 +104,9 @@ void dispatch_warp_perspective_dtype(hipStream_t stream, const Tensor &input, co
 }
 
 void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                 const PerspectiveTransform transMatrix, bool isInverted,
-                                 const eInterpolationType interpolation, const eBorderType borderType,
-                                 const float4 borderValue, const eDeviceType device) const {
+                                 PerspectiveTransform transMatrix, bool isInverted,
+                                 eInterpolationType interpolation, eBorderType borderType,
+                                 float4 borderValue, eDeviceType device) const {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_S8, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32,
@@ -139,7 +139,7 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const PerspectiveTransform, const eInterpolationType, const eBorderType, const float4, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, PerspectiveTransform, eInterpolationType, eBorderType, float4, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  {dispatch_warp_perspective_dtype<uchar1>, 0, dispatch_warp_perspective_dtype<uchar3>, dispatch_warp_perspective_dtype<uchar4>}},
             {eDataType::DATA_TYPE_S8,  {dispatch_warp_perspective_dtype<char1>, 0, dispatch_warp_perspective_dtype<char3>, dispatch_warp_perspective_dtype<char4>}},

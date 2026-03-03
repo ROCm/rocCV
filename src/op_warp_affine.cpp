@@ -25,9 +25,9 @@ THE SOFTWARE.
 
 namespace roccv {
 
-void WarpAffine::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const AffineTransform xform,
-                            const bool isInverted, const eInterpolationType interp, const eBorderType borderMode,
-                            const float4 borderValue, const eDeviceType device) const {
+void WarpAffine::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, AffineTransform xform,
+                            bool isInverted, eInterpolationType interp, eBorderType borderMode,
+                            float4 borderValue, eDeviceType device) const {
     // An affine transformation is a subset of a perspective transform, so use the existing operator. All tensor
     // validation is performed in the WarpPerspective operator as well.
 

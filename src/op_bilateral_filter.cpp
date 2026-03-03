@@ -42,8 +42,8 @@ BilateralFilter::~BilateralFilter() {}
 
 template <typename T, eBorderType B>
 void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
-                                           float sigmaColor, float sigmaSpace, const T borderValue,
-                                           const eDeviceType device) {
+                                           float sigmaColor, float sigmaSpace, T borderValue,
+                                           eDeviceType device) {
     BorderWrapper<T, B> inputWrapper(input, borderValue);
     ImageWrapper<T> outputWrapper(output);
 
@@ -114,10 +114,10 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
 template <typename T>
 void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
                                      float sigmaColor, float sigmaSpace, eBorderType borderMode,
-                                     const float4 borderValue, const eDeviceType device) {
+                                     float4 borderValue, eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, const eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, eDeviceType)>>
         funcs = {
             {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
@@ -136,8 +136,8 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
 }
 
 void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                                 int diameter, float sigmaColor, float sigmaSpace, const eBorderType borderMode,
-                                 const float4 borderValue, const eDeviceType device) {
+                                 int diameter, float sigmaColor, float sigmaSpace, eBorderType borderMode,
+                                 float4 borderValue, eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -165,7 +165,7 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     // clang-format off
     static const std::unordered_map<
         eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float,
-                                                 eBorderType, const float4, const eDeviceType)>, 4>>
+                                                 eBorderType, float4, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>}},
             {eDataType::DATA_TYPE_S8, {dispatch_bilateral_filter_dtype<char1>, 0, dispatch_bilateral_filter_dtype<char3>, dispatch_bilateral_filter_dtype<char4>}},

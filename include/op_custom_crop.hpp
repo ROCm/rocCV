@@ -82,7 +82,7 @@ class CustomCrop final : public IOperator {
      * output tensor's images.
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
-    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Box_t cropRect,
-                    const eDeviceType device = eDeviceType::GPU) const;
+    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, Box_t cropRect,
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

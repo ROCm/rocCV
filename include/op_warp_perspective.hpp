@@ -74,8 +74,8 @@ class WarpPerspective final : public IOperator {
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                    const PerspectiveTransform transMatrix, bool isInverted, const eInterpolationType interpolation,
-                    const eBorderType borderType, const float4 borderValue,
-                    const eDeviceType device = eDeviceType::GPU) const;
+                    PerspectiveTransform transMatrix, bool isInverted, eInterpolationType interpolation,
+                    eBorderType borderType, float4 borderValue,
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

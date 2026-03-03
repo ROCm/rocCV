@@ -84,8 +84,8 @@ class Rotate final : public IOperator {
      * images.
      * @param[in] device The device to run this operation on. (Default: GPU)
      */
-    void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output, const double angle_deg,
-                    const double2 shift, const eInterpolationType interpolation,
-                    const eDeviceType device = eDeviceType::GPU) const;
+    void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output, double angle_deg,
+                    double2 shift, eInterpolationType interpolation,
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

@@ -64,10 +64,9 @@ class Composite final : public IOperator {
      *       Supported TensorLayout(s): [NHWC, HWC]
      *                        Channels: [3, 4]
      *       Supported DataTypes(s):    [U8, F32]
-     *       Notes:                     Must be the same layout as the foreground/background/mask tensor. If 4 channels are selected,
-     *                                  an alpha channel will be created with its value at 100%. Any of the supported datatypes can
-     *                                  be used. This will convert the foreground/background images into the output datatype if they
-     *                                  differ.
+     *       Notes:                     Must be the same layout as the foreground/background/mask tensor. If 4 channels
+     * are selected, an alpha channel will be created with its value at 100%. Any of the supported datatypes can be
+     * used. This will convert the foreground/background images into the output datatype if they differ.
      *
      * Input/Output dependency:
      *
