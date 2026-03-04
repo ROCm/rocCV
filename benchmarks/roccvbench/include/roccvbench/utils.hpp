@@ -23,6 +23,7 @@
 
 #include <chrono>
 #include <random>
+#include <stdexcept>
 #include <vector>
 
 #include "structs.hpp"

@@ -338,11 +338,11 @@ int main(int argc, char** argv) {
                     roccvbench::BenchmarkParamsList params = benchmark.params;
 
                     // Inject config parameters into params
-                    params.push_back(roccvbench::BenchmarkParam("samples", config.samples));
-                    params.push_back(roccvbench::BenchmarkParam("height", config.height));
-                    params.push_back(roccvbench::BenchmarkParam("width", config.width));
-                    params.push_back(roccvbench::BenchmarkParam("runs", config.runs));
-                    params.push_back(roccvbench::BenchmarkParam("warmupRuns", config.warmupRuns));
+                    params.push_back(roccvbench::BenchmarkParam{"samples", config.samples});
+                    params.push_back(roccvbench::BenchmarkParam{"height", config.height});
+                    params.push_back(roccvbench::BenchmarkParam{"width", config.width});
+                    params.push_back(roccvbench::BenchmarkParam{"runs", config.runs});
+                    params.push_back(roccvbench::BenchmarkParam{"warmupRuns", config.warmupRuns});
 
                     auto result = benchmark.func(params);
 
