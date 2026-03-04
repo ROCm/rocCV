@@ -33,7 +33,6 @@ using namespace roccv;
 
 BENCHMARK(WarpAffine, GPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
@@ -43,6 +42,9 @@ BENCHMARK(WarpAffine, GPU) {
     AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
 
     FillTensor(input);
+
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     WarpAffine op;
     hipStream_t stream;
@@ -54,7 +56,7 @@ BENCHMARK(WarpAffine, GPU) {
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f));
             HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
@@ -63,7 +65,6 @@ BENCHMARK(WarpAffine, GPU) {
 
 BENCHMARK(WarpAffine, CPU) {
     roccvbench::BenchmarkResults results;
-    results.executionTime = 0.0f;
 
     TensorRequirements reqs = Tensor::CalcRequirements(
         config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
@@ -75,13 +76,16 @@ BENCHMARK(WarpAffine, CPU) {
 
     FillTensor(input);
 
+    RegisterMemoryUsage(input, results.readMemoryBytes);
+    RegisterMemoryUsage(output, results.writtenMemoryBytes);
+
     WarpAffine op;
     ROCCV_BENCH_RECORD_BLOCK(
         {
             op(nullptr, input, output, affineMatrix, false, eInterpolationType::INTERP_TYPE_LINEAR,
                eBorderType::BORDER_TYPE_CONSTANT, make_float4(0.0f, 0.0f, 0.0f, 1.0f), eDeviceType::CPU);
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

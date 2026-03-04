@@ -29,3 +29,13 @@
  * @param tensor The tensor to fill with random values.
  */
 extern void FillTensor(const roccv::Tensor& tensor);
+
+/**
+ * @brief Registers the memory usage of a tensor.
+ *
+ * @param tensor The tensor to register the memory usage of.
+ * @param memoryUsage The memory usage to register.
+ */
+inline void RegisterMemoryUsage(const roccv::Tensor& tensor, size_t& memoryUsage) {
+    memoryUsage += tensor.shape().size() * tensor.dtype().size();
+}

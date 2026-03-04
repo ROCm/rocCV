@@ -39,8 +39,8 @@ __device__ __host__ T ScalarSaturateCast(U v) {
         // Any float -> any integral
         return static_cast<T>(std::clamp<U>(std::round(v), static_cast<U>(std::numeric_limits<T>::min()),
                                             static_cast<U>(std::numeric_limits<T>::max())));
-    } else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> && std::is_signed_v<T> &&
-                         smallToBig) {
+    } else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> &&
+                         std::is_unsigned_v<T> && smallToBig) {
         // Any integral signed -> Any integral unsigned, small -> big or equal
         return v <= 0 ? 0 : static_cast<T>(v);
     } else if constexpr (std::is_integral_v<U> && std::is_integral_v<T> &&
@@ -61,7 +61,7 @@ __device__ __host__ T ScalarSaturateCast(U v) {
         // Any integral signed -> Any integral unsigned, big -> small
         return v <= static_cast<U>(std::numeric_limits<T>::min())
                    ? std::numeric_limits<T>::min()
-                   : (v >= static_cast<U>(std::numeric_limits<T>::max()) ? std::numeric_limits<T>::max
+                   : (v >= static_cast<U>(std::numeric_limits<T>::max()) ? std::numeric_limits<T>::max()
                                                                          : static_cast<T>(v));
     } else {
         // All other cases fall into this

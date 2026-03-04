@@ -28,16 +28,18 @@ BENCHMARK(Rotate, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
+    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
 
-    cv::Mat outMat(config.height, config.width, CV_8UC3);
+    RegisterMemoryUsage(mats, results.readMemoryBytes);
+    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            for (const auto& mat : mats) {
-                cv::rotate(mat, outMat, cv::ROTATE_180);
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::rotate(mats[i], outputs[i], cv::ROTATE_180);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

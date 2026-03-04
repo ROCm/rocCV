@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -22,11 +22,14 @@
 #include <core/hip_assert.h>
 #include <hip/hip_runtime.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <map>
 #include <nlohmann/json.hpp>
 #include <roccvbench/registry.hpp>
+#include <roccvbench/results.hpp>
+#include <roccvbench/serializers.hpp>
 #include <thread>
 
 /**
@@ -79,11 +82,11 @@ std::vector<roccvbench::BenchmarkConfig> loadConfig(const std::string& filepath)
 
     for (auto benchParams : data["params"]) {
         roccvbench::BenchmarkConfig config;
-        config.samples = benchParams["samples"];
-        config.height = benchParams["height"];
-        config.width = benchParams["width"];
-        config.runs = benchParams["runs"];
-
+        config.samples = benchParams.value("samples", 1);
+        config.height = benchParams.value("height", 1080);
+        config.width = benchParams.value("width", 1920);
+        config.runs = benchParams.value("runs", 5);
+        config.warmupRuns = benchParams.value("warmup_runs", 5);
         result.push_back(config);
     }
 
@@ -102,8 +105,8 @@ void printHelp(const char* programName) {
     std::cout << "Required Arguments:\n";
     std::cout << "  --config, -c:                   The JSON configuration file to run the benchmarks.\n";
     std::cout << "Optional Arguments:\n";
-    std::cout << "  --output, -o:                   The output JSON filepath for benchmark results. Defaults to\n";
-    std::cout << "                                  roccv_bench_results.json.\n";
+    std::cout << "  --output, -o:                   The output filepath for benchmark results. Defaults to\n";
+    std::cout << "                                  roccv_bench_results.json. Supported file extensions: .json, .csv\n";
     std::cout << "Options:\n";
     std::cout << "  --help, -h:                     Displays this help message.\n";
     std::cout << "  --list, -l:                     Lists the available benchmark categories and exits the program.\n";
@@ -111,6 +114,8 @@ void printHelp(const char* programName) {
     std::cout << "                                  For example: --select Rotate,Flip\n";
     std::cout << "  --exclude, -e <cat1,cat2,...>:  Excludes categories from the benchmark. Must be a comma separated list.\n";
     std::cout << "                                  For example: --exclude Rotate,Flip\n";
+    std::cout << "  --types, -t <t1,t2,...>:        Selects benchmark types to run for each category. Must be a comma separated list.\n";
+    std::cout << "                                  For example: --types CPU,GPU\n";
     std::cout << "Examples:\n";
     std::cout << "  1. Run all benchmarks using 'config.json', save results to 'results.json'\n";
     std::cout << "      " << programName << " --config config.json --output results.json\n";
@@ -145,6 +150,7 @@ int main(int argc, char** argv) {
     std::string outputFilepath = "roccv_bench_results.json";
     std::vector<std::string> selectedCategories;
     std::vector<std::string> excludedCategories;
+    std::vector<std::string> selectedTypes;
 
     // Collect all available benchmark categories
     std::vector<std::string> availableCategories;
@@ -223,6 +229,15 @@ int main(int argc, char** argv) {
             }
         }
 
+        else if (arg == "-t" || arg == "--types") {
+            if (i + 1 < argc) {
+                selectedTypes = splitStringByComma(argv[++i]);
+            } else {
+                std::cerr << "Error: --types requires a value." << std::endl;
+                return EXIT_FAILURE;
+            }
+        }
+
         else {
             std::cerr << "Error: Unrecognized argument: " << arg << std::endl;
             return EXIT_FAILURE;
@@ -236,6 +251,18 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
+    // Create serializer based on the output file extension
+    std::filesystem::path outputPath(outputFilepath);
+    std::unique_ptr<roccvbench::IBenchmarkSerializer> serializer;
+    if (outputPath.extension() == ".json") {
+        serializer = std::make_unique<roccvbench::JsonBenchmarkSerializer>();
+    } else if (outputPath.extension() == ".csv") {
+        serializer = std::make_unique<roccvbench::CsvBenchmarkSerializer>();
+    } else {
+        std::cerr << "Error: Unsupported output file extension: " << outputPath.extension() << std::endl;
+        return EXIT_FAILURE;
+    }
+
     // Load benchmark configuration file
     std::vector<roccvbench::BenchmarkConfig> configs = loadConfig(configFilepath);
 
@@ -245,12 +272,11 @@ int main(int argc, char** argv) {
     hipDeviceProp_t props;
     HIP_VALIDATE_NO_ERRORS(hipGetDeviceProperties(&props, device_id));
 
-    nlohmann::json resultsJson;
+    roccvbench::Results results;
 
-    // Write device information to output JSON
-    resultsJson["device_info"]["gpu"]["name"] = props.name;
-    resultsJson["device_info"]["cpu"]["name"] = getCPUName();
-    resultsJson["device_info"]["cpu"]["threads"] = std::thread::hardware_concurrency();
+    results.setMetadata({{"gpu", props.name},
+                         {"cpu", getCPUName()},
+                         {"cpu_threads", static_cast<size_t>(std::thread::hardware_concurrency())}});
 
     // Determine the final list of categories to run and store it in selectedCategories.
 
@@ -295,6 +321,11 @@ int main(int argc, char** argv) {
             // Iterate through each benchmark in the category
             for (const auto& benchmark :
                  roccvbench::BenchmarkRegistry::instance().getBenchmarks().at(selectedCategory)) {
+                // If --types was used, only run benchmarks that are in the selected types.
+                if (!selectedTypes.empty() &&
+                    std::find(selectedTypes.begin(), selectedTypes.end(), benchmark.name) == selectedTypes.end()) {
+                    continue;
+                }
                 std::cout << "Running benchmark " << benchmark.category << "::" << benchmark.name << std::endl;
 
                 nlohmann::json runResultsJson;
@@ -303,19 +334,25 @@ int main(int argc, char** argv) {
                 // Iterate through each benchmark configuration
                 for (auto config : configs) {
                     std::cout << "\tConfig [samples=" << config.samples << ", height=" << config.height
-                              << ", width=" << config.width << ", runs=" << config.runs << "]" << std::endl;
-                    auto result = benchmark.func(config);
+                              << ", width=" << config.width << ", runs=" << config.runs
+                              << ", warmupRuns=" << config.warmupRuns << "]" << std::endl;
+                    roccvbench::RunData runData;
+                    auto result = benchmark.func(config, runData);
 
-                    // Write run results to output JSON
-                    runResultsJson["width"].push_back(config.width);
-                    runResultsJson["height"].push_back(config.height);
-                    runResultsJson["runs"].push_back(config.runs);
-                    runResultsJson["execution_time"].push_back(result.executionTime);
-                    runResultsJson["samples"].push_back(config.samples);
+                    runData.addValue("name", benchmark.name);
+                    runData.addValue("category", benchmark.category);
+                    runData.addValue("width", config.width);
+                    runData.addValue("height", config.height);
+                    runData.addValue("runs", config.runs);
+                    runData.addValue("execution_time", result.executionTime);
+                    runData.addValue("samples", config.samples);
+                    runData.addValue("read_memory_bytes", result.readMemoryBytes);
+                    runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
+                    runData.addValue("warmup_runs", config.warmupRuns);
+
+                    results.registerRun(runData);
                 }
                 std::cout << std::endl;
-
-                resultsJson["results"][benchmark.category].push_back(runResultsJson);
             }
         }
     } catch (roccv::Exception e) {
@@ -325,15 +362,12 @@ int main(int argc, char** argv) {
 
     // Write benchmark results to disk
     std::filesystem::path resultPath(outputFilepath);
-    std::ofstream resultFile(resultPath);
-
-    if (!resultFile.is_open()) {
-        std::cerr << "Unable to open " << resultPath << " for writing results" << std::endl;
+    try {
+        serializer->serialize(results, resultPath);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Failed to serialize benchmark results: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
-
-    resultFile << std::setw(4) << resultsJson << std::endl;
-    resultFile.close();
 
     std::cout << "Wrote benchmark results to " << std::filesystem::absolute(resultPath) << std::endl;
 

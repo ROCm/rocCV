@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -86,6 +86,36 @@ void TestTensorShapeCorrectness() {
         TensorShape shape2({1, 2, 3}, "NWC");
         shape2 = shape1;
         EXPECT_TRUE(shape1 == shape2);
+    }
+
+    // Test TensorShape index operator
+    {
+        TensorShape shape({1, 2, 3, 4}, "NHWC");
+        EXPECT_EQ(shape["N"], 1);
+        EXPECT_EQ(shape["H"], 2);
+        EXPECT_EQ(shape["W"], 3);
+        EXPECT_EQ(shape["C"], 4);
+        EXPECT_EXCEPTION(shape["X"], eStatusType::OUT_OF_BOUNDS);
+    }
+
+    // Test TensorShape permute operator
+    {
+        TensorShape shape({1, 2, 3, 4}, "NHWC");
+        TensorShape permutedShape = shape.permute(TensorLayout(TENSOR_LAYOUT_NCHW));
+        EXPECT_TRUE(permutedShape.layout() == eTensorLayout::TENSOR_LAYOUT_NCHW);
+        EXPECT_EQ(permutedShape["N"], 1);
+        EXPECT_EQ(permutedShape["C"], 4);
+        EXPECT_EQ(permutedShape["H"], 2);
+        EXPECT_EQ(permutedShape["W"], 3);
+    }
+
+    // Test TensorShape containsDim operator
+    {
+        TensorShape shape({1, 2, 3}, "HWC");
+        EXPECT_TRUE(shape.containsDim("H"));
+        EXPECT_TRUE(shape.containsDim("W"));
+        EXPECT_TRUE(shape.containsDim("C"));
+        EXPECT_FALSE(shape.containsDim("N"));
     }
 }
 }  // namespace

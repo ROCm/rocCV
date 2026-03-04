@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,7 +24,7 @@
 
 #include "opencv_bench_helpers.hpp"
 
-BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
+BENCHMARK(CopyMakeBorderConstant, OpenCV) {
     roccvbench::BenchmarkResults results;
 
     const int top = 9;
@@ -33,15 +33,19 @@ BENCHMARK(CopyMakeBorder, OpenCV_Constant) {
     const int right = 9;
 
     std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    cv::Mat outMat(config.height + top + bottom, config.width + left + right, CV_8UC3);
+    std::vector<cv::Mat> outputs =
+        CreateOutputMats(config.samples, config.width + left + right, config.height + top + bottom, CV_8UC3);
+
+    RegisterMemoryUsage(mats, results.readMemoryBytes);
+    RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            for (const auto& mat : mats) {
-                cv::copyMakeBorder(mat, outMat, top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
+            for (size_t i = 0; i < mats.size(); i++) {
+                cv::copyMakeBorder(mats[i], outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
             }
         },
-        results.executionTime, config.runs);
+        results.executionTime, config.runs, config.warmupRuns);
 
     return results;
 }

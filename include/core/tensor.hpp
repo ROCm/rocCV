@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -142,6 +142,14 @@ class Tensor {
      * @return The size of the specified dimension.
      */
     int64_t shape(int d) const &;
+
+    /**
+     * @brief Retrieves a specific dimension size from the tensor shape using a character representing the dimension.
+     *
+     * @param[in] dimension The dimension to get the size of. This is a character representing the dimension.
+     * @return The size of the specified dimension.
+     */
+    int64_t shape(std::string_view dimension) const &;
 
     /**
      * @brief Returns the data type of the tensor

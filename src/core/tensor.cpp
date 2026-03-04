@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -155,6 +155,8 @@ eDeviceType Tensor::device() const { return m_requirements.device; }
 TensorShape Tensor::shape() const { return TensorShape(m_requirements.shape, m_requirements.rank, layout()); }
 
 int64_t Tensor::shape(int d) const& { return shape()[d]; }
+
+int64_t Tensor::shape(std::string_view dimension) const& { return shape()[dimension]; }
 
 DataType Tensor::dtype() const { return DataType(m_requirements.dtype); }
 

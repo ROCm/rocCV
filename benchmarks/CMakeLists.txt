@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c)  - 2025 Advanced Micro Devices, Inc.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,16 +34,32 @@ endif()
 
 project(roccv_bench)
 
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor" "${CMAKE_CURRENT_SOURCE_DIR}/roccvbench/include")
+add_subdirectory(roccvbench)
+
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
+set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccvbench-utils)
 
 # Include roccv benchmark units
-if(BUILD_FROM_SOURCE)
-    message("-- ${Green}${PROJECT_NAME} -- Found rocCV")
+set(BUILD_ROCCV_BENCHMARKS ON)
+if (NOT BUILD_FROM_SOURCE)
+    message("-- ${Yellow}${PROJECT_NAME} -- Benchmarks cannot be built as a standalone project. rocCV benchmarks will not be included in the benchmarks${ColorReset}")
+    set(BUILD_ROCCV_BENCHMARKS OFF)
+endif()
+
+find_package(rocrand QUIET)
+if(NOT rocrand_FOUND)
+    message("-- ${Yellow}${PROJECT_NAME} -- rocRAND not found.${ColorReset}")
+    set(BUILD_ROCCV_BENCHMARKS OFF)
+else()
+    message("-- ${Green}${PROJECT_NAME} -- Found rocRAND version ${rocrand_VERSION}.${ColorReset}")
+endif()
+
+if(BUILD_ROCCV_BENCHMARKS)
     set(BENCHMARK_SOURCES ${BENCHMARK_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv/*.cpp")
     set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/src/roccv" "${ROCCV_SOURCE_DIR}/include")
-    set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv)
+    set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccv roc::rocrand)
 else()
-    message("-- ${Yellow}${PROJECT_NAME} -- Could not find rocCV, it will not be included in the benchmarks${ColorReset}")
+    message("-- ${Yellow}${PROJECT_NAME} -- Missing required dependencies for rocCV benchmarks. rocCV benchmarks will not be included in the benchmarks${ColorReset}")
 endif()
 
 # Include OpenCV benchmark units
