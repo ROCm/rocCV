@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include "operator_types.h"
 
 namespace roccv {
-void GetRotationMatrix(const double angleDeg, const double2 shift, double *mat) {
+void GetRotationMatrix(double angleDeg, double2 shift, double *mat) {
     double angleRad = angleDeg * (M_PI / 180.0);
     mat[0] = cos(angleRad);
     mat[1] = sin(angleRad);
@@ -44,8 +44,8 @@ void GetRotationMatrix(const double angleDeg, const double2 shift, double *mat) 
 }
 
 template <typename T, eInterpolationType InterpType>
-void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tensor &output, const double angleDeg,
-                            const double2 shift, const eDeviceType device) {
+void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
+                            double2 shift, eDeviceType device) {
     // Get inverted affine matrix for rotation
     double mat[6];
     GetRotationMatrix(angleDeg, shift, mat);
@@ -74,12 +74,12 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
 }
 
 template <typename T>
-void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor &output, const double angleDeg,
-                          const double2 shift, const eInterpolationType interpolation, const eDeviceType device) {
+void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
+                          double2 shift, eInterpolationType interpolation, eDeviceType device) {
     // clang-format off
     static const std::unordered_map<eInterpolationType,
-                                    std::function<void(hipStream_t, const Tensor &, const Tensor &, const double,
-                                                       const double2, const eDeviceType)>>
+                                    std::function<void(hipStream_t, const Tensor &, const Tensor &, double,
+                                                       double2, eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_rotate_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_rotate_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
@@ -94,8 +94,8 @@ void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor 
     func(stream, input, output, angleDeg, shift, device);
 }
 
-void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const double angleDeg,
-                        const double2 shift, const eInterpolationType interpolation, const eDeviceType device) const {
+void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
+                        double2 shift, eInterpolationType interpolation, eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,
@@ -110,8 +110,8 @@ void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
 
     // clang-format off
     static const std::unordered_map<
-        eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const double,
-                                                 const double2, const eInterpolationType, const eDeviceType)>,
+        eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, double,
+                                                 double2, eInterpolationType, eDeviceType)>,
                               4>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  {dispatch_rotate_type<uchar1>, nullptr, dispatch_rotate_type<uchar3>, dispatch_rotate_type<uchar4>}},

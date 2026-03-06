@@ -38,7 +38,7 @@ namespace roccv {
  */
 template <typename T, eBorderType BorderMode>
 void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,
-                                           int32_t left, T border_value, const eDeviceType device) {
+                                           int32_t left, T border_value, eDeviceType device) {
     BorderWrapper<T, BorderMode> in_desc(input, border_value);
     ImageWrapper<T> out_desc(output);
 
@@ -61,10 +61,10 @@ void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& inp
  */
 template <typename T>
 void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top, int32_t left,
-                               eBorderType border_mode, float4 border_value, const eDeviceType device) {
+                               eBorderType border_mode, float4 border_value, eDeviceType device) {
     // clang-format off
     // Maps copy_make_border dispatchers to a given border type.
-    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, T, const eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, T, eDeviceType)>>
     funcs = {
         {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
         {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_copy_make_border_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
@@ -84,7 +84,7 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
 
 void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,
                                 int32_t left, eBorderType border_mode, float4 border_value,
-                                const eDeviceType device) const {
+                                eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,
@@ -106,7 +106,7 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
 
     // clang-format off
     // Maps kernel dispatchers according to the underlying data type and number of channels.
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, eBorderType, float4, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, eBorderType, float4, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  {dispatch_copy_make_border<uchar1>,   0,  dispatch_copy_make_border<uchar3>,  dispatch_copy_make_border<uchar4>}},
             {eDataType::DATA_TYPE_S8,  {dispatch_copy_make_border<char1>,    0,  dispatch_copy_make_border<char3>,   dispatch_copy_make_border<char4>}},

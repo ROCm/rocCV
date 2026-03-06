@@ -80,7 +80,7 @@ void GammaContrast::operator()(hipStream_t stream, const Tensor &input, const Te
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, float, const eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, float, eDeviceType)>, 4>>
         funcs = 
         {
             {eDataType::DATA_TYPE_U8, {dispatch_gamma_contrast_dtype<uchar1>, 0, dispatch_gamma_contrast_dtype<uchar3>, dispatch_gamma_contrast_dtype<uchar4>}},

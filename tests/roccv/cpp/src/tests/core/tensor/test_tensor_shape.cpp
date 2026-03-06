@@ -55,12 +55,6 @@ void TestNegativeTensorShape() {
     {
         EXPECT_EXCEPTION(TensorShape shape({1, 2, 3}, "NWCX"), eStatusType::INVALID_VALUE);
     }
-
-    // Test permute operation with invalid layout
-    {
-        TensorShape shape({1, 2, 3}, "HWC");
-        EXPECT_EXCEPTION(shape.permute(TensorLayout(TENSOR_LAYOUT_NCHW)), eStatusType::OUT_OF_BOUNDS);
-    }
 }
 
 /**

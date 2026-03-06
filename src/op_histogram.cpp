@@ -41,7 +41,7 @@ Histogram::~Histogram() {}
 template <typename T>
 void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
                               std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
-                              const eDeviceType device) {
+                              eDeviceType device) {
     ImageWrapper<uchar1> inputWrapper(input);
 
     const auto o_height = histogram.shape()[histogram.shape().layout().height_index()];
@@ -125,7 +125,7 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
 
 void Histogram::operator()(hipStream_t stream, const Tensor& input,
                            std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
-                           const eDeviceType device) {
+                           eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(histogram, device);
@@ -140,7 +140,7 @@ void Histogram::operator()(hipStream_t stream, const Tensor& input,
 
     // Create kernel dispatching table based on histogram datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, std::optional<std::reference_wrapper<const Tensor>>, const Tensor&, const eDeviceType)>, 1>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, std::optional<std::reference_wrapper<const Tensor>>, const Tensor&, eDeviceType)>, 1>>
         funcs = {
             {eDataType::DATA_TYPE_U32, {dispatch_histogram_dtype<uint>}},
             {eDataType::DATA_TYPE_S32, {dispatch_histogram_dtype<int>}}

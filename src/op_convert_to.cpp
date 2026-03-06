@@ -36,8 +36,8 @@ THE SOFTWARE.
 namespace roccv {
 
 template <typename SRC_DT, typename DST_DT, int NC>
-void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const Tensor &output, const double alpha,
-                                  const double beta, const eDeviceType device) {
+void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const Tensor &output, double alpha,
+                                  double beta, eDeviceType device) {
     using SRC_DT_NC = detail::MakeType<SRC_DT, NC>;
     using DST_DT_NC = detail::MakeType<DST_DT, NC>;
 
@@ -69,12 +69,12 @@ void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const
 }
 
 template <typename SRC_DT, typename DST_DT>
-void dispatch_convert_to_output_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const double alpha,
-                                      const double beta, const eDeviceType device) {
+void dispatch_convert_to_output_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, double alpha,
+                                      double beta, eDeviceType device) {
     int64_t channels = output.shape(output.layout().channels_index());
     // Select kernel dispatcher based on number of channels.
     // clang-format off
-    static const std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const double, const double, const eDeviceType)>, 4>
+    static const std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>, 4>
         funcs = {dispatch_convert_to_channels<SRC_DT, DST_DT, 1>, dispatch_convert_to_channels<SRC_DT, DST_DT, 2>, dispatch_convert_to_channels<SRC_DT, DST_DT, 3>, dispatch_convert_to_channels<SRC_DT, DST_DT, 4>};
 
     // clang-format on
@@ -85,13 +85,13 @@ void dispatch_convert_to_output_dtype(hipStream_t stream, const Tensor &input, c
 }
 
 template <typename SRC_DT>
-void dispatch_convert_to_input_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const double alpha,
-                                     const double beta, const eDeviceType device) {
+void dispatch_convert_to_input_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, double alpha,
+                                     double beta, eDeviceType device) {
     eDataType output_dtype = output.dtype().etype();
 
     // Select kernel dispatcher based on a base input datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, const double, const double, const eDeviceType)>>
+    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>>
         funcs = {
             {eDataType::DATA_TYPE_U8, dispatch_convert_to_output_dtype<SRC_DT, uchar>},
             {eDataType::DATA_TYPE_S8,  dispatch_convert_to_output_dtype<SRC_DT, signed char>},
@@ -108,7 +108,7 @@ void dispatch_convert_to_input_dtype(hipStream_t stream, const Tensor &input, co
 }
 
 void ConvertTo::operator()(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                const double alpha, const double beta, const eDeviceType device) const {
+                                double alpha, double beta, eDeviceType device) const {
     
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
@@ -133,7 +133,7 @@ void ConvertTo::operator()(hipStream_t stream, const Tensor &input, const Tensor
 
     // Select kernel dispatcher based on a base input datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, const double, const double, const eDeviceType)>>
+    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>>
         funcs = {
             {eDataType::DATA_TYPE_U8, dispatch_convert_to_input_dtype<uchar>},
             {eDataType::DATA_TYPE_S8,  dispatch_convert_to_input_dtype<signed char>},

@@ -37,7 +37,7 @@ THE SOFTWARE.
 namespace roccv {
 
 template <typename T, eAxis FlipType>
-void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device) {
+void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
@@ -59,7 +59,7 @@ void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& o
 
 template <typename T>
 void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t flipCode,
-                         const eDeviceType device) {
+                         eDeviceType device) {
     // Determine type of flip based on the given flipCode
     eAxis flipType;
     if (flipCode == 0) {
@@ -72,7 +72,7 @@ void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& 
 
     // Dispatch proper kernel based on provided flip type.
     std::unordered_map<eAxis, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,
-                                                 const eDeviceType device)>>
+                                                 eDeviceType device)>>
         funcs = {{eAxis::X, dispatch_flip_axis<T, eAxis::X>},
                  {eAxis::Y, dispatch_flip_axis<T, eAxis::Y>},
                  {eAxis::BOTH, dispatch_flip_axis<T, eAxis::BOTH>}};
@@ -82,7 +82,7 @@ void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& 
 }
 
 void Flip::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t flipCode,
-                      const eDeviceType device) const {
+                      eDeviceType device) const {
     // Tensor validation
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S32, DATA_TYPE_F32);
@@ -97,7 +97,7 @@ void Flip::operator()(hipStream_t stream, const Tensor& input, const Tensor& out
     // clang-format off
     static const std::unordered_map<
     eDataType, std::array<std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t flipCode,
-        const eDeviceType device)>, 4>>
+        eDeviceType device)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_flip_dtype<uchar1>, 0, dispatch_flip_dtype<uchar3>, dispatch_flip_dtype<uchar4>}},
             {eDataType::DATA_TYPE_S32, {dispatch_flip_dtype<int1>, 0, dispatch_flip_dtype<int3>, dispatch_flip_dtype<int4>}},

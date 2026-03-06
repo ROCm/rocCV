@@ -23,35 +23,71 @@
 
 file(GLOB_RECURSE ROCCV_SRC "*.cpp")
 add_library(${PROJECT_NAME} SHARED ${ROCCV_SRC})
-
-include_directories(${ROCCV_SOURCE_DIR}/include ${ROCM_PATH}/include)
-# Filesystem
-include_directories(${FILESYSTEM_INCLUDE_DIRS})
-set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${FILESYSTEM_LIBRARIES})
-# HIP
-set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
-# OpenMP
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} OpenMP::OpenMP_CXX)
-
+add_library(roccv::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARY_LIST})
+target_compile_options(${PROJECT_NAME}
+    PUBLIC
+        ${OpenMP_CXX_FLAGS}
+)
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+        hip::device
+        OpenMP::OpenMP_CXX
+)
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+        $<BUILD_INTERFACE:${ROCCV_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/roccv>
+)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/rocm_sysdeps/lib;${ROCM_PATH}/lib/llvm/lib" BUILD_WITH_INSTALL_RPATH TRUE)
 
-if(USING_THE_ROCK)
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/rocm_sysdeps/lib" BUILD_WITH_INSTALL_RPATH TRUE)
-endif()
+# Add export set
 
 # install rocCV libs -- {ROCM_PATH)/lib
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime NAMELINK_SKIP)
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT dev NAMELINK_ONLY)
+install(TARGETS ${PROJECT_NAME}
+    EXPORT roccvTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        COMPONENT runtime
+        NAMELINK_SKIP
+)
+install(TARGETS ${PROJECT_NAME}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        COMPONENT dev
+        NAMELINK_ONLY
+)
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT asan)
+
+# install roccvTargets.cmake
+install(EXPORT roccvTargets
+    FILE roccvTargets.cmake
+    NAMESPACE roccv::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/roccv
+    COMPONENT dev
+)
+
+# install roccvConfig.cmake and roccvConfigVersion.cmake
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${ROCCV_SOURCE_DIR}/cmake/roccvConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/roccvConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/roccv
+)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/roccvConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/roccvConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/roccvConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/roccv
+    COMPONENT dev
+)
+
 # install rocCV include files -- {ROCM_PATH}/include/roccv/
 install(DIRECTORY ${ROCCV_SOURCE_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/roccv COMPONENT dev)
-# CPP Test - Installed
-install(DIRECTORY ${ROCCV_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)
-install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/cpp DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test COMPONENT test)

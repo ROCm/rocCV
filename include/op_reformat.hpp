@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,73 +19,68 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #pragma once
 
-#include <i_operator.hpp>
-
 #include "core/tensor.hpp"
-#include "op_warp_affine.hpp"
-#include "operator_types.h"
+#include "i_operator.hpp"
 
 namespace roccv {
-
-/**
- * @brief Class for managing the Rotate operator.
- *
- */
-
-class Rotate final : public IOperator {
+class Reformat final : public IOperator {
    public:
     /**
-     * @brief Construct a new Op Rotate object
+     * @brief Constructs a Reformat object.
      *
      */
-    Rotate() {}
+    explicit Reformat() {}
 
     /**
-     * @brief Destroy the Op Rotate object
+     * @brief Destroys a Reformat object.
      *
      */
-    ~Rotate() {}
+    ~Reformat() {}
 
     /**
-     * @brief Rotates a batch of images by a given angle in degrees counter-clockwise.
+     * @brief Executes the Reformat operation on the given HIP stream.
+     *
+     * Reformat changes the layout of the input tensor to that of the output tensor by rearranging memory. All
+     * combinations of supported input and output layouts are supported. Note that reformatting to the same layout is
+     * essentially a tensor copy.
+     *
+     * Although reformating from HWC to NHWC, or CHW to NCHW is supported, it is not recommended as it will result in a
+     * direct copy of the data without any rearrangement. To do these conversions, it is recommended to use the
+     * `Tensor::reshape()` method instead, as these will create zero-copy views pointing to the same data and is
+     * typically more efficient in most use cases.
      *
      * Limitations:
      *
      * Input:
-     *       Supported TensorLayout(s): [NHWC, HWC]
+     *       Supported TensorLayout(s): [NHWC, NCHW, HWC, CHW]
      *                        Channels: [1, 3, 4]
      *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Output:
-     *       Supported TensorLayout(s): [NHWC, HWC]
+     *       Supported TensorLayout(s): [NHWC, NCHW, HWC, CHW]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s)      [U8, S8, U16, S16, U32, S32, F32, F64]
+     *       Supported DataType(s):     [U8, S8, U16, S16, U32, S32, F32, F64]
      *
      * Input/Output dependency:
      *
      *       Property      |  Input == Output
      *      -------------- | -------------
-     *       TensorLayout  | Yes
+     *       TensorLayout  | No
      *       DataType      | Yes
      *       Channels      | Yes
      *       Width         | Yes
      *       Height        | Yes
-     *       Batch         | Yes
+     *       Batch Size    | Yes
      *
-     * @param[in] stream The HIP stream to run this operator on.
-     * @param[in] input Input tensor with image batch data
-     * @param[out] output Output tensor for storing modified image batch data
-     * @param[in] angle_deg The angle in degrees for which images are rotated
-     * by.
-     * @param[in] shift x and y coordinates to perform a shift after a rotation.
-     * @param[in] interpolation The interpolation method to be applied to the
-     * images.
-     * @param[in] device The device to run this operation on. (Default: GPU)
+     * @param[in] stream The HIP stream to run this operation on.
+     * @param[in] input The input tensor to reformat.
+     * @param[out] output The output tensor to store the result.
+     * @param[in] device The device to run this operation on. Default is GPU.
      */
-    void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output, double angle_deg,
-                    double2 shift, eInterpolationType interpolation,
+    void operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
                     eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

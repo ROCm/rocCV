@@ -157,7 +157,7 @@ T GoldenBicubic(BorderWrapper<T, BorderType> input, int64_t sample, float y, flo
  */
 template <typename T, eBorderType BorderType>
 T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x,
-                        const eInterpolationType interp) {
+                        eInterpolationType interp) {
     switch (interp) {
         case eInterpolationType::INTERP_TYPE_NEAREST:
             return GoldenNearest(input, sample, y, x);

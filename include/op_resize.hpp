@@ -78,7 +78,7 @@ class Resize final : public IOperator {
      * @param[in] interpolation The interpolation method used when resizing images.
      * @param[in] device The device to run this operator on. (Default: GPU).
      */
-    void operator()(hipStream_t stream, const Tensor &in, const Tensor &output, const eInterpolationType interpolation,
-                    const eDeviceType device = eDeviceType::GPU) const;
+    void operator()(hipStream_t stream, const Tensor &in, const Tensor &output, eInterpolationType interpolation,
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

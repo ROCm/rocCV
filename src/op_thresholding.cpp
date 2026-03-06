@@ -151,7 +151,7 @@ void Threshold::operator()(hipStream_t stream, const Tensor &input, const Tensor
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const Tensor &, eThresholdType, int32_t, const eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const Tensor &, eThresholdType, int32_t, eDeviceType)>, 4>>
         funcs = 
         {
             {eDataType::DATA_TYPE_U8, {dispatch_threshold_dtype<uchar1>, 0, dispatch_threshold_dtype<uchar3>, dispatch_threshold_dtype<uchar4>}},

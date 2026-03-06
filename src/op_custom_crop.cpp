@@ -34,8 +34,8 @@ THE SOFTWARE.
 namespace roccv {
 
 template <typename T>
-void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, const Box_t cropRect,
-                                const eDeviceType device) {
+void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, Box_t cropRect,
+                                eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
@@ -55,8 +55,8 @@ void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const T
     }
 }
 
-void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Box_t cropRect,
-                            const eDeviceType device) const {
+void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, Box_t cropRect,
+                            eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_HWC, TENSOR_LAYOUT_NHWC);
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_S8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_U32,
@@ -81,7 +81,7 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Box_t, const eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, Box_t, eDeviceType)>, 4>>
         funcs = 
         {
             {eDataType::DATA_TYPE_U8, {dispatch_custom_crop_dtype<uchar1>, 0, dispatch_custom_crop_dtype<uchar3>, dispatch_custom_crop_dtype<uchar4>}},

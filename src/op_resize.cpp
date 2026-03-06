@@ -35,7 +35,7 @@ THE SOFTWARE.
 namespace roccv {
 
 template <typename T, eInterpolationType I>
-void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device) {
+void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
     // Resize operation should clamp values at the border (REPLICATE border mode)
     InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, I> inputWrapper(input, T{});
@@ -61,10 +61,9 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 
 template <typename T>
 void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor& output,
-                           const eInterpolationType interpolation, const eDeviceType device) {
-    static const std::unordered_map<
-        eInterpolationType,
-        std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device)>>
+                           eInterpolationType interpolation, eDeviceType device) {
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor& input,
+                                                                           const Tensor& output, eDeviceType device)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST,
              dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
@@ -79,8 +78,8 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
     func(stream, input, output, device);
 }
 
-void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                        const eInterpolationType interpolation, const eDeviceType device) const {
+void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, eInterpolationType interpolation,
+                        eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
 
@@ -99,7 +98,7 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
 
     // clang-format off
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,
-                       const eInterpolationType interpolation, const eDeviceType device)>, 4>>
+                       eInterpolationType interpolation, eDeviceType device)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_resize_dtype<uchar1>, 0, dispatch_resize_dtype<uchar3>, dispatch_resize_dtype<uchar4>}},
             {eDataType::DATA_TYPE_F32, {dispatch_resize_dtype<float1>, 0, dispatch_resize_dtype<float3>, dispatch_resize_dtype<float4>}}

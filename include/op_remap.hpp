@@ -95,8 +95,8 @@ class Remap final : public IOperator {
      * (Default: eDeviceType::GPU)
      */
     void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output,
-                    const roccv::Tensor& map, const eInterpolationType inInterpolation,
-                    const eInterpolationType mapInterpolation, const eRemapType mapValueType, const bool alignCorners,
-                    const eBorderType borderType, const float4 borderValue, eDeviceType device = eDeviceType::GPU);
+                    const roccv::Tensor& map, eInterpolationType inInterpolation,
+                    eInterpolationType mapInterpolation, eRemapType mapValueType, bool alignCorners,
+                    eBorderType borderType, float4 borderValue, eDeviceType device = eDeviceType::GPU);
 };
 }  // namespace roccv
