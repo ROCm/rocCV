@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -106,6 +106,14 @@ void PyEnums::Export(py::module& m) {
         .value("COLOR_BGR2RGB", COLOR_BGR2RGB)
         .value("COLOR_RGB2GRAY", COLOR_RGB2GRAY)
         .value("COLOR_BGR2GRAY", COLOR_BGR2GRAY)
+        .value("COLOR_YUV2RGB_NV12", COLOR_YUV2RGB_NV12)
+        .value("COLOR_YUV2BGR_NV12", COLOR_YUV2BGR_NV12)
+        .value("COLOR_YUV2RGB_NV21", COLOR_YUV2RGB_NV21)
+        .value("COLOR_YUV2BGR_NV21", COLOR_YUV2BGR_NV21)
+        .value("COLOR_RGB2YUV_NV12", COLOR_RGB2YUV_NV12)
+        .value("COLOR_BGR2YUV_NV12", COLOR_BGR2YUV_NV12)
+        .value("COLOR_RGB2YUV_NV21", COLOR_RGB2YUV_NV21)
+        .value("COLOR_BGR2YUV_NV21", COLOR_BGR2YUV_NV21)
         .export_values();
 
     // eRemapType Enum Bindings
