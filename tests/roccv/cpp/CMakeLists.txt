@@ -20,15 +20,17 @@
 # SOFTWARE.
 #
 # ##############################################################################
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 
 if(NOT DEFINED ENHANCED_MESSAGE)
     string(ASCII 27 Esc)
-    set(ColourReset "${Esc}[m")
+    set(ColorReset "${Esc}[m")
     set(Red         "${Esc}[31m")
     set(Green       "${Esc}[32m")
     set(Yellow      "${Esc}[33m")
     set(White       "${Esc}[37m")
+    set(Cyan        "${Esc}[36m")
+    set(BoldBlue    "${Esc}[1;34m")
 endif()
 
 # ROCM Path
@@ -48,7 +50,7 @@ if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
 
-project(roccv-cpp-tests)
+project(roccv-cpp-tests VERSION 1.0 LANGUAGES CXX)
 
 # Find required libraries
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
@@ -58,7 +60,6 @@ set(USING_THE_ROCK OFF)
 if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
     set(USING_THE_ROCK ON)
 endif()
-message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
 
 # Set device library path for TheRock install of ROCm.
 if (USING_THE_ROCK)
@@ -73,40 +74,21 @@ if (NOT DEFINED ENV{HIP_PLATFORM})
     set(ENV{HIP_PLATFORM} "amd")
 endif()
 
-# find HIP
-find_package(HIP REQUIRED)
-set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} hip::device)
-set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${HIP_INCLUDE_DIR})
-# find rocCV
-find_library(roccv_LIBRARY roccv PATHS ${ROCM_PATH}/lib)
-find_path(roccv_INCLUDE_DIR NAMES roccv_operators.hpp PATHS ${ROCM_PATH}/include/roccv)
+# Print test CMake configuration information
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColorReset}")
 
-# Add current source directory as an include
-set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# If building from source, ensure we use the locally built version of roccv. Otherwise, look for an installed version to link against.
-if(BUILD_FROM_SOURCE)
-        message("-- ${Green}${PROJECT_NAME} -- Building CPP tests using roccv source build${ColourReset}")
-        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${CMAKE_SOURCE_DIR}/include)
-        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} roccv)
-else()
-    if(roccv_LIBRARY AND roccv_INCLUDE_DIR)
-        message("-- ${Green}${PROJECT_NAME} -- Found rocCV \n\troccv_LIBRARY:${roccv_LIBRARY} \n\troccv_INCLUDE_DIR:${roccv_INCLUDE_DIR}${ColourReset}")
-        set(LINK_LIBRARY_LIST ${LINK_LIBRARY_LIST} ${roccv_LIBRARY})
-        set(INCLUDE_DIR_LIST ${INCLUDE_DIR_LIST} ${roccv_INCLUDE_DIR})
-        set(roccv_FOUND TRUE)
-    else()
-        message(FATAL_ERROR "${Red}Find rocCV -- rocCV NOT FOUND${ColourReset}")
-    endif()
+# Find rocCV
+if (NOT TARGET roccv::roccv)
+    find_package(roccv REQUIRED)
 endif()
 
-# Gather test helper sources
+# Compile test helper library
 file(GLOB TEST_HELPER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-
-# Create a static library for test helpers (so we don't recompile for every test)
 add_library(roccv-test-helpers STATIC ${TEST_HELPER_SOURCES})
-target_link_libraries(roccv-test-helpers PUBLIC ${LINK_LIBRARY_LIST})
-target_include_directories(roccv-test-helpers PUBLIC ${INCLUDE_DIR_LIST})
+target_link_libraries(roccv-test-helpers PUBLIC roccv::roccv)
+target_include_directories(roccv-test-helpers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Gather actual test sources
 file(GLOB_RECURSE CPP_ROCCV_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*.cpp")
@@ -128,7 +110,7 @@ foreach(test_source ${CPP_ROCCV_TEST_SOURCES})
     
     # Set output directory to match source structure: bin/tests/<subdir>/
     set_target_properties(${test_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests/${test_subdir}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${test_subdir}"
     )
     
     add_test(NAME ${test_name} COMMAND ${test_name})
