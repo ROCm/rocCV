@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c)  - 2024 Advanced Micro Devices, Inc.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,8 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
+
 
 # ROCM Path
 if(DEFINED ENV{ROCM_PATH})
@@ -33,6 +34,7 @@ else()
 endif()
 # Set AMD Clang as default compiler
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS ON)
 if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang++")
@@ -79,7 +81,7 @@ set(DEFAULT_BUILD_TYPE          "Release"   CACHE STRING "Default build type for
 
 if(ENHANCED_MESSAGE)
 	string(ASCII 27 Esc)
-	set(ColourReset "${Esc}[m")
+	set(ColorReset "${Esc}[m")
 	set(Red "${Esc}[31m")
 	set(Green "${Esc}[32m")
 	set(Yellow "${Esc}[33m")
@@ -89,8 +91,8 @@ if(ENHANCED_MESSAGE)
 	set(Cyan "${Esc}[36m")
 	set(White "${Esc}[37m")
 endif()
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${VERSION}${ColourReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Install Path -- ${CMAKE_INSTALL_PREFIX}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${VERSION}${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Install Path -- ${CMAKE_INSTALL_PREFIX}${ColorReset}")
 
 # rocCV Build Type
 if (NOT CMAKE_BUILD_TYPE)
@@ -109,14 +111,14 @@ else()
     # -Wall     -- Print all warnings
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -fPIC -Wall")
 endif()
-message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColourReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
 
 # Enable LLVM code coverage if build type is Debug and ENABLE_CODE_COVERAGE is set.
 if(ENABLE_CODE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
     add_link_options(-fprofile-instr-generate -fcoverage-mapping)
 elseif(ENABLE_CODE_COVERAGE AND NOT CMAKE_BUILD_TYPE MATCHES Debug)
-    message("-- ${Yellow}LLVM code coverage enabled, but build type is not Debug. Code coverage will be disabled.${ColourReset}")
+    message("-- ${Yellow}LLVM code coverage enabled, but build type is not Debug. Code coverage will be disabled.${ColorReset}")
     set(ENABLE_CODE_COVERAGE OFF)
 endif()
 
@@ -127,22 +129,22 @@ if(FULL_BUILD)
 endif()
 
 # Print developer options.
-message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColourReset}")
-message("-- ${Cyan}     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} [Select rocCV build type [options:Debug/Release](default:Release)]${ColourReset}")
-message("-- ${Cyan}     -D FULL_BUILD=${FULL_BUILD} [Compile with samples, and tests [options:ON/OFF](default:OFF)]${ColourReset}")
-message("-- ${Cyan}     -D SAMPLES=${SAMPLES} [Compile with samples [options:ON/OFF](default:OFF)]${ColourReset}")
-message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](default:OFF)]${ColourReset}")
-message("-- ${Cyan}     -D BENCHMARKS=${BENCHMARKS} [Compile with benchmarks [options:ON/OFF](default:OFF)]${ColourReset}")
-message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build for rocCV Python Package(default:ON)]${ColourReset}")
-message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColourReset}")
-message("-- ${Cyan}     -D ENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE} [Enable LLVM code coverage [options:ON/OFF](default:OFF)]${ColourReset}")
+message("-- ${Cyan}${PROJECT_NAME} Developer Options${ColorReset}")
+message("-- ${Cyan}     -D CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} [Select rocCV build type [options:Debug/Release](default:Release)]${ColorReset}")
+message("-- ${Cyan}     -D FULL_BUILD=${FULL_BUILD} [Compile with samples, and tests [options:ON/OFF](default:OFF)]${ColorReset}")
+message("-- ${Cyan}     -D SAMPLES=${SAMPLES} [Compile with samples [options:ON/OFF](default:OFF)]${ColorReset}")
+message("-- ${Cyan}     -D TESTS=${TESTS} [Compile with tests [options:ON/OFF](default:OFF)]${ColorReset}")
+message("-- ${Cyan}     -D BENCHMARKS=${BENCHMARKS} [Compile with benchmarks [options:ON/OFF](default:OFF)]${ColorReset}")
+message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build for rocCV Python Package(default:ON)]${ColorReset}")
+message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColorReset}")
+message("-- ${Cyan}     -D ENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE} [Enable LLVM code coverage [options:ON/OFF](default:OFF)]${ColorReset}")
 
 # Set supported GPU Targets
 set(DEFAULT_GPU_TARGETS "gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1031;gfx1032;gfx1100;gfx1101;gfx1102;gfx1200;gfx1201")
 
 # Set AMD GPU_TARGETS
 if((AMDGPU_TARGETS OR DEFINED ENV{AMDGPU_TARGETS}) AND (NOT GPU_TARGETS))
-    message("-- ${Red}${PROJECT_NAME} DEPRECATION -- AMDGPU_TARGETS use is deprecated. Use GPU_TARGETS${ColourReset}")
+    message("-- ${Red}${PROJECT_NAME} DEPRECATION -- AMDGPU_TARGETS use is deprecated. Use GPU_TARGETS${ColorReset}")
     if(DEFINED ENV{AMDGPU_TARGETS})
         set(GPU_TARGETS $ENV{AMDGPU_TARGETS} CACHE STRING "List of specific machine types for library to target")
     else()
@@ -153,11 +155,11 @@ endif()
 if(DEFINED ENV{GPU_ARCHS})
     set(GPU_TARGETS $ENV{GPU_ARCHS} CACHE STRING "List of specific machine types for library to target")
 elseif(GPU_TARGETS)
-    message("-- ${White}${PROJECT_NAME} -- GPU_TARGETS set with -D option${ColourReset}")
+    message("-- ${White}${PROJECT_NAME} -- GPU_TARGETS set with -D option${ColorReset}")
 else()
     set(GPU_TARGETS "${DEFAULT_GPU_TARGETS}" CACHE STRING "List of specific machine types for library to target")
 endif()
-message("-- ${White}${PROJECT_NAME} -- AMD GPU_TARGETS: ${GPU_TARGETS}${ColourReset}")
+message("-- ${White}${PROJECT_NAME} -- AMD GPU_TARGETS: ${GPU_TARGETS}${ColorReset}")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
@@ -167,7 +169,7 @@ set(USING_THE_ROCK OFF)
 if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
     set(USING_THE_ROCK ON)
 endif()
-message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColourReset}")
+message("-- ${White}${PROJECT_NAME} -- USING_THE_ROCK: ${USING_THE_ROCK}${ColorReset}")
 
 # Set device library path for TheRock install of ROCm.
 if (USING_THE_ROCK)
@@ -182,69 +184,29 @@ if (NOT DEFINED ENV{HIP_PLATFORM})
     set(ENV{HIP_PLATFORM} "amd")
 endif()
 
-# Find dependencies
+# --- Find dependencies ---
 find_package(HIP QUIET)
 find_package(StdFilesystem QUIET)
 find_package(rocm_smi QUIET)
 find_package(OpenMP COMPONENTS CXX QUIET)
-
-if (BUILD_PYPACKAGE)
-    # Auto-detect Python3 executable if not specified
-    if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR AND NOT PYTHON_VERSION_SUGGESTED)
-        find_program(PYTHON3_EXECUTABLE_PATH python3)
-        if(PYTHON3_EXECUTABLE_PATH)
-            set(Python3_EXECUTABLE ${PYTHON3_EXECUTABLE_PATH})
-            get_filename_component(Python3_ROOT_DIR "${PYTHON3_EXECUTABLE_PATH}" DIRECTORY)
-            get_filename_component(Python3_ROOT_DIR "${Python3_ROOT_DIR}" DIRECTORY)
-        endif()
-    endif()
-
-    if(PYTHON_VERSION_SUGGESTED)
-        find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
-    else()
-        set(Python3_FIND_VIRTUALENV FIRST)
-        find_package(Python3 QUIET COMPONENTS Interpreter Development)
-    endif()
-
-    # Python3
-    if(NOT Python3_Interpreter_FOUND)
-        set(BUILD_PYPACKAGE OFF)
-        message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} interpreter, Not Found${ColourReset}")
-    else()
-        message("-- ${Green}rocpycv -- Found python${PYTHON_VERSION_SUGGESTED} interpreter: ${Python3_EXECUTABLE}${ColourReset}")
-    endif()
-
-    # Python3 Development
-    if(NOT Python3_Development_FOUND)
-        set(BUILD_PYPACKAGE OFF)
-        message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColourReset}")
-    else()
-        message("-- ${Green}rocpycv -- Found python${PYTHON_VERSION_SUGGESTED} development headers: ${Python3_INCLUDE_DIRS}${ColourReset}")
-    endif()
-endif()
 find_package(OpenCV QUIET)
 
-# Dependency checks
+# --- Dependency checks ---
 set(BUILD_ROCCV true)
 # HIP
 if(NOT HIP_FOUND)
     set(BUILD_ROCCV false)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires HIP, Not Found${ColourReset}")
-endif()
-# Filesystem
-if(NOT FILESYSTEM_FOUND)
-    set(BUILD_ROCCV false)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires FileSystem, Not Found ${ColourReset}")
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires HIP, Not Found${ColorReset}")
 endif()
 # rocm_smi
 if (NOT rocm_smi_FOUND)
 	set(BUILD_ROCCV false)
-	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires rocm_smi, Not Found ${ColourReset}")
+	message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires rocm_smi, Not Found ${ColorReset}")
 endif()
 # OpenCV
 if(NOT OpenCV_FOUND)
     if (SAMPLES)
-        message("-- ${Yellow}NOTE: ${PROJECT_NAME} building samples requires OpenCV, Not Found ${ColourReset}")
+        message("-- ${Yellow}NOTE: ${PROJECT_NAME} building samples requires OpenCV, Not Found ${ColorReset}")
         set(SAMPLES OFF)
     endif()
     set(FULL_BUILD OFF)
@@ -252,50 +214,75 @@ endif()
 # OpenMP
 if (NOT OpenMP_CXX_FOUND)
     set(BUILD_ROCCV false)
-    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires OpenMP, Not Found${ColourReset}")
+    message("-- ${Yellow}NOTE: ${PROJECT_NAME} library requires OpenMP, Not Found${ColorReset}")
 endif()
 
 # Check that all dependencies have been met
 if(NOT BUILD_ROCCV)
-	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColourReset}")
+	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColorReset}")
 endif()
 
-# Flag to signal that other components requiring roccv can link against roccv
-# rather than looking for a global installation.
-set(BUILD_FROM_SOURCE ON)
 set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+# --- Source code ---
 add_subdirectory(src)
 
+# --- Samples ---
 if(SAMPLES)
     add_subdirectory(samples)
 endif(SAMPLES)
 
+# --- Benchmarks ---
 if(BENCHMARKS)
     add_subdirectory(benchmarks)
 endif(BENCHMARKS)
 
-# Enable output to stdout by default when tests fail
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-enable_testing()
-include(CTest)
-
+# --- Tests ---
 if(TESTS)
+    include(CTest)
+    enable_testing()
 	add_subdirectory(tests)
-	add_custom_target(test_correctness
-		COMMAND ${CMAKE_CTEST_COMMAND} -R "^test_" --output-on-failure
-        COMMENT "Running correctness tests for rocCV."
-	)
 endif(TESTS)
 
-# Build Python package if BUILD_PYPACKAGE is set.
+# --- Python package ---
 if(BUILD_PYPACKAGE)
-    add_subdirectory("third_party/pybind11")
-    add_subdirectory("third_party/dlpack" EXCLUDE_FROM_ALL)
     add_subdirectory("python")
 endif(BUILD_PYPACKAGE)
 
-# Set package information.
+# --- Mark test files for installation ---
+
+# Pybind tests - Mark for installation
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/pybind
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
+
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/python
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test/pybind
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
+
+# CPP Test - Mark for installation
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/data
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+)
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/cpp
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+)
+
+# Samples - Mark for installation
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/samples
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv
+        COMPONENT dev
+)
+
+# --- Packaging configuration ---
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
@@ -318,11 +305,8 @@ if(DEFINED ENV{ROCM_LIBPATCH_VERSION})
     set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.$ENV{ROCM_LIBPATCH_VERSION}")
 endif()
 
-# set license information
-set(CPACK_RPM_PACKAGE_LICENSE    "MIT")
-set(CPACK_RESOURCE_FILE_LICENSE  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-
 # set license information - {ROCM_PATH}/share/doc/roccv
+set(CPACK_RPM_PACKAGE_LICENSE    "MIT")
 set(CPACK_RESOURCE_FILE_LICENSE  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR}-asan COMPONENT asan)
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT runtime)
@@ -421,15 +405,15 @@ if(EXISTS ${MAKE_NSIS_EXE})
 endif()
 if(EXISTS ${RPMBUILD_EXE})
     list(APPEND CPACK_GENERATOR "RPM")
-    message("-- ${White}AMD ROCm rocCV rpm RunTime Package -- ${CPACK_RPM_RUNTIME_PACKAGE_REQUIRES}${ColourReset}")
-    message("-- ${White}AMD ROCm rocCV rpm Dev Package -- ${CPACK_RPM_DEV_PACKAGE_REQUIRES}${ColourReset}")
-    message("-- ${White}AMD ROCm rocCV rpm Test Package -- ${CPACK_RPM_TEST_PACKAGE_REQUIRES}${ColourReset}")
+    message("-- ${White}AMD ROCm rocCV rpm RunTime Package -- ${CPACK_RPM_RUNTIME_PACKAGE_REQUIRES}${ColorReset}")
+    message("-- ${White}AMD ROCm rocCV rpm Dev Package -- ${CPACK_RPM_DEV_PACKAGE_REQUIRES}${ColorReset}")
+    message("-- ${White}AMD ROCm rocCV rpm Test Package -- ${CPACK_RPM_TEST_PACKAGE_REQUIRES}${ColorReset}")
 endif()
 if(EXISTS ${DPKG_EXE})
     list(APPEND CPACK_GENERATOR "DEB")
-    message("-- ${White}AMD ROCm rocCV deb RunTime Package -- ${CPACK_DEBIAN_RUNTIME_PACKAGE_DEPENDS}${ColourReset}")
-    message("-- ${White}AMD ROCm rocCV deb Dev Package -- ${CPACK_DEBIAN_DEV_PACKAGE_DEPENDS}${ColourReset}")
-    message("-- ${White}AMD ROCm rocCV deb Test Package -- ${CPACK_DEBIAN_TEST_PACKAGE_DEPENDS}${ColourReset}")
+    message("-- ${White}AMD ROCm rocCV deb RunTime Package -- ${CPACK_DEBIAN_RUNTIME_PACKAGE_DEPENDS}${ColorReset}")
+    message("-- ${White}AMD ROCm rocCV deb Dev Package -- ${CPACK_DEBIAN_DEV_PACKAGE_DEPENDS}${ColorReset}")
+    message("-- ${White}AMD ROCm rocCV deb Test Package -- ${CPACK_DEBIAN_TEST_PACKAGE_DEPENDS}${ColorReset}")
 endif()
 
 include(CPack)
