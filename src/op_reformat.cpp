@@ -34,7 +34,7 @@ namespace roccv {
 
 namespace {
 template <int Channels, typename T>
-void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device) {
+void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
     ImageWrapper<T> inputWrap(input);
     ImageWrapper<T> outputWrap(output);
 
@@ -60,9 +60,9 @@ void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Ten
 }
 
 template <typename T>
-void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device) {
+void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
     // clang-format off
-    static const std::array<std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, const eDeviceType device)>, 4> funcs = {
+    static const std::array<std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device)>, 4> funcs = {
         DispatchReformatChannels<1, T>,
         nullptr,    // Not supported
         DispatchReformatChannels<3, T>,
@@ -80,7 +80,7 @@ void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor&
 }  // namespace
 
 void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                          const eDeviceType device) const {
+                          eDeviceType device) const {
     // clang-format off
 
     // Validate the input and output tensors
@@ -109,7 +109,7 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
 
     // Select kernel dispatcher based on the input and output datatypes.
     static const std::unordered_map<eDataType, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,
-                                                     const eDeviceType device)>>
+                                                     eDeviceType device)>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  DispatchReformatType<unsigned char>},
             {eDataType::DATA_TYPE_S8,  DispatchReformatType<signed char>},

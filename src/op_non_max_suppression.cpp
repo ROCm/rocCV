@@ -31,7 +31,7 @@ THE SOFTWARE.
 namespace roccv {
 void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
                                        const Tensor& scores, float scoreThreshold, float iouThreshold,
-                                       const eDeviceType device) const {
+                                       eDeviceType device) const {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_NW, TENSOR_LAYOUT_NWC);

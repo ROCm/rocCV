@@ -87,8 +87,8 @@ class WarpAffine final : public IOperator {
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const AffineTransform xform,
-                    const bool isInverted, const eInterpolationType interp, const eBorderType borderMode,
-                    const float4 borderValue, const eDeviceType device = eDeviceType::GPU) const;
+                    bool isInverted, eInterpolationType interp, eBorderType borderMode, float4 borderValue,
+                    eDeviceType device = eDeviceType::GPU) const;
 
    private:
     // WarpPerspective op is used to execute the affine transformation, as affine transformation is a subset.

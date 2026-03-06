@@ -130,11 +130,11 @@ Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_re
 Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data)
     : m_requirements(reqs), m_data(data) {}
 
-Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType device)
+Tensor::Tensor(const TensorShape& shape, DataType dtype, eDeviceType device)
     : Tensor(shape, dtype, {}, GlobalContext().getDefaultAllocator(), device) {}
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, const MemAlignment& bufAlign, const IAllocator& alloc,
-               const eDeviceType device)
+               eDeviceType device)
     : Tensor(CalcRequirements(shape, dtype, bufAlign, device), alloc) {}
 
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device)
@@ -201,13 +201,12 @@ size_t Tensor::dataSize() const { return m_requirements.strides[0] * m_requireme
 
 bool Tensor::isContiguous() const { return dataSize() == shape().size() * dtype().size(); }
 
-Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
-                                              const eDeviceType device) {
+Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, eDeviceType device) {
     return CalcRequirements(shape, dtype, (MemAlignment){}, device);
 }
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
-                                              const MemAlignment& bufAlign, const eDeviceType device) {
+                                              const MemAlignment& bufAlign, eDeviceType device) {
     int dev;
     HIP_VALIDATE_NO_ERRORS(hipGetDevice(&dev));
 

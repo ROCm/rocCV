@@ -37,7 +37,7 @@ namespace roccv {
 template <typename T, bool ScaleStddev>
 void dispatch_normalize_stddev(hipStream_t stream, const Tensor& input, const Tensor& base, const Tensor& scale,
                                const Tensor& output, float global_scale, float shift, float epsilon,
-                               const eDeviceType device) {
+                               eDeviceType device) {
     // Work type for base/stddev tensors, these must be floats with the same number of channels as the input/output
     // tensors.
     using work_type = detail::MakeType<float, detail::NumComponents<T>>;
@@ -67,10 +67,10 @@ void dispatch_normalize_stddev(hipStream_t stream, const Tensor& input, const Te
 template <typename T>
 void dispatch_normalize_dtype(hipStream_t stream, const Tensor& input, const Tensor& base, const Tensor& scale,
                               const Tensor& output, float global_scale, float shift, float epsilon, uint32_t flags,
-                              const eDeviceType device) {
+                              eDeviceType device) {
     // Create kernel dispatching table based on whether or not scale is interpreted as standard deviation or not.
     std::function<void(hipStream_t stream, const Tensor& input, const Tensor& base, const Tensor& scale,
-                       const Tensor& output, float global_scale, float shift, float epsilon, const eDeviceType device)>
+                       const Tensor& output, float global_scale, float shift, float epsilon, eDeviceType device)>
         funcs[2] = {dispatch_normalize_stddev<T, false>, dispatch_normalize_stddev<T, true>};
 
     auto func = funcs[(flags & ROCCV_NORMALIZE_SCALE_IS_STDDEV) != 0];
@@ -80,7 +80,7 @@ void dispatch_normalize_dtype(hipStream_t stream, const Tensor& input, const Ten
 
 void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor& base, const Tensor& scale,
                            const Tensor& output, float global_scale, float shift, float epsilon, uint32_t flags,
-                           const eDeviceType device) const {
+                           eDeviceType device) const {
     // Check all tensors are on the proper device
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(base, device);
@@ -116,7 +116,7 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
 
     // Create kernel dispatching table based on input/output datatype and number of channels.
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float, uint32_t, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float, uint32_t, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_normalize_dtype<uchar1>, 0, dispatch_normalize_dtype<uchar3>, dispatch_normalize_dtype<uchar4>}},
             {eDataType::DATA_TYPE_S8, {dispatch_normalize_dtype<char1>, 0, dispatch_normalize_dtype<char3>, dispatch_normalize_dtype<char4>}},

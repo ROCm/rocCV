@@ -70,7 +70,7 @@ class TensorData {
      * @param[in] d The index of the dimension.
      * @return The size of the specified dimension.
      */
-    virtual const int64_t shape(int d) const &;
+    virtual int64_t shape(int d) const &;
 
     /**
      * @brief Retrieves the data type of the tensor's elements.
@@ -85,7 +85,7 @@ class TensorData {
      *
      * @return An enum representing the data location of this tensor data.
      */
-    virtual const eDeviceType device() const;
+    virtual eDeviceType device() const;
 
     template <typename Derived>
     std::optional<Derived> cast() const {
@@ -138,7 +138,7 @@ class TensorDataStrided : public TensorData {
      * @param[in] d The specified dimension of the tensor.
      * @return The stride for the given dimension.
      */
-    const int64_t stride(int d) const;
+    int64_t stride(int d) const;
 };
 
 /**

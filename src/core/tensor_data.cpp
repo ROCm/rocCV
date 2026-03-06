@@ -32,11 +32,11 @@ int TensorData::rank() const { return m_shape.layout().rank(); }
 
 const TensorShape& TensorData::shape() const& { return m_shape; }
 
-const int64_t TensorData::shape(int d) const& { return m_shape[d]; }
+int64_t TensorData::shape(int d) const& { return m_shape[d]; }
 
 const DataType& TensorData::dtype() const { return m_dtype; }
 
-const eDeviceType TensorData::device() const { return m_deviceType; }
+eDeviceType TensorData::device() const { return m_deviceType; }
 
 TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer)
     : m_shape(tshape),
@@ -59,7 +59,7 @@ bool TensorDataStrided::IsCompatibleKind(TensorBufferType bufferType) {
 
 void* roccv::TensorDataStrided::basePtr() const { return m_buffer.strided.basePtr; }
 
-const int64_t TensorDataStrided::stride(int d) const { return m_buffer.strided.strides[d]; }
+int64_t TensorDataStrided::stride(int d) const { return m_buffer.strided.strides[d]; }
 
 TensorDataStridedHip::TensorDataStridedHip(const TensorShape& shape, const DataType& dtype, const TensorBuffer& buffer)
     : TensorDataStrided(shape, dtype, buffer) {
