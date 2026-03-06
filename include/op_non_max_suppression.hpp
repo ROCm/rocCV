@@ -93,6 +93,6 @@ class NonMaximumSuppression final : public IOperator {
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Tensor& scores,
-                    float scoreThreshold, float iouThreshold, const eDeviceType device = eDeviceType::GPU) const;
+                    float scoreThreshold, float iouThreshold, eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

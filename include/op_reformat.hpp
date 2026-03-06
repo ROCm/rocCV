@@ -81,6 +81,6 @@ class Reformat final : public IOperator {
      * @param[in] device The device to run this operation on. Default is GPU.
      */
     void operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                    const eDeviceType device = eDeviceType::GPU) const;
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

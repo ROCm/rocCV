@@ -75,6 +75,6 @@ class CopyMakeBorder final : public IOperator {
      * @param device The device to execute this operation on. Defaults to GPU.
      */
     void operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top, int32_t left,
-                    eBorderType border_mode, float4 border_value, const eDeviceType device = eDeviceType::GPU) const;
+                    eBorderType border_mode, float4 border_value, eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv
