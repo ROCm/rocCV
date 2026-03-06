@@ -25,8 +25,8 @@ THE SOFTWARE.
 #include "operator_types.h"
 
 namespace roccv {
-void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const Size2D cropSize,
-                            const eDeviceType device) const {
+void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, Size2D cropSize,
+                            eDeviceType device) const {
     auto i_height = input.shape()[input.shape().layout().height_index()];
     auto i_width = input.shape()[input.shape().layout().width_index()];
 

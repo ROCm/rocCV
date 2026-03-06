@@ -67,9 +67,9 @@ class TensorStorage {
     /**
      * @brief Retrieves the device that the tensor data is allocated on.
      *
-     * @return const eDeviceType
+     * @return eDeviceType
      */
-    const eDeviceType device() const;
+    eDeviceType device() const;
 
    private:
     eDeviceType m_device;

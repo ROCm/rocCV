@@ -70,9 +70,9 @@ class Tensor {
      * @param[in] dtype The underlying datatype of the tensor.
      * @param[in] device The device the tensor should be allocated on.
      */
-    explicit Tensor(const TensorShape &shape, DataType dtype, const eDeviceType device = eDeviceType::GPU);
+    explicit Tensor(const TensorShape &shape, DataType dtype, eDeviceType device = eDeviceType::GPU);
     explicit Tensor(const TensorShape &shape, DataType dtype, const IAllocator &alloc,
-                    const eDeviceType device = eDeviceType::GPU);
+                    eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the
@@ -196,7 +196,7 @@ class Tensor {
      * requirements.
      */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
-                                         const eDeviceType device = eDeviceType::GPU);
+                                         eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Calculates tensor requirements.

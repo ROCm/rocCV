@@ -83,6 +83,6 @@ class Flip final : public IOperator {
      * @param[in] device The device to run this operation on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const Tensor &input, const Tensor &output, int32_t flipCode,
-                    const eDeviceType device = eDeviceType::GPU) const;
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv
