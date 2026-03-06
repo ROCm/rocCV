@@ -148,13 +148,6 @@ git clone https://github.com/ROCm/rocCV.git
 cd rocCV
 ```
 
-- Initialize and update submodules (for `pybind11` and `dlpack` dependencies)
-
-```shell
-git submodule init
-git submodule update
-```
-
 > [!NOTE]
 > To ensure all dependencies are installed, a python script for setup is included for your convenience.
 >
