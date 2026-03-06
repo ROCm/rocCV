@@ -32,7 +32,7 @@ namespace roccv {
 
 template <typename SrcType, typename DstType, typename MaskType>
 void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
-                                 const Tensor& mask, const Tensor& output, const eDeviceType device) {
+                                 const Tensor& mask, const Tensor& output, eDeviceType device) {
     ImageWrapper<SrcType> fgWrapper(foreground);
     ImageWrapper<SrcType> bgWrapper(background);
     ImageWrapper<MaskType> maskWrapper(mask);
@@ -56,9 +56,9 @@ void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, c
 
 template <typename SrcType, typename DstType>
 void dispatch_composite_dsttype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
-                                const Tensor& mask, const Tensor& output, const eDeviceType device) {
+                                const Tensor& mask, const Tensor& output, eDeviceType device) {
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_composite_masktype<SrcType, DstType, uchar1>, 0, 0, 0}},
             {eDataType::DATA_TYPE_F32, {dispatch_composite_masktype<SrcType, DstType, float1>, 0, 0, 0}}
@@ -81,9 +81,9 @@ void dispatch_composite_dsttype(hipStream_t stream, const Tensor& foreground, co
 
 template <typename SrcType>
 void dispatch_composite_srctype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
-                                const Tensor& mask, const Tensor& output, const eDeviceType device) {
+                                const Tensor& mask, const Tensor& output, eDeviceType device) {
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  {0, 0, dispatch_composite_dsttype<SrcType, uchar3>, dispatch_composite_dsttype<SrcType, uchar4>}},
             {eDataType::DATA_TYPE_F32, {0, 0, dispatch_composite_dsttype<SrcType, float3>, dispatch_composite_dsttype<SrcType, float4>}}
@@ -144,7 +144,7 @@ void Composite::operator()(hipStream_t stream, const Tensor& foreground, const T
     CHECK_TENSOR_CHANNELS(output, 3, 4);
 
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8,  {0, 0, dispatch_composite_srctype<uchar3>, 0}},
             {eDataType::DATA_TYPE_F32, {0, 0, dispatch_composite_srctype<float3>, 0}}

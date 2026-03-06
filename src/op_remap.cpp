@@ -40,8 +40,8 @@ Remap::~Remap() {}
 
 template <typename T, eBorderType B, eInterpolationType I, eInterpolationType M>
 void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                              const eRemapType mapValueType, const bool alignCorners, const T borderValue,
-                              const eDeviceType device) {
+                              eRemapType mapValueType, bool alignCorners, T borderValue,
+                              eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
     InterpolationWrapper<float2, B, M> wrappedMapTensor(map, make_float2(0, 0));
     InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);
@@ -65,11 +65,11 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
 
 template <typename T, eBorderType B, eInterpolationType I>
 void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                           const eInterpolationType mapInterpolation, const eRemapType mapValueType,
-                           const bool alignCorners, const T borderValue, const eDeviceType device) {
+                           eInterpolationType mapInterpolation, eRemapType mapValueType,
+                           bool alignCorners, T borderValue, eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eRemapType, const bool, const T, const eDeviceType)>>
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, eRemapType, bool, T, eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>},
@@ -87,12 +87,12 @@ void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor
 
 template <typename T, eBorderType B>
 void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                                const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
-                                const eRemapType mapValueType, const bool alignCorners, const T borderValue,
-                                const eDeviceType device) {
+                                eInterpolationType inInterpolation, eInterpolationType mapInterpolation,
+                                eRemapType mapValueType, bool alignCorners, T borderValue,
+                                eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eRemapType, const bool, const T, const eDeviceType)>>
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, eInterpolationType, eRemapType, bool, T, eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>},
@@ -110,12 +110,12 @@ void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const T
 
 template <typename T>
 void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                          const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
-                          const eRemapType mapValueType, const bool alignCorners, const eBorderType borderType,
-                          const float4 borderValue, const eDeviceType device) {
+                          eInterpolationType inInterpolation, eInterpolationType mapInterpolation,
+                          eRemapType mapValueType, bool alignCorners, eBorderType borderType,
+                          float4 borderValue, eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eInterpolationType, const eRemapType, const bool, T, const eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, eInterpolationType, eInterpolationType, eRemapType, bool, T, eDeviceType)>>
         funcs = {
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
@@ -135,9 +135,9 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
 }
 
 void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                       const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
-                       const eRemapType mapValueType, const bool alignCorners, const eBorderType borderType,
-                       const float4 borderValue, eDeviceType device) {
+                       eInterpolationType inInterpolation, eInterpolationType mapInterpolation,
+                       eRemapType mapValueType, bool alignCorners, eBorderType borderType,
+                       float4 borderValue, eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -171,7 +171,7 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const eInterpolationType, const eInterpolationType, const eRemapType,  const bool, const eBorderType, const float4, const eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, eInterpolationType, eInterpolationType, eRemapType,  bool, eBorderType, float4, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_remap_dtype<uchar1>, 0, dispatch_remap_dtype<uchar3>, dispatch_remap_dtype<uchar4>}},
         };

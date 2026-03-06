@@ -91,7 +91,7 @@ class BilateralFilter final : public IOperator {
      *
      */
     void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output, int diameter,
-                    float sigmaColor, float sigmaSpace, const eBorderType borderMode,
-                    const float4 borderValue = make_float4(0, 0, 0, 0), const eDeviceType device = eDeviceType::GPU);
+                    float sigmaColor, float sigmaSpace, eBorderType borderMode,
+                    float4 borderValue = make_float4(0, 0, 0, 0), eDeviceType device = eDeviceType::GPU);
 };
 }  // namespace roccv

@@ -33,10 +33,10 @@ namespace py = pybind11;
 class PyOpWarpAffine {
    public:
     static void Export(py::module& m);
-    static PyTensor Execute(PyTensor& input, py::list xform, bool isInverted, const eInterpolationType interp,
-                            const eBorderType borderMode, py::list borderValue,
-                            std::optional<std::reference_wrapper<PyStream>> stream, const eDeviceType device);
+    static PyTensor Execute(PyTensor& input, py::list xform, bool isInverted, eInterpolationType interp,
+                            eBorderType borderMode, py::list borderValue,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
     static void ExecuteInto(PyTensor& output, PyTensor& input, py::list xform, bool isInverted,
-                            const eInterpolationType interp, const eBorderType borderMode, py::list borderValue,
-                            std::optional<std::reference_wrapper<PyStream>> stream, const eDeviceType device);
+                            eInterpolationType interp, eBorderType borderMode, py::list borderValue,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
 };

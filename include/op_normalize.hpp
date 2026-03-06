@@ -111,6 +111,6 @@ class Normalize final : public IOperator {
      */
     void operator()(hipStream_t stream, const Tensor& input, const Tensor& base, const Tensor& scale,
                     const Tensor& output, float global_scale, float shift, float epsilon, uint32_t flags,
-                    const eDeviceType device = eDeviceType::GPU) const;
+                    eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

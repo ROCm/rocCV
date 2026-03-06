@@ -51,10 +51,10 @@ Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> da
 Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data, const IAllocator& alloc)
     : m_requirements(reqs), m_data(data), m_allocator(alloc) {}
 
-Tensor::Tensor(const TensorShape& shape, DataType dtype, const eDeviceType device)
+Tensor::Tensor(const TensorShape& shape, DataType dtype, eDeviceType device)
     : Tensor(shape, dtype, GlobalContext().getDefaultAllocator(), device) {}
 
-Tensor::Tensor(const TensorShape& shape, DataType dtype, const IAllocator& alloc, const eDeviceType device)
+Tensor::Tensor(const TensorShape& shape, DataType dtype, const IAllocator& alloc, eDeviceType device)
     : Tensor(CalcRequirements(shape, dtype, device), alloc) {}
 
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device)
@@ -129,7 +129,7 @@ Tensor& Tensor::operator=(const Tensor& other) {
     return *this;
 }
 
-TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, const eDeviceType device) {
+TensorRequirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, eDeviceType device) {
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype);
     TensorRequirements reqs = CalcRequirements(shape, dtype, strides, device);
     return reqs;

@@ -90,6 +90,6 @@ class Histogram final : public IOperator {
      *
      */
     void operator()(hipStream_t stream, const Tensor& input, std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
-                    const eDeviceType device = eDeviceType::GPU);
+                    eDeviceType device = eDeviceType::GPU);
 };
 }  // namespace roccv
