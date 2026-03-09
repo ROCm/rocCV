@@ -46,9 +46,9 @@ __global__ void rgb_or_bgr_to_yuv_adv(SrcWrapper input, DstWrapper output, AdvCv
     T inVal = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
     work_type_t inValF = StaticCast<work_type_t>(inVal);
 
-    float y = inValF.x * coeff.r2y + inValF.y * coeff.g2y + inValF.z * coeff.b2y;
-    float u = (inValF.z - y) * coeff.b2u + delta;
-    float v = (inValF.x - y) * coeff.r2v + delta;
+    float y = fmaf(inValF.z, coeff.b2y, fmaf(inValF.y, coeff.g2y, fmaf(inValF.x, coeff.r2y, 0.0f)));
+    float u = fmaf((inValF.z - y), coeff.b2u, delta);
+    float v = fmaf((inValF.x - y), coeff.r2v, delta);
 
     output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(make_float3(y, u, v));
 }
@@ -67,9 +67,9 @@ __global__ void yuv_to_rgb_or_bgr_adv(SrcWrapper input, DstWrapper output, AdvCv
     T inVal = input.at(z_idx, y_idx, x_idx, 0);
     work_type_t inValF = StaticCast<work_type_t>(inVal);
 
-    float r = inValF.x + (inValF.z - delta) * coeff.v2r;
-    float g = inValF.x + (inValF.y - delta) * coeff.u2g + (inValF.z - delta) * coeff.v2g;
-    float b = inValF.x + (inValF.y - delta) * coeff.u2b;
+    float r = fmaf((inValF.z - delta), coeff.v2r, inValF.x);
+    float g = fmaf((inValF.z - delta), coeff.v2g, fmaf((inValF.y - delta), coeff.u2g, inValF.x));
+    float b = fmaf((inValF.y - delta), coeff.u2b, inValF.x);
 
     output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(SaturateCast<T>(make_float3(r, g, b)));
 }
@@ -93,9 +93,9 @@ __global__ void nv12_or_nv21_to_rgb_or_bgr_adv(SrcWrapper input, DstWrapper outp
     float u = static_cast<float>(input.at(z_idx, uvRow, uvCol + uidx, 0).x);
     float v = static_cast<float>(input.at(z_idx, uvRow, uvCol + (1 - uidx), 0).x);
 
-    float r = y + (v - delta) * coeff.v2r;
-    float g = y + (u - delta) * coeff.u2g + (v - delta) * coeff.v2g;
-    float b = y + (u - delta) * coeff.u2b;
+    float r = fmaf((v - delta), coeff.v2r, y);
+    float g = fmaf((v - delta), coeff.v2g, fmaf((u - delta), coeff.u2g, y));
+    float b = fmaf((u - delta), coeff.u2b, y);
 
     if constexpr (NumElements<DstT> == 4) {
         output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(SaturateCast<DstT>(make_float4(r, g, b, 255.0f)));
@@ -121,9 +121,9 @@ __global__ void rgb_or_bgr_to_nv12_or_nv21_adv(SrcWrapper input, DstWrapper outp
 
     SrcT p0 = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
     work_type_t rgb0 = StaticCast<work_type_t>(p0);
-    float y0 = rgb0.x * coeff.r2y + rgb0.y * coeff.g2y + rgb0.z * coeff.b2y;
-    float u0 = (rgb0.z - y0) * coeff.b2u;
-    float v0 = (rgb0.x - y0) * coeff.r2v;
+    float y0 = fmaf(rgb0.z, coeff.b2y, fmaf(rgb0.y, coeff.g2y, fmaf(rgb0.x, coeff.r2y, 0.0f)));
+    float u0 = fmaf((rgb0.z - y0), coeff.b2u, 0.0f);
+    float v0 = fmaf((rgb0.x - y0), coeff.r2v, 0.0f);
 
     output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<uchar1>(y0);
 
@@ -137,9 +137,9 @@ __global__ void rgb_or_bgr_to_nv12_or_nv21_adv(SrcWrapper input, DstWrapper outp
     work_type_t rgb2 = StaticCast<work_type_t>(p2);
     work_type_t rgb3 = StaticCast<work_type_t>(p3);
 
-    float y1 = rgb1.x * coeff.r2y + rgb1.y * coeff.g2y + rgb1.z * coeff.b2y;
-    float y2 = rgb2.x * coeff.r2y + rgb2.y * coeff.g2y + rgb2.z * coeff.b2y;
-    float y3 = rgb3.x * coeff.r2y + rgb3.y * coeff.g2y + rgb3.z * coeff.b2y;
+    float y1 = fmaf(rgb1.x, coeff.r2y, fmaf(rgb1.y, coeff.g2y, fmaf(rgb1.z, coeff.b2y, 0.0f)));
+    float y2 = fmaf(rgb2.x, coeff.r2y, fmaf(rgb2.y, coeff.g2y, fmaf(rgb2.z, coeff.b2y, 0.0f)));
+    float y3 = fmaf(rgb3.x, coeff.r2y, fmaf(rgb3.y, coeff.g2y, fmaf(rgb3.z, coeff.b2y, 0.0f)));
 
     float u1 = (rgb1.z - y1) * coeff.b2u;
     float u2 = (rgb2.z - y2) * coeff.b2u;
@@ -152,8 +152,8 @@ __global__ void rgb_or_bgr_to_nv12_or_nv21_adv(SrcWrapper input, DstWrapper outp
     int uvRow = rgbHeight + y_idx / 2;
     int uvCol = x_idx;
 
-    float uAvg = (u0 + u1 + u2 + u3) * 0.25f + delta;
-    float vAvg = (v0 + v1 + v2 + v3) * 0.25f + delta;
+    float uAvg = fmaf((u0 + u1 + u2 + u3), 0.25f, delta);
+    float vAvg = fmaf((v0 + v1 + v2 + v3), 0.25f, delta);
 
     output.at(z_idx, uvRow, uvCol + uidx, 0) = SaturateCast<uchar1>(uAvg);
     output.at(z_idx, uvRow, uvCol + (1 - uidx), 0) = SaturateCast<uchar1>(vAvg);
