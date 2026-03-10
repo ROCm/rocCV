@@ -237,6 +237,24 @@ class Tensor {
     bool isContiguous() const;
 
     /**
+     * @brief Copies data from a host pointer to the tensor. Host memory must be contiguous. This is a non-blocking
+     * operation, synchronized to the given stream.
+     *
+     * @param[in] src The source host pointer.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyFromHost(const void *src, hipStream_t stream = nullptr);
+
+    /**
+     * @brief Copies data from the tensor to a host pointer. Host memory will be contiguous. This is a non-blocking
+     * operation, synchronized to the given stream.
+     *
+     * @param[out] dst The destination host pointer. Must be preallocated to the correct size.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyToHost(void *dst, hipStream_t stream = nullptr) const noexcept;
+
+    /**
      * @brief Calculates tensor requirements using the default memory alignment strategy.
      *
      * @param[in] shape The desired shape of the tensor.
