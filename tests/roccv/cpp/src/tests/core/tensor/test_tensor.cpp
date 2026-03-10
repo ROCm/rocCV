@@ -19,6 +19,8 @@
  * THE SOFTWARE.
  */
 
+#include <hip/hip_runtime.h>
+
 #include <core/tensor.hpp>
 #include <core/utils.hpp>
 
@@ -141,6 +143,31 @@ void TestTensorReshapeCorrectness() {
 }
 
 /**
+ * @brief Tests the correctness of the copyFromHost and copyToHost methods.
+ *
+ */
+void TestTensorCopyCorrectness() {
+    Tensor tensor(2, {10, 10}, FMT_RGB8, eDeviceType::GPU);
+    const size_t hostDataSize = tensor.shape().size() * tensor.dtype().size();
+    std::vector<uint8_t> inputDataHost(hostDataSize);
+    for (size_t i = 0; i < inputDataHost.size(); i++) {
+        inputDataHost[i] = static_cast<uint8_t>(i % 256);
+    }
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    tensor.copyFromHost(inputDataHost.data(), stream);
+    std::vector<uint8_t> outputDataHost(hostDataSize);
+    tensor.copyToHost(outputDataHost.data(), stream);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    EXPECT_VECTOR_EQ(inputDataHost, outputDataHost);
+}
+
+/**
  * @brief Tests internal stride calculations on Tensor construction.
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
@@ -176,6 +203,7 @@ int main(int argc, char** argv) {
     // Correctness tests
     TEST_CASE(TestTensorCorrectness());
     TEST_CASE(TestTensorReshapeCorrectness());
+    TEST_CASE(TestTensorCopyCorrectness());
 
     // Stride calculation tests
     // clang-format off
