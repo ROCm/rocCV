@@ -131,7 +131,8 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
         stridesData = roccv::Tensor::CalcStrides(shape, roccv::DataType(dtype), 0);
     } else {
         for (int i = 0; i < dlTensor.ndim; ++i) {
-            stridesData[i] = dlTensor.strides[i];
+            // DLTensor strides are element-wise. Convert from element-wise to byte-wise.
+            stridesData[i] = dlTensor.strides[i] * roccv::DataType(dtype).size();
         }
     }
 
