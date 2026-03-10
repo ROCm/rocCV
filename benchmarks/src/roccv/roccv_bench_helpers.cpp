@@ -82,32 +82,6 @@ class RandomGenerator {
     rocrand_generator m_gen;
 };
 
-struct MemcpyParams {
-    void* basePtr = nullptr;  // Base pointer to the tensor data
-    size_t rowPitch = 0;      // Number of bytes per row, including padding
-    size_t rowBytes = 0;      // Number of bytes per row, not including padding
-    size_t imageBytes = 0;    // Number of bytes per image, including padding (rowBytes * height)
-};
-
-/**
- * @brief Gets the memcpy parameters for a tensor to perform a memcpy2D operation.
- *
- * @param tensor The tensor to get the memcpy parameters for.
- * @return The memcpy parameters to perform a memcpy2D operation.
- */
-inline MemcpyParams GetMemcpyParams(const roccv::Tensor& tensor) {
-    MemcpyParams params;
-
-    roccv::TensorDataStrided tensorData = tensor.exportData<roccv::TensorDataStrided>();
-    params.rowPitch = tensorData.stride(tensor.layout().height_index());
-    params.rowBytes = tensor.shape(tensor.layout().width_index()) * tensor.shape(tensor.layout().channels_index()) *
-                      tensor.dtype().size();
-    params.imageBytes = params.rowPitch * tensor.shape(tensor.layout().height_index());
-    params.basePtr = tensorData.basePtr();
-
-    return params;
-}
-
 template <typename T>
 void FillTensorImpl(const roccv::Tensor& tensor) {
     RandomGenerator generator(tensor.device());
