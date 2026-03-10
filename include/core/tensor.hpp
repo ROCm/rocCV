@@ -190,23 +190,25 @@ class Tensor {
     }
 
     /**
-     * @brief Creates a view of this tensor with a new shape and layout
+     * @brief Creates a view of this tensor with a new shape and layout, keeping the same data type.
      *
-     * @param[in] new_shape the new shape of the tensor
-     * @return Tensor
+     * @param[in] newShape The new shape of the tensor.
+     * @return A new tensor view with the given shape.
      */
-    Tensor reshape(const TensorShape &new_shape) const;
+    Tensor reshape(const TensorShape &newShape) const;
 
     /**
-     * @brief Creates a view of this tensor with a new data type.
+     * @brief Creates a view of this tensor with a new data type and shape.
      *
-     * This will attempt to reinterpret the tensor's base data type to the new data type by reshaping the tensor if
-     * necessary. If the reinterpretation is not possible, an exception will be thrown.
+     * Reinterprets the tensor's underlying bytes with the given data type and shape. The total byte count
+     * (elements * dtype size) must match between the original and new view. Non-contiguous (padded) tensors
+     * are supported as long as the reshape is compatible with the stride structure.
      *
-     * @param newDtype The new data type of the underlying tensor data.
-     * @return Tensor
+     * @param[in] newDtype The new data type of the tensor elements.
+     * @param[in] newShape The new shape of the tensor.
+     * @return A new tensor view with the given data type and shape.
      */
-    Tensor reinterpret(const DataType &newDtype) const;
+    Tensor reshape(const DataType &newDtype, const TensorShape &newShape) const;
 
     /**
      * @brief Performs a shallow copy of the tensor (creates a view).

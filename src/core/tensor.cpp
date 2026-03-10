@@ -44,7 +44,7 @@ namespace roccv {
 
 namespace {
 
-/*
+/**
  * @brief Returns the index of the first packed dimension in the given tensor layout.
  *
  * In most cases, the first packed dimension is the last dimension. However, for layouts ending in WC, the first packed
@@ -90,14 +90,24 @@ static bool ReshapeSimplified(int inRank, const std::array<int64_t, ROCCV_TENSOR
     return true;
 }
 
+/**
+ * @brief Simplifies a tensor shape and strides into their canonical form.
+ *
+ * @param[in] rank The rank of the tensor.
+ * @param[in] shape The shape of the tensor.
+ * @param[in] strides The strides of the tensor.
+ * @param[out] outShape The simplified shape of the tensor.
+ * @param[out] outStrides The simplified strides of the tensor.
+ * @return The rank of the simplified tensor.
+ */
 static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
-                    const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& stride,
+                    const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& strides,
                     std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& outShape,
                     std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& outStrides) {
     if (rank <= 1) {
         if (rank == 1) {
             outShape[0] = shape[0];
-            outStrides[0] = stride[0];
+            outStrides[0] = strides[0];
         }
         return rank;
     }
@@ -105,8 +115,8 @@ static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& 
     int outRank = 0;
     int64_t vol = shape[0];
     for (int d = 1; d < rank; d++) {
-        if (stride[d - 1] != shape[d] * stride[d]) {
-            outStrides[outRank] = stride[d - 1];
+        if (strides[d - 1] != shape[d] * strides[d]) {
+            outStrides[outRank] = strides[d - 1];
             outShape[outRank] = vol;
             vol = shape[d];
             outRank++;
@@ -114,7 +124,7 @@ static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& 
             vol *= shape[d];
         }
     }
-    outStrides[outRank] = stride[rank - 1];
+    outStrides[outRank] = strides[rank - 1];
     outShape[outRank] = vol;
     outRank++;
     return outRank;
@@ -182,12 +192,48 @@ TensorData Tensor::exportData() const {
     }
 }
 
-Tensor Tensor::reshape(const TensorShape& new_shape) const {
-    if (new_shape.size() * dtype().size() != this->shape().size() * this->dtype().size()) {
+Tensor Tensor::reshape(const TensorShape& newShape) const { return reshape(dtype(), newShape); }
+
+Tensor Tensor::reshape(const DataType& newDtype, const TensorShape& newShape) const {
+    if (newShape.size() * newDtype.size() != this->shape().size() * this->dtype().size()) {
         throw Exception("New tensor view must have the same underlying number of bytes.", eStatusType::INVALID_VALUE);
     }
 
-    Tensor::Requirements reqs = CalcRequirements(new_shape, dtype(), this->device());
+    const int oldRank = m_requirements.rank;
+    const int newRank = newShape.layout().rank();
+
+    if (m_requirements.strides[oldRank - 1] != static_cast<int64_t>(dtype().size())) {
+        throw Exception("Cannot reshape tensor: innermost dimension is not element-contiguous.",
+                        eStatusType::INVALID_VALUE);
+    }
+
+    // Convert to a byte-level view by expanding the innermost dimension size
+    // by the element size and setting its stride to 1.
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> byteShape = m_requirements.shape;
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> byteStrides = m_requirements.strides;
+    byteShape[oldRank - 1] *= dtype().size();
+    byteStrides[oldRank - 1] = 1;
+
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> simpleShape, simpleStrides;
+    int simpleRank = Simplify(oldRank, byteShape, byteStrides, simpleShape, simpleStrides);
+
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> targetByteShape = newShape.shape();
+    targetByteShape[newRank - 1] *= newDtype.size();
+
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> targetByteStrides;
+    bool result =
+        ReshapeSimplified(simpleRank, simpleShape, simpleStrides, newRank, targetByteShape, targetByteStrides);
+    if (!result) {
+        throw Exception("Cannot reshape tensor into requested shape and data type.", eStatusType::INVALID_VALUE);
+    }
+
+    // The byte-level reshape produces stride 1 for the innermost dimension;
+    // scale it back to the new element size.
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> newStrides = targetByteStrides;
+    newStrides[newRank - 1] = newDtype.size();
+
+    Tensor::Requirements reqs =
+        CalcRequirements(newShape, newDtype, newStrides, m_requirements.alignBytes, this->device());
     return Tensor(reqs, m_data);
 }
 

@@ -68,6 +68,15 @@ void TestNegativeTensorShape() {
 }
 
 /**
+ * @brief Negative tests related to Tensor reshape.
+ *
+ */
+void TestNegativeTensorReshape() {
+    Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
+    EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 4}, "NHWC")), eStatusType::INVALID_VALUE);
+}
+
+/**
  * @brief Negative tests for the Tensor class, verifying error handling in invalid scenarios.
  *
  * These tests confirm that the Tensor class appropriately throws exceptions when:
@@ -119,7 +128,7 @@ void TestTensorReshapeCorrectness() {
     // Tensor reshape: Change layout and datatype
     {
         Tensor tensor(TensorShape({1, 5, 4}, "NWC"), DataType(DATA_TYPE_S16));
-        Tensor reshapedTensor = tensor.reshape(TensorShape({1, 5}, "NW"), DataType(DATA_TYPE_4S16));
+        Tensor reshapedTensor = tensor.reshape(DataType(DATA_TYPE_4S16), TensorShape({1, 5}, "NW"));
         EXPECT_NE(reshapedTensor.shape().size(), tensor.shape().size());
         EXPECT_NE(reshapedTensor.rank(), tensor.rank());
         EXPECT_EQ(reshapedTensor.rank(), 2);
@@ -162,10 +171,11 @@ int main(int argc, char** argv) {
     // Negative tests
     TEST_CASE(TestNegativeTensorShape());
     TEST_CASE(TestNegativeTensor());
+    TEST_CASE(TestNegativeTensorReshape());
 
     // Correctness tests
     TEST_CASE(TestTensorCorrectness());
-    // TEST_CASE(TestTensorReshapeCorrectness());
+    TEST_CASE(TestTensorReshapeCorrectness());
 
     // Stride calculation tests
     // clang-format off

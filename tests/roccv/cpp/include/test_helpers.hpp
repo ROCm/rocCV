@@ -392,30 +392,37 @@ void CompareVectorsNear(const std::vector<T>& result, const std::vector<T>& ref,
  *         If no padding, returns (total_size, 1, total_size)
  */
 inline std::tuple<size_t, size_t, size_t> ComputeCopyParams(const Tensor& tensor) {
-    auto tensorData = tensor.exportData<TensorDataStrided>();
-    const auto& layout = tensor.layout();
-    int heightIdx = layout.height_index();
-
-    if (heightIdx < 0) {
-        // No height dimension = contiguous data, no padding
+    if (tensor.isContiguous()) {
         size_t totalSize = tensor.shape().size() * tensor.dtype().size();
         return {totalSize, 1, totalSize};
     }
 
-    // Row width = product of all dimensions AFTER height_index × dtype size
+    auto tensorData = tensor.exportData<TensorDataStrided>();
+
+    // Find the padded dimension: the outermost dimension whose stride exceeds
+    // the packed product of the next dimension's shape and stride.
+    int paddedDim = 0;
+    for (int i = 0; i < tensor.rank() - 1; i++) {
+        if (tensorData.stride(i) != tensor.shape(i + 1) * tensorData.stride(i + 1)) {
+            paddedDim = i;
+            break;
+        }
+    }
+
+    // Row width = product of all dimensions AFTER paddedDim × dtype size
     size_t rowWidth = tensor.dtype().size();
-    for (int i = heightIdx + 1; i < layout.rank(); ++i) {
+    for (int i = paddedDim + 1; i < tensor.rank(); ++i) {
         rowWidth *= tensor.shape(i);
     }
 
-    // Number of rows = product of all dimensions UP TO AND INCLUDING height_index
+    // Number of rows = product of all dimensions UP TO AND INCLUDING paddedDim
     size_t numRows = 1;
-    for (int i = 0; i <= heightIdx; ++i) {
+    for (int i = 0; i <= paddedDim; ++i) {
         numRows *= tensor.shape(i);
     }
 
-    // Tensor pitch comes from the stride at height_index
-    size_t tensorPitch = tensorData.stride(heightIdx);
+    // Tensor pitch comes from the stride at the padded dimension
+    size_t tensorPitch = tensorData.stride(paddedDim);
 
     return {rowWidth, numRows, tensorPitch};
 }
