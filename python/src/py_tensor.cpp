@@ -141,8 +141,8 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
         roccv::Tensor::CalcRequirements(shape, roccv::DataType(dtype), stridesData, 0, device);
 
     // Since this tensor is coming from a DLPack, we don't own the data, so we need to create a view of the data.
-    std::shared_ptr<roccv::TensorStorage> data =
-        std::make_shared<roccv::TensorStorage>(dlTensor.data, device, eOwnership::VIEW);
+    std::shared_ptr<roccv::TensorStorage> data = std::make_shared<roccv::TensorStorage>(
+        static_cast<uint8_t*>(dlTensor.data) + dlTensor.byte_offset, device, eOwnership::VIEW);
     std::shared_ptr<roccv::Tensor> tensor = std::make_shared<roccv::Tensor>(reqs, data);
 
     // Instantiate a new tensor and a PyTensor to wrap it, binding the original DLManagedTensor
