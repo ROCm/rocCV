@@ -130,6 +130,44 @@ static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& 
     return outRank;
 }
 
+/**
+ * @brief Computes copy parameters for host-tensor copy.
+ * @return (row_width_bytes, num_rows, tensor_pitch). If contiguous, returns (total_size, 1, total_size).
+ */
+static std::tuple<size_t, size_t, size_t> ComputeCopyParams(int rank,
+                                                            const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                                                            const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& strides,
+                                                            size_t dtypeSize, bool contiguous) {
+    if (contiguous) {
+        size_t totalSize = dtypeSize;
+        for (int i = 0; i < rank; ++i) {
+            totalSize *= static_cast<size_t>(shape[i]);
+        }
+        return {totalSize, 1, totalSize};
+    }
+
+    int paddedDim = 0;
+    for (int i = 0; i < rank - 1; i++) {
+        if (strides[i] != shape[i + 1] * strides[i + 1]) {
+            paddedDim = i;
+            break;
+        }
+    }
+
+    size_t rowWidth = dtypeSize;
+    for (int i = paddedDim + 1; i < rank; ++i) {
+        rowWidth *= static_cast<size_t>(shape[i]);
+    }
+
+    size_t numRows = 1;
+    for (int i = 0; i <= paddedDim; ++i) {
+        numRows *= static_cast<size_t>(shape[i]);
+    }
+
+    size_t tensorPitch = static_cast<size_t>(strides[paddedDim]);
+    return {rowWidth, numRows, tensorPitch};
+}
+
 }  // namespace
 
 // Constructor definitions
@@ -246,6 +284,28 @@ Tensor& Tensor::operator=(const Tensor& other) {
 size_t Tensor::dataSize() const { return m_requirements.strides[0] * m_requirements.shape[0]; }
 
 bool Tensor::isContiguous() const { return dataSize() == shape().size() * dtype().size(); }
+
+void Tensor::copyFromHost(const void* src, hipStream_t stream) const {
+    auto [rowWidth, numRows, tensorPitch] = ComputeCopyParams(m_requirements.rank, m_requirements.shape,
+                                                              m_requirements.strides, dtype().size(), isContiguous());
+
+    const size_t srcPitch = rowWidth;
+    hipMemcpyKind kind = (device() == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
+
+    HIP_VALIDATE_NO_ERRORS(
+        hipMemcpy2DAsync(m_data->data(), tensorPitch, src, srcPitch, rowWidth, numRows, kind, stream));
+}
+
+void Tensor::copyToHost(void* dst, hipStream_t stream) const {
+    auto [rowWidth, numRows, tensorPitch] = ComputeCopyParams(m_requirements.rank, m_requirements.shape,
+                                                              m_requirements.strides, dtype().size(), isContiguous());
+
+    const size_t dstPitch = rowWidth;
+    hipMemcpyKind kind = (device() == eDeviceType::GPU) ? hipMemcpyDeviceToHost : hipMemcpyHostToHost;
+
+    HIP_VALIDATE_NO_ERRORS(
+        hipMemcpy2DAsync(dst, dstPitch, m_data->data(), tensorPitch, rowWidth, numRows, kind, stream));
+}
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, eDeviceType device) {
     return CalcRequirements(shape, dtype, (MemAlignment){}, device);

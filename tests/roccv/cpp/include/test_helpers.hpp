@@ -436,15 +436,8 @@ inline std::tuple<size_t, size_t, size_t> ComputeCopyParams(const Tensor& tensor
  */
 template <typename T>
 void CopyVectorIntoTensor(const Tensor& dst, const std::vector<T>& src) {
-    auto tensorData = dst.exportData<TensorDataStrided>();
-    auto [rowWidth, numRows, dstPitch] = ComputeCopyParams(dst);
-
-    // Source is always contiguous
-    size_t srcPitch = rowWidth;
-
-    hipMemcpyKind kind = (dst.device() == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
-
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy2D(tensorData.basePtr(), dstPitch, src.data(), srcPitch, rowWidth, numRows, kind));
+    dst.copyFromHost(src.data(), nullptr);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 }
 
 /**
@@ -460,15 +453,8 @@ void CopyVectorIntoTensor(const Tensor& dst, const std::vector<T>& src) {
  */
 template <typename T>
 void CopyTensorIntoVector(std::vector<T>& dst, const Tensor& src) {
-    auto tensorData = src.exportData<TensorDataStrided>();
-    auto [rowWidth, numRows, srcPitch] = ComputeCopyParams(src);
-
-    // Destination is always contiguous
-    size_t dstPitch = rowWidth;
-
-    hipMemcpyKind kind = (src.device() == eDeviceType::GPU) ? hipMemcpyDeviceToHost : hipMemcpyHostToHost;
-
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy2D(dst.data(), dstPitch, tensorData.basePtr(), srcPitch, rowWidth, numRows, kind));
+    src.copyToHost(dst.data(), nullptr);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 }
 /**
  * @brief Computes the strides for a tensor with a given shape and data type.
