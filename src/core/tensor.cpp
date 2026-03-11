@@ -168,6 +168,51 @@ static std::tuple<size_t, size_t, size_t> ComputeCopyParams(int rank,
     return {rowWidth, numRows, tensorPitch};
 }
 
+/**
+ * @brief Computes the memory alignment for a tensor based on the device, data type, and user provided buffer alignment.
+ * @param[in] device The device the tensor is to be allocated on.
+ * @param[in] dtype The datatype of the tensor.
+ * @param[in] bufAlign The memory alignment to use.
+ * @return The memory alignment for the tensor.
+ */
+MemAlignment ComputeMemAlignment(eDeviceType device, const DataType& dtype, const MemAlignment& bufAlign) {
+    int dev = 0;
+    if (device == eDeviceType::GPU) {
+        HIP_VALIDATE_NO_ERRORS(hipGetDevice(&dev));
+    }
+
+    int rowAlign;
+    if (bufAlign.rowAddr() == 0) {
+        if (device == eDeviceType::GPU) {
+            HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&rowAlign, hipDeviceAttributeTexturePitchAlignment, dev));
+        } else {
+            rowAlign = ROCCV_CPU_DEFAULT_ALIGNMENT;
+        }
+        rowAlign = std::lcm(rowAlign, detail::NextPowerOfTwo(dtype.size()));
+    } else {
+        if (!detail::IsPowerOfTwo(bufAlign.rowAddr())) {
+            throw Exception("Row address alignment must be a power of two.", eStatusType::INVALID_VALUE);
+        }
+        rowAlign = std::lcm(bufAlign.rowAddr(), detail::NextPowerOfTwo(dtype.size()));
+    }
+
+    int baseAlign;
+    if (bufAlign.baseAddr() == 0) {
+        if (device == eDeviceType::GPU) {
+            HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&baseAlign, hipDeviceAttributeTextureAlignment, dev));
+        } else {
+            baseAlign = ROCCV_CPU_DEFAULT_ALIGNMENT;
+        }
+        baseAlign = std::lcm(baseAlign, detail::NextPowerOfTwo(dtype.size()));
+    } else {
+        if (!detail::IsPowerOfTwo(bufAlign.baseAddr())) {
+            throw Exception("Base address alignment must be a power of two.", eStatusType::INVALID_VALUE);
+        }
+        baseAlign = std::lcm(bufAlign.baseAddr(), detail::NextPowerOfTwo(dtype.size()));
+    }
+
+    return MemAlignment().baseAddr(baseAlign).rowAddr(rowAlign);
+}
 }  // namespace
 
 // Constructor definitions
@@ -313,35 +358,10 @@ Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const Da
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype,
                                               const MemAlignment& bufAlign, eDeviceType device) {
-    int dev;
-    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&dev));
+    MemAlignment newAlign = ComputeMemAlignment(device, dtype, bufAlign);
 
-    // Validate memory alignment, set default alignment if set to 0.
-    // TODO: Must be supported for CPU as well.
-    int rowAlign;
-    if (bufAlign.rowAddr() == 0) {
-        HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&rowAlign, hipDeviceAttributeTexturePitchAlignment, dev));
-        rowAlign = std::lcm(rowAlign, detail::NextPowerOfTwo(dtype.size()));
-    } else {
-        if (!detail::IsPowerOfTwo(bufAlign.rowAddr())) {
-            throw Exception("Row address alignment must be a power of two.", eStatusType::INVALID_VALUE);
-        }
-        rowAlign = std::lcm(bufAlign.rowAddr(), detail::NextPowerOfTwo(dtype.size()));
-    }
-
-    int baseAlign;
-    if (bufAlign.baseAddr() == 0) {
-        HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&baseAlign, hipDeviceAttributeTextureAlignment, dev));
-        baseAlign = std::lcm(baseAlign, detail::NextPowerOfTwo(dtype.size()));
-    } else {
-        if (!detail::IsPowerOfTwo(bufAlign.baseAddr())) {
-            throw Exception("Base address alignment must be a power of two.", eStatusType::INVALID_VALUE);
-        }
-        baseAlign = std::lcm(bufAlign.baseAddr(), detail::NextPowerOfTwo(dtype.size()));
-    }
-
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype, rowAlign);
-    Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, baseAlign, device);
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides = CalcStrides(shape, dtype, newAlign.rowAddr());
+    Tensor::Requirements reqs = CalcRequirements(shape, dtype, strides, newAlign.baseAddr(), device);
     return reqs;
 }
 

@@ -25,6 +25,8 @@
 
 namespace roccv {
 
+constexpr int32_t ROCCV_CPU_DEFAULT_ALIGNMENT = 64;  // Default alignment for CPU memory
+
 /**
  * @class MemAlignment
  * @brief Class for specifying memory alignment constraints for buffer allocations.
