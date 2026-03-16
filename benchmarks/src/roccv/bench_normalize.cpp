@@ -31,16 +31,26 @@
 
 using namespace roccv;
 
-BENCHMARK(Normalize, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunNormalizeBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     Tensor::Requirements paramTensorReqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}), DataType(eDataType::DATA_TYPE_F32));
+        TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, inFormat.channels()}),
+        DataType(eDataType::DATA_TYPE_F32), DeviceType);
     Tensor scale(paramTensorReqs);
     Tensor base(paramTensorReqs);
 
@@ -59,44 +69,26 @@ BENCHMARK(Normalize, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(Normalize, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_NORMALIZE_BENCHMARK(name, device, inFormat, outFormat)                                   \
+    BENCHMARK_P(Normalize, name,                                                                        \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat))) { \
+        return RunNormalizeBenchmark<device>(params);                                                   \
+    }
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
-        eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
+// GPU benchmarks
+DEFINE_NORMALIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
 
-    Tensor::Requirements paramTensorReqs =
-        Tensor::CalcRequirements(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 3}),
-                                 DataType(eDataType::DATA_TYPE_F32), eDeviceType::CPU);
-    Tensor scale(paramTensorReqs);
-    Tensor base(paramTensorReqs);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-    RegisterMemoryUsage(scale, results.readMemoryBytes);
-    RegisterMemoryUsage(base, results.readMemoryBytes);
-
-    FillTensor(input);
-    FillTensor(scale);
-    FillTensor(base);
-
-    Normalize op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, base, scale, output, 1.0f, 0.0f, 0.00001f, 0, eDeviceType::CPU); }, results.executionTime,
-        config.runs, config.warmupRuns);
-
-    return results;
-}
+// CPU benchmarks
+DEFINE_NORMALIZE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);

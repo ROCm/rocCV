@@ -24,17 +24,23 @@
 
 #include "opencv_bench_helpers.hpp"
 
-BENCHMARK(CopyMakeBorderConstant, OpenCV) {
+template <typename T>
+static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    const int top = 9;
-    const int left = 9;
-    const int bottom = 9;
-    const int right = 9;
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
+    int border = roccvbench::GetParamValue<int>(params, "border");
+    int top = roccvbench::GetParamValue<int>(params, "borderTop");
+    int left = roccvbench::GetParamValue<int>(params, "borderLeft");
 
-    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    std::vector<cv::Mat> outputs =
-        CreateOutputMats(config.samples, config.width + left + right, config.height + top + bottom, CV_8UC3);
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width + left * 2, height + top * 2, outFormat);
 
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
@@ -42,10 +48,24 @@ BENCHMARK(CopyMakeBorderConstant, OpenCV) {
     ROCCV_BENCH_RECORD_BLOCK(
         {
             for (size_t i = 0; i < mats.size(); i++) {
-                cv::copyMakeBorder(mats[i], outputs[i], top, bottom, left, right, CV_HAL_BORDER_CONSTANT, 0);
+                cv::copyMakeBorder(mats[i], outputs[i], top, top, left, left, border, 0);
             }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     return results;
 }
+#define DEFINE_COPY_MAKE_BORDER_BENCHMARK(name, T, inFormat, outFormat, border, borderTop, borderLeft)                \
+    BENCHMARK_P(                                                                                                      \
+        CopyMakeBorder, name,                                                                                         \
+        BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),                                                \
+                     BENCH_PARAM_STR("outFormat", outFormat, #outFormat), BENCH_PARAM_STR("border", border, #border), \
+                     BENCH_PARAM("borderTop", borderTop), BENCH_PARAM("borderLeft", borderLeft))) {                   \
+        return RunCopyMakeBorderBenchmark<T>(params);                                                                 \
+    }
+
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, CV_HAL_BORDER_CONSTANT, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, CV_HAL_BORDER_REPLICATE, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, CV_HAL_BORDER_REFLECT, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, CV_HAL_BORDER_REFLECT_101, 9, 9);
+DEFINE_COPY_MAKE_BORDER_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3, CV_HAL_BORDER_WRAP, 9, 9);

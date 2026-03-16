@@ -21,6 +21,7 @@
 
 #include <core/hip_assert.h>
 
+#include <core/image_format.hpp>
 #include <core/tensor.hpp>
 #include <op_gamma_contrast.hpp>
 #include <roccvbench/registry.hpp>
@@ -30,15 +31,23 @@
 
 using namespace roccv;
 
-BENCHMARK(GammaContrast, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunGammaContrastBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8));
-    Tensor input(reqs);
-    Tensor output(reqs);
-    float gamma = 2.2f;
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    float gamma = roccvbench::GetParamValue<float>(params, "gamma");
+
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
@@ -51,35 +60,27 @@ BENCHMARK(GammaContrast, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, gamma);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, gamma, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(GammaContrast, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_GAMMA_CONTRAST_BENCHMARK(name, device, inFormat, outFormat, gamma)                    \
+    BENCHMARK_P(GammaContrast, name,                                                                 \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("gamma", gamma))) {                                         \
+        return RunGammaContrastBenchmark<device>(params);                                            \
+    }
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8), eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
-    float gamma = 2.2f;
+// GPU benchmarks
+DEFINE_GAMMA_CONTRAST_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 2.2f);
 
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    GammaContrast op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, gamma, eDeviceType::CPU); }, results.executionTime, config.runs,
-        config.warmupRuns);
-
-    return results;
-}
+// CPU benchmarks
+DEFINE_GAMMA_CONTRAST_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 2.2f);
