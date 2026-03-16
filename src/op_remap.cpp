@@ -197,7 +197,6 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
 
     // Ensure the layout and shapes for the input/output tensors match
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
-    CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(map.layout() == output.layout());
     CHECK_TENSOR_COMPARISON((map.shape(map.layout().batch_index()) == input.shape(input.layout().batch_index())) 
                             || (map.shape(map.layout().batch_index()) == 1));

@@ -80,7 +80,7 @@ class Remap final : public IOperator {
      *      -------------- | -------------
      *       TensorLayout  | No
      *       DataType      | No
-     *       Channels      | No
+     *       Channels      | No (Map must have exactly 2 channels)
      *       Width         | No
      *       Height        | No
      *       Batch Size    | Yes or 1
