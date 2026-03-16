@@ -31,7 +31,7 @@ namespace Device {
 using namespace roccv::detail;
     
 template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
-__global__ void remap(SrcWrapper input, DstWrapper output, MapWrapper map, bool alignCorners, int mapBatchSize, RemapParams params) {
+__global__ void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int mapBatchSize, RemapParams params) {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
     const int b = blockIdx.z;

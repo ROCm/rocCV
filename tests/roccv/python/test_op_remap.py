@@ -34,7 +34,7 @@ from test_helpers import generate_tensor, compare_tensors
 @pytest.mark.parametrize("interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
 @pytest.mark.parametrize("map_interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
 @pytest.mark.parametrize("map_type", [rocpycv.REMAP_ABSOLUTE, rocpycv.REMAP_ABSOLUTE_NORMALIZED, rocpycv.REMAP_RELATIVE_NORMALIZED])
-@pytest.mark.parametrize("align_corners", [False])
+@pytest.mark.parametrize("align_corners", [True, False])
 @pytest.mark.parametrize("channels", [1, 3, 4])
 @pytest.mark.parametrize("samples, width, height", [
     (1, 720, 480),

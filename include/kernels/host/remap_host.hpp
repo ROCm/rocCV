@@ -32,7 +32,7 @@ namespace Host {
 using namespace roccv::detail;
     
 template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
-void remap(SrcWrapper input, DstWrapper output, MapWrapper map, bool alignCorners, int mapBatchSize, RemapParams params) {
+void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int mapBatchSize, RemapParams params) {
     
     float2 srcCoord = make_float2(0.f, 0.f);
     float2 mapCoord = make_float2(0.f, 0.f);

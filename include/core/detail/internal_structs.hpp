@@ -22,6 +22,7 @@
 #pragma once
 
 #include "core/detail/type_traits.hpp"
+#include <hip/hip_runtime.h>
 
 namespace roccv::detail {
     
