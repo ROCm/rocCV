@@ -21,6 +21,7 @@
 
 #include <core/hip_assert.h>
 
+#include <core/image_format.hpp>
 #include <core/tensor.hpp>
 #include <op_custom_crop.hpp>
 #include <roccvbench/registry.hpp>
@@ -30,20 +31,27 @@
 
 using namespace roccv;
 
-BENCHMARK(CustomCrop, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunCustomCropBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8));
-    Tensor input(reqs);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    Box_t cropRect = roccvbench::GetParamValue<Box_t>(params, "cropRect");
 
-    Box_t cropRect = {150, 50, 400, 300};
-    Tensor output(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                              {config.samples, cropRect.height, cropRect.width, 3}),
-                  input.dtype());
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(
+        samples, {static_cast<int>(cropRect.width), static_cast<int>(cropRect.height)}, outFormat, DeviceType);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
-    RegisterMemoryUsage(input, results.readMemoryBytes);
+    // Kernel only reads the output size from the input tensor, so we need to register the output tensor for reading.
+    RegisterMemoryUsage(output, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
@@ -54,38 +62,31 @@ BENCHMARK(CustomCrop, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, cropRect);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, cropRect, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(CustomCrop, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_CUSTOM_CROP_BENCHMARK(name, device, inFormat, outFormat, cropRect)                    \
+    BENCHMARK_P(CustomCrop, name,                                                                    \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("cropRect", cropRect))) {                                   \
+        return RunCustomCropBenchmark<device>(params);                                               \
+    }
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8), eDeviceType::CPU);
-    Tensor input(reqs);
+// GPU benchmarks
+DEFINE_CUSTOM_CROP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, ((Box_t){150, 50, 400, 300}));
+DEFINE_CUSTOM_CROP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, ((Box_t){150, 50, 400, 300}));
+DEFINE_CUSTOM_CROP_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, ((Box_t){150, 50, 400, 300}));
 
-    Box_t cropRect = {150, 50, 400, 300};
-    Tensor output(TensorShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                              {config.samples, cropRect.height, cropRect.width, 3}),
-                  input.dtype(), eDeviceType::CPU);
-
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    CustomCrop op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, cropRect, eDeviceType::CPU); }, results.executionTime, config.runs,
-        config.warmupRuns);
-
-    return results;
-}
+// CPU benchmarks
+DEFINE_CUSTOM_CROP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, ((Box_t){150, 50, 400, 300}));
+DEFINE_CUSTOM_CROP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGBA8, FMT_RGBA8, ((Box_t){150, 50, 400, 300}));
+DEFINE_CUSTOM_CROP_BENCHMARK(CPU, eDeviceType::CPU, FMT_U8, FMT_U8, ((Box_t){150, 50, 400, 300}));

@@ -25,11 +25,20 @@
 
 #include "opencv_bench_helpers.hpp"
 
-BENCHMARK(WarpPerspective, OpenCV) {
+template <typename T>
+static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    std::vector<cv::Mat> mats = GenerateMats<uint8_t>(config.samples, config.width, config.height, CV_8UC3);
-    std::vector<cv::Mat> outputs = CreateOutputMats(config.samples, config.width, config.height, CV_8UC3);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    int inFormat = roccvbench::GetParamValue<int>(params, "inFormat");
+    int outFormat = roccvbench::GetParamValue<int>(params, "outFormat");
+
+    std::vector<cv::Mat> mats = GenerateMats<T>(samples, width, height, inFormat);
+    std::vector<cv::Mat> outputs = CreateOutputMats(samples, width, height, outFormat);
 
     std::vector<float> transformData = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
     cv::Mat transform(3, 3, CV_32F, transformData.data());
@@ -45,6 +54,15 @@ BENCHMARK(WarpPerspective, OpenCV) {
                                     cv::BORDER_CONSTANT, 0);
             }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
     return results;
 }
+
+#define DEFINE_WARP_PERSPECTIVE_BENCHMARK(name, T, inFormat, outFormat)              \
+    BENCHMARK_P(WarpPerspective, name,                                               \
+                BENCH_PARAMS(BENCH_PARAM_STR("inFormat", inFormat, #inFormat),       \
+                             BENCH_PARAM_STR("outFormat", outFormat, #outFormat))) { \
+        return RunWarpPerspectiveBenchmark<T>(params);                               \
+    }
+
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(OpenCV, uint8_t, CV_8UC3, CV_8UC3);

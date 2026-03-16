@@ -31,15 +31,25 @@
 
 using namespace roccv;
 
-BENCHMARK(Resize, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunResizeBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8);
-    Tensor::Requirements outputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8);
-    Tensor input(inputReqs);
-    Tensor output(outputReqs);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    eInterpolationType interpolation = roccvbench::GetParamValue<eInterpolationType>(params, "interpolation");
+    int scale = roccvbench::GetParamValue<int>(params, "scale");
+
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs =
+        Tensor::CalcRequirements(samples, {width * scale, height * scale}, outFormat, DeviceType);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
@@ -52,35 +62,27 @@ BENCHMARK(Resize, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, eInterpolationType::INTERP_TYPE_LINEAR);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, interpolation, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(Resize, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_RESIZE_BENCHMARK(name, device, inFormat, outFormat, interpolation, scale)                  \
+    BENCHMARK_P(Resize, name,                                                                             \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat),      \
+                             BENCH_PARAM("interpolation", interpolation), BENCH_PARAM("scale", scale))) { \
+        return RunResizeBenchmark<device>(params);                                                        \
+    }
 
-    Tensor::Requirements inputReqs =
-        Tensor::CalcRequirements(config.samples, (Size2D){config.width, config.height}, FMT_RGB8, eDeviceType::CPU);
-    Tensor::Requirements outputReqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){config.width * 2, config.height * 2}, FMT_RGB8, eDeviceType::CPU);
-    Tensor input(inputReqs);
-    Tensor output(outputReqs);
+// GPU benchmarks
+DEFINE_RESIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 2);
 
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    Resize op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+// CPU benchmarks
+DEFINE_RESIZE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 2);
