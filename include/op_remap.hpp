@@ -70,12 +70,25 @@ class Remap final : public IOperator {
      *       TensorLayout  | Yes
      *       DataType      | Yes
      *       Channels      | Yes
-     *       Width         | Yes
-     *       Height        | Yes
+     *       Width         | No
+     *       Height        | No
      *       Batch Size    | Yes
+     * 
+     * Input/Map dependency:
+     *
+     *       Property      |  Input == Map
+     *      -------------- | -------------
+     *       TensorLayout  | No
+     *       DataType      | No
+     *       Channels      | No
+     *       Width         | No
+     *       Height        | No
+     *       Batch Size    | Yes or 1
      *
      *  Currently supported remap types:
      *      - REMAP_ABSOLUTE
+     *      - REMAP_ABSOLUTE_NORMALIZED
+     *      - REMAP_RELATIVE_NORMALIZED
      *
      *
      * @param[in] stream The HIP stream to run this operation on.
