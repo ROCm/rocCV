@@ -1,5 +1,7 @@
 @PACKAGE_INIT@
 
+set(roccv_VERSION @PROJECT_VERSION@)
+
 include(CMakeFindDependencyMacro)
 
 # Re-find transitive dependencies so the imported target works

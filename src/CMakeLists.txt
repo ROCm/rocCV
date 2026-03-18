@@ -41,6 +41,8 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${ROCCV_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/roccv>
 )
+# Require C++20 so downstream gets the right standard when linking to roccv::roccv
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     POSITION_INDEPENDENT_CODE ON
