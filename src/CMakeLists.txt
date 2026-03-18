@@ -28,12 +28,13 @@ add_library(roccv::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
 target_compile_options(${PROJECT_NAME}
-    PUBLIC
+    PRIVATE
         ${OpenMP_CXX_FLAGS}
 )
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         hip::device
+    PRIVATE
         OpenMP::OpenMP_CXX
 )
 target_include_directories(${PROJECT_NAME}
