@@ -25,7 +25,6 @@ file(GLOB_RECURSE ROCCV_SRC "*.cpp")
 add_library(${PROJECT_NAME} SHARED ${ROCCV_SRC})
 add_library(roccv::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
 target_compile_options(${PROJECT_NAME}
@@ -43,8 +42,13 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/roccv>
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/rocm_sysdeps/lib;${ROCM_PATH}/lib/llvm/lib" BUILD_WITH_INSTALL_RPATH TRUE)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
+    BUILD_RPATH "${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
+    INSTALL_RPATH "\$ORIGIN;\$ORIGIN/rocm_sysdeps/lib;\$ORIGIN/llvm/lib"
+)
 
 # Add export set
 

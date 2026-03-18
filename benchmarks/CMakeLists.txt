@@ -143,3 +143,8 @@ file(GLOB BENCHMARK_SOURCES_GLOBBED
 add_executable(${PROJECT_NAME} ${BENCHMARK_SOURCES_GLOBBED} "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${BENCHMARK_LIBS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${BENCHMARK_INCLUDES})
+# In-tree libroccv first so we use the built library; ROCm lib remains for librocrand etc.
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+    BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
+)

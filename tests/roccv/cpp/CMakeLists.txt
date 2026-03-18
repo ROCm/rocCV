@@ -110,7 +110,8 @@ foreach(test_source ${CPP_ROCCV_TEST_SOURCES})
     
     # Set output directory to match source structure: bin/tests/<subdir>/
     set_target_properties(${test_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${test_subdir}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests/${test_subdir}"
+        BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
     )
     
     add_test(NAME ${test_name} COMMAND ${test_name})

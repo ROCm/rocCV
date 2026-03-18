@@ -194,8 +194,13 @@ target_link_libraries(${PROJECT_NAME}
         dlpack::dlpack
         pybind11::headers
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET "hidden" CUDA_VISIBILITY_PRESET "hidden")
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/..;$ORIGIN;$ORIGIN/../rocm_sysdeps/lib;${ROCM_PATH}/lib/llvm/lib" BUILD_WITH_INSTALL_RPATH TRUE)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_VISIBILITY_PRESET "hidden"
+    CUDA_VISIBILITY_PRESET "hidden"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
+    INSTALL_RPATH "\$ORIGIN/..;\$ORIGIN;\$ORIGIN/../rocm_sysdeps/lib;\$ORIGIN/../llvm/lib"
+)
 
 # install rocpycv lib -- {ROCM_PATH)/lib
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME} COMPONENT runtime)

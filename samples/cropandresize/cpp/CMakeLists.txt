@@ -24,3 +24,7 @@
 add_executable(roccv_cropandresize_app main.cpp)
 target_link_libraries(roccv_cropandresize_app PRIVATE roccv::roccv ${OpenCV_LIBS})
 target_include_directories(roccv_cropandresize_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+set_target_properties(roccv_cropandresize_app PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/samples"
+    BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
+)
