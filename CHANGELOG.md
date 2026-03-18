@@ -11,6 +11,7 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 ### Changed
 - Switched from submodules to CMake's `FetchContent()` for DLPack and Pybind11 dependencies.
 - Benchmarking suite now uses `rocRAND` for random data generation on the device.
+- OpenMP moved from public -> private dependency for roccv.
 
 ### Known issues
 - Python bindings are installed improperly, causing double import issues when importing it into a project.
