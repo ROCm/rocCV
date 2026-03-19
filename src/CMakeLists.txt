@@ -43,6 +43,11 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/roccv>
 )
 
+# Mark HIP includes as system to suppress warnings from ROCm headers
+target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
+    $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+)
+
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/rocm_sysdeps/lib;${ROCM_PATH}/lib/llvm/lib" BUILD_WITH_INSTALL_RPATH TRUE)
 
