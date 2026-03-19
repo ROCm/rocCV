@@ -34,8 +34,8 @@ namespace Kernels {
 namespace Host {
                                       
 template <typename T, typename SrcWrapper, typename DstWrapper>
-void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float sigmaColor,
-                      float sigmaSpace, int height, int width, int prevHeight, int prevWidth, 
+void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* sigmaColor */,
+                      float /* sigmaSpace */, int height, int width, int prevHeight, int prevWidth, 
                       float spaceCoeff, float colorCoeff) {
     using namespace roccv::detail;
     using worktype = MakeType<float,NumElements<T>>;

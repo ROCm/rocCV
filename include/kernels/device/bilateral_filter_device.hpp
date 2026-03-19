@@ -36,7 +36,7 @@ namespace Device {
                                                    
 template <typename T, typename SrcWrapper, typename DstWrapper>
 __global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius,
-                                 float sigmaColor, float sigmaSpace, float spaceCoeff, float colorCoeff) {
+                                 float /* sigmaColor */, float /* sigmaSpace */, float spaceCoeff, float colorCoeff) {
     using namespace roccv::detail;
     using worktype = MakeType<float,NumElements<T>>;
     const int idx = (threadIdx.x + blockIdx.x * blockDim.x) * 2;

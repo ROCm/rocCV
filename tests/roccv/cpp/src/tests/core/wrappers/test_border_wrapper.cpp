@@ -198,6 +198,8 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

@@ -40,7 +40,7 @@ Remap::~Remap() {}
 
 template <typename T, eBorderType B, eInterpolationType I, eInterpolationType M>
 void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                              eRemapType mapValueType, bool alignCorners, T borderValue,
+                              eRemapType /* mapValueType */, bool /* alignCorners */, T borderValue,
                               eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
     InterpolationWrapper<float2, B, M> wrappedMapTensor(map, make_float2(0, 0));

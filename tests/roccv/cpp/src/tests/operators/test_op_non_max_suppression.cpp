@@ -197,6 +197,8 @@ void TestCorrectness(int batchSize, int numBoxes, float scoreThreshold, float io
 }  // namespace
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // GPU conformance tests
