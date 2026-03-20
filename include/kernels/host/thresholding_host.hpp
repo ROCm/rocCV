@@ -41,11 +41,11 @@ void binary_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWra
     for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
         double th = thresh.at(z_idx);
         double mv = maxVal.at(z_idx);
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
                 dst_type outputVal;
-                for (int i = 0; i < output.channels(); i++) {
+                for (int64_t i = 0; i < output.channels(); i++) {
                     double ip = StaticCast<double>(GetElement(inputVal, i));
                     double outVal = ip > th ? mv : 0;
                     GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -67,11 +67,11 @@ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTenso
     for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
         double th = thresh.at(z_idx);
         double mv = maxVal.at(z_idx);
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
                 dst_type outputVal;
-                for (int i = 0; i < output.channels(); i++) {
+                for (int64_t i = 0; i < output.channels(); i++) {
                     double ip = StaticCast<double>(GetElement(inputVal, i));
                     double outVal = ip > th ? 0 : mv;
                     GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -92,11 +92,11 @@ void trunc_generic(SrcWrapper input, DstWrapper output,
     
     for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
         double th = thresh.at(z_idx);
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
                 dst_type outputVal;
-                for (int i = 0; i < output.channels(); i++) {
+                for (int64_t i = 0; i < output.channels(); i++) {
                     double ip = StaticCast<double>(GetElement(inputVal, i));
                     double outVal = ip > th ? th : ip;
                     GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -117,11 +117,11 @@ void tozero_generic(SrcWrapper input, DstWrapper output,
     
     for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
         double th = thresh.at(z_idx);
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
                 dst_type outputVal;
-                for (int i = 0; i < output.channels(); i++) {
+                for (int64_t i = 0; i < output.channels(); i++) {
                     double ip = StaticCast<double>(GetElement(inputVal, i));
                     double outVal = ip > th ? ip : 0;
                     GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -142,11 +142,11 @@ void tozeroinv_generic(SrcWrapper input, DstWrapper output,
     
     for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
         double th = thresh.at(z_idx);
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
                 dst_type outputVal;
-                for (int i = 0; i < output.channels(); i++) {
+                for (int64_t i = 0; i < output.channels(); i++) {
                     double ip = StaticCast<double>(GetElement(inputVal, i));
                     double outVal = ip > th ? 0 : ip;
                     GetElement(outputVal, i) = StaticCast<base_type>(outVal);

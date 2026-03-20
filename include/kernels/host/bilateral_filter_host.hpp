@@ -39,7 +39,7 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float sig
                       float spaceCoeff, float colorCoeff) {
     using namespace roccv::detail;
     using worktype = MakeType<float,NumElements<T>>;
-    for (int idz = 0; idz < output.batches(); idz++) {
+    for (int64_t idz = 0; idz < output.batches(); idz++) {
         for (int idy = prevHeight; idy < height; idy += 2) {
             for (int idx = prevWidth; idx < width; idx += 2) {
                 int3 coord0{idx, idy, idz};

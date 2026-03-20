@@ -21,16 +21,18 @@
 
 #pragma once
 
+#include <hip/hip_runtime.h>
+
 #include "operator_types.h"
 
 namespace Kernels::Host {
 template <eAxis FlipType, typename SrcWrapper, typename DstWrapper>
 void flip(SrcWrapper input, DstWrapper output) {
-    for (int b = 0; b < output.batches(); b++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
-                int srcX = x;
-                int srcY = y;
+    for (int64_t b = 0; b < output.batches(); b++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
+                int64_t srcX = x;
+                int64_t srcY = y;
                 if constexpr (FlipType == eAxis::Y || FlipType == eAxis::BOTH) {
                     // Flip along y-axis (horizontally)
                     srcX = output.width() - x - 1;

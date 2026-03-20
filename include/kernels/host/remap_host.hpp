@@ -28,9 +28,9 @@ namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
 void remap(SrcWrapper input, DstWrapper output, MapWrapper map) {
-    for (int b = 0; b < output.batches(); b++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
+    for (int64_t b = 0; b < output.batches(); b++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 float2 mapCoordinates = map.at(b, y, x, 0);
                 output.at(b, y, x, 0) = input.at(b, mapCoordinates.y, mapCoordinates.x, 0);
             }

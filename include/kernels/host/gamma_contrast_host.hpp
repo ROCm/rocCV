@@ -37,10 +37,10 @@ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma) {
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
     
-    for (int batch = 0; batch < output.batches(); batch++) {
+    for (int64_t batch = 0; batch < output.batches(); batch++) {
 #pragma omp parallel for
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 auto inVal = (RangeCast<work_type>(input.at(batch, y, x, 0)));
                 work_type result = math::vpowf(inVal, gamma);
                 if constexpr (NumElements<dst_type> == 4) {

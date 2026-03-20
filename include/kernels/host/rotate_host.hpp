@@ -21,13 +21,15 @@
 
 #pragma once
 
+#include <hip/hip_runtime.h>
+
 namespace Kernels::Host {
 template <typename SrcWrapper, typename DstWrapper, typename MatWrapper>
 void rotate(SrcWrapper src, DstWrapper dst, MatWrapper affineMat) {
 #pragma omp parallel for
-    for (int b = 0; b < dst.batches(); b++) {
-        for (int y = 0; y < dst.height(); y++) {
-            for (int x = 0; x < dst.width(); x++) {
+    for (int64_t b = 0; b < dst.batches(); b++) {
+        for (int64_t y = 0; y < dst.height(); y++) {
+            for (int64_t x = 0; x < dst.width(); x++) {
                 const auto xShift = x - affineMat[2];
                 const auto yShift = y - affineMat[5];
 

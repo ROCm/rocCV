@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <hip/hip_runtime.h>
 #include "core/detail/casting.hpp"
 
 namespace Kernels {
@@ -32,10 +33,10 @@ inline void composite(SrcWrapper foreground, SrcWrapper background, MaskWrapper 
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
 
-    for (int batch = 0; batch < output.batches(); batch++) {
+    for (int64_t batch = 0; batch < output.batches(); batch++) {
 #pragma omp parallel for
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 // Range cast all input values to float to avoid overflowing values and keep them in the same range.
                 auto maskFactor = RangeCast<float1>(mask.at(batch, y, x, 0));
                 auto fgVal = RangeCast<work_type>(foreground.at(batch, y, x, 0));

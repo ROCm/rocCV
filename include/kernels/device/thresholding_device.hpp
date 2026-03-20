@@ -49,7 +49,7 @@ __global__ void binary_generic(SrcWrapper input, DstWrapper output,
         double mv = maxVal.at(z_idx);
         src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
         dst_type outputVal;
-        for (int i = 0; i < output.channels(); i++) {
+        for (int64_t i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? mv : 0;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -77,7 +77,7 @@ __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output,
         double mv = maxVal.at(z_idx);
         src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
         dst_type outputVal;
-        for (int i = 0; i < output.channels(); i++) {
+        for (int64_t i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? 0 : mv;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -103,7 +103,7 @@ __global__ void trunc_generic(SrcWrapper input, DstWrapper output,
         double th = thresh.at(z_idx);
         src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
         dst_type outputVal;
-        for (int i = 0; i < output.channels(); i++) {
+        for (int64_t i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? th : ip;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -129,7 +129,7 @@ __global__ void tozero_generic(SrcWrapper input, DstWrapper output,
         double th = thresh.at(z_idx);
         src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
         dst_type outputVal;
-        for (int i = 0; i < output.channels(); i++) {
+        for (int64_t i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? ip : 0;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
@@ -156,7 +156,7 @@ __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output,
     double th = thresh.at(z_idx);
     src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
     dst_type outputVal;
-    for (int i = 0; i < output.channels(); i++) {
+    for (int64_t i = 0; i < output.channels(); i++) {
         double ip = StaticCast<double>(GetElement(inputVal, i));
         double outVal = ip > th ? 0 : ip;
         GetElement(outputVal, i) = StaticCast<base_type>(outVal);

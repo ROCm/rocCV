@@ -27,9 +27,9 @@ namespace Kernels::Host {
 template <typename SrcWrapper, typename DstWrapper>
 void resize(SrcWrapper input, DstWrapper output, float scaleX, float scaleY) {
 #pragma omp parallel for
-    for (int batch = 0; batch < output.batches(); batch++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
+    for (int64_t batch = 0; batch < output.batches(); batch++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 float srcX = fmaf(x + 0.5f, scaleX, -0.5f);
                 float srcY = fmaf(y + 0.5f, scaleY, -0.5f);
                 output.at(batch, y, x, 0) = input.at(batch, srcY, srcX, 0);

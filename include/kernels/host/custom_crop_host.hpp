@@ -24,21 +24,30 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include "core/wrappers/image_wrapper.hpp"
 #include "operator_types.h"
 
-namespace Kernels {
-namespace Host {
+namespace Kernels::Host {
+
 template <typename SrcWrapper, typename DstWrapper>
-void custom_crop(SrcWrapper input, DstWrapper output, roccv::Box_t cropRect) {
-    for (int b = 0; b < output.batches(); b++) {
-        for (int i = 0; i < cropRect.width; i++) {
-            for (int j = 0; j < cropRect.height; j++) {
-                int sourceX = i + cropRect.x;
-                int sourceY = j + cropRect.y;
-                output.at(b, j, i, 0) = input.at(b, sourceY, sourceX, 0);
+void custom_crop_kernel(SrcWrapper input, DstWrapper output, const int roi_x, const int roi_y, const int roi_w,
+                        const int roi_h) {
+    using work_type_t = typename DstWrapper::value_type;
+
+#pragma omp parallel for
+    for (int64_t b = 0; b < output.batches(); b++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
+                int src_y = roi_y + static_cast<int>(y);
+                int src_x = roi_x + static_cast<int>(x);
+
+                if (src_x >= 0 && src_x < roi_w && src_y >= 0 && src_y < roi_h) {
+                    work_type_t in_val = input.at(b, src_y, src_x, 0);
+                    output.at(b, y, x, 0) = in_val;
+                }
             }
         }
     }
 }
-}  // namespace Host
-}  // namespace Kernels
+
+}  // namespace Kernels::Host

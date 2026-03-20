@@ -31,9 +31,9 @@ namespace Host {
 template <typename T, typename SrcWrapper>
 void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram) {
 #pragma omp parallel for
-    for (int b = 0; b < input.batches(); b++) {
-        for (int y = 0; y < input.height(); y++) {
-            for (int x = 0; x < input.width(); x++) {
+    for (int64_t b = 0; b < input.batches(); b++) {
+        for (int64_t y = 0; y < input.height(); y++) {
+            for (int64_t x = 0; x < input.width(); x++) {
                 auto hist_idx = input.at(b, y, x, 0);
                 histogram.at(b, hist_idx.x, 0) += 1;
             }
@@ -44,9 +44,9 @@ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram
 template <typename T, typename SrcWrapper, typename MaskWrapper>
 void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::GenericTensorWrapper<T> histogram) {
 #pragma omp parallel for
-    for (int b = 0; b < input.batches(); b++) {
-        for (int y = 0; y < input.height(); y++) {
-            for (int x = 0; x < input.width(); x++) {
+    for (int64_t b = 0; b < input.batches(); b++) {
+        for (int64_t y = 0; y < input.height(); y++) {
+            for (int64_t x = 0; x < input.width(); x++) {
                 if (mask.at(b, y, x, 0) != 0) {
                     auto hist_idx = input.at(b, y, x, 0);
                     histogram.at(b, hist_idx.x, 0) += 1;

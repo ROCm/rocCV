@@ -21,15 +21,16 @@
 
 #pragma once
 
+#include <hip/hip_runtime.h>
 #include <stdint.h>
 
 namespace Kernels {
 namespace Host {
 template <typename SrcDesc, typename DstDesc>
 void copy_make_border(SrcDesc src, DstDesc dst, int32_t top, int32_t left) {
-    for (int n = 0; n < dst.batches(); n++) {
-        for (int y = 0; y < dst.height(); y++) {
-            for (int x = 0; x < dst.width(); x++) {
+    for (int64_t n = 0; n < dst.batches(); n++) {
+        for (int64_t y = 0; y < dst.height(); y++) {
+            for (int64_t x = 0; x < dst.width(); x++) {
                 dst.at(n, y, x, 0) = src.at(n, y - top, x - left, 0);
             }
         }

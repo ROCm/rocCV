@@ -34,9 +34,9 @@ void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_AB beta) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using dst_type = typename DstWrapper::ValueType;
 #pragma omp parallel for
-    for (int batch = 0; batch < output.batches(); batch++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
+    for (int64_t batch = 0; batch < output.batches(); batch++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 output.at(batch, y, x, 0) = SaturateCast<dst_type>(alpha * (input.at(batch, y, x, 0)) + beta);
             }
         }

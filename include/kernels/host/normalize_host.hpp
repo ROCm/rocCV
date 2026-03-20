@@ -44,9 +44,9 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
 // Split work across available threads for the batch dimension of the images. By default, OpenMP will use the maximum
 // available threads on the system unless set otherwise.
 #pragma omp parallel for
-    for (int b = 0; b < output.batches(); b++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
+    for (int64_t b = 0; b < output.batches(); b++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 const int baseBatchIdx = base.batches() == 1 ? 0 : b;
                 const int baseHeightIdx = base.height() == 1 ? 0 : y;
                 const int baseWidthIdx = base.width() == 1 ? 0 : x;

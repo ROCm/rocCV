@@ -28,13 +28,13 @@ namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename Mat>
 void warp_perspective(SrcWrapper input, DstWrapper output, Mat mat) {
-    for (int b = 0; b < output.batches(); b++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
-                const float denom = mat[6] * x + mat[7] * y + mat[8];
+    for (int64_t b = 0; b < output.batches(); b++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
+                const float denom = mat[6] * static_cast<float>(x) + mat[7] * static_cast<float>(y) + mat[8];
                 const float coeff = denom == 0.0 ? std::numeric_limits<float>::max() : 1.0f / denom;
-                const float ox = (mat[0] * x + mat[1] * y + mat[2]) * coeff;
-                const float oy = (mat[3] * x + mat[4] * y + mat[5]) * coeff;
+                const float ox = (mat[0] * static_cast<float>(x) + mat[1] * static_cast<float>(y) + mat[2]) * coeff;
+                const float oy = (mat[3] * static_cast<float>(x) + mat[4] * static_cast<float>(y) + mat[5]) * coeff;
                 output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
             }
         }

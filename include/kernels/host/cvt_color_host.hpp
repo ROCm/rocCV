@@ -37,9 +37,9 @@ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float delta) {
     using work_type_t = MakeType<float, NumElements<T>>;
 
 #pragma omp parallel for
-    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+    for (int64_t z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 T val = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
                 work_type_t valF = StaticCast<work_type_t>(val);
 
@@ -62,9 +62,9 @@ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float delta) {
     using work_type_t = MakeType<float, NumElements<T>>;
 
 #pragma omp parallel for
-    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+    for (int64_t z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 T val = input.at(z_idx, y_idx, x_idx, 0);
                 work_type_t valF = StaticCast<work_type_t>(val);
 
@@ -85,9 +85,9 @@ void reorder(SrcWrapper input, DstWrapper output) {
     using namespace roccv::detail;
 
 #pragma omp parallel for
-    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+    for (int64_t z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
             }
         }
@@ -101,9 +101,9 @@ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     using out_type_t = MakeType<BaseType<T>, 1>;
 
 #pragma omp parallel for
-    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
-        for (int y_idx = 0; y_idx < output.height(); y_idx++) {
-            for (int x_idx = 0; x_idx < output.width(); x_idx++) {
+    for (int64_t z_idx = 0; z_idx < output.batches(); z_idx++) {
+        for (int64_t y_idx = 0; y_idx < output.height(); y_idx++) {
+            for (int64_t x_idx = 0; x_idx < output.width(); x_idx++) {
                 T inVal = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
                 work_type_t inValF = StaticCast<work_type_t>(inVal);
 
