@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include <functional>
 #include <numeric>
+#include <unordered_map>
 
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
