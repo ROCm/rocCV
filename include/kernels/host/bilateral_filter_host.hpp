@@ -23,22 +23,20 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-#include "kernels/kernel_helpers.hpp"
-#include "operator_types.h"
 
-#include "core/detail/type_traits.hpp"
 #include "core/detail/casting.hpp"
+#include "core/detail/type_traits.hpp"
 #include "core/detail/vector_utils.hpp"
+#include "kernels/kernel_helpers.hpp"
 
 namespace Kernels {
 namespace Host {
-                                      
+
 template <typename T, typename SrcWrapper, typename DstWrapper>
-void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* sigmaColor */,
-                      float /* sigmaSpace */, int height, int width, int prevHeight, int prevWidth, 
-                      float spaceCoeff, float colorCoeff) {
+void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, int height, int width, int prevHeight,
+                      int prevWidth, float spaceCoeff, float colorCoeff) {
     using namespace roccv::detail;
-    using worktype = MakeType<float,NumElements<T>>;
+    using worktype = MakeType<float, NumElements<T>>;
     for (int idz = 0; idz < output.batches(); idz++) {
         for (int idy = prevHeight; idy < height; idy += 2) {
             for (int idx = prevWidth; idx < width; idx += 2) {
@@ -47,7 +45,6 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* 
                 int3 coord2{idx, idy + 1, idz};
                 int3 coord3{idx + 1, idy + 1, idz};
 
-                
                 worktype center0 = StaticCast<worktype>(input.at(coord0.z, coord0.y, coord0.x, 0));
                 worktype center1 = StaticCast<worktype>(input.at(coord1.z, coord1.y, coord1.x, 0));
                 worktype center2 = StaticCast<worktype>(input.at(coord2.z, coord2.y, coord2.x, 0));
@@ -68,8 +65,8 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* 
                         int t2 = abs(c - (idx + 1)), t3 = abs(r - (idy + 1));
                         float4 sqrD{t0 * t0 + t1 * t1, t2 * t2 + t1 * t1, t0 * t0 + t3 * t3, t3 * t3 + t2 * t2};
 
-                        if (!(sqrD.x <= sqrRadius || sqrD.y <= sqrRadius ||
-                              sqrD.z <= sqrRadius || sqrD.w <= sqrRadius)) {
+                        if (!(sqrD.x <= sqrRadius || sqrD.y <= sqrRadius || sqrD.z <= sqrRadius ||
+                              sqrD.w <= sqrRadius)) {
                             continue;
                         }
 
@@ -79,8 +76,7 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* 
                         if (sqrD.x <= sqrRadius) {
                             float eSpace = sqrD.x * spaceCoeff;
                             float oneNormSize = norm1(curr - center0);
-                            float eColor =
-                                oneNormSize * oneNormSize * colorCoeff;
+                            float eColor = oneNormSize * oneNormSize * colorCoeff;
                             float weight = exp(eSpace + eColor);
                             den.x += weight;
                             num0 += weight * curr;
@@ -89,8 +85,7 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* 
                         if (sqrD.y <= sqrRadius) {
                             float eSpace = sqrD.y * spaceCoeff;
                             float oneNormSize = norm1(curr - center1);
-                            float eColor =
-                                oneNormSize * oneNormSize * colorCoeff;
+                            float eColor = oneNormSize * oneNormSize * colorCoeff;
                             float weight = exp(eSpace + eColor);
                             den.y += weight;
                             num1 += (weight * curr);
@@ -99,8 +94,7 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* 
                         if (sqrD.z <= sqrRadius) {
                             float eSpace = sqrD.z * spaceCoeff;
                             float oneNormSize = norm1(curr - center2);
-                            float eColor =
-                                oneNormSize * oneNormSize * colorCoeff;
+                            float eColor = oneNormSize * oneNormSize * colorCoeff;
                             float weight = exp(eSpace + eColor);
                             den.z += weight;
                             num2 += (weight * curr);
@@ -109,8 +103,7 @@ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float /* 
                         if (sqrD.w <= sqrRadius) {
                             float eSpace = sqrD.w * spaceCoeff;
                             float oneNormSize = norm1(curr - center3);
-                            float eColor =
-                                oneNormSize * oneNormSize * colorCoeff;
+                            float eColor = oneNormSize * oneNormSize * colorCoeff;
                             float weight = exp(eSpace + eColor);
                             den.w += weight;
                             num3 += (weight * curr);
