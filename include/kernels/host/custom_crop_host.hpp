@@ -27,7 +27,8 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "operator_types.h"
 
-namespace Kernels::Host {
+namespace Kernels {
+namespace Host {
 
 template <typename SrcWrapper, typename DstWrapper>
 void custom_crop_kernel(SrcWrapper input, DstWrapper output, const int roi_x, const int roi_y, const int roi_w,
@@ -50,4 +51,5 @@ void custom_crop_kernel(SrcWrapper input, DstWrapper output, const int roi_x, co
     }
 }
 
-}  // namespace Kernels::Host
+}  // namespace Host
+}  // namespace Kernels

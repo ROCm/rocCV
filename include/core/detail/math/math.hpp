@@ -243,7 +243,7 @@ template <class T, int N>
 __host__ __device__ T dot(const Vector<T, N> &a, const Vector<T, N> &b) {
     T d = a[0] * b[0];
 #pragma unroll
-    for (int j = 1; j < static_cast<int>(a.size()); ++j) {
+    for (size_t j = 1; j < a.size(); ++j) {
         d += a[j] * b[j];
     }
     return d;
