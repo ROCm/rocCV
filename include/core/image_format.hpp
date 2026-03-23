@@ -75,6 +75,9 @@ constexpr ImageFormat FMT_S32(eDataType::DATA_TYPE_S32, 1, eSwizzle::XYZW);
 // Single plane with one 32-bit floating point channel.
 constexpr ImageFormat FMT_F32(eDataType::DATA_TYPE_F32, 1, eSwizzle::XYZW);
 
+// Single plane with two 32-bit floating point channels.
+constexpr ImageFormat FMT_2F32(eDataType::DATA_TYPE_F32, 2, eSwizzle::XYZW);
+
 // Single plane with one 64-bit floating point channel.
 constexpr ImageFormat FMT_F64(eDataType::DATA_TYPE_F64, 1, eSwizzle::XYZW);
 
