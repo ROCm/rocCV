@@ -92,7 +92,7 @@ function(define_sample_executable NAME)
     target_include_directories(${NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
     set_target_properties(${NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/samples"
-        BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
+        BUILD_RPATH "$<TARGET_FILE_DIR:roccv::roccv>;${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
     )
 endfunction()
 

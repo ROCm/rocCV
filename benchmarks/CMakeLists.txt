@@ -146,5 +146,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${BENCHMARK_INCLUDES})
 # In-tree libroccv first so we use the built library; ROCm lib remains for librocrand etc.
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
+    BUILD_RPATH "$<TARGET_FILE_DIR:roccv::roccv>;${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
 )
