@@ -57,7 +57,7 @@ void PrintUsage(const char* programName) {
     std::cout << "  -D, --diameter <diameter>           Diameter of the filtering area (optional, default: 2)" << std::endl;
     std::cout << "  -s, --sigma_space <sigma_space>     Spatial parameter sigma of the Gaussian function (optional, default: 2.0f)" << std::endl;
     std::cout << "  -c, --sigma_color <sigma_color>     Range parameter sigma of the Gaussian function (optional, default: 10.0f)" << std::endl;
-    std::cout << "  -B, --border_mode <border_mode>     Border mode at image boundary when work pixels are outside of the image (optional, default: 1 (replicate))" << std::endl;
+    std::cout << "  -b, --border_mode <border_mode>     Border mode at image boundary when work pixels are outside of the image (optional, default: 1 (replicate))" << std::endl;
     std::cout << "  -B, --border_color <border_color>   Border color for constant color border mode (optional, default: 0,0,0,0)" << std::endl;
     std::cout << "  -C, --cpu                           Use CPU for execution (optional, default: GPU)" << std::endl;
     std::cout << "  -h, --help                          Show this help message" << std::endl;

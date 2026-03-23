@@ -93,6 +93,7 @@ int main(int argc, char** argv) {
                 break;
             case 'd':
                 config.deviceId = std::stoi(optarg);
+                break;
             case 'h':
                 PrintUsage(argv[0]);
                 return EXIT_SUCCESS;

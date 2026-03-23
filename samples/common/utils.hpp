@@ -23,6 +23,7 @@
 
 #include <core/tensor.hpp>
 #include <filesystem>
+#include <format>
 #include <opencv2/opencv.hpp>
 
 inline void CheckHIPError(hipError_t code, const char *file, const int line) {
@@ -97,24 +98,31 @@ inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_pat
     if (std::filesystem::is_directory(image_path)) {
         for (auto file : std::filesystem::directory_iterator(image_path)) {
             if (!std::filesystem::is_directory(file.path()) && ContainsExtension(file.path(), supportedExtensions)) {
-                images.push_back(cv::imread(file.path(), openCVFlags));
+                cv::Mat image = cv::imread(file.path(), openCVFlags);
+                if (image.empty()) {
+                    throw std::runtime_error("Cannot decode " + file.path().string() + ". File type not supported.\n");
+                }
+                images.push_back(image);
 
                 // Check if all images are of the same size
                 if (width == -1 && height == -1 && channels == -1) {
-                    width = images.back().cols;
-                    height = images.back().rows;
-                    channels = images.back().channels();
-                } else if (images.back().cols != width || images.back().rows != height ||
-                           images.back().channels() != channels) {
+                    width = image.cols;
+                    height = image.rows;
+                    channels = image.channels();
+                } else if (image.cols != width || image.rows != height || image.channels() != channels) {
                     throw std::runtime_error("All images must be of the same size and format");
                 }
             }
         }
     } else if (std::filesystem::is_regular_file(image_path) && ContainsExtension(image_path, supportedExtensions)) {
-        images.push_back(cv::imread(image_path));
-        width = images.back().cols;
-        height = images.back().rows;
-        channels = images.back().channels();
+        cv::Mat image = cv::imread(image_path, openCVFlags);
+        if (image.empty()) {
+            throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.\n");
+        }
+        images.push_back(image);
+        width = image.cols;
+        height = image.rows;
+        channels = image.channels();
     } else {
         throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.\n");
     }

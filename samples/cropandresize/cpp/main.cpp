@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
 
     // Create tensor for the resized image
     Tensor resizedTensor =
-        Tensor(TensorShape(input.layout(), {batchSize, config.resizeShape.w, config.resizeShape.h, channels}),
+        Tensor(TensorShape(input.layout(), {batchSize, config.resizeShape.h, config.resizeShape.w, channels}),
                input.dtype(), config.device);
 
     // Create crop and resize operators
