@@ -38,9 +38,9 @@ void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int mapBatchSize
     float2 mapCoord = make_float2(0.f, 0.f);
     float2 dstCoord = make_float2(0.f, 0.f);
     
-    for (size_t b = 0; b < output.batches(); b++) {
-        for (size_t y = 0; y < output.height(); y++) {
-            for (size_t x = 0; x < output.width(); x++) {
+    for (int64_t b = 0; b < output.batches(); b++) {
+        for (int64_t y = 0; y < output.height(); y++) {
+            for (int64_t x = 0; x < output.width(); x++) {
                 
                 dstCoord.x = static_cast<float>(x);
                 dstCoord.y = static_cast<float>(y);
