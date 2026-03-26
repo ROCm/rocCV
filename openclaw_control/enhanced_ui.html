@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw Control - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f3f4f6;
+            --bg-white: #ffffff;
+            --sidebar-bg: #f9fafb;
+            --sidebar-hover: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-color: #e5e7eb;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-white);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+
+        .logo-text .name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .logo-text .version {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Navigation */
+        .nav {
+            flex: 1;
+            padding: 12px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            transition: all 0.15s;
+        }
+
+        .nav-item:hover {
+            background: var(--sidebar-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: #10b98115;
+            color: var(--accent-green);
+        }
+
+        .nav-item-icon {
+            font-size: 1.1rem;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .new-agent-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .new-agent-btn:hover {
+            background: #059669;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-bar {
+            height: 64px;
+            background: var(--bg-white);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .breadcrumb {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb span {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb span.current {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .top-btn {
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .top-btn:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        /* Agents Grid (New Feature) */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .agent-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .agent-card:hover {
+            border-color: var(--accent-green);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .agent-card-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .agent-card-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .agent-card-avatar .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .agent-card:hover .agent-card-avatar .avatar-upload {
+            opacity: 1;
+        }
+
+        .agent-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-card-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-card-id {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .agent-card-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .agent-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .agent-card-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .agent-card-btn:hover {
+            background: var(--bg-white);
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        .agent-card-btn.primary {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .agent-card-btn.primary:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        /* Create Agent Form */
+        .create-card {
+            background: var(--bg-white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .create-card h3 {
+            margin-bottom: 4px;
+            font-size: 1.1rem;
+        }
+
+        .create-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: var(--bg-white);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: none;
+        }
+
+        .btn-accent {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background: #059669;
+        }
+
+        .btn-primary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-primary:hover {
+            background: var(--border-color);
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            position: fixed;
+            right: -420px;
+            top: 0;
+            width: 420px;
+            height: 100vh;
+            background: var(--bg-white);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: right 0.3s ease;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-panel.open {
+            right: 0;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            overflow: hidden;
+        }
+
+        .chat-header-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-info div:first-child {
+            font-weight: 600;
+        }
+
+        .chat-header-info div:last-child {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .chat-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .chat-message-content {
+            flex: 1;
+            background: var(--bg-primary);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .chat-message.user .chat-message-avatar {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .chat-message.user .chat-message-content {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .chat-input-wrapper {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            resize: none;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-green);
+        }
+
+        .chat-send-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-green);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .chat-send-btn:hover {
+            background: #059669;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 50;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Create Agent Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-white);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-create {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -260px;
+                z-index: 100;
+                transition: left 0.3s;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .agents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🦖</div>
+                    <div class="logo-text">
+                        <div class="name">OpenClaw</div>
+                        <div class="version">Control v2.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav">
+                <a href="#" class="nav-item active" onclick="showSection('agents'); return false;">
+                    <span class="nav-item-icon">🤖</span>
+                    <span>Agents</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="new-agent-btn" onclick="showCreateModal()">
+                    <span>➕</span>
+                    <span>New Agent</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="top-bar">
+                <div class="breadcrumb">
+                    <span>OpenClaw</span>
+                    <span> / </span>
+                    <span class="current">Agents</span>
+                </div>
+                <div class="top-actions">
+                    <button class="top-btn" onclick="refreshAgents()">🔄 Refresh</button>
+                    <button class="top-btn" onclick="showCreateModal()">➕ New Agent</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Agents Section -->
+                <div id="agentsSection">
+                    <div class="create-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <div>
+                                <h3>Agent Management</h3>
+                                <p>Create and manage your AI agents.</p>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>New Agent Name</label>
+                                <input type="text" id="newAgentName" placeholder="e.g., coding-assistant">
+                            </div>
+                            <div class="form-group">
+                                <label>Model</label>
+                                <select id="newAgentModel">
+                                    <option value="gpt-4o">GPT-4o</option>
+                                    <option value="gpt-4o-mini">GPT-4o Mini</option>
+                                    <option value="claude-sonnet-4">Claude Sonnet 4</option>
+                                    <option value="ollama/llama3.2">Llama 3.2</option>
+                                    <option value="ollama/mistral">Mistral</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-accent" onclick="createAgent()" style="width: 100%;">
+                                    ➕ Create Agent
+                                </button>
+                                <button class="btn btn-primary" onclick="loadAgents()" style="width: 100%;">
+                                    🔄 Refresh
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Agents Grid -->
+                    <div class="create-card">
+                        <h3>Your Agents</h3>
+                        <p>Click on an agent to open chat. Hover over avatar to upload image.</p>
+                        <br>
+                        <div id="agentsGrid" class="agents-grid">
+                            <div style="color: var(--text-muted); text-align: center; padding: 40px; grid-column: 1 / -1;">
+                                <div style="font-size: 2rem; margin-bottom: 10px;">⏳</div>
+                                <div>Loading agents...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <div class="chat-header-avatar" id="chatPanelAvatar">🤖</div>
+            <div class="chat-header-info">
+                <div style="font-weight: 600;" id="chatPanelName">Agent</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);" id="chatPanelId"></div>
+            </div>
+            <button class="chat-close" onclick="closeChat()">×</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                <div style="font-size: 2rem; margin-bottom: 10px;">👋</div>
+                <div>Start a conversation</div>
+            </div>
+        </div>
+        <div class="chat-input-wrapper">
+            <textarea class="chat-input" id="chatInput" placeholder="Type a message..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+            <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeChat()"></div>
+
+    <script>
+        // State
+        let currentAgent = null;
+        let currentAgentName = null;
+        let currentAgentEmoji = null;
+        let agents = [];
+        let chatHistory = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAgents();
+        });
+
+        // Load agents from OpenClaw
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/agents');
+                const data = await response.json();
+                agents = data.agents || [];
+                renderAgents();
+            } catch (error) {
+                console.error('Failed to load agents:', error);
+                document.getElementById('agentsGrid').innerHTML = `
+                    <div style="color: var(--text-muted); text-align: center; padding: 40px; grid-column: 1 / -1;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+                        <div>Failed to load agents. Is OpenClaw running?</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render agents grid
+        function renderAgents() {
+            const grid = document.getElementById('agentsGrid');
+
+            if (agents.length === 0) {
+                grid.innerHTML = `
+                    <div style="color: var(--text-muted); text-align: center; padding: 40px; grid-column: 1 / -1;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🤖</div>
+                        <div>No agents yet. Create your first agent above!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = agents.map(agent => {
+                const agentId = agent.id || agent;
+                const agentName = agent.name || agentId;
+                const agentEmoji = agent.emoji || '';
+                const displayName = agentEmoji ? `${agentEmoji} ${agentName}` : agentName;
+
+                return `
+                <div class="agent-card" data-agent="${agentId}" data-name="${agentName}" data-emoji="${agentEmoji}">
+                    <div class="agent-card-header">
+                        <div class="agent-card-avatar">
+                            <span id="avatar-${agentId}">${agentEmoji || '🤖'}</span>
+                            <label class="avatar-upload" onclick="event.stopPropagation(); document.getElementById('avatar-upload-${agentId}').click()">
+                                📷
+                                <input type="file" id="avatar-upload-${agentId}" style="display: none;" accept="image/*" onchange="uploadAvatar('${agentId}', event)">
+                            </label>
+                        </div>
+                        <div class="agent-card-info">
+                            <div class="agent-card-name">${displayName}</div>
+                            <div class="agent-card-id">${agentId}</div>
+                        </div>
+                    </div>
+                    <div class="agent-card-status">
+                        <span class="status-dot"></span>
+                        <span>Ready to chat</span>
+                    </div>
+                    <div class="agent-card-actions">
+                        <button class="agent-card-btn" onclick="event.stopPropagation(); configureAgent('${agentId}')">
+                            ⚙️ Config
+                        </button>
+                        <button class="agent-card-btn primary" onclick="event.stopPropagation(); openChat('${agentId}', '${agentName.replace(/'/g, "\\'")}', '${agentEmoji.replace(/'/g, "\\'")}')">
+                            💬 Chat
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+
+            // Load avatars
+            agents.forEach(agent => loadAvatar(agent.id || agent));
+        }
+
+        // Load avatar for agent
+        async function loadAvatar(agent) {
+            try {
+                const response = await fetch(`/api/agents/${agent}/avatar`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const avatarEl = document.getElementById(`avatar-${agent}`);
+                    if (avatarEl) {
+                        avatarEl.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+
+                    // Also update chat panel avatar if this agent is selected
+                    if (currentAgent === agent) {
+                        document.getElementById('chatPanelAvatar').innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                }
+            } catch (error) {
+                // No avatar yet
+            }
+        }
+
+        // Create new agent
+        async function createAgent() {
+            const name = document.getElementById('newAgentName').value.trim();
+            const model = document.getElementById('newAgentModel').value;
+
+            if (!name) {
+                alert('Please enter an agent name');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/agents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: name, model: model })
+                });
+
+                if (response.ok) {
+                    document.getElementById('newAgentName').value = '';
+                    await loadAgents();
+                    openChat(name, name, '');
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to create agent');
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        // Upload avatar
+        async function uploadAvatar(agent, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`/api/agents/${agent}/avatar`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    loadAvatar(agent);
+                } else {
+                    alert('Failed to upload avatar');
+                }
+            } catch (error) {
+                alert('Network error');
+            }
+        }
+
+        // Open chat panel
+        function openChat(agent, agentName, agentEmoji) {
+            currentAgent = agent;
+            currentAgentName = agentName || agent;
+            currentAgentEmoji = agentEmoji || '';
+
+            const displayName = currentAgentEmoji ? `${currentAgentEmoji} ${currentAgentName}` : currentAgentName;
+
+            document.getElementById('chatPanelName').textContent = displayName;
+            document.getElementById('chatPanelId').textContent = agent;
+            document.getElementById('chatPanelAvatar').innerHTML = currentAgentEmoji || '🤖';
+
+            loadAvatar(agent);
+
+            // Load chat history
+            const messages = chatHistory[agent] || [];
+            renderChatMessages(messages);
+
+            document.getElementById('chatPanel').classList.add('open');
+            document.getElementById('overlay').classList.add('show');
+        }
+
+        // Close chat panel
+        function closeChat() {
+            document.getElementById('chatPanel').classList.remove('open');
+            document.getElementById('overlay').classList.remove('show');
+            currentAgent = null;
+            currentAgentName = null;
+            currentAgentEmoji = null;
+        }
+
+        // Render chat messages
+        function renderChatMessages(messages) {
+            const container = document.getElementById('chatMessages');
+
+            if (messages.length === 0) {
+                const displayName = currentAgentEmoji ? `${currentAgentEmoji} ${currentAgentName}` : (currentAgentName || currentAgent);
+                container.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">👋</div>
+                        <div>Start a conversation with ${displayName}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => `
+                <div class="chat-message ${msg.role}">
+                    <div class="chat-message-avatar">${msg.role === 'user' ? '🧑' : (currentAgentEmoji || '🤖')}</div>
+                    <div class="chat-message-content">${escapeHtml(msg.content)}</div>
+                </div>
+            `).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message || !currentAgent) return;
+
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Add user message to history
+            if (!chatHistory[currentAgent]) {
+                chatHistory[currentAgent] = [];
+            }
+
+            chatHistory[currentAgent].push({
+                role: 'user',
+                content: message,
+                timestamp: new Date().toISOString()
+            });
+
+            renderChatMessages(chatHistory[currentAgent]);
+
+            // Show loading
+            const container = document.getElementById('chatMessages');
+            container.innerHTML += `
+                <div class="chat-message" id="loadingMessage">
+                    <div class="chat-message-avatar">${currentAgentEmoji || '🤖'}</div>
+                    <div class="chat-message-content" style="opacity: 0.6;">
+                        <div style="display: flex; gap: 4px; padding: 4px 0;">
+                            <div style="width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite 0s;"></div>
+                            <div style="width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite 0.2s;"></div>
+                            <div style="width: 8px; height: 8px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite 0.4s;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const response = await fetch(`/api/chat/${currentAgent}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                // Remove loading message
+                const loading = document.getElementById('loadingMessage');
+                if (loading) loading.remove();
+
+                // Add assistant response
+                chatHistory[currentAgent].push({
+                    role: 'assistant',
+                    content: data.response || 'Sorry, I could not process that.',
+                    timestamp: new Date().toISOString()
+                });
+
+                renderChatMessages(chatHistory[currentAgent]);
+            } catch (error) {
+                // Remove loading message
+                const loading = document.getElementById('loadingMessage');
+                if (loading) loading.remove();
+
+                chatHistory[currentAgent].push({
+                    role: 'assistant',
+                    content: 'Error: ' + error.message,
+                    timestamp: new Date().toISOString()
+                });
+                renderChatMessages(chatHistory[currentAgent]);
+            }
+        }
+
+        // Handle key down in chat input
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Refresh agents
+        function refreshAgents() {
+            loadAgents();
+        }
+
+        // Configure agent
+        function configureAgent(agent) {
+            alert('Configuration for ' + agent + ' - Coming soon!');
+        }
+
+        // Show create modal
+        function showCreateModal() {
+            document.getElementById('newAgentName').focus();
+        }
+
+        // Show section
+        function showSection(section) {
+            // Currently only agents section exists
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelector('.nav-item').classList.add('active');
+        }
+
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounce {
+                0%, 60%, 100% { transform: translateY(0); }
+                30% { transform: translateY(-6px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

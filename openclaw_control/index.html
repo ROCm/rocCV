@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #262626;
+            --border-color: #2d2d2d;
+            --accent: #10a37f;
+            --accent-hover: #0d8a6a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888;
+            --text-muted: #666;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .logo-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-left: 34px;
+        }
+
+        .new-agent-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .new-agent-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .agent-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .agent-item.active {
+            background: rgba(16, 163, 127, 0.1);
+            border-color: var(--accent);
+        }
+
+        .agent-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .agent-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .agent-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .agent-status {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 16px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Create Agent Screen */
+        .create-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .create-header {
+            margin-bottom: 32px;
+        }
+
+        .create-header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .create-header p {
+            color: var(--text-secondary);
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--accent);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Chat Screen */
+        .chat-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .chat-header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-header-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .avatar-upload input {
+            display: none;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .chat-header-status {
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .chat-header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .message-content {
+            background: var(--bg-secondary);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: rgba(16, 163, 127, 0.1);
+            border-color: rgba(16, 163, 127, 0.3);
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .welcome-message-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .chat-input-area {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            min-height: 24px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .send-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Loading indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            align-items: center;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* Error toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateY(100px);
+            transition: transform 0.3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+        }
+
+        .toast.success {
+            border-color: var(--accent);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span>🦖</span>
+                    <span>OpenClaw</span>
+                </div>
+                <div class="logo-subtitle">Agent Control Center</div>
+                <button class="new-agent-btn" onclick="showCreateScreen()">
+                    <span>➕</span>
+                    <span>New Agent</span>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <div class="section-title">
+                    <span>Your Agents</span>
+                    <button class="refresh-btn" onclick="loadAgents()" title="Refresh">
+                        🔄
+                    </button>
+                </div>
+                <div id="agentList" class="agent-list">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💡</div>
+                        <div>No agents yet</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Welcome Screen -->
+            <div id="welcomeScreen" class="welcome-screen">
+                <div class="welcome-title">Welcome to OpenClaw</div>
+                <div class="welcome-subtitle">
+                    Your personal AI agent control center. Create agents, customize them with avatars, 
+                    and start conversations.
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <div class="feature-title">Multiple Agents</div>
+                        <div class="feature-desc">Create specialized agents for different tasks</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <div class="feature-title">Custom Avatars</div>
+                        <div class="feature-desc">Personalize each agent with unique images</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-title">Fast Setup</div>
+                        <div class="feature-desc">Get started with pre-configured models</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💬</div>
+                        <div class="feature-title">Persistent Chat</div>
+                        <div class="feature-desc">Each agent remembers your conversation</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Agent Screen -->
+            <div id="createScreen" class="create-screen" style="display: none;">
+                <div class="create-header">
+                    <h1>Create New Agent</h1>
+                    <p>Set up a new AI agent with a custom name and model</p>
+                </div>
+                <div class="form-group">
+                    <label for="agentName">Agent Name</label>
+                    <input type="text" id="agentName" placeholder="e.g., coding-assistant, research-bot">
+                </div>
+                <div class="form-group">
+                    <label for="agentModel">Model</label>
+                    <select id="agentModel">
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="claude-sonnet-4">Claude Sonnet 4</option>
+                        <option value="claude-opus-4">Claude Opus 4</option>
+                        <option value="ollama/llama3.2">Ollama Llama 3.2</option>
+                        <option value="ollama/mistral">Ollama Mistral</option>
+                        <option value="ollama/codellama">Ollama CodeLlama</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-primary" onclick="createAgent()">Create Agent</button>
+                    <button class="btn btn-secondary" onclick="showWelcomeScreen()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Chat Screen -->
+            <div id="chatScreen" class="chat-screen" style="display: none;">
+                <div class="chat-header">
+                    <div class="chat-header-avatar" id="chatHeaderAvatar">
+                        🤖
+                        <label class="avatar-upload" title="Upload avatar">
+                            📷
+                            <input type="file" accept="image/*" id="avatarUpload" onchange="uploadAvatar(event)">
+                        </label>
+                    </div>
+                    <div class="chat-header-info">
+                        <div class="chat-header-name" id="chatHeaderName">Agent</div>
+                        <div class="chat-header-status">Online • Ready to chat</div>
+                    </div>
+                    <div class="chat-header-actions">
+                        <button class="icon-btn" onclick="clearChat()" title="Clear chat">🗑️</button>
+                        <button class="icon-btn" onclick="showWelcomeScreen()" title="Close">✕</button>
+                    </div>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <div class="welcome-message">
+                        <div class="welcome-message-icon">👋</div>
+                        <div>Start a conversation</div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <textarea 
+                            class="chat-input" 
+                            id="messageInput" 
+                            placeholder="Type a message..."
+                            rows="1"
+                            onkeydown="handleKeyDown(event)"
+                            oninput="autoResize(this)"
+                        ></textarea>
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                            ➤
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toastIcon">ℹ️</span>
+        <span id="toastMessage">Message</span>
+    </div>
+
+    <script>
+        // State
+        let currentAgent = null;
+        let currentScreen = 'welcome';
+
+        // Load agents on startup
+        loadAgents();
+
+        // Navigation
+        function showWelcomeScreen() {
+            currentScreen = 'welcome';
+            currentAgent = null;
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('createScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'none';
+            updateAgentListSelection();
+        }
+
+        function showCreateScreen() {
+            currentScreen = 'create';
+            currentAgent = null;
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('createScreen').style.display = 'flex';
+            document.getElementById('chatScreen').style.display = 'none';
+            updateAgentListSelection();
+        }
+
+        function showChatScreen(agent) {
+            currentScreen = 'chat';
+            currentAgent = agent;
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('createScreen').style.display = 'none';
+            document.getElementById('chatScreen').style.display = 'flex';
+            document.getElementById('chatHeaderName').textContent = agent;
+            updateAgentListSelection();
+            loadChatHistory();
+            loadAgentAvatar();
+        }
+
+        function updateAgentListSelection() {
+            const items = document.querySelectorAll('.agent-item');
+            items.forEach(item => {
+                if (item.dataset.agent === currentAgent) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Agent Management
+        async function loadAgents() {
+            try {
+                const response = await fetch('/api/agents');
+                const data = await response.json();
+                renderAgentList(data.agents);
+            } catch (error) {
+                showToast('Failed to load agents', 'error');
+            }
+        }
+
+        function renderAgentList(agents) {
+            const listEl = document.getElementById('agentList');
+            
+            if (agents.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💡</div>
+                        <div>No agents yet. Create one!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = agents.map(agent => `
+                <div class="agent-item ${agent === currentAgent ? 'active' : ''}" 
+                     data-agent="${agent}"
+                     onclick="showChatScreen('${agent}')">
+                    <div class="agent-avatar" id="avatar-${agent}">🤖</div>
+                    <div class="agent-info">
+                        <div class="agent-name">${agent}</div>
+                        <div class="agent-status">Ready to chat</div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Load avatars
+            agents.forEach(agent => loadAgentAvatarInList(agent));
+        }
+
+        async function loadAgentAvatarInList(agent) {
+            try {
+                const response = await fetch(`/api/agents/${agent}/avatar`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const avatarEl = document.getElementById(`avatar-${agent}`);
+                    if (avatarEl) {
+                        avatarEl.innerHTML = `<img src="${url}" alt="${agent}">`;
+                    }
+                }
+            } catch (error) {
+                // Avatar doesn't exist, keep default
+            }
+        }
+
+        async function loadAgentAvatar() {
+            if (!currentAgent) return;
+            
+            try {
+                const response = await fetch(`/api/agents/${currentAgent}/avatar`);
+                const avatarEl = document.getElementById('chatHeaderAvatar');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    avatarEl.innerHTML = `
+                        <img src="${url}" alt="${currentAgent}">
+                        <label class="avatar-upload" title="Change avatar">
+                            📷
+                            <input type="file" accept="image/*" id="avatarUpload" onchange="uploadAvatar(event)">
+                        </label>
+                    `;
+                } else {
+                    avatarEl.innerHTML = `
+                        🤖
+                        <label class="avatar-upload" title="Upload avatar">
+                            📷
+                            <input type="file" accept="image/*" id="avatarUpload" onchange="uploadAvatar(event)">
+                        </label>
+                    `;
+                }
+            } catch (error) {
+                // Keep default
+            }
+        }
+
+        async function createAgent() {
+            const name = document.getElementById('agentName').value.trim();
+            const model = document.getElementById('agentModel').value;
+
+            if (!name) {
+                showToast('Please enter an agent name', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/agents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: name, model: model })
+                });
+
+                if (response.ok) {
+                    showToast(`Created agent: ${name}`, 'success');
+                    document.getElementById('agentName').value = '';
+                    await loadAgents();
+                    showChatScreen(name);
+                } else {
+                    const data = await response.json();
+                    showToast(data.error || 'Failed to create agent', 'error');
+                }
+            } catch (error) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function uploadAvatar(event) {
+            const file = event.target.files[0];
+            if (!file || !currentAgent) return;
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            try {
+                const response = await fetch(`/api/agents/${currentAgent}/avatar`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showToast('Avatar updated', 'success');
+                    loadAgentAvatar();
+                    loadAgents(); // Refresh list
+                } else {
+                    showToast('Failed to upload avatar', 'error');
+                }
+            } catch (error) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        // Chat
+        async function loadChatHistory() {
+            if (!currentAgent) return;
+
+            try {
+                const response = await fetch(`/api/chat/${currentAgent}`);
+                const data = await response.json();
+                renderMessages(data.messages);
+            } catch (error) {
+                showToast('Failed to load chat history', 'error');
+            }
+        }
+
+        function renderMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="welcome-message">
+                        <div class="welcome-message-icon">👋</div>
+                        <div>Start a conversation with ${currentAgent}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="message-avatar">
+                        ${msg.role === 'user' ? '🧑' : '🤖'}
+                    </div>
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
+                </div>
+            `).join('');
+
+            scrollToBottom();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentAgent) return;
+
+            input.value = '';
+            input.style.height = 'auto';
+            
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+
+            // Add user message immediately
+            addMessageToUI('user', message);
+            showTypingIndicator();
+
+            try {
+                const response = await fetch(`/api/chat/${currentAgent}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                hideTypingIndicator();
+
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessageToUI('assistant', data.response);
+                } else {
+                    addMessageToUI('assistant', 'Error: Failed to get response');
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessageToUI('assistant', 'Error: Network failed');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function addMessageToUI(role, content) {
+            const container = document.getElementById('chatMessages');
+            
+            // Remove welcome message if present
+            if (container.querySelector('.welcome-message')) {
+                container.innerHTML = '';
+            }
+
+            const msgEl = document.createElement('div');
+            msgEl.className = `message ${role}`;
+            msgEl.innerHTML = `
+                <div class="message-avatar">${role === 'user' ? '🧑' : '🤖'}</div>
+                <div class="message-content">${escapeHtml(content)}</div>
+            `;
+            container.appendChild(msgEl);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('chatMessages');
+            const typingEl = document.createElement('div');
+            typingEl.className = 'message assistant typing-indicator-container';
+            typingEl.id = 'typingIndicator';
+            typingEl.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            `;
+            container.appendChild(typingEl);
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const typingEl = document.getElementById('typingIndicator');
+            if (typingEl) {
+                typingEl.remove();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function clearChat() {
+            if (!currentAgent) return;
+            
+            try {
+                await fetch(`/api/chat/${currentAgent}`, { method: 'DELETE' });
+                loadChatHistory();
+                showToast('Chat cleared', 'success');
+            } catch (error) {
+                showToast('Failed to clear chat', 'error');
+            }
+        }
+
+        // Input handling
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // Utilities
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            
+            toast.className = `toast ${type}`;
+            icon.textContent = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            msg.textContent = message;
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
