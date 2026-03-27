@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "operators/py_op_copy_make_border.hpp"
 #include "operators/py_op_custom_crop.hpp"
 #include "operators/py_op_cvt_color.hpp"
+#include "operators/py_op_adv_cvt_color.hpp"
 #include "operators/py_op_flip.hpp"
 #include "operators/py_op_gamma_contrast.hpp"
 #include "operators/py_op_histogram.hpp"
@@ -72,6 +73,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpThreshold::Export(m);
     PyOpRemap::Export(m);
     PyOpCvtColor::Export(m);
+    PyOpAdvCvtColor::Export(m);
     PyOpBndBox::Export(m);
     PyOpGammaContrast::Export(m);
     PyOpComposite::Export(m);

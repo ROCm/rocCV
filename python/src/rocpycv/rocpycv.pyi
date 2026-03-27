@@ -11,11 +11,19 @@ BT709: eColorSpec
 COLOR_BGR2GRAY: eColorConversionCode
 COLOR_BGR2RGB: eColorConversionCode
 COLOR_BGR2YUV: eColorConversionCode
+COLOR_BGR2YUV_NV12: eColorConversionCode
+COLOR_BGR2YUV_NV21: eColorConversionCode
 COLOR_RGB2BGR: eColorConversionCode
 COLOR_RGB2GRAY: eColorConversionCode
 COLOR_RGB2YUV: eColorConversionCode
+COLOR_RGB2YUV_NV12: eColorConversionCode
+COLOR_RGB2YUV_NV21: eColorConversionCode
 COLOR_YUV2BGR: eColorConversionCode
+COLOR_YUV2BGR_NV12: eColorConversionCode
+COLOR_YUV2BGR_NV21: eColorConversionCode
 COLOR_YUV2RGB: eColorConversionCode
+COLOR_YUV2RGB_NV12: eColorConversionCode
+COLOR_YUV2RGB_NV21: eColorConversionCode
 CONSTANT: eBorderType
 CPU: eDeviceType
 CUBIC: eInterpolationType
@@ -322,11 +330,19 @@ class eColorConversionCode:
     COLOR_BGR2GRAY: ClassVar[eColorConversionCode] = ...
     COLOR_BGR2RGB: ClassVar[eColorConversionCode] = ...
     COLOR_BGR2YUV: ClassVar[eColorConversionCode] = ...
+    COLOR_BGR2YUV_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_BGR2YUV_NV21: ClassVar[eColorConversionCode] = ...
     COLOR_RGB2BGR: ClassVar[eColorConversionCode] = ...
     COLOR_RGB2GRAY: ClassVar[eColorConversionCode] = ...
     COLOR_RGB2YUV: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2YUV_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2YUV_NV21: ClassVar[eColorConversionCode] = ...
     COLOR_YUV2BGR: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2BGR_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2BGR_NV21: ClassVar[eColorConversionCode] = ...
     COLOR_YUV2RGB: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2RGB_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2RGB_NV21: ClassVar[eColorConversionCode] = ...
     __entries: ClassVar[dict] = ...
     def __init__(self, value: int) -> None:
         """__init__(self: rocpycv.rocpycv.eColorConversionCode, value: int) -> None"""
@@ -819,6 +835,49 @@ def cvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCod
                     dst (rocpycv.Tensor): Output tensor for storing modified image data.
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     conversion_code (eColorConversionCode): Conversion code specifying the formats being converted (ex. COLOR_RGB2YUV)
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+
+                Returns:
+                    None
+          
+    """
+def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
+    """advcvtcolor(src: rocpycv.rocpycv.Tensor, conversion_code: rocpycv.rocpycv.eColorConversionCode, color_spec: rocpycv.rocpycv.eColorSpec, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
+
+
+    
+                Executes the Advanced Color Convert operation on the given HIP stream.
+
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+            
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
+                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+          
+    """
+def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
+    """advcvtcolor_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, conversion_code: rocpycv.rocpycv.eColorConversionCode, color_spec: rocpycv.rocpycv.eColorSpec, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
+
+
+
+                Executes the Advanced Color Convert operation on the given HIP stream.
+
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+            
+                Args:
+                    dst (rocpycv.Tensor): Output tensor for storing modified image data.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
+                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 
