@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,15 @@ typedef enum eColorConversionCode {
     COLOR_BGR2RGB = 5,
     COLOR_RGB2GRAY = 6,
     COLOR_BGR2GRAY = 7,
+
+    COLOR_YUV2RGB_NV12 = 8,
+    COLOR_YUV2BGR_NV12 = 9,
+    COLOR_YUV2RGB_NV21 = 10,
+    COLOR_YUV2BGR_NV21 = 11,
+    COLOR_RGB2YUV_NV12 = 12,
+    COLOR_BGR2YUV_NV12 = 13,
+    COLOR_RGB2YUV_NV21 = 14,
+    COLOR_BGR2YUV_NV21 = 15,
 } eColorConversionCode;
 
 typedef enum eAxis {
