@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 namespace Kernels {
 namespace Host {
-
 template <typename SrcWrapper, typename DstWrapper>
 void custom_crop_kernel(SrcWrapper input, DstWrapper output, const int roi_x, const int roi_y, const int roi_w,
                         const int roi_h) {
@@ -51,5 +50,5 @@ void custom_crop_kernel(SrcWrapper input, DstWrapper output, const int roi_x, co
     }
 }
 
-}  // namespace Host
-}  // namespace Kernels
+} // namespace Host
+} // namespace Kernels
