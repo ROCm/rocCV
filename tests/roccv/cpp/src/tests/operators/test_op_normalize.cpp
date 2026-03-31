@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/image_wrapper.hpp>
 #include <op_normalize.hpp>
+
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -49,12 +50,16 @@ namespace {
  * @param[in] scaleFormat Scale array format.
  * @param[in] globalShift The value shift applid on all pixels.
  * @param[in] globalScale The scaling factor applid on all pixels.
- * @param[in] epsilon The quantity added to the standard deviaton in normalization using standard deviation (Z-score normalization or standardization).
+ * @param[in] epsilon The quantity added to the standard deviaton in normalization using standard deviation (Z-score
+ * normalization or standardization).
  * @param[in] scaleIsStdDev The scaling factor is standard deviation.
  * @return None.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-void GenerateGoldenNormalize(std::vector<BT>& input, std::vector<BT>& output, Size2D imageSize, ImageFormat imgFormat, std::vector<float>& base, Size2D baseSize, ImageFormat baseFormat, std::vector<float>& scale, Size2D scaleSize, ImageFormat scaleFormat, float globalShift, float globalScale, float epsilon, bool scaleIsStdDev) {
+void GenerateGoldenNormalize(std::vector<BT>& input, std::vector<BT>& output, Size2D imageSize, ImageFormat imgFormat,
+                             std::vector<float>& base, Size2D baseSize, ImageFormat baseFormat,
+                             std::vector<float>& scale, Size2D scaleSize, ImageFormat scaleFormat, float globalShift,
+                             float globalScale, float epsilon, bool scaleIsStdDev) {
     for (int y = 0; y < imageSize.h; y++) {
         int base_y = baseSize.h == 1 ? 0 : y;
         int scale_y = scaleSize.h == 1 ? 0 : y;
@@ -64,12 +69,19 @@ void GenerateGoldenNormalize(std::vector<BT>& input, std::vector<BT>& output, Si
             for (int c = 0; c < imgFormat.channels(); c++) {
                 int base_c = (baseFormat.channels() == 1 ? 0 : c);
                 int scale_c = (scaleFormat.channels() == 1 ? 0 : c);
-                float scaleFactor = scale.at(scale_y * scaleSize.w * scaleFormat.channels() + scale_x * scaleFormat.channels() + scale_c);
+                float scaleFactor = scale.at(scale_y * scaleSize.w * scaleFormat.channels() +
+                                             scale_x * scaleFormat.channels() + scale_c);
                 if (scaleIsStdDev) {
                     scaleFactor = 1.0 / std::sqrt(scaleFactor * scaleFactor + epsilon);
                 }
-                float result = (StaticCast<float>(input.at(y * imageSize.w * imgFormat.channels() + x * imgFormat.channels() + c)) - base.at(base_y * baseSize.w * baseFormat.channels() + base_x * baseFormat.channels() + base_c)) * scaleFactor * globalScale + globalShift;
-                output.at(y * imageSize.w * imgFormat.channels() + x * imgFormat.channels() + c) = SaturateCast<BT>(result);
+                float result =
+                    (StaticCast<float>(
+                         input.at(y * imageSize.w * imgFormat.channels() + x * imgFormat.channels() + c)) -
+                     base.at(base_y * baseSize.w * baseFormat.channels() + base_x * baseFormat.channels() + base_c)) *
+                        scaleFactor * globalScale +
+                    globalShift;
+                output.at(y * imageSize.w * imgFormat.channels() + x * imgFormat.channels() + c) =
+                    SaturateCast<BT>(result);
             }
         }
     }
@@ -83,16 +95,20 @@ void GenerateGoldenNormalize(std::vector<BT>& input, std::vector<BT>& output, Si
  * @param[in] batchSize Number of images in the batch.
  * @param[in] imgSize Image size.
  * @param[in] imgFormat Image format.
- * @param[in] isScalarBase Flag to indicate if the base parameter is scalar or array with the same dimension as input image
- * @param[in] isScalarScale Flag to indicate if the scale parameter is scalar or array with the same dimension as input image
+ * @param[in] isScalarBase Flag to indicate if the base parameter is scalar or array with the same dimension as input
+ * image
+ * @param[in] isScalarScale Flag to indicate if the scale parameter is scalar or array with the same dimension as input
+ * image
  * @param[in] globalShift The value shift applid on all pixels.
  * @param[in] globalScale The scaling factor applid on all pixels.
- * @param[in] epsilon The quantity added to the standard deviaton in normalization using standard deviation (Z-score normalization or standardization).
+ * @param[in] epsilon The quantity added to the standard deviaton in normalization using standard deviation (Z-score
+ * normalization or standardization).
  * @param[in] flags The indicator for if the scaling factor is standard deviation.
  * @param[in] device Device this correctness test should be run on.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool isScalarBase, bool isScalarScale, float globalShift, float globalScale, float epsilon, uint32_t flags, eDeviceType device) {
+void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool isScalarBase, bool isScalarScale,
+                     float globalShift, float globalScale, float epsilon, uint32_t flags, eDeviceType device) {
     Tensor input(batchSize, imgSize, imgFormat, device);
     Tensor output(batchSize, imgSize, imgFormat, device);
     Size2D baseSize, scaleSize;
@@ -123,7 +139,7 @@ void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool 
     Tensor baseTensor(baseBatchSize, baseSize, baseFormat, device);
     std::vector<float> baseData(baseTensor.shape().size());
     FillVector(baseData, 2);
-    for (int i = 0; i < baseTensor.shape().size(); i++) {
+    for (size_t i = 0; i < baseTensor.shape().size(); i++) {
         baseData[i] *= static_cast<float>(std::numeric_limits<BT>::max());
     }
     CopyVectorIntoTensor(baseTensor, baseData);
@@ -146,7 +162,7 @@ void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool 
     Tensor scaleTensor(scaleBatchSize, scaleSize, scaleFormat, device);
     std::vector<float> scaleData(scaleTensor.shape().size());
     FillVector(scaleData, 3);
-    for (int i = 0; i < scaleTensor.shape().size(); i++) {
+    for (size_t i = 0; i < scaleTensor.shape().size(); i++) {
         scaleData[i] *= static_cast<float>(std::numeric_limits<BT>::max());
     }
     CopyVectorIntoTensor(scaleTensor, scaleData);
@@ -187,7 +203,9 @@ void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool 
             std::copy(scaleData.begin() + offset, scaleData.begin() + offset + imageVectorSize, scaleImageData.begin());
         }
 
-        GenerateGoldenNormalize<T>(inputImage, ref, imgSize, imgFormat, baseImageData, baseSize, baseFormat, scaleImageData, scaleSize, scaleFormat, globalShift, globalScale, epsilon, (flags & ROCCV_NORMALIZE_SCALE_IS_STDDEV));
+        GenerateGoldenNormalize<T>(inputImage, ref, imgSize, imgFormat, baseImageData, baseSize, baseFormat,
+                                   scaleImageData, scaleSize, scaleFormat, globalShift, globalScale, epsilon,
+                                   (flags & ROCCV_NORMALIZE_SCALE_IS_STDDEV));
 
         // Compare data in actual output versus the generated golden reference image
         std::copy(result.begin() + offset, result.begin() + offset + imageVectorSize, resultImage.begin());
@@ -195,7 +213,7 @@ void TestCorrectness(int batchSize, Size2D imgSize, ImageFormat imgFormat, bool 
     }
 }
 
-}
+}  // namespace
 
 int main(int argc, char** argv) {
     (void)argc;
@@ -204,89 +222,117 @@ int main(int argc, char** argv) {
 
     // GPU correctness tests
     TEST_CASE(TestCorrectness<uchar>(1, {20, 23}, FMT_U8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<uchar3>(1, {200, 200}, FMT_RGB8, false, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar3>(2, {100, 25}, FMT_RGB8, true, true, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU))
+    TEST_CASE(TestCorrectness<uchar3>(2, {100, 25}, FMT_RGB8, true, true, 1.0f, 1.2f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU))
 
     TEST_CASE(TestCorrectness<uchar4>(1, {55, 27}, FMT_RGBA8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar4>(4, {155, 27}, FMT_RGBA8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uchar4>(4, {155, 27}, FMT_RGBA8, false, false, 1.0f, 1.2f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<char1>(5, {201, 20}, FMT_S8, true, false, 0.1f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<char1>(2, {201, 20}, FMT_S8, true, true, 0.1f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<char1>(2, {201, 20}, FMT_S8, true, true, 0.1f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<char3>(1, {22, 23}, FMT_RGBs8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<char3>(3, {22, 23}, FMT_RGBs8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<char3>(3, {22, 23}, FMT_RGBs8, false, false, 1.0f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<char4>(1, {52, 42}, FMT_RGBAs8, true, false, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<char4>(7, {25, 25}, FMT_RGBAs8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<char4>(7, {25, 25}, FMT_RGBAs8, false, false, 1.0f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<ushort1>(1, {200, 200}, FMT_U16, true, false, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<ushort1>(2, {250, 200}, FMT_U16, false, true, 1.1f, 1.0f, 0.3f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<ushort1>(2, {250, 200}, FMT_U16, false, true, 1.1f, 1.0f, 0.3f,
+                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
-    TEST_CASE(TestCorrectness<ushort3>(1, {9, 8}, FMT_RGB16, true, false, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<ushort3>(1, {9, 8}, FMT_RGB16, true, false, 1.0f, 1.1f, 0.1f,
+                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
     TEST_CASE(TestCorrectness<ushort3>(3, {19, 8}, FMT_RGB16, true, false, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<ushort4>(1, {29, 23}, FMT_RGBA16, true, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<ushort4>(5, {22, 25}, FMT_RGBA16, false, true, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<ushort4>(5, {22, 25}, FMT_RGBA16, false, true, 1.0f, 1.1f, 0.1f,
+                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<short1>(1, {54, 22}, FMT_S16, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<short1>(2, {54, 22}, FMT_S16, false, true, 1.0f, 1.1f, 1.3f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<short1>(2, {54, 22}, FMT_S16, false, true, 1.0f, 1.1f, 1.3f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<int1>(2, {100, 200}, FMT_S32, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<int1>(4, {100, 200}, FMT_S32, false, true, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<int1>(4, {100, 200}, FMT_S32, false, true, 1.0f, 1.1f, 0.1f,
+                                    ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<float1>(2, {20, 2}, FMT_F32, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<float1>(1, {22, 25}, FMT_F32, false, false, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float1>(1, {22, 25}, FMT_F32, false, false, 1.0f, 1.1f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<float3>(1, {222, 22}, FMT_RGBf32, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<float3>(20, {22, 20}, FMT_RGBf32, false, true, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float3>(20, {22, 20}, FMT_RGBf32, false, true, 1.0f, 1.1f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<float4>(1, {22, 29}, FMT_RGBAf32, true, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<float4>(2, {22, 24}, FMT_RGBAf32, false, false, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<float4>(2, {22, 24}, FMT_RGBAf32, false, false, 1.0f, 1.1f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     // CPU correctness tests
     TEST_CASE(TestCorrectness<uchar>(1, {20, 23}, FMT_U8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<uchar3>(1, {200, 200}, FMT_RGB8, false, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar3>(2, {100, 25}, FMT_RGB8, true, true, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU))
+    TEST_CASE(TestCorrectness<uchar3>(2, {100, 25}, FMT_RGB8, true, true, 1.0f, 1.2f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU))
 
     TEST_CASE(TestCorrectness<uchar4>(1, {55, 27}, FMT_RGBA8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar4>(4, {155, 27}, FMT_RGBA8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uchar4>(4, {155, 27}, FMT_RGBA8, false, false, 1.0f, 1.2f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<char1>(5, {201, 20}, FMT_S8, true, false, 0.1f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<char1>(2, {201, 20}, FMT_S8, true, true, 0.1f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<char1>(2, {201, 20}, FMT_S8, true, true, 0.1f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<char3>(1, {22, 23}, FMT_RGBs8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<char3>(3, {22, 23}, FMT_RGBs8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<char3>(3, {22, 23}, FMT_RGBs8, false, false, 1.0f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<char4>(1, {52, 42}, FMT_RGBAs8, true, false, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<char4>(7, {25, 25}, FMT_RGBAs8, false, false, 1.0f, 1.2f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<char4>(7, {25, 25}, FMT_RGBAs8, false, false, 1.0f, 1.2f, 0.1f,
+                                     ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<ushort1>(1, {200, 200}, FMT_U16, true, false, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<ushort1>(2, {250, 200}, FMT_U16, false, true, 1.1f, 1.0f, 0.3f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<ushort1>(2, {250, 200}, FMT_U16, false, true, 1.1f, 1.0f, 0.3f,
+                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
-    TEST_CASE(TestCorrectness<ushort3>(1, {9, 8}, FMT_RGB16, true, false, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<ushort3>(1, {9, 8}, FMT_RGB16, true, false, 1.0f, 1.1f, 0.1f,
+                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
     TEST_CASE(TestCorrectness<ushort3>(3, {19, 8}, FMT_RGB16, true, false, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<ushort4>(1, {29, 23}, FMT_RGBA16, true, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<ushort4>(5, {22, 25}, FMT_RGBA16, false, true, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<ushort4>(5, {22, 25}, FMT_RGBA16, false, true, 1.0f, 1.1f, 0.1f,
+                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<short1>(1, {54, 22}, FMT_S16, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<short1>(2, {54, 22}, FMT_S16, false, true, 1.0f, 1.1f, 1.3f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<short1>(2, {54, 22}, FMT_S16, false, true, 1.0f, 1.1f, 1.3f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<int1>(2, {100, 200}, FMT_S32, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<int1>(4, {100, 200}, FMT_S32, false, true, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<int1>(4, {100, 200}, FMT_S32, false, true, 1.0f, 1.1f, 0.1f,
+                                    ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<float1>(2, {20, 2}, FMT_F32, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<float1>(1, {22, 25}, FMT_F32, false, false, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float1>(1, {22, 25}, FMT_F32, false, false, 1.0f, 1.1f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<float3>(1, {222, 22}, FMT_RGBf32, false, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<float3>(20, {22, 20}, FMT_RGBf32, false, true, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float3>(20, {22, 20}, FMT_RGBf32, false, true, 1.0f, 1.1f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<float4>(1, {22, 29}, FMT_RGBAf32, true, true, 1.0f, 1.1f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<float4>(2, {22, 24}, FMT_RGBAf32, false, false, 1.0f, 1.1f, 0.1f, ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<float4>(2, {22, 24}, FMT_RGBAf32, false, false, 1.0f, 1.1f, 0.1f,
+                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASES_END();
 }

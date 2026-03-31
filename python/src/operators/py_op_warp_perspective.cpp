@@ -40,7 +40,7 @@ PyTensor PyOpWarpPerspective::Execute(PyTensor& input, py::list xform, bool isIn
 
     // Copy list contents into perspective transform matrix
     PerspectiveTransform perspectiveTransform;
-    for (int i = 0; i < xform.size(); i++) {
+    for (size_t i = 0; i < xform.size(); i++) {
         perspectiveTransform[i] = xform[i].cast<float>();
     }
 
@@ -63,7 +63,7 @@ void PyOpWarpPerspective::ExecuteInto(PyTensor& output, PyTensor& input, py::lis
 
     // Copy list contents into perspective transform matrix
     PerspectiveTransform perspectiveTransform;
-    for (int i = 0; i < xform.size(); i++) {
+    for (size_t i = 0; i < xform.size(); i++) {
         perspectiveTransform[i] = xform[i].cast<float>();
     }
 
