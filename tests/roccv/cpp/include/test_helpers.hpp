@@ -485,7 +485,7 @@ std::array<int64_t, ROCCV_TENSOR_MAX_RANK> ComputePackedStrides(const std::array
                                                                 const DataType& dtype, int rank) {
     std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
     strides[rank - 1] = dtype.size();
-    for (size_t i = rank - 2; i >= 0; i--) {
+    for (int i = rank - 2; i >= 0; i--) {
         strides[i] = strides[i + 1] * shape[i + 1];
     }
     return strides;
