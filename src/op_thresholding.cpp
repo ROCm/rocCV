@@ -127,11 +127,10 @@ void Threshold::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == input.shape(input.layout().batch_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) ==
-                            input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) == input.shape(input.layout().width_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) == input.shape(input.layout().height_index()));
+
+    // Ensure the threshold and max value tensors have the same batch size as the input tensor.
+    CHECK_TENSOR_COMPARISON(thresh.shape("N") == input.shape("N"));
+    CHECK_TENSOR_COMPARISON(maxVal.shape("N") == input.shape("N"));
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
