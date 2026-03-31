@@ -48,9 +48,9 @@ namespace {
  * @param[in] scale Scale vector used for scaling individual pixel value.
  * @param[in] scaleSize Size of the scale vector.
  * @param[in] scaleFormat Scale array format.
- * @param[in] globalShift The value shift applid on all pixels.
- * @param[in] globalScale The scaling factor applid on all pixels.
- * @param[in] epsilon The quantity added to the standard deviaton in normalization using standard deviation (Z-score
+ * @param[in] globalShift The value shift applied on all pixels.
+ * @param[in] globalScale The scaling factor applied on all pixels.
+ * @param[in] epsilon The quantity added to the standard deviation in normalization using standard deviation (Z-score
  * normalization or standardization).
  * @param[in] scaleIsStdDev The scaling factor is standard deviation.
  * @return None.
