@@ -4,6 +4,7 @@ See below for a list of Computer Vision operators rocCV supports.
 
 |Name|Description|Datatypes|Layouts|CPU/GPU Support|
 |-|-|-|-|-|
+|AdvCvtColor|Converts color spaces using explicit BT601/BT709/BT2020 coefficients and supports NV12/NV21 paths.|U8|NHWC, HWC|Both|
 |BilateralFilter|Applies a bilateral filter to reduce image noise while preserving strong edges.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
 |BndBox|Draws rectangular borders using the specified locations, dimensions and colors, in order to show the locations and sizes of objects in an image.|U8, S8|NHWC, HWC|Both|
 |CenterCrop|Crops an image at its center with a given rectangular region.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
