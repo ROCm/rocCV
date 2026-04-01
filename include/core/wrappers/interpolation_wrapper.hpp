@@ -23,8 +23,8 @@
 
 #include "core/detail/casting.hpp"
 #include "core/detail/math/vectorized_type_math.hpp"
-#include "core/wrappers/border_wrapper.hpp"
 #include "core/detail/vector_utils.hpp"
+#include "core/wrappers/border_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
@@ -96,9 +96,6 @@ class InterpolationWrapper {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
             const int64_t rh = static_cast<int64_t>(lroundf(h));
             const int64_t rw = static_cast<int64_t>(lroundf(w));
-            if (rw >= 0 && rw < m_desc.width() && rh >= 0 && rh < m_desc.height()) {
-                return m_desc.at_inbounds(n, rh, rw, c);
-            }
             return m_desc.at(n, rh, rw, c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
@@ -154,21 +151,22 @@ class InterpolationWrapper {
             }
 
             WorkType sum = SetAll<WorkType>(0.0f);
-            const bool cubic_fast = int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
+            const bool cubic_fast =
+                int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
             k = 0;
             if (cubic_fast) {
                 for (int index_y = -1; index_y <= 2; index_y++) {
                     for (int index_x = -1; index_x <= 2; index_x++) {
-                        sum = sum + detail::RangeCast<WorkType>(
-                                          m_desc.at_inbounds(n, int_y + index_y, int_x + index_x, c)) *
+                        sum = sum +
+                              detail::RangeCast<WorkType>(m_desc.at_inbounds(n, int_y + index_y, int_x + index_x, c)) *
                                   wxy[k++];
                     }
                 }
             } else {
                 for (int index_y = -1; index_y <= 2; index_y++) {
                     for (int index_x = -1; index_x <= 2; index_x++) {
-                        sum = sum + detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, c)) *
-                                  wxy[k++];
+                        sum = sum +
+                              detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, c)) * wxy[k++];
                     }
                 }
             }
