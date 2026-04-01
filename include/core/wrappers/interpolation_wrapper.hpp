@@ -94,8 +94,12 @@ class InterpolationWrapper {
      */
     inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
-            // Nearest neighbor interpolation implementation
-            return m_desc.at(n, lroundf(h), lroundf(w), c);
+            const int64_t rh = static_cast<int64_t>(lroundf(h));
+            const int64_t rw = static_cast<int64_t>(lroundf(w));
+            if (rw >= 0 && rw < m_desc.width() && rh >= 0 && rh < m_desc.height()) {
+                return m_desc.at_inbounds(n, rh, rw, c);
+            }
+            return m_desc.at(n, rh, rw, c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
             // v1 -- v2
@@ -109,34 +113,63 @@ class InterpolationWrapper {
             int64_t y0 = static_cast<int64_t>(floorf(h));
             int64_t y1 = y0 + 1;
 
+            if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width() && y1 < m_desc.height()) {
+                auto v1 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x0, c));
+                auto v2 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x1, c));
+                auto v3 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x0, c));
+                auto v4 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x1, c));
+                auto q1 = v1 * static_cast<float>(x1 - w) + v2 * static_cast<float>(w - x0);
+                auto q2 = v3 * static_cast<float>(x1 - w) + v4 * static_cast<float>(w - x0);
+                auto q = q1 * static_cast<float>(y1 - h) + q2 * static_cast<float>(h - y0);
+                return detail::RangeCast<T>(q);
+            }
+
             auto v1 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x0, c));
             auto v2 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x1, c));
             auto v3 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x0, c));
             auto v4 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x1, c));
 
-            auto q1 = v1 * (x1 - w) + v2 * (w - x0);
-            auto q2 = v3 * (x1 - w) + v4 * (w - x0);
-            auto q = q1 * (y1 - h) + q2 * (h - y0);
+            auto q1 = v1 * static_cast<float>(x1 - w) + v2 * static_cast<float>(w - x0);
+            auto q2 = v3 * static_cast<float>(x1 - w) + v4 * static_cast<float>(w - x0);
+            auto q = q1 * static_cast<float>(y1 - h) + q2 * static_cast<float>(h - y0);
 
             return detail::RangeCast<T>(q);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_CUBIC) {
             using namespace roccv::detail;
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            // Integer coordinates for pixel (x, y)
-            int64_t int_x = static_cast<int64_t>(floorf(w));
-            int64_t int_y = static_cast<int64_t>(floorf(h));
+            const int64_t int_x = static_cast<int64_t>(floorf(w));
+            const int64_t int_y = static_cast<int64_t>(floorf(h));
 
-            // Calculate weights
             float weight_x[4], weight_y[4];
-            CalBicubicWeights(w - int_x, weight_x);
-            CalBicubicWeights(h - int_y, weight_y);
+            CalBicubicWeights(w - static_cast<float>(int_x), weight_x);
+            CalBicubicWeights(h - static_cast<float>(int_y), weight_y);
 
-            // Weighted sum
+            float wxy[16];
+            int k = 0;
+            for (int j = 0; j < 4; j++) {
+                for (int i = 0; i < 4; i++) {
+                    wxy[k++] = weight_y[j] * weight_x[i];
+                }
+            }
+
             WorkType sum = SetAll<WorkType>(0.0f);
-            for (int index_y = -1; index_y <= 2; index_y++) {
-                for (int index_x = -1; index_x <= 2; index_x++) {
-                    sum += detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, 0)) * (weight_x[index_x + 1] * weight_y[index_y + 1]);
+            const bool cubic_fast = int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
+            k = 0;
+            if (cubic_fast) {
+                for (int index_y = -1; index_y <= 2; index_y++) {
+                    for (int index_x = -1; index_x <= 2; index_x++) {
+                        sum = sum + detail::RangeCast<WorkType>(
+                                          m_desc.at_inbounds(n, int_y + index_y, int_x + index_x, c)) *
+                                  wxy[k++];
+                    }
+                }
+            } else {
+                for (int index_y = -1; index_y <= 2; index_y++) {
+                    for (int index_x = -1; index_x <= 2; index_x++) {
+                        sum = sum + detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, c)) *
+                                  wxy[k++];
+                    }
                 }
             }
 

@@ -27,6 +27,16 @@
 #include "operator_types.h"
 
 namespace roccv {
+namespace detail {
+
+/** Euclidean modulo: result in [0, modulus) for modulus > 0. One hardware remainder vs (a%m+m)%m. */
+__device__ __host__ inline int64_t euclid_mod_i64(int64_t a, int64_t modulus) {
+    int64_t r = a % modulus;
+    if (r < 0) r += modulus;
+    return r;
+}
+
+}  // namespace detail
 
 /**
  * @brief Wrapper class for ImageWrapper. This extends the descriptors by defining behaviors for when tensor
@@ -55,6 +65,13 @@ class BorderWrapper {
      */
     BorderWrapper(ImageWrapper<T> image_wrapper, T border_value)
         : m_desc(image_wrapper), m_border_value(border_value) {}
+
+    /**
+     * @brief Sample the underlying image with no border logic. Caller must ensure coordinates are in-range.
+     */
+    __device__ __host__ inline const T at_inbounds(int64_t n, int64_t h, int64_t w, int64_t c) const {
+        return m_desc.at(n, h, w, c);
+    }
 
     /**
      * @brief Returns a reference to the underlying data given image coordinates. If the coordinates fall out of bounds,
@@ -92,11 +109,11 @@ class BorderWrapper {
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
             int64_t scale = imgWidth * 2;
-            int64_t val = (w % scale + scale) % scale;
+            int64_t val = detail::euclid_mod_i64(w, scale);
             x = (val < imgWidth) ? val : scale - 1 - val;
 
             scale = imgHeight * 2;
-            val = (h % scale + scale) % scale;
+            val = detail::euclid_mod_i64(h, scale);
             y = (val < imgHeight) ? val : scale - 1 - val;
         }
 
@@ -105,7 +122,7 @@ class BorderWrapper {
                 x = 0;
             } else {
                 int64_t scale = 2 * imgWidth - 2;
-                x = (w % scale + scale) % scale;
+                x = detail::euclid_mod_i64(w, scale);
                 x = imgWidth - 1 - std::abs(imgWidth - 1 - x);
             }
 
@@ -113,7 +130,7 @@ class BorderWrapper {
                 y = 0;
             } else {
                 int64_t scale = 2 * imgHeight - 2;
-                y = (h % scale + scale) % scale;
+                y = detail::euclid_mod_i64(h, scale);
                 y = imgHeight - 1 - std::abs(imgHeight - 1 - y);
             }
         }
@@ -127,11 +144,11 @@ class BorderWrapper {
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
             if (w < 0 || w >= imgWidth) {
-                x = (w % imgWidth + imgWidth) % imgWidth;
+                x = detail::euclid_mod_i64(w, imgWidth);
             }
 
             if (h < 0 || h >= imgHeight) {
-                y = (h % imgHeight + imgHeight) % imgHeight;
+                y = detail::euclid_mod_i64(h, imgHeight);
             }
         }
 
