@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <hip/hip_runtime.h>
 
 #include "core/wrappers/image_wrapper.hpp"
@@ -34,6 +35,24 @@ __device__ __host__ inline int64_t euclid_mod_i64(int64_t a, int64_t modulus) {
     int64_t r = a % modulus;
     if (r < 0) r += modulus;
     return r;
+}
+
+/**
+ * On GPU, use 32-bit remainder when operands fit; avoids 64-bit integer division in REFLECT/WRAP hot paths.
+ * Host always uses euclid_mod_i64. Values must stay in range for correctness.
+ */
+__device__ __host__ inline int64_t euclid_mod_i64_fast(int64_t a, int64_t modulus) {
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    constexpr int64_t kLim = int64_t{1} << 30;
+    if (modulus > 0 && modulus < kLim && a > -kLim && a < kLim) {
+        int32_t ai = static_cast<int32_t>(a);
+        int32_t m = static_cast<int32_t>(modulus);
+        int32_t r = ai % m;
+        if (r < 0) r += m;
+        return static_cast<int64_t>(r);
+    }
+#endif
+    return euclid_mod_i64(a, modulus);
 }
 
 }  // namespace detail
@@ -109,11 +128,11 @@ class BorderWrapper {
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
             int64_t scale = imgWidth * 2;
-            int64_t val = detail::euclid_mod_i64(w, scale);
+            int64_t val = detail::euclid_mod_i64_fast(w, scale);
             x = (val < imgWidth) ? val : scale - 1 - val;
 
             scale = imgHeight * 2;
-            val = detail::euclid_mod_i64(h, scale);
+            val = detail::euclid_mod_i64_fast(h, scale);
             y = (val < imgHeight) ? val : scale - 1 - val;
         }
 
@@ -144,11 +163,11 @@ class BorderWrapper {
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
             if (w < 0 || w >= imgWidth) {
-                x = detail::euclid_mod_i64(w, imgWidth);
+                x = detail::euclid_mod_i64_fast(w, imgWidth);
             }
 
             if (h < 0 || h >= imgHeight) {
-                y = detail::euclid_mod_i64(h, imgHeight);
+                y = detail::euclid_mod_i64_fast(h, imgHeight);
             }
         }
 
