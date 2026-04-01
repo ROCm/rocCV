@@ -51,7 +51,7 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
+    PerspectiveTransform transformMatrix = {0.27, 0.16, 0.00, -0.11, 0.61, 0.65, -0.09, 0.06, 1.00};
 
     FillTensor(input);
 
@@ -64,8 +64,8 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, transformMatrix, false, interpolation, border,
-               make_float4(0.0f, 0.0f, 0.0f, 1.0f), DeviceType);
+            op(stream, input, output, transformMatrix, true, interpolation, border, make_float4(0.0f, 0.0f, 0.0f, 1.0f),
+               DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }

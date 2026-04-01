@@ -50,7 +50,7 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
+    AffineTransform affineMatrix = {2.f, 2.f, 0.f, 3.f, 1.f, 0.f};
 
     FillTensor(input);
 
@@ -63,7 +63,7 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, affineMatrix, false, interpolation, border, make_float4(0.0f, 0.0f, 0.0f, 1.0f),
+            op(stream, input, output, affineMatrix, true, interpolation, border, make_float4(0.0f, 0.0f, 0.0f, 1.0f),
                DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
