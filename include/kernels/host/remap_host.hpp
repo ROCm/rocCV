@@ -47,13 +47,13 @@ void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int mapBatchSize
                 
                 mapCoord.x = (dstCoord.x + params.dstOffset) * params.mapScale.x;
                 mapCoord.y = (dstCoord.y + params.dstOffset) * params.mapScale.y;
-                
-                float2 mapValue = map.at((mapBatchSize == 1 ? 0 : b), mapCoord.y, mapCoord.x, 0);
+
+                float2 mapValue = map.at((mapBatchSize == 1 ? 0 : b), static_cast<int64_t>(mapCoord.y), static_cast<int64_t>(mapCoord.x), 0);
 
                 srcCoord.x = dstCoord.x * params.srcScale.x + mapValue.x * params.valScale.x + params.srcOffset.x;
                 srcCoord.y = dstCoord.y * params.srcScale.y + mapValue.y * params.valScale.y + params.srcOffset.y;
 
-                output.at(b, y, x, 0) = input.at(b, srcCoord.y, srcCoord.x, 0);
+                output.at(b, y, x, 0) = input.at(b, static_cast<int64_t>(srcCoord.y), static_cast<int64_t>(srcCoord.x), 0);
             }
         }
     }
