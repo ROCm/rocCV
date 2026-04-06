@@ -23,22 +23,19 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-#include "kernels/kernel_helpers.hpp"
-#include "core/wrappers/interpolation_wrapper.hpp"
-#include "operator_types.h"
 
-#include "core/detail/type_traits.hpp"
 #include "core/detail/casting.hpp"
+#include "core/detail/type_traits.hpp"
 #include "core/detail/vector_utils.hpp"
+#include "kernels/kernel_helpers.hpp"
 
 namespace Kernels {
 namespace Device {
-                                                   
+
 template <typename T, typename SrcWrapper, typename DstWrapper>
-__global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius,
-                                 float sigmaColor, float sigmaSpace, float spaceCoeff, float colorCoeff) {
+__global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius, float spaceCoeff, float colorCoeff) {
     using namespace roccv::detail;
-    using worktype = MakeType<float,NumElements<T>>;
+    using worktype = MakeType<float, NumElements<T>>;
     const int idx = (threadIdx.x + blockIdx.x * blockDim.x) * 2;
     const int idy = (threadIdx.y + blockIdx.y * blockDim.y) * 2;
     const int idz = blockIdx.z;
@@ -59,7 +56,6 @@ __global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius
 
     int sqrRadius = radius * radius;
 
-    
     worktype num0 = SetAll<worktype>(0);
     worktype num1 = SetAll<worktype>(0);
     worktype num2 = SetAll<worktype>(0);
@@ -73,8 +69,7 @@ __global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius
             int t2 = abs(c - (idx + 1)), t3 = abs(r - (idy + 1));
             float4 sqrD{t0 * t0 + t1 * t1, t2 * t2 + t1 * t1, t0 * t0 + t3 * t3, t3 * t3 + t2 * t2};
 
-            if (!(sqrD.x <= sqrRadius || sqrD.y <= sqrRadius ||
-                  sqrD.z <= sqrRadius || sqrD.w <= sqrRadius)) {
+            if (!(sqrD.x <= sqrRadius || sqrD.y <= sqrRadius || sqrD.z <= sqrRadius || sqrD.w <= sqrRadius)) {
                 continue;
             }
 
@@ -136,4 +131,4 @@ __global__ void bilateral_filter(SrcWrapper input, DstWrapper output, int radius
     }
 }
 }  // namespace Device
-}  // namespace Kernel
+}  // namespace Kernels

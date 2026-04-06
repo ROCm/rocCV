@@ -275,6 +275,8 @@ void TestCorrectness(int batchSize, int width, int height, double threshVal, dou
 } // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // GPU correctness tests    

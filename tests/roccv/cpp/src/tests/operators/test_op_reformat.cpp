@@ -203,6 +203,8 @@ static void TestNegativeReformat() {
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off
