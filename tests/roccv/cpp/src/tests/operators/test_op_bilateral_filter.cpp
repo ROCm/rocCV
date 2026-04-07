@@ -175,6 +175,14 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REPLICATE>(4, 20, 20, FMT_U8, 4, 50.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
 
+    // diameter <= 0: radius = roundf(sigmaSpace * 1.5f); sigmaSpace 1.2 -> radius 2
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 0, 50.0f, 1.2f, {0.0, 0.0, 0.0, 0.0},
+                                                            eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(2, 20, 20, FMT_RGB8, -1, 50.0f, 1.2f,
+                                                             {0.0, 0.0, 0.0, 0.0}, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(1, 24, 24, FMT_F32, 0, 500.0f, 1.2f,
+                                                         {500.0, 500.0, 0.0, 0.0}, eDeviceType::GPU)));
+
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 4, 50.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_RGB8, 4, 50.0f, 5.0f,
@@ -275,6 +283,14 @@ int main(int argc, char** argv) {
                                                             eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REPLICATE>(4, 20, 20, FMT_U8, 4, 50.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
+
+    // diameter <= 0: radius = roundf(sigmaSpace * 1.5f); sigmaSpace 1.2 -> radius 2
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 0, 50.0f, 1.2f, {0.0, 0.0, 0.0, 0.0},
+                                                            eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(2, 20, 20, FMT_RGB8, -1, 50.0f, 1.2f,
+                                                             {0.0, 0.0, 0.0, 0.0}, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(1, 24, 24, FMT_F32, 0, 500.0f, 1.2f,
+                                                         {500.0, 500.0, 0.0, 0.0}, eDeviceType::CPU)));
 
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 4, 50.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
