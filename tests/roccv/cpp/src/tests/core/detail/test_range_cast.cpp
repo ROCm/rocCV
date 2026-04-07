@@ -28,6 +28,8 @@ using namespace roccv::tests;
 using namespace roccv;
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
+#include "core/detail/internal_structs.hpp"
 #include "core/detail/math/math.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
@@ -33,18 +34,59 @@ THE SOFTWARE.
 #include "kernels/device/remap_device.hpp"
 #include "kernels/host/remap_host.hpp"
 
+using namespace roccv::detail;
 namespace roccv {
 Remap::Remap() {}
 
 Remap::~Remap() {}
 
+RemapParams GetRemapParams(const int2 &srcSize, const int2 &dstSize, const int2 &mapSize, bool alignCorners,
+                           eRemapType mapValueType) {
+    RemapParams params{};
+
+    switch (mapValueType) {
+        case REMAP_ABSOLUTE:
+            params.srcScale = make_float2(0.f, 0.f);
+            params.mapScale = StaticCast<float2>(mapSize) / StaticCast<float2>(dstSize);
+            params.valScale = make_float2(1.f, 1.f);
+            params.srcOffset = make_float2(0.f, 0.f);
+            params.dstOffset = 0.f;
+            break;
+        case REMAP_ABSOLUTE_NORMALIZED:
+            params.srcScale = make_float2(0.f, 0.f);
+            params.mapScale = StaticCast<float2>(mapSize) / StaticCast<float2>(dstSize);
+            params.valScale = (StaticCast<float2>(srcSize) - (alignCorners ? 1.f : 0.f)) / 2.f;
+            params.srcOffset = params.valScale - (alignCorners ? 0.f : .5f);
+            params.dstOffset = 0.f;
+            break;
+        case REMAP_RELATIVE_NORMALIZED:
+            params.srcScale = StaticCast<float2>(srcSize) / StaticCast<float2>(dstSize);
+            params.mapScale = (StaticCast<float2>(mapSize) - 1.f) / StaticCast<float2>(dstSize);
+            params.valScale = StaticCast<float2>(srcSize) - 1.f;
+            params.dstOffset = alignCorners ? 0.f : .5f;
+            params.srcOffset = params.srcScale * params.dstOffset - params.dstOffset;
+            break;
+        default:
+            throw Exception("Unsupported mapValueType passed to GetRemapParams", eStatusType::NOT_IMPLEMENTED);
+    }
+    return params;
+}
+
 template <typename T, eBorderType B, eInterpolationType I, eInterpolationType M>
 void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                              eRemapType mapValueType, bool alignCorners, T borderValue,
-                              eDeviceType device) {
+                              const eRemapType mapValueType, const bool alignCorners, const T borderValue,
+                              const eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
     InterpolationWrapper<float2, B, M> wrappedMapTensor(map, make_float2(0, 0));
     InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);
+
+    int mapBatchSize = wrappedMapTensor.batches();
+
+    int2 srcSize = make_int2(inputWrapper.width(), inputWrapper.height());
+    int2 dstSize = make_int2(outputWrapper.width(), outputWrapper.height());
+    int2 mapSize = make_int2(wrappedMapTensor.width(), wrappedMapTensor.height());
+
+    RemapParams params = GetRemapParams(srcSize, dstSize, mapSize, alignCorners, mapValueType);
 
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
@@ -52,12 +94,13 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
             dim3 block(64, 16);
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
-            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor);
+            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor,
+                                                               mapBatchSize, params);
             break;
         }
 
         case eDeviceType::CPU: {
-            Kernels::Host::remap(inputWrapper, outputWrapper, wrappedMapTensor);
+            Kernels::Host::remap(inputWrapper, outputWrapper, wrappedMapTensor, mapBatchSize, params);
             break;
         }
     }
@@ -65,11 +108,11 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
 
 template <typename T, eBorderType B, eInterpolationType I>
 void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                           eInterpolationType mapInterpolation, eRemapType mapValueType,
-                           bool alignCorners, T borderValue, eDeviceType device) {
+                           const eInterpolationType mapInterpolation, const eRemapType mapValueType,
+                           const bool alignCorners, const T borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, eRemapType, bool, T, eDeviceType)>>
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eRemapType, const bool, const T, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_mapInterp<T, B, I, eInterpolationType::INTERP_TYPE_LINEAR>},
@@ -87,12 +130,12 @@ void dispatch_remap_interp(hipStream_t stream, const Tensor &input, const Tensor
 
 template <typename T, eBorderType B>
 void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                                eInterpolationType inInterpolation, eInterpolationType mapInterpolation,
-                                eRemapType mapValueType, bool alignCorners, T borderValue,
-                                eDeviceType device) {
+                                const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
+                                const eRemapType mapValueType, const bool alignCorners, const T borderValue,
+                                const eDeviceType device) {
     // Select kernel dispatcher based on selected interpolation mode.
     // clang-format off
-    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, eInterpolationType, eRemapType, bool, T, eDeviceType)>>
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eRemapType, const bool, const T, const eDeviceType)>>
         funcs = {
             {eInterpolationType::INTERP_TYPE_NEAREST, dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_NEAREST>},
             {eInterpolationType::INTERP_TYPE_LINEAR,  dispatch_remap_interp<T, B, eInterpolationType::INTERP_TYPE_LINEAR>},
@@ -110,12 +153,12 @@ void dispatch_remap_border_mode(hipStream_t stream, const Tensor &input, const T
 
 template <typename T>
 void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                          eInterpolationType inInterpolation, eInterpolationType mapInterpolation,
-                          eRemapType mapValueType, bool alignCorners, eBorderType borderType,
-                          float4 borderValue, eDeviceType device) {
+                          const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
+                          const eRemapType mapValueType, const bool alignCorners, const eBorderType borderType,
+                          const float4 borderValue, const eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, eInterpolationType, eInterpolationType, eRemapType, bool, T, eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const eInterpolationType, const eInterpolationType, const eRemapType, const bool, T, const eDeviceType)>>
         funcs = {
             {eBorderType::BORDER_TYPE_CONSTANT,     dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
             {eBorderType::BORDER_TYPE_REPLICATE,    dispatch_remap_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
@@ -135,9 +178,9 @@ void dispatch_remap_dtype(hipStream_t stream, const Tensor &input, const Tensor 
 }
 
 void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
-                       eInterpolationType inInterpolation, eInterpolationType mapInterpolation,
-                       eRemapType mapValueType, bool alignCorners, eBorderType borderType,
-                       float4 borderValue, eDeviceType device) {
+                       const eInterpolationType inInterpolation, const eInterpolationType mapInterpolation,
+                       const eRemapType mapValueType, const bool alignCorners, const eBorderType borderType,
+                       const float4 borderValue, eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -155,23 +198,19 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
 
     // Ensure the layout and shapes for the input/output tensors match
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
-    CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(map.layout() == output.layout());
+    CHECK_TENSOR_COMPARISON((map.shape(map.layout().batch_index()) == input.shape(input.layout().batch_index())) ||
+                            (map.shape(map.layout().batch_index()) == 1));
 
-    // If the input tensor has a batch index, check that the input and map batch sizes are the same
-    if (input.layout().batch_index() != -1) {
-        CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) == map.shape(map.layout().batch_index()));
-    }
-    CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) == map.shape(map.layout().width_index()));
-    CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) == map.shape(map.layout().height_index()));
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
+    CHECK_TENSOR_CHANNELS(map, 2);
 
     eDataType dtype = input.dtype().etype();
     int64_t channels = input.shape(input.layout().channels_index());
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, eInterpolationType, eInterpolationType, eRemapType,  bool, eBorderType, float4, eDeviceType)>, 4>>
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const eInterpolationType, const eInterpolationType, const eRemapType,  const bool, const eBorderType, const float4, const eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_remap_dtype<uchar1>, 0, dispatch_remap_dtype<uchar3>, dispatch_remap_dtype<uchar4>}},
         };
