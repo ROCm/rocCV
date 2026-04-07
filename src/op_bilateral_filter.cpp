@@ -100,7 +100,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
             prevHeight = rollingHeight;
             rollingHeight += factorH;
         }
-        for (int i = 0; i < threads.size(); i++) {
+        for (size_t i = 0; i < threads.size(); i++) {
             threads[i].join();
         }
     }
