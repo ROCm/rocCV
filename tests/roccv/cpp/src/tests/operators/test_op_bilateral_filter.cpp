@@ -134,7 +134,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
     std::vector<BT> inputData(input.shape().size());
     FillVector(inputData);
     if constexpr (std::is_floating_point_v<BT>) {
-        for (int i = 0; i < inputData.size(); i++) {
+        for (size_t i = 0; i < inputData.size(); i++) {
             inputData[i] *= static_cast<BT>(std::numeric_limits<ushort>::max());
         }
     }
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
                                                         eDeviceType::GPU)));
 
     TEST_CASE((TestCorrectness<char4, BORDER_TYPE_REFLECT101>(1, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
-                                                           {100.0, 0.0, 100.0, 0.0}, eDeviceType::GPU)));
+                                                              {100.0, 0.0, 100.0, 0.0}, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<char4, BORDER_TYPE_CONSTANT>(5, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
                                                             {100.0, 100.0, 100.0, 0.0}, eDeviceType::GPU)));
 
@@ -208,7 +208,7 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 4, 500.0f, 3.0f,
                                                               {500.0, 600.0, 0.0, 0.0}, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGB16, 4, 500.0f, 3.0f,
-                                                             {0.0, 0.0, 0.0, 0.0}, eDeviceType::GPU)));
+                                                                {0.0, 0.0, 0.0, 0.0}, eDeviceType::GPU)));
 
     TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 4, 600.0f, 3.0f,
                                                              {500.0, 600.0, 0.0, 0.0}, eDeviceType::GPU)));
@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
                                                         eDeviceType::CPU)));
 
     TEST_CASE((TestCorrectness<char4, BORDER_TYPE_REFLECT101>(1, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
-                                                           {100.0, 0.0, 100.0, 0.0}, eDeviceType::CPU)));
+                                                              {100.0, 0.0, 100.0, 0.0}, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<char4, BORDER_TYPE_CONSTANT>(5, 64, 24, FMT_RGBAs8, 5, 60.0f, 3.0f,
                                                             {100.0, 100.0, 100.0, 0.0}, eDeviceType::CPU)));
 
@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
                                                              {0.0, 0.0, 0.0, 0.0}, eDeviceType::CPU)));
 
     TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT101>(1, 20, 20, FMT_RGBA16, 4, 600.0f, 3.0f,
-                                                             {500.0, 600.0, 0.0, 0.0}, eDeviceType::CPU)));
+                                                                {500.0, 600.0, 0.0, 0.0}, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_WRAP>(2, 20, 20, FMT_RGBA16, 4, 500.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                           eDeviceType::CPU)));
 
