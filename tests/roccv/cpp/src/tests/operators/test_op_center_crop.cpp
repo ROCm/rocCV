@@ -144,6 +144,8 @@ void TestNegative() {
 }
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // Test negative CenterCrop operator cases

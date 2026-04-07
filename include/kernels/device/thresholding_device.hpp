@@ -141,7 +141,7 @@ __global__ void tozero_generic(SrcWrapper input, DstWrapper output,
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output,
                                     roccv::GenericTensorWrapper<double> thresh,
-                                    const int32_t maxBatchSize) {
+                                    const int32_t /* maxBatchSize */) {
     using namespace roccv::detail;
     const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;

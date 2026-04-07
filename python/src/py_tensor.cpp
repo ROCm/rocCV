@@ -149,7 +149,7 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
     return std::make_shared<PyTensor>(tensor, dlManagedTensor);
 }
 
-py::capsule PyTensor::toDLPack(py::object stream) {
+py::capsule PyTensor::toDLPack(py::object /* stream */) {
     // Stream parameter is intentionally left unused to support Pytorch DLPack device conversions
 
     DLManagedTensor* dlTensor = createDLManagedTensor(m_tensor, shared_from_this());
