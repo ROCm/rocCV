@@ -177,7 +177,7 @@ class Matrix {
 
 // Determinant calculations
 template <class T>
-constexpr __host__ __device__ T det(const Matrix<T, 0, 0> &m) {
+constexpr __host__ __device__ T det(const Matrix<T, 0, 0> &) {
     return T{1};
 }
 

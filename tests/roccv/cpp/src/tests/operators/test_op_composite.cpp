@@ -164,6 +164,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat fmt, Imag
 }  // namespace
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // Test RGB8 input/output

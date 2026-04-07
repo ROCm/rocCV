@@ -47,6 +47,8 @@ void TestCorrectness(T input, T expected) {
 }  // namespace
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // ZYXW swizzling

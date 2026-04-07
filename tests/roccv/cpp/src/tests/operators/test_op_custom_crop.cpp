@@ -152,6 +152,8 @@ void TestNegative() {
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // Test negative CustomCrop operator cases
