@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <cmath>
 #include <functional>
 #include <numeric>
 #include <unordered_map>
@@ -45,8 +46,6 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
     BorderWrapper<T, B> inputWrapper(input, borderValue);
     ImageWrapper<T> outputWrapper(output);
 
-    int radius = diameter >> 1;
-
     if (outputWrapper.channels() > 4 || outputWrapper.channels() < 1) {
         throw Exception("Invalid channel size: cannot be greater than 4 or less than 1.", eStatusType::OUT_OF_BOUNDS);
     }
@@ -62,9 +61,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         sigmaSpace = 1.0f;
     }
 
-    if (radius <= 0) {
-        radius = std::round(sigmaSpace * 1.5f);
-    }
+    const int radius =
+        (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
 
     float spaceCoeff = -1 / (2 * sigmaSpace * sigmaSpace);
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
