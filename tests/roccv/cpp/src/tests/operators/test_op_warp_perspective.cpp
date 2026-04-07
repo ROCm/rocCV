@@ -156,6 +156,8 @@ static const std::array<float, 9> MAT_PERSPECTIVE_SKEW =    {1, 0,    0,  0,    
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

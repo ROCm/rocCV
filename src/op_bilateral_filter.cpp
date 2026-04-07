@@ -24,14 +24,13 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include <functional>
-#include <iostream>
 #include <numeric>
+#include <unordered_map>
 
-#include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
-#include "core/detail/math/math.hpp"
-#include "core/detail/type_traits.hpp"
+#include "core/wrappers/border_wrapper.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bilateral_filter_device.hpp"
 #include "kernels/host/bilateral_filter_host.hpp"
 
@@ -42,8 +41,7 @@ BilateralFilter::~BilateralFilter() {}
 
 template <typename T, eBorderType B>
 void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
-                                           float sigmaColor, float sigmaSpace, T borderValue,
-                                           eDeviceType device) {
+                                           float sigmaColor, float sigmaSpace, T borderValue, eDeviceType device) {
     BorderWrapper<T, B> inputWrapper(input, borderValue);
     ImageWrapper<T> outputWrapper(output);
 
@@ -78,8 +76,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         uint32_t zGridSize = outputWrapper.batches();
         dim3 grid(xGridSize, yGridSize, zGridSize);
 
-        Kernels::Device::bilateral_filter<T><<<grid, block, 0, stream>>>(
-            inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace, spaceCoeff, colorCoeff);
+        Kernels::Device::bilateral_filter<T>
+            <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, radius, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
         int divisor = std::gcd(4, outputWrapper.height());  // greatest common divisor
         int dividend = std::gcd((numThreads / divisor), outputWrapper.width());
@@ -94,9 +92,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         for (int j = 0; j < divisor; j++) {
             for (int i = 0; i < dividend; i++) {
                 threads.push_back(std::thread(Kernels::Host::bilateral_filter<T, BorderWrapper<T, B>, ImageWrapper<T>>,
-                                              inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace,
-                                              rollingHeight, rollingWidth, prevHeight, prevWidth, spaceCoeff,
-                                              colorCoeff));
+                                              inputWrapper, outputWrapper, radius, rollingHeight, rollingWidth,
+                                              prevHeight, prevWidth, spaceCoeff, colorCoeff));
                 prevWidth = rollingWidth;
                 rollingWidth += factorW;
             }
@@ -113,8 +110,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
 
 template <typename T>
 void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
-                                     float sigmaColor, float sigmaSpace, eBorderType borderMode,
-                                     float4 borderValue, eDeviceType device) {
+                                     float sigmaColor, float sigmaSpace, eBorderType borderMode, float4 borderValue,
+                                     eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
     static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, eDeviceType)>>
@@ -181,7 +178,5 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     auto func = funcs.at(dtype)[channels - 1];
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, borderMode, borderValue, device);
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 }  // namespace roccv
