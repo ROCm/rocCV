@@ -64,13 +64,13 @@ struct ResourceRequirements {
  * memory resource requirements, and device placement.
  */
 struct TensorRequirements {
-    eDataType dtype;
-    eTensorLayout layout;
-    int32_t rank;
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shape;
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
-    int32_t alignBytes;
-    ResourceRequirements res;
-    eDeviceType device;
+    eDataType dtype;                                     // Data type
+    eTensorLayout layout;                                // Tensor layout
+    int32_t rank;                                        // Number of dimensions
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shape;    // Shape in elements
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;  // Strides in bytes
+    int32_t alignBytes;                                  // Base address alignment in bytes
+    ResourceRequirements res;                            // Resource requirements for memory allocation
+    eDeviceType device;                                  // Device type
 };
 }  // namespace roccv
