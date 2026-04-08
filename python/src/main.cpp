@@ -23,6 +23,7 @@ THE SOFTWARE.
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "operators/py_op_avg_blur.hpp"
 #include "operators/py_op_bilateral_filter.hpp"
 #include "operators/py_op_bnd_box.hpp"
 #include "operators/py_op_center_crop.hpp"
@@ -61,6 +62,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyStructs::Export(m);
     PyStream::Export(m);
     PyTensor::Export(m);
+    PyOpAvgBlur::Export(m);
     PyOpCustomCrop::Export(m);
     PyOpNonMaxSuppression::Export(m);
     PyOpNormalize::Export(m);
