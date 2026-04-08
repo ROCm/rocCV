@@ -139,7 +139,7 @@ inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_pat
 
     // Copy images into tensor
     hipMemcpyKind kind = (device == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
-    for (int i = 0; i < images.size(); i++) {
+    for (size_t i = 0; i < images.size(); i++) {
         CHECK_HIP_ERROR(hipMemcpy2DAsync(static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes,
                                          params.rowPitch, images[i].data, params.rowBytes, params.rowBytes, height,
                                          kind, stream));
@@ -179,7 +179,7 @@ inline void WriteImages(hipStream_t stream, const roccv::Tensor &tensor, const s
 
     // Copy images from tensor to OpenCV image vector
     std::vector<cv::Mat> images(batchSize);
-    for (int i = 0; i < batchSize; i++) {
+    for (int64_t i = 0; i < batchSize; i++) {
         images[i] = cv::Mat(height, width, cvFormat);
         CHECK_HIP_ERROR(hipMemcpy2DAsync(images[i].data, params.rowBytes,
                                          static_cast<uint8_t *>(params.basePtr) + i * params.imageBytes,
@@ -191,7 +191,7 @@ inline void WriteImages(hipStream_t stream, const roccv::Tensor &tensor, const s
 
     std::filesystem::path outputPath(output_path);
     if (outputPath.extension().empty()) {
-        for (int i = 0; i < batchSize; i++) {
+        for (int64_t i = 0; i < batchSize; i++) {
             std::filesystem::create_directories(outputPath);
             std::filesystem::path outFilename = outputPath / std::format("image_{}.bmp", i);
             cv::imwrite(outFilename.string(), images[i]);
