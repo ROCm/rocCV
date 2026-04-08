@@ -32,7 +32,9 @@ from test_helpers import compare_tensors, generate_tensor
 @pytest.mark.parametrize("border_mode", [rocpycv.eBorderType.CONSTANT])
 @pytest.mark.parametrize("border_val", [[0, 0, 0, 1]])
 @pytest.mark.parametrize("diameter,sigma_color,sigma_space", [
-    (3, 1.0, 1.0)
+    (3, 1.0, 1.0),
+    (0, 50.0, 1.2),
+    (-1, 50.0, 1.2),
 ])
 @pytest.mark.parametrize("channels", [1, 3, 4])
 @pytest.mark.parametrize("samples,height,width", [

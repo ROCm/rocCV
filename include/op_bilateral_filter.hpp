@@ -78,7 +78,11 @@ class BilateralFilter final : public IOperator {
      * @param[in] stream The HIP stream to run this operation on.
      * @param[in] input Input tensor with image batch data
      * @param[out] output Output tensor for storing modified image batch data
-     * @param[in] diameter bilateral filter diameter.
+     * @param[in] diameter Bilateral filter neighborhood diameter. If @p diameter is
+     * greater than zero, the spatial radius is `diameter >> 1`. If @p diameter is
+     * less than or equal to zero, the radius is
+     * `static_cast<int>(std::roundf(sigmaSpace * 1.5f))` after clamping non-positive
+     * @p sigmaSpace to 1.0.
      * @param[in] sigmaColor Gaussian exponent for color difference, expected
      * to be positive, if it isn't, will be set to 1.0
      * @param[in] sigmaSpace Gaussian exponent for position difference expected
