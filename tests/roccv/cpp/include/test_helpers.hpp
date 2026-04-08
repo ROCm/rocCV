@@ -436,7 +436,7 @@ inline std::tuple<size_t, size_t, size_t> ComputeCopyParams(const Tensor& tensor
  */
 template <typename T>
 void CopyVectorIntoTensor(const Tensor& dst, const std::vector<T>& src) {
-    dst.copyFromHost(src.data(), nullptr);
+    dst.copyFromHostAsync(src.data(), nullptr);
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 }
 
@@ -453,7 +453,7 @@ void CopyVectorIntoTensor(const Tensor& dst, const std::vector<T>& src) {
  */
 template <typename T>
 void CopyTensorIntoVector(std::vector<T>& dst, const Tensor& src) {
-    src.copyToHost(dst.data(), nullptr);
+    src.copyToHostAsync(dst.data(), nullptr);
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 }
 /**

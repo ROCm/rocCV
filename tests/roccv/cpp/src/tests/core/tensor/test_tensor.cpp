@@ -157,9 +157,9 @@ void TestTensorCopyCorrectness() {
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
-    tensor.copyFromHost(inputDataHost.data(), stream);
+    tensor.copyFromHostAsync(inputDataHost.data(), stream);
     std::vector<uint8_t> outputDataHost(hostDataSize);
-    tensor.copyToHost(outputDataHost.data(), stream);
+    tensor.copyToHostAsync(outputDataHost.data(), stream);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));

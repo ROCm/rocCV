@@ -330,7 +330,7 @@ size_t Tensor::dataSize() const { return m_requirements.strides[0] * m_requireme
 
 bool Tensor::isContiguous() const { return dataSize() == shape().size() * dtype().size(); }
 
-void Tensor::copyFromHost(const void* src, hipStream_t stream) const {
+void Tensor::copyFromHostAsync(const void* src, hipStream_t stream) const {
     auto [rowWidth, numRows, tensorPitch] = ComputeCopyParams(m_requirements.rank, m_requirements.shape,
                                                               m_requirements.strides, dtype().size(), isContiguous());
 
@@ -341,7 +341,7 @@ void Tensor::copyFromHost(const void* src, hipStream_t stream) const {
         hipMemcpy2DAsync(m_data->data(), tensorPitch, src, srcPitch, rowWidth, numRows, kind, stream));
 }
 
-void Tensor::copyToHost(void* dst, hipStream_t stream) const {
+void Tensor::copyToHostAsync(void* dst, hipStream_t stream) const {
     auto [rowWidth, numRows, tensorPitch] = ComputeCopyParams(m_requirements.rank, m_requirements.shape,
                                                               m_requirements.strides, dtype().size(), isContiguous());
 
