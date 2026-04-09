@@ -231,6 +231,14 @@ void AvgBlur::operator()(hipStream_t stream, const Tensor &input, const Tensor &
 
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
+    // Handle default anchor (-1, -1) by setting to kernel center
+    if (kernelAnchorX == -1) {
+        kernelAnchorX = kernelWidth / 2;
+    }
+    if (kernelAnchorY == -1) {
+        kernelAnchorY = kernelHeight / 2;
+    }
+
     eDataType dtype = input.dtype().etype();
     int64_t channels = input.shape(input.layout().channels_index());
 

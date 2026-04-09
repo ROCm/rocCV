@@ -33,7 +33,7 @@ from test_helpers import compare_tensors, generate_tensor
 @pytest.mark.parametrize("border_val", [[0, 0, 0, 0]])
 @pytest.mark.parametrize("kernel_size,anchor", [
     ((3, 3), (1, 1)),   
-    ((7, 7), (3, 3)),   
+    ((7, 7), (-1, -1)),   
     ((9, 9), (4, 4))
 ])
 @pytest.mark.parametrize("channels", [1, 3, 4])

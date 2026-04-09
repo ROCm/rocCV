@@ -100,12 +100,14 @@ void GenerateGoldenAvgBlur(std::vector<BT>& input, std::vector<BT>& output, int3
  * @param[in] format Image format.
  * @param[in] kernelWidth Width of the averaging kernel
  * @param[in] kernelHeight Height of the averaging kernel
+ * @param[in] kernelAnchorX X-coordinate of kernel anchor point
+ * @param[in] kernelAnchorY Y-coordinate of kernel anchor point
  * @param[in] borderColor Color for constant border mode
  * @param[in] device Device this correctness test should be run on.
  */
 template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
 void TestCorrectness(int batchSize, int width, int height, ImageFormat format, int kernelWidth, int kernelHeight,
-                     float4 borderColor, eDeviceType device) {
+                     int kernelAnchorX, int kernelAnchorY, float4 borderColor, eDeviceType device) {
     // Create input and output tensor based on test parameters
     Tensor input(batchSize, {width, height}, format, device);
     Tensor output(batchSize, {width, height}, format, device);
@@ -121,10 +123,6 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
 
     // Copy generated input data into input tensor
     CopyVectorIntoTensor(input, inputData);
-
-    // Calculate kernel anchor (center of kernel)
-    int kernelAnchorX = kernelWidth / 2;
-    int kernelAnchorY = kernelHeight / 2;
 
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
@@ -153,149 +151,149 @@ int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests - U8 (1 channel)
-    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                             eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REPLICATE>(4, 32, 32, FMT_U8, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REPLICATE>(4, 32, 32, FMT_U8, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_U8, 7, 7, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_U8, 7, 7, 3, 3, {0.0, 0.0, 0.0, 0.0},
                                                            eDeviceType::GPU)));
 
     // GPU correctness tests - RGB8 (3 channels)
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REFLECT>(2, 32, 32, FMT_RGB8, 5, 5, {100.0, 100.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REFLECT>(2, 32, 32, FMT_RGB8, 5, 5, 2, 2, {100.0, 100.0, 0.0, 0.0},
                                                             eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_WRAP>(1, 16, 16, FMT_RGB8, 3, 3, {50.0, 50.0, 50.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_WRAP>(1, 16, 16, FMT_RGB8, 3, 3, 1, 1, {50.0, 50.0, 50.0, 0.0},
                                                          eDeviceType::GPU)));
 
     // GPU correctness tests - RGBA8 (4 channels)
-    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_WRAP>(1, 10, 10, FMT_RGBA8, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_WRAP>(1, 10, 10, FMT_RGBA8, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                          eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REPLICATE>(5, 64, 64, FMT_RGBA8, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REPLICATE>(5, 64, 64, FMT_RGBA8, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGBA8, 7, 7, {128.0, 128.0, 128.0, 255.0},
+    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGBA8, 7, 7, 3, 3, {128.0, 128.0, 128.0, 255.0},
                                                                eDeviceType::GPU)));
 
     // GPU correctness tests - S16 (signed 16-bit)
-    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_S16, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_S16, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_REFLECT>(3, 20, 20, FMT_S16, 5, 5, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_REFLECT>(3, 20, 20, FMT_S16, 5, 5, 2, 2, {500.0, 500.0, 0.0, 0.0},
                                                             eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<short3, BORDER_TYPE_REPLICATE>(2, 16, 16, FMT_RGBs16, 3, 3, {100.0, 100.0, 100.0, 0.0},
+    TEST_CASE((TestCorrectness<short3, BORDER_TYPE_REPLICATE>(2, 16, 16, FMT_RGBs16, 3, 3, 1, 1, {100.0, 100.0, 100.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<short4, BORDER_TYPE_WRAP>(1, 24, 24, FMT_RGBAs16, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<short4, BORDER_TYPE_WRAP>(1, 24, 24, FMT_RGBAs16, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                          eDeviceType::GPU)));
 
     // GPU correctness tests - U16 (unsigned 16-bit)
-    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U16, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U16, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_U16, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_U16, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 3, 3, {500.0, 600.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 3, 3, 1, 1, {500.0, 600.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 5, 5, {500.0, 600.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 5, 5, 2, 2, {500.0, 600.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
 
     // GPU correctness tests - S32 (signed 32-bit)
-    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_CONSTANT>(1, 32, 32, FMT_S32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_CONSTANT>(1, 32, 32, FMT_S32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                            eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_WRAP>(2, 32, 32, FMT_S32, 5, 5, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_WRAP>(2, 32, 32, FMT_S32, 5, 5, 2, 2, {500.0, 500.0, 0.0, 0.0},
                                                        eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<int3, BORDER_TYPE_REPLICATE>(1, 16, 16, FMT_RGBs32, 3, 3, {100.0, 100.0, 100.0, 0.0},
+    TEST_CASE((TestCorrectness<int3, BORDER_TYPE_REPLICATE>(1, 16, 16, FMT_RGBs32, 3, 3, 1, 1, {100.0, 100.0, 100.0, 0.0},
                                                             eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<int4, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_RGBAs32, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<int4, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_RGBAs32, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                           eDeviceType::GPU)));
 
     // GPU correctness tests - F32 (float)
-    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_F32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_F32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(2, 24, 24, FMT_F32, 5, 5, {600.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(2, 24, 24, FMT_F32, 5, 5, 2, 2, {600.0, 500.0, 0.0, 0.0},
                                                          eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBf32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBf32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBf32, 7, 7, {600.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBf32, 7, 7, 3, 3, {600.0, 500.0, 0.0, 0.0},
                                                          eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBAf32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBAf32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBAf32, 5, 5, {600.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBAf32, 5, 5, 2, 2, {600.0, 500.0, 0.0, 0.0},
                                                          eDeviceType::GPU)));
 
     // CPU correctness tests - U8 (1 channel)
-    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                             eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REPLICATE>(4, 32, 32, FMT_U8, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REPLICATE>(4, 32, 32, FMT_U8, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_U8, 7, 7, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_U8, 7, 7, 3, 3, {0.0, 0.0, 0.0, 0.0},
                                                            eDeviceType::CPU)));
 
     // CPU correctness tests - RGB8 (3 channels)
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REFLECT>(2, 32, 32, FMT_RGB8, 5, 5, {100.0, 100.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REFLECT>(2, 32, 32, FMT_RGB8, 5, 5, 2, 2, {100.0, 100.0, 0.0, 0.0},
                                                             eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_WRAP>(1, 16, 16, FMT_RGB8, 3, 3, {50.0, 50.0, 50.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_WRAP>(1, 16, 16, FMT_RGB8, 3, 3, 1, 1, {50.0, 50.0, 50.0, 0.0},
                                                          eDeviceType::CPU)));
 
     // CPU correctness tests - RGBA8 (4 channels)
-    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_WRAP>(1, 10, 10, FMT_RGBA8, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_WRAP>(1, 10, 10, FMT_RGBA8, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                          eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REPLICATE>(5, 64, 64, FMT_RGBA8, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REPLICATE>(5, 64, 64, FMT_RGBA8, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGBA8, 7, 7, {128.0, 128.0, 128.0, 255.0},
+    TEST_CASE((TestCorrectness<uchar4, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGBA8, 7, 7, 3, 3, {128.0, 128.0, 128.0, 255.0},
                                                                eDeviceType::CPU)));
 
     // CPU correctness tests - S16 (signed 16-bit)
-    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_S16, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_S16, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_REFLECT>(3, 20, 20, FMT_S16, 5, 5, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<short1, BORDER_TYPE_REFLECT>(3, 20, 20, FMT_S16, 5, 5, 2, 2, {500.0, 500.0, 0.0, 0.0},
                                                             eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<short3, BORDER_TYPE_REPLICATE>(2, 16, 16, FMT_RGBs16, 3, 3, {100.0, 100.0, 100.0, 0.0},
+    TEST_CASE((TestCorrectness<short3, BORDER_TYPE_REPLICATE>(2, 16, 16, FMT_RGBs16, 3, 3, 1, 1, {100.0, 100.0, 100.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<short4, BORDER_TYPE_WRAP>(1, 24, 24, FMT_RGBAs16, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<short4, BORDER_TYPE_WRAP>(1, 24, 24, FMT_RGBAs16, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                          eDeviceType::CPU)));
 
     // CPU correctness tests - U16 (unsigned 16-bit)
-    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U16, 3, 3, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U16, 3, 3, 1, 1, {0.0, 0.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_U16, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort1, BORDER_TYPE_REFLECT>(2, 20, 20, FMT_U16, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 3, 3, {500.0, 600.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 3, 3, 1, 1, {500.0, 600.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 5, 5, {500.0, 600.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<ushort4, BORDER_TYPE_REFLECT>(1, 20, 20, FMT_RGBA16, 5, 5, 2, 2, {500.0, 600.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
 
     // CPU correctness tests - S32 (signed 32-bit)
-    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_CONSTANT>(1, 32, 32, FMT_S32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_CONSTANT>(1, 32, 32, FMT_S32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                            eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_WRAP>(2, 32, 32, FMT_S32, 5, 5, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<int1, BORDER_TYPE_WRAP>(2, 32, 32, FMT_S32, 5, 5, 2, 2, {500.0, 500.0, 0.0, 0.0},
                                                        eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<int3, BORDER_TYPE_REPLICATE>(1, 16, 16, FMT_RGBs32, 3, 3, {100.0, 100.0, 100.0, 0.0},
+    TEST_CASE((TestCorrectness<int3, BORDER_TYPE_REPLICATE>(1, 16, 16, FMT_RGBs32, 3, 3, 1, 1, {100.0, 100.0, 100.0, 0.0},
                                                             eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<int4, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_RGBAs32, 5, 5, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<int4, BORDER_TYPE_REFLECT>(2, 24, 24, FMT_RGBAs32, 5, 5, 2, 2, {0.0, 0.0, 0.0, 0.0},
                                                           eDeviceType::CPU)));
 
     // CPU correctness tests - F32 (float)
-    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_F32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_F32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(2, 24, 24, FMT_F32, 5, 5, {600.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(2, 24, 24, FMT_F32, 5, 5, 2, 2, {600.0, 500.0, 0.0, 0.0},
                                                          eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBf32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBf32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBf32, 7, 7, {600.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float3, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBf32, 7, 7, 3, 3, {600.0, 500.0, 0.0, 0.0},
                                                          eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBAf32, 3, 3, {500.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_REPLICATE>(1, 24, 24, FMT_RGBAf32, 3, 3, 1, 1, {500.0, 500.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBAf32, 5, 5, {600.0, 500.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_WRAP>(2, 24, 24, FMT_RGBAf32, 5, 5, 2, 2, {600.0, 500.0, 0.0, 0.0},
                                                          eDeviceType::CPU)));
 
     // Additional edge cases - various kernel sizes
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(1, 40, 40, FMT_RGB8, 9, 9, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(1, 40, 40, FMT_RGB8, 9, 9, 4, 4, {0.0, 0.0, 0.0, 0.0},
                                                               eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_CONSTANT>(1, 50, 50, FMT_RGBAf32, 11, 11, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_CONSTANT>(1, 50, 50, FMT_RGBAf32, 11, 11, 5, 5, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(1, 40, 40, FMT_RGB8, 9, 9, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(1, 40, 40, FMT_RGB8, 9, 9, 4, 4, {0.0, 0.0, 0.0, 0.0},
                                                               eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_CONSTANT>(1, 50, 50, FMT_RGBAf32, 11, 11, {0.0, 0.0, 0.0, 0.0},
+    TEST_CASE((TestCorrectness<float4, BORDER_TYPE_CONSTANT>(1, 50, 50, FMT_RGBAf32, 11, 11, 5, 5, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));
 
     TEST_CASES_END();
