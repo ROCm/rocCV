@@ -196,6 +196,8 @@ void TestCorrectness(int samples, int width, int height, ImageFormat inFmt, Imag
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // // GPU correctness tests
