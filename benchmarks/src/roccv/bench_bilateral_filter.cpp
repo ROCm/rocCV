@@ -86,13 +86,13 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
     }
 
 // GPU benchmarks
-DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 15, 75.0f, 75.0f,
-                                  eBorderType::BORDER_TYPE_CONSTANT);
-DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, 15, 75.0f, 75.0f,
-                                  eBorderType::BORDER_TYPE_CONSTANT);
-DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, 15, 75.0f, 75.0f,
-                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, -1, -1.0f, 1.2f,
+                                  eBorderType::BORDER_TYPE_REFLECT);
+DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, -1, -1.0f, 1.2f,
+                                  eBorderType::BORDER_TYPE_REFLECT);
+DEFINE_BILATERAL_FILTER_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, -1, -1.0f, 1.2f,
+                                  eBorderType::BORDER_TYPE_REFLECT);
 
 // CPU benchmarks
-DEFINE_BILATERAL_FILTER_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 15, 75.0f, 75.0f,
-                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_BILATERAL_FILTER_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, -1, -1.0f, 1.2f,
+                                  eBorderType::BORDER_TYPE_REFLECT);
