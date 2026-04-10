@@ -153,6 +153,8 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

@@ -79,6 +79,8 @@ void TestCorrectness() {
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     TEST_CASE(TestCorrectness());

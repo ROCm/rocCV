@@ -20,11 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <core/detail/casting.hpp>
 #include <core/hip_assert.h>
-#include <op_adv_cvt_color.hpp>
 
 #include <array>
+#include <core/detail/casting.hpp>
+#include <op_adv_cvt_color.hpp>
 
 #include "test_helpers.hpp"
 
@@ -54,7 +54,8 @@ Coeff GetCoeff(eColorSpec spec) {
             return {0.2126f, 0.7152f, 0.0722f, 0.538909248f, 0.63500127f, 1.5748f, -0.187324f, -0.468124f, 1.8556f};
         case BT2020:
             return {0.2627f, 0.6780f, 0.0593f, 0.531519082f, 0.678150007f, 1.4746f, -0.16455f, -0.57135f, 1.8814f};
-        default: throw std::runtime_error("Unsupported color spec");
+        default:
+            throw std::runtime_error("Unsupported color spec");
     }
 }
 
@@ -63,8 +64,10 @@ bool IsSemiPlanarToInterleaved(eColorConversionCode code) {
         case COLOR_YUV2RGB_NV12:
         case COLOR_YUV2BGR_NV12:
         case COLOR_YUV2RGB_NV21:
-        case COLOR_YUV2BGR_NV21: return true;
-        default: return false;
+        case COLOR_YUV2BGR_NV21:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -73,8 +76,10 @@ bool IsInterleavedToSemiPlanar(eColorConversionCode code) {
         case COLOR_RGB2YUV_NV12:
         case COLOR_BGR2YUV_NV12:
         case COLOR_RGB2YUV_NV21:
-        case COLOR_BGR2YUV_NV21: return true;
-        default: return false;
+        case COLOR_BGR2YUV_NV21:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -83,8 +88,10 @@ bool IsInterleaved444(eColorConversionCode code) {
         case COLOR_RGB2YUV:
         case COLOR_BGR2YUV:
         case COLOR_YUV2RGB:
-        case COLOR_YUV2BGR: return true;
-        default: return false;
+        case COLOR_YUV2BGR:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -95,8 +102,10 @@ bool IsBGRCode(eColorConversionCode code) {
         case COLOR_YUV2BGR_NV12:
         case COLOR_YUV2BGR_NV21:
         case COLOR_BGR2YUV_NV12:
-        case COLOR_BGR2YUV_NV21: return true;
-        default: return false;
+        case COLOR_BGR2YUV_NV21:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -105,14 +114,14 @@ bool IsNV12Code(eColorConversionCode code) {
         case COLOR_YUV2RGB_NV12:
         case COLOR_YUV2BGR_NV12:
         case COLOR_RGB2YUV_NV12:
-        case COLOR_BGR2YUV_NV12: return true;
-        default: return false;
+        case COLOR_BGR2YUV_NV12:
+            return true;
+        default:
+            return false;
     }
 }
 
-inline int idx3(int x, int y, int width, int c) {
-    return (y * width + x) * 3 + c;
-}
+inline int idx3(int x, int y, int width, int c) { return (y * width + x) * 3 + c; }
 
 std::vector<uint8_t> GoldenInterleaved444(const std::vector<uint8_t> &input, int samples, int width, int height,
                                           eColorConversionCode code, eColorSpec spec) {
@@ -157,7 +166,8 @@ std::vector<uint8_t> GoldenInterleaved444(const std::vector<uint8_t> &input, int
                         output[i + (IsBGRCode(code) ? 2 : 0)] = roccv::detail::SaturateCast<uint8_t>(r);
                         break;
                     }
-                    default: throw std::runtime_error("Invalid interleaved code");
+                    default:
+                        throw std::runtime_error("Invalid interleaved code");
                 }
             }
         }
@@ -256,13 +266,11 @@ std::vector<uint8_t> GoldenSemiPlanarToInterleaved(const std::vector<uint8_t> &i
 
 void TestCorrectness(int samples, int width, int height, eColorConversionCode code, eColorSpec spec,
                      eDeviceType device) {
-    Tensor inputTensor = IsSemiPlanarToInterleaved(code)
-                             ? Tensor(samples, {width, height * 3 / 2}, FMT_U8, device)
-                             : Tensor(samples, {width, height}, FMT_RGB8, device);
+    Tensor inputTensor = IsSemiPlanarToInterleaved(code) ? Tensor(samples, {width, height * 3 / 2}, FMT_U8, device)
+                                                         : Tensor(samples, {width, height}, FMT_RGB8, device);
 
-    Tensor outputTensor = IsInterleavedToSemiPlanar(code)
-                              ? Tensor(samples, {width, height * 3 / 2}, FMT_U8, device)
-                              : Tensor(samples, {width, height}, FMT_RGB8, device);
+    Tensor outputTensor = IsInterleavedToSemiPlanar(code) ? Tensor(samples, {width, height * 3 / 2}, FMT_U8, device)
+                                                          : Tensor(samples, {width, height}, FMT_RGB8, device);
 
     std::vector<uint8_t> inputData(inputTensor.shape().size());
     FillVector(inputData);
@@ -295,6 +303,8 @@ void TestCorrectness(int samples, int width, int height, eColorConversionCode co
 }  // namespace
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     std::array<eColorSpec, 3> specs = {BT601, BT709, BT2020};

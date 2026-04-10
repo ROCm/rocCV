@@ -142,7 +142,7 @@ namespace tests {
                                      " elements) differ in size.");                                               \
         }                                                                                                         \
                                                                                                                   \
-        for (int i = 0; i < actual.size(); i++) {                                                                 \
+        for (size_t i = 0; i < actual.size(); i++) {                                                              \
             if (actual[i] != expected[i]) {                                                                       \
                 throw std::runtime_error(ERROR_PREFIX + "Value at index " + std::to_string(i) +                   \
                                          " does not match! Actual value: " + std::to_string(actual[i]) +          \
@@ -241,7 +241,7 @@ eTestStatusType compareArray(const Tensor& tensor, std::vector<T>& expected_data
     }
 
     // Compare data between tensor data and image
-    for (int i = 0; i < expected_data.size(); i++) {
+    for (size_t i = 0; i < expected_data.size(); i++) {
         T expected = static_cast<T>(expected_data[i]);
         T actual = static_cast<T>(tensor_data_host[i]);
 
@@ -302,12 +302,12 @@ void FillVector(std::vector<T>& vec, uint32_t seed = 12345) {
     // Select real distribution if T is a floating point, integer distribution otherwise
     if constexpr (std::is_floating_point_v<T>) {
         std::uniform_real_distribution<T> dist(0.0f, 1.0f);
-        for (int i = 0; i < vec.size(); i++) {
+        for (size_t i = 0; i < vec.size(); i++) {
             vec[i] = dist(eng);
         }
     } else {
         std::uniform_int_distribution<T> dist(std::numeric_limits<T>().min(), std::numeric_limits<T>().max());
-        for (int i = 0; i < vec.size(); i++) {
+        for (size_t i = 0; i < vec.size(); i++) {
             vec[i] = dist(eng);
         }
     }
@@ -326,7 +326,7 @@ void FillVectorMask(std::vector<T>& vec, uint32_t seed = 12345) {
     std::mt19937 eng(seed);
 
     std::uniform_int_distribution<T> dist(0, 1);
-    for (int i = 0; i < vec.size(); i++) {
+    for (size_t i = 0; i < vec.size(); i++) {
         vec[i] = dist(eng);
     }
 }

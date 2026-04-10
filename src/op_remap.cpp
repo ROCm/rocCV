@@ -26,9 +26,9 @@ THE SOFTWARE.
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
+#include "core/detail/internal_structs.hpp"
 #include "core/detail/math/math.hpp"
 #include "core/detail/type_traits.hpp"
-#include "core/detail/internal_structs.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/remap_device.hpp"
@@ -40,11 +40,11 @@ Remap::Remap() {}
 
 Remap::~Remap() {}
 
-RemapParams GetRemapParams(const int2 &srcSize, const int2 &dstSize, const int2 &mapSize, bool alignCorners, eRemapType mapValueType)
-{
+RemapParams GetRemapParams(const int2 &srcSize, const int2 &dstSize, const int2 &mapSize, bool alignCorners,
+                           eRemapType mapValueType) {
     RemapParams params{};
 
-    switch(mapValueType) {
+    switch (mapValueType) {
         case REMAP_ABSOLUTE:
             params.srcScale = make_float2(0.f, 0.f);
             params.mapScale = StaticCast<float2>(mapSize) / StaticCast<float2>(dstSize);
@@ -55,7 +55,7 @@ RemapParams GetRemapParams(const int2 &srcSize, const int2 &dstSize, const int2 
         case REMAP_ABSOLUTE_NORMALIZED:
             params.srcScale = make_float2(0.f, 0.f);
             params.mapScale = StaticCast<float2>(mapSize) / StaticCast<float2>(dstSize);
-            params.valScale  = (StaticCast<float2>(srcSize) - (alignCorners ? 1.f : 0.f)) / 2.f;
+            params.valScale = (StaticCast<float2>(srcSize) - (alignCorners ? 1.f : 0.f)) / 2.f;
             params.srcOffset = params.valScale - (alignCorners ? 0.f : .5f);
             params.dstOffset = 0.f;
             break;
@@ -67,7 +67,7 @@ RemapParams GetRemapParams(const int2 &srcSize, const int2 &dstSize, const int2 
             params.srcOffset = params.srcScale * params.dstOffset - params.dstOffset;
             break;
         default:
-             throw Exception("Unsupported mapValueType passed to GetRemapParams", eStatusType::NOT_IMPLEMENTED);
+            throw Exception("Unsupported mapValueType passed to GetRemapParams", eStatusType::NOT_IMPLEMENTED);
     }
     return params;
 }
@@ -94,7 +94,8 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
             dim3 block(64, 16);
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
-            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor, mapBatchSize, params);
+            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor,
+                                                               mapBatchSize, params);
             break;
         }
 
@@ -198,9 +199,9 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
     // Ensure the layout and shapes for the input/output tensors match
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(map.layout() == output.layout());
-    CHECK_TENSOR_COMPARISON((map.shape(map.layout().batch_index()) == input.shape(input.layout().batch_index())) 
-                            || (map.shape(map.layout().batch_index()) == 1));
-    
+    CHECK_TENSOR_COMPARISON((map.shape(map.layout().batch_index()) == input.shape(input.layout().batch_index())) ||
+                            (map.shape(map.layout().batch_index()) == 1));
+
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_CHANNELS(map, 2);
 

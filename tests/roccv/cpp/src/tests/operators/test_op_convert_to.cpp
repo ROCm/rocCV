@@ -107,6 +107,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat inFormat,
 } // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // CPU correctness tests
