@@ -81,6 +81,8 @@ static roccvbench::BenchmarkResults RunGammaContrastBenchmark(roccvbench::Benchm
 
 // GPU benchmarks
 DEFINE_GAMMA_CONTRAST_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, 2.2f);
+DEFINE_GAMMA_CONTRAST_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, 2.2f);
+DEFINE_GAMMA_CONTRAST_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, 2.2f);
 
 // CPU benchmarks
 DEFINE_GAMMA_CONTRAST_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, 2.2f);

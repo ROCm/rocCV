@@ -50,7 +50,7 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    AffineTransform affineMatrix = {1, 0, 0, 1, -1, 120};
+    AffineTransform affineMatrix = {2.f, 2.f, 0.f, 3.f, 1.f, 0.f};
 
     FillTensor(input);
 
@@ -63,7 +63,7 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, affineMatrix, false, interpolation, border, make_float4(0.0f, 0.0f, 0.0f, 1.0f),
+            op(stream, input, output, affineMatrix, true, interpolation, border, make_float4(0.0f, 0.0f, 0.0f, 1.0f),
                DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
@@ -84,13 +84,41 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     }
 
 // GPU benchmarks
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_NEAREST,
+                             eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_NEAREST,
                              eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_LINEAR,
                              eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_NEAREST,
+                             eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_LINEAR,
                              eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_NEAREST,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_LINEAR,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_REFLECT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_REFLECT);
+DEFINE_WARP_AFFINE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC,
+                             eBorderType::BORDER_TYPE_REFLECT);
 
 // CPU benchmarks
+DEFINE_WARP_AFFINE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_NEAREST,
+                             eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_AFFINE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR,
+                             eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_AFFINE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC,
                              eBorderType::BORDER_TYPE_CONSTANT);

@@ -51,7 +51,7 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
     Tensor input(inReqs);
     Tensor output(outReqs);
 
-    PerspectiveTransform transformMatrix = {1, 0, 0, 0, 1, 0, -0.001, 0, 1};
+    PerspectiveTransform transformMatrix = {0.27, 0.16, 0.00, -0.11, 0.61, 0.65, -0.09, 0.06, 1.00};
 
     FillTensor(input);
 
@@ -64,8 +64,8 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, transformMatrix, false, interpolation, border,
-               make_float4(0.0f, 0.0f, 0.0f, 1.0f), DeviceType);
+            op(stream, input, output, transformMatrix, true, interpolation, border, make_float4(0.0f, 0.0f, 0.0f, 1.0f),
+               DeviceType);
             if constexpr (DeviceType == eDeviceType::GPU) {
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }
@@ -85,13 +85,41 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
     }
 
 // GPU benchmarks
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_NEAREST,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_NEAREST,
                                   eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_LINEAR,
                                   eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_NEAREST,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_LINEAR,
                                   eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_NEAREST,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_REFLECT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_REFLECT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC,
+                                  eBorderType::BORDER_TYPE_REFLECT);
 
 // CPU benchmarks
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_NEAREST,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
 DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR,
+                                  eBorderType::BORDER_TYPE_CONSTANT);
+DEFINE_WARP_PERSPECTIVE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC,
                                   eBorderType::BORDER_TYPE_CONSTANT);
