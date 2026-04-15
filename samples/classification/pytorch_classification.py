@@ -144,17 +144,8 @@ def main() -> None:
     stream.synchronize()
 
     # 4. Convert rocCV tensor to PyTorch tensor
-    print("Converting to PyTorch tensor...")
-    # Copy to CPU and convert to numpy
-    output_cpu =  reformatted_tensor.copy_to(rocpycv.CPU)
-    output_array = np.from_dlpack(output_cpu)
-
-    # Convert numpy to PyTorch tensor (make writable copy)
-    writable_array = output_array.copy()
-    torch_tensor = torch.from_numpy(writable_array)
-
-    # Move to GPU
-    torch_tensor = torch_tensor.cuda()
+    print("Converting to PyTorch tensor...") 
+    torch_tensor = torch.from_dlpack(reformatted_tensor)
 
     print(f"PyTorch tensor shape (NCHW): {torch_tensor.shape}")
 
