@@ -21,8 +21,9 @@
 
 #pragma once
 
-#include <cstdint>
 #include <hip/hip_runtime.h>
+
+#include <cstdint>
 
 #include "core/wrappers/image_wrapper.hpp"
 #include "operator_types.h"
@@ -127,13 +128,16 @@ class BorderWrapper {
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
-            int64_t scale = imgWidth * 2;
-            int64_t val = detail::euclid_mod_i64_fast(w, scale);
-            x = (val < imgWidth) ? val : scale - 1 - val;
-
-            scale = imgHeight * 2;
-            val = detail::euclid_mod_i64_fast(h, scale);
-            y = (val < imgHeight) ? val : scale - 1 - val;
+            if (w < 0 || w >= imgWidth) {
+                int64_t scale = imgWidth * 2;
+                int64_t val = detail::euclid_mod_i64_fast(w, scale);
+                x = (val < imgWidth) ? val : scale - 1 - val;
+            }
+            if (h < 0 || h >= imgHeight) {
+                int64_t scale = imgHeight * 2;
+                int64_t val = detail::euclid_mod_i64_fast(h, scale);
+                y = (val < imgHeight) ? val : scale - 1 - val;
+            }
         }
 
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT101) {
@@ -154,10 +158,14 @@ class BorderWrapper {
             }
         }
 
-        // Replicate border type implementation
+        // Replicate: snap OOB axes to nearest edge; in-range axes stay x=w / y=h (see global early return).
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            x = std::clamp<int64_t>(w, 0, imgWidth - 1);
-            y = std::clamp<int64_t>(h, 0, imgHeight - 1);
+            if (w < 0 || w >= imgWidth) {
+                x = (w < 0) ? 0 : imgWidth - 1;
+            }
+            if (h < 0 || h >= imgHeight) {
+                y = (h < 0) ? 0 : imgHeight - 1;
+            }
         }
 
         // Wrap border type implementation
