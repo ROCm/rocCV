@@ -23,22 +23,24 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+
 #include <core/wrappers/generic_tensor_wrapper.hpp>
-#include "core/detail/type_traits.hpp"
+
 #include "core/detail/casting.hpp"
+#include "core/detail/type_traits.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper>
 void binary_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
-                           roccv::GenericTensorWrapper<double> maxVal, const int32_t maxBatchSize) {
+                    roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
-    
-    for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
+
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         double th = thresh.at(z_idx);
         double mv = maxVal.at(z_idx);
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
@@ -58,13 +60,13 @@ void binary_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWra
 
 template <typename SrcWrapper, typename DstWrapper>
 void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
-                           roccv::GenericTensorWrapper<double> maxVal, const int32_t maxBatchSize) {
+                        roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
-    
-    for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
+
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         double th = thresh.at(z_idx);
         double mv = maxVal.at(z_idx);
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
@@ -83,14 +85,13 @@ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTenso
 }
 
 template <typename SrcWrapper, typename DstWrapper>
-void trunc_generic(SrcWrapper input, DstWrapper output, 
-                    roccv::GenericTensorWrapper<double> thresh, const int32_t maxBatchSize) {
+void trunc_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
-    
-    for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
+
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         double th = thresh.at(z_idx);
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
@@ -108,14 +109,13 @@ void trunc_generic(SrcWrapper input, DstWrapper output,
 }
 
 template <typename SrcWrapper, typename DstWrapper>
-void tozero_generic(SrcWrapper input, DstWrapper output, 
-                        roccv::GenericTensorWrapper<double> thresh, const int32_t maxBatchSize) {
+void tozero_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
-    
-    for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
+
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         double th = thresh.at(z_idx);
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
@@ -133,14 +133,13 @@ void tozero_generic(SrcWrapper input, DstWrapper output,
 }
 
 template <typename SrcWrapper, typename DstWrapper>
-void tozeroinv_generic(SrcWrapper input, DstWrapper output, 
-                        roccv::GenericTensorWrapper<double> thresh, const int32_t maxBatchSize) {
+void tozeroinv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
-    
-    for (int z_idx = 0; z_idx < maxBatchSize; z_idx++) {
+
+    for (int z_idx = 0; z_idx < output.batches(); z_idx++) {
         double th = thresh.at(z_idx);
         for (int y_idx = 0; y_idx < output.height(); y_idx++) {
             for (int x_idx = 0; x_idx < output.width(); x_idx++) {
