@@ -21,13 +21,33 @@
 
 #pragma once
 
+#include <cmath>
+
+#include <hip/hip_runtime.h>
+
 #include "core/detail/casting.hpp"
-#include "core/detail/math/vectorized_type_math.hpp"
 #include "core/detail/vector_utils.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
+namespace detail {
+
+/** Floor to int64; on device uses elementwise floor intrinsic (matches HIP __float2ll_rd lowering). */
+__device__ __host__ __forceinline__ int64_t interp_floor_i64(float x) {
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    return static_cast<int64_t>(static_cast<long long>(__builtin_elementwise_floor(x)));
+#else
+    return static_cast<int64_t>(floorf(x));
+#endif
+}
+
+/** Nearest index; llroundf matches lroundf for float (half away from zero). */
+__device__ __host__ __forceinline__ int64_t interp_nearest_i64(float x) {
+    return static_cast<int64_t>(std::llroundf(x));
+}
+
+}  // namespace detail
 
 /**
  * @brief A kernel-friendly wrapper which provides interpolation logic based on the given
@@ -66,22 +86,12 @@ class InterpolationWrapper {
      * @return None.
      */
     __device__ __host__ inline void CalBicubicWeights(float dist, float* weight) const {
-        weight[0] = -0.5f;
-        weight[0] = weight[0] * dist + 1.0f;
-        weight[0] = weight[0] * dist - 0.5f;
-        weight[0] = weight[0] * dist;
-
-        weight[1] = 1.5f;
-        weight[1] = weight[1] * dist - 2.5f;
-        weight[1] = weight[1] * dist;
-        weight[1] = weight[1] * dist + 1.0f;
-
-        weight[2] = -1.5f;
-        weight[2] = weight[2] * dist + 2.f;
-        weight[2] = weight[2] * dist + 0.5f;
-        weight[2] = weight[2] * dist;
-
-        weight[3] = 1 - weight[0] - weight[1] - weight[2];
+        const float d = dist;
+        // Fused multiply-add: single rounding vs separate mul+add (matches kernels/device style).
+        weight[0] = fmaf(fmaf(fmaf(-0.5f, d, 1.0f), d, -0.5f), d, 0.f);
+        weight[1] = fmaf(fmaf(fmaf(1.5f, d, -2.5f), d, 0.f), d, 1.0f);
+        weight[2] = fmaf(fmaf(fmaf(-1.5f, d, 2.f), d, 0.5f), d, 0.f);
+        weight[3] = 1.f - weight[0] - weight[1] - weight[2];
     }
 
     /**
@@ -94,9 +104,7 @@ class InterpolationWrapper {
      */
     inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
-            const int64_t rh = static_cast<int64_t>(lroundf(h));
-            const int64_t rw = static_cast<int64_t>(lroundf(w));
-            return m_desc.at(n, rh, rw, c);
+            return m_desc.at(n, detail::interp_nearest_i64(h), detail::interp_nearest_i64(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
             // v1 -- v2
@@ -105,19 +113,23 @@ class InterpolationWrapper {
 
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            int64_t x0 = static_cast<int64_t>(floorf(w));
-            int64_t x1 = x0 + 1;
-            int64_t y0 = static_cast<int64_t>(floorf(h));
-            int64_t y1 = y0 + 1;
+            const int64_t x0 = detail::interp_floor_i64(w);
+            const int64_t y0 = detail::interp_floor_i64(h);
+            const int64_t x1 = x0 + 1;
+            const int64_t y1 = y0 + 1;
+            const float fx = w - static_cast<float>(x0);
+            const float fy = h - static_cast<float>(y0);
+            const float omfx = 1.f - fx;
+            const float omfy = 1.f - fy;
 
             if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width() && y1 < m_desc.height()) {
                 auto v1 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x0, c));
                 auto v2 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x1, c));
                 auto v3 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x0, c));
                 auto v4 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x1, c));
-                auto q1 = v1 * static_cast<float>(x1 - w) + v2 * static_cast<float>(w - x0);
-                auto q2 = v3 * static_cast<float>(x1 - w) + v4 * static_cast<float>(w - x0);
-                auto q = q1 * static_cast<float>(y1 - h) + q2 * static_cast<float>(h - y0);
+                auto q1 = v1 * omfx + v2 * fx;
+                auto q2 = v3 * omfx + v4 * fx;
+                auto q = q1 * omfy + q2 * fy;
                 return detail::RangeCast<T>(q);
             }
 
@@ -126,17 +138,17 @@ class InterpolationWrapper {
             auto v3 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x0, c));
             auto v4 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x1, c));
 
-            auto q1 = v1 * static_cast<float>(x1 - w) + v2 * static_cast<float>(w - x0);
-            auto q2 = v3 * static_cast<float>(x1 - w) + v4 * static_cast<float>(w - x0);
-            auto q = q1 * static_cast<float>(y1 - h) + q2 * static_cast<float>(h - y0);
+            auto q1 = v1 * omfx + v2 * fx;
+            auto q2 = v3 * omfx + v4 * fx;
+            auto q = q1 * omfy + q2 * fy;
 
             return detail::RangeCast<T>(q);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_CUBIC) {
             using namespace roccv::detail;
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            const int64_t int_x = static_cast<int64_t>(floorf(w));
-            const int64_t int_y = static_cast<int64_t>(floorf(h));
+            const int64_t int_x = detail::interp_floor_i64(w);
+            const int64_t int_y = detail::interp_floor_i64(h);
 
             float weight_x[4], weight_y[4];
             CalBicubicWeights(w - static_cast<float>(int_x), weight_x);

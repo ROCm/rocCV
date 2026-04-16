@@ -31,6 +31,34 @@
 namespace roccv {
 namespace detail {
 
+/** Branchless absolute value for int64 (two's complement); avoids libm/std::abs on GPU. */
+__device__ __host__ __forceinline__ int64_t abs_i64(int64_t v) {
+    const int64_t mask = v >> 63;
+    return (v ^ mask) - mask;
+}
+
+__device__ __host__ __forceinline__ int32_t abs_i32(int32_t v) {
+    const int32_t mask = v >> 31;
+    return (v ^ mask) - mask;
+}
+
+__device__ __host__ __forceinline__ int32_t min_i32(int32_t a, int32_t b) { return a < b ? a : b; }
+
+__device__ __host__ __forceinline__ int64_t min_i64(int64_t a, int64_t b) { return a < b ? a : b; }
+
+__device__ __host__ __forceinline__ int64_t max_i64(int64_t a, int64_t b) { return a > b ? a : b; }
+
+/** Clamp v to [lo, hi]. */
+__device__ __host__ __forceinline__ int64_t clamp_i64(int64_t v, int64_t lo, int64_t hi) {
+    return min_i64(max_i64(v, lo), hi);
+}
+
+__device__ __host__ inline int32_t euclid_mod_i32(int32_t a, int32_t modulus) {
+    int32_t r = a % modulus;
+    if (r < 0) r += modulus;
+    return r;
+}
+
 /** Euclidean modulo: result in [0, modulus) for modulus > 0. One hardware remainder vs (a%m+m)%m. */
 __device__ __host__ inline int64_t euclid_mod_i64(int64_t a, int64_t modulus) {
     int64_t r = a % modulus;
@@ -54,6 +82,53 @@ __device__ __host__ inline int64_t euclid_mod_i64_fast(int64_t a, int64_t modulu
     }
 #endif
     return euclid_mod_i64(a, modulus);
+}
+
+/**
+ * OpenCV-style BORDER_REFLECT axis map: period 2*extent, edge pixels duplicated (not REFLECT101).
+ * Equivalent to: val = euclid_mod(coord, 2*extent); min(val, 2*extent - 1 - val).
+ * The min form avoids a branch on val < extent and fuses well with 32-bit mod on GPU.
+ */
+__device__ __host__ inline int64_t reflect_border_coord_i64(int64_t coord, int64_t extent) {
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    constexpr int64_t kLim = int64_t{1} << 30;
+    if (extent > 0 && extent < kLim && coord > -kLim && coord < kLim) {
+        const int32_t e = static_cast<int32_t>(extent);
+        const int32_t scale = e * 2;
+        int32_t val = static_cast<int32_t>(coord) % scale;
+        if (val < 0) val += scale;
+        const int32_t inv = scale - 1 - val;
+        return static_cast<int64_t>(min_i32(val, inv));
+    }
+#endif
+    const int64_t scale = extent * 2;
+    const int64_t val = euclid_mod_i64(coord, scale);
+    const int64_t inv = scale - 1 - val;
+    return min_i64(val, inv);
+}
+
+/**
+ * BORDER_REFLECT101 axis map: period (2*extent - 2), endpoints excluded from reflection.
+ */
+__device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, int64_t extent) {
+    if (extent <= 1) {
+        return 0;
+    }
+    const int64_t scale = 2 * extent - 2;
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    constexpr int64_t kLim = int64_t{1} << 30;
+    if (extent < kLim && coord > -kLim && coord < kLim && scale > 0 && scale < kLim) {
+        const int32_t e = static_cast<int32_t>(extent);
+        const int32_t s = e * 2 - 2;
+        int32_t v = euclid_mod_i32(static_cast<int32_t>(coord), s);
+        const int32_t inner = (e - 1) - v;
+        const int32_t a = abs_i32(inner);
+        return static_cast<int64_t>((e - 1) - a);
+    }
+#endif
+    const int64_t v = euclid_mod_i64_fast(coord, scale);
+    const int64_t inner = (extent - 1) - v;
+    return (extent - 1) - abs_i64(inner);
 }
 
 }  // namespace detail
@@ -129,43 +204,22 @@ class BorderWrapper {
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
             if (w < 0 || w >= imgWidth) {
-                int64_t scale = imgWidth * 2;
-                int64_t val = detail::euclid_mod_i64_fast(w, scale);
-                x = (val < imgWidth) ? val : scale - 1 - val;
+                x = detail::reflect_border_coord_i64(w, imgWidth);
             }
             if (h < 0 || h >= imgHeight) {
-                int64_t scale = imgHeight * 2;
-                int64_t val = detail::euclid_mod_i64_fast(h, scale);
-                y = (val < imgHeight) ? val : scale - 1 - val;
+                y = detail::reflect_border_coord_i64(h, imgHeight);
             }
         }
 
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT101) {
-            if (imgWidth == 1) {
-                x = 0;
-            } else {
-                int64_t scale = 2 * imgWidth - 2;
-                x = detail::euclid_mod_i64(w, scale);
-                x = imgWidth - 1 - std::abs(imgWidth - 1 - x);
-            }
-
-            if (imgHeight == 1) {
-                y = 0;
-            } else {
-                int64_t scale = 2 * imgHeight - 2;
-                y = detail::euclid_mod_i64(h, scale);
-                y = imgHeight - 1 - std::abs(imgHeight - 1 - y);
-            }
+            x = detail::reflect101_border_coord_i64(w, imgWidth);
+            y = detail::reflect101_border_coord_i64(h, imgHeight);
         }
 
-        // Replicate: snap OOB axes to nearest edge; in-range axes stay x=w / y=h (see global early return).
+        // Replicate: clamp to edge. Equivalent to per-axis OOB snap; min/max maps cleanly to GPU integer ops.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            if (w < 0 || w >= imgWidth) {
-                x = (w < 0) ? 0 : imgWidth - 1;
-            }
-            if (h < 0 || h >= imgHeight) {
-                y = (h < 0) ? 0 : imgHeight - 1;
-            }
+            x = detail::clamp_i64(w, 0, imgWidth - 1);
+            y = detail::clamp_i64(h, 0, imgHeight - 1);
         }
 
         // Wrap border type implementation
