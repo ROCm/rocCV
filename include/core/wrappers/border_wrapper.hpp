@@ -21,73 +21,22 @@
 
 #pragma once
 
-#include <hip/hip_runtime.h>
-
-#include <cstdint>
-
+#include "core/detail/sampling_helpers.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
+
 namespace detail {
-
-/** Branchless absolute value for int64 (two's complement); avoids libm/std::abs on GPU. */
-__device__ __host__ __forceinline__ int64_t abs_i64(int64_t v) {
-    const int64_t mask = v >> 63;
-    return (v ^ mask) - mask;
-}
-
-__device__ __host__ __forceinline__ int32_t abs_i32(int32_t v) {
-    const int32_t mask = v >> 31;
-    return (v ^ mask) - mask;
-}
-
-__device__ __host__ __forceinline__ int32_t min_i32(int32_t a, int32_t b) { return a < b ? a : b; }
-
-__device__ __host__ __forceinline__ int64_t min_i64(int64_t a, int64_t b) { return a < b ? a : b; }
-
-__device__ __host__ __forceinline__ int64_t max_i64(int64_t a, int64_t b) { return a > b ? a : b; }
-
-/** Clamp v to [lo, hi]. */
-__device__ __host__ __forceinline__ int64_t clamp_i64(int64_t v, int64_t lo, int64_t hi) {
-    return min_i64(max_i64(v, lo), hi);
-}
-
-__device__ __host__ inline int32_t euclid_mod_i32(int32_t a, int32_t modulus) {
-    int32_t r = a % modulus;
-    if (r < 0) r += modulus;
-    return r;
-}
-
-/** Euclidean modulo: result in [0, modulus) for modulus > 0. One hardware remainder vs (a%m+m)%m. */
-__device__ __host__ inline int64_t euclid_mod_i64(int64_t a, int64_t modulus) {
-    int64_t r = a % modulus;
-    if (r < 0) r += modulus;
-    return r;
-}
-
 /**
- * On GPU, use 32-bit remainder when operands fit; avoids 64-bit integer division in REFLECT/WRAP hot paths.
- * Host always uses euclid_mod_i64. Values must stay in range for correctness.
- */
-__device__ __host__ inline int64_t euclid_mod_i64_fast(int64_t a, int64_t modulus) {
-#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    constexpr int64_t kLim = int64_t{1} << 30;
-    if (modulus > 0 && modulus < kLim && a > -kLim && a < kLim) {
-        int32_t ai = static_cast<int32_t>(a);
-        int32_t m = static_cast<int32_t>(modulus);
-        int32_t r = ai % m;
-        if (r < 0) r += m;
-        return static_cast<int64_t>(r);
-    }
-#endif
-    return euclid_mod_i64(a, modulus);
-}
-
-/**
- * OpenCV-style BORDER_REFLECT axis map: period 2*extent, edge pixels duplicated (not REFLECT101).
- * Equivalent to: val = euclid_mod(coord, 2*extent); min(val, 2*extent - 1 - val).
- * The min form avoids a branch on val < extent and fuses well with 32-bit mod on GPU.
+ * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT (edge pixels duplicated; not @c BORDER_REFLECT101).
+ * @param coord Possibly out-of-bounds coordinate along the axis (width or height index space).
+ * @param extent Positive extent of the axis (number of samples, e.g. image width or height).
+ * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
+ * @note Period is <tt>2 * extent</tt>. Implementation uses Euclidean modulo then
+ *       <tt>min(val, 2*extent - 1 - val)</tt>, which matches comparing @c val to @c extent with a ternary, without a
+ *       separate branch on @p extent alone. On device, a 32-bit remainder path is used when @p extent and @p coord are
+ *       in a safe range.
  */
 __device__ __host__ inline int64_t reflect_border_coord_i64(int64_t coord, int64_t extent) {
 #if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
@@ -108,7 +57,12 @@ __device__ __host__ inline int64_t reflect_border_coord_i64(int64_t coord, int64
 }
 
 /**
- * BORDER_REFLECT101 axis map: period (2*extent - 2), endpoints excluded from reflection.
+ * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT101 (endpoints are not repeated in the reflection).
+ * @param coord Possibly out-of-bounds coordinate along the axis.
+ * @param extent Positive extent of the axis (number of samples). If @p extent is at most 1, returns @c 0.
+ * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
+ * @note Period is <tt>2 * extent - 2</tt> when @p extent is greater than 1. Uses Euclidean modulo then folds with
+ *       <tt>(extent - 1) - abs((extent - 1) - v)</tt>. On device, a 32-bit path applies when values fit a fixed bound.
  */
 __device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, int64_t extent) {
     if (extent <= 1) {
@@ -130,7 +84,6 @@ __device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, in
     const int64_t inner = (extent - 1) - v;
     return (extent - 1) - abs_i64(inner);
 }
-
 }  // namespace detail
 
 /**
@@ -253,7 +206,7 @@ class BorderWrapper {
     __device__ __host__ inline int64_t batches() const { return m_desc.batches(); }
 
     /**
-     * @brief Retries the number of channels in the image.
+     * @brief Retrieves the number of channels in the image.
      *
      * @return Image channels.
      */

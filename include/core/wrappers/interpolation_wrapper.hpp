@@ -21,34 +21,13 @@
 
 #pragma once
 
-#include <cmath>
-
-#include <hip/hip_runtime.h>
-
 #include "core/detail/casting.hpp"
+#include "core/detail/sampling_helpers.hpp"
 #include "core/detail/vector_utils.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
-namespace detail {
-
-/** Floor to int64; on device uses elementwise floor intrinsic (matches HIP __float2ll_rd lowering). */
-__device__ __host__ __forceinline__ int64_t interp_floor_i64(float x) {
-#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    return static_cast<int64_t>(static_cast<long long>(__builtin_elementwise_floor(x)));
-#else
-    return static_cast<int64_t>(floorf(x));
-#endif
-}
-
-/** Nearest index; llroundf matches lroundf for float (half away from zero). */
-__device__ __host__ __forceinline__ int64_t interp_nearest_i64(float x) {
-    return static_cast<int64_t>(std::llroundf(x));
-}
-
-}  // namespace detail
-
 /**
  * @brief A kernel-friendly wrapper which provides interpolation logic based on the given
  * coordinates. This tensor wrapper is typically only used for input tensors and does not provide write access to its
