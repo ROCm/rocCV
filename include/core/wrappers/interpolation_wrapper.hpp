@@ -144,7 +144,9 @@ class InterpolationWrapper {
 
             float wxy[16];
             int k = 0;
+#pragma unroll
             for (int j = 0; j < 4; j++) {
+#pragma unroll
                 for (int i = 0; i < 4; i++) {
                     wxy[k++] = weight_y[j] * weight_x[i];
                 }
@@ -155,7 +157,9 @@ class InterpolationWrapper {
                 int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
             k = 0;
             if (cubic_fast) {
+#pragma unroll
                 for (int index_y = -1; index_y <= 2; index_y++) {
+#pragma unroll
                     for (int index_x = -1; index_x <= 2; index_x++) {
                         sum = sum +
                               detail::RangeCast<WorkType>(m_desc.at_inbounds(n, int_y + index_y, int_x + index_x, c)) *
@@ -163,7 +167,9 @@ class InterpolationWrapper {
                     }
                 }
             } else {
+#pragma unroll
                 for (int index_y = -1; index_y <= 2; index_y++) {
+#pragma unroll
                     for (int index_x = -1; index_x <= 2; index_x++) {
                         sum = sum +
                               detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, c)) * wxy[k++];

@@ -170,13 +170,8 @@ class BorderWrapper {
 
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
-            if (w < 0 || w >= imgWidth) {
-                x = detail::euclid_mod_i64_fast(w, imgWidth);
-            }
-
-            if (h < 0 || h >= imgHeight) {
-                y = detail::euclid_mod_i64_fast(h, imgHeight);
-            }
+            x = detail::euclid_mod_i64_fast(w, imgWidth);
+            y = detail::euclid_mod_i64_fast(h, imgHeight);
         }
 
         return m_desc.at(n, y, x, c);
