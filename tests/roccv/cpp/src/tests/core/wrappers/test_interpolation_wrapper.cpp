@@ -157,7 +157,7 @@ T GoldenBicubic(BorderWrapper<T, BorderType> input, int64_t sample, float y, flo
  */
 template <typename T, eBorderType BorderType>
 T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x,
-                        const eInterpolationType interp) {
+                        eInterpolationType interp) {
     switch (interp) {
         case eInterpolationType::INTERP_TYPE_NEAREST:
             return GoldenNearest(input, sample, y, x);
@@ -229,6 +229,8 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
 }  // namespace
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

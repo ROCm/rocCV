@@ -46,7 +46,7 @@ bool IsOutOfBounds(int32_t coordinate, int32_t dimSize) { return (coordinate < 0
  * @param[in] borderMode The border mode to determine how the coordinate of the border pixel is mapped.
  * @return The in-image coordinate for the border pixel.
  */
-int64_t GetCoordOfBorderPel(int64_t u, int64_t dimSize, const eBorderType borderMode) {
+int64_t GetCoordOfBorderPel(int64_t u, int64_t dimSize, eBorderType borderMode) {
     int64_t v = u;
     switch (borderMode) {
         case eBorderType::BORDER_TYPE_REFLECT: {
@@ -115,7 +115,7 @@ int64_t GetCoordOfBorderPel(int64_t u, int64_t dimSize, const eBorderType border
  * coordinates fall out of bounds.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-BT GoldenBorderAt(ImageWrapper<T>& input, const eBorderType borderMode, T borderValue, int64_t sample, int64_t y,
+BT GoldenBorderAt(ImageWrapper<T>& input, eBorderType borderMode, T borderValue, int64_t sample, int64_t y,
                   int64_t x, int64_t channel) {
     int64_t outX = x, outY = y;
 
@@ -198,6 +198,8 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

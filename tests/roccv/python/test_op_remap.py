@@ -33,8 +33,8 @@ from test_helpers import generate_tensor, compare_tensors
 @pytest.mark.parametrize("border_val", [[255, 0, 255, 0]])
 @pytest.mark.parametrize("interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
 @pytest.mark.parametrize("map_interp", [rocpycv.eInterpolationType.NEAREST, rocpycv.eInterpolationType.LINEAR])
-@pytest.mark.parametrize("map_type", [rocpycv.REMAP_ABSOLUTE])
-@pytest.mark.parametrize("align_corners", [False])
+@pytest.mark.parametrize("map_type", [rocpycv.REMAP_ABSOLUTE, rocpycv.REMAP_ABSOLUTE_NORMALIZED, rocpycv.REMAP_RELATIVE_NORMALIZED])
+@pytest.mark.parametrize("align_corners", [True, False])
 @pytest.mark.parametrize("channels", [1, 3, 4])
 @pytest.mark.parametrize("samples, width, height", [
     (1, 720, 480),
@@ -47,21 +47,50 @@ def test_op_remap(samples, width, height, channels, dtype, map_interp, interp, m
     output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
 
 
-    map_list = []
-    for b in range(samples):
-        image_map_list = []
-        halfWidth = int(width / 2)
-        for y in range(height):
-            row_list = []
-            x = 0
-            while x < halfWidth:
-                row_list.append([halfWidth - x, y])
-                x += 1
-            while x < width:
-                row_list.append([x, y])
-                x += 1
-            image_map_list.append(row_list)
-        map_list.append(image_map_list)
+    if (map_type == rocpycv.REMAP_ABSOLUTE):
+        halfWidth = width // 2
+
+        y_coords, x_coords = np.meshgrid(np.arange(height), np.arange(width), indexing='ij')
+
+        x_map = x_coords.copy()
+        x_map[:, :halfWidth] = halfWidth - x_coords[:, :halfWidth]
+
+        map_single = np.stack([x_map, y_coords], axis=-1)
+
+        map_list = np.tile(map_single[np.newaxis, :, :, :], (samples, 1, 1, 1))
+    elif (map_type == rocpycv.REMAP_ABSOLUTE_NORMALIZED):
+
+        y_coords, x_coords = np.meshgrid(
+        np.arange(height), 
+        np.arange(width), 
+        indexing='ij'
+        )
+
+        normX = (2.0 * x_coords / (width - 1)) - 1.0
+        normY = (2.0 * y_coords / (height - 1)) - 1.0
+
+        srcX = -normX
+        srcY = -normY
+
+        map_single = np.stack([srcX, srcY], axis=-1)
+
+        map_list = np.tile(map_single[np.newaxis, :, :, :], (samples, 1, 1, 1)).astype(np.float32)
+    elif (map_type == rocpycv.REMAP_RELATIVE_NORMALIZED):
+        y_coords, x_coords = np.meshgrid(
+            np.arange(height),
+            np.arange(width),
+            indexing='ij'
+        )
+
+        normX = (2.0 * x_coords / (width - 1)) - 1.0
+        normY = (2.0 * y_coords / (height - 1)) - 1.0
+
+        offsetX = -normX
+        offsetY = -normY
+
+        map_single = np.stack([offsetX, offsetY], axis=-1)
+
+        map_list = np.tile(map_single[np.newaxis, :, :, :], (samples, 1, 1, 1)).astype(np.float32)
 
     map_np_array = np.array(map_list, np.float32)
     remap_tensor = rocpycv.from_dlpack(map_np_array, rocpycv.NHWC).copy_to(device)

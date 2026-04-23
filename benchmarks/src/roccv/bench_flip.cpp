@@ -31,52 +31,56 @@
 
 using namespace roccv;
 
-BENCHMARK(Flip, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8);
-    Tensor input(reqs);
-    Tensor output(reqs);
+    // Get parameters
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    int32_t flipCode = roccvbench::GetParamValue<int32_t>(params, "flipType");
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, (Size2D){width, height}, outFormat, DeviceType);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
     FillTensor(input);
 
     Flip op;
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, -1);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, flipCode, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
-
+        results.executionTime, runs, warmupRuns);
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
-
     return results;
 }
 
-BENCHMARK(Flip, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_FLIP_BENCHMARK(name, device, inFormat, outFormat, flipType)                           \
+    BENCHMARK_P(Flip, name,                                                                          \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat), \
+                             BENCH_PARAM("flipType", flipType))) {                                   \
+        return RunFlipBenchmark<device>(params);                                                     \
+    }
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        config.samples, (Size2D){static_cast<int>(config.width), static_cast<int>(config.height)}, FMT_RGB8,
-        eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
+// GPU benchmarks
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, -1);
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, -1);
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, -1);
+DEFINE_FLIP_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, -1);
 
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    Flip op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, -1, eDeviceType::CPU); }, results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+// CPU benchmarks
+DEFINE_FLIP_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, -1);

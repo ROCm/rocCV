@@ -21,6 +21,7 @@
 
 #include <core/hip_assert.h>
 
+#include <core/image_format.hpp>
 #include <core/tensor.hpp>
 #include <op_rotate.hpp>
 #include <roccvbench/registry.hpp>
@@ -46,23 +47,32 @@ double2 ComputeCenterShift(const double centerX, const double centerY, const dou
 }
 }  // namespace
 
-BENCHMARK(Rotate, GPU) {
+template <eDeviceType DeviceType>
+static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkParamsList params) {
     roccvbench::BenchmarkResults results;
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8));
-    Tensor input(reqs);
-    Tensor output(reqs);
+    int samples = roccvbench::GetParamValue<int>(params, "samples");
+    int width = roccvbench::GetParamValue<int>(params, "width");
+    int height = roccvbench::GetParamValue<int>(params, "height");
+    int runs = roccvbench::GetParamValue<int>(params, "runs");
+    int warmupRuns = roccvbench::GetParamValue<int>(params, "warmupRuns");
+    ImageFormat inFormat = roccvbench::GetParamValue<ImageFormat>(params, "inFormat");
+    ImageFormat outFormat = roccvbench::GetParamValue<ImageFormat>(params, "outFormat");
+    eInterpolationType interpolation = roccvbench::GetParamValue<eInterpolationType>(params, "interpolation");
+    double angle = roccvbench::GetParamValue<double>(params, "angle");
+
+    Tensor::Requirements inReqs = Tensor::CalcRequirements(samples, {width, height}, inFormat, DeviceType);
+    Tensor::Requirements outReqs = Tensor::CalcRequirements(samples, {width, height}, outFormat, DeviceType);
+    Tensor input(inReqs);
+    Tensor output(outReqs);
 
     RegisterMemoryUsage(input, results.readMemoryBytes);
     RegisterMemoryUsage(output, results.writtenMemoryBytes);
 
     FillTensor(input);
 
-    const double angle = 180;
-    const double centerX = (config.width - 1) / 2.0;
-    const double centerY = (config.height - 1) / 2.0;
+    const double centerX = (width - 1) / 2.0;
+    const double centerY = (height - 1) / 2.0;
     const double2 shift = ComputeCenterShift(centerX, centerY, angle);
 
     Rotate op;
@@ -71,39 +81,40 @@ BENCHMARK(Rotate, GPU) {
 
     ROCCV_BENCH_RECORD_BLOCK(
         {
-            op(stream, input, output, angle, shift, eInterpolationType::INTERP_TYPE_LINEAR);
-            HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream))
+            op(stream, input, output, angle, shift, interpolation, DeviceType);
+            if constexpr (DeviceType == eDeviceType::GPU) {
+                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+            }
         },
-        results.executionTime, config.runs, config.warmupRuns);
+        results.executionTime, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     return results;
 }
 
-BENCHMARK(Rotate, CPU) {
-    roccvbench::BenchmarkResults results;
+#define DEFINE_ROTATE_BENCHMARK(name, device, inFormat, outFormat, interpolation, angle)                  \
+    BENCHMARK_P(Rotate, name,                                                                             \
+                BENCH_PARAMS(BENCH_PARAM("inFormat", inFormat), BENCH_PARAM("outFormat", outFormat),      \
+                             BENCH_PARAM("interpolation", interpolation), BENCH_PARAM("angle", angle))) { \
+        return RunRotateBenchmark<device>(params);                                                        \
+    }
 
-    TensorRequirements reqs = Tensor::CalcRequirements(
-        TensorShape(TensorLayout(TENSOR_LAYOUT_NHWC), {config.samples, config.height, config.width, 3}),
-        DataType(DATA_TYPE_U8), eDeviceType::CPU);
-    Tensor input(reqs);
-    Tensor output(reqs);
+// GPU benchmarks
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_NEAREST, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_NEAREST, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_LINEAR, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGBA8, FMT_RGBA8, eInterpolationType::INTERP_TYPE_CUBIC, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_NEAREST, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_LINEAR, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8, eInterpolationType::INTERP_TYPE_CUBIC, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_NEAREST, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_LINEAR, 180.0);
+DEFINE_ROTATE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32, eInterpolationType::INTERP_TYPE_CUBIC, 180.0);
 
-    RegisterMemoryUsage(input, results.readMemoryBytes);
-    RegisterMemoryUsage(output, results.writtenMemoryBytes);
-
-    FillTensor(input);
-
-    const double angle = 180;
-    const double centerX = (config.width - 1) / 2.0;
-    const double centerY = (config.height - 1) / 2.0;
-    const double2 shift = ComputeCenterShift(centerX, centerY, angle);
-
-    Rotate op;
-    ROCCV_BENCH_RECORD_BLOCK(
-        { op(nullptr, input, output, angle, shift, eInterpolationType::INTERP_TYPE_LINEAR, eDeviceType::CPU); },
-        results.executionTime, config.runs, config.warmupRuns);
-
-    return results;
-}
+// CPU benchmarks
+DEFINE_ROTATE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_NEAREST, 180.0);
+DEFINE_ROTATE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_LINEAR, 180.0);
+DEFINE_ROTATE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8, eInterpolationType::INTERP_TYPE_CUBIC, 180.0);

@@ -23,15 +23,15 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <cmath>
 #include <functional>
-#include <iostream>
 #include <numeric>
+#include <unordered_map>
 
-#include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
-#include "core/detail/math/math.hpp"
-#include "core/detail/type_traits.hpp"
+#include "core/wrappers/border_wrapper.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bilateral_filter_device.hpp"
 #include "kernels/host/bilateral_filter_host.hpp"
 
@@ -42,12 +42,9 @@ BilateralFilter::~BilateralFilter() {}
 
 template <typename T, eBorderType B>
 void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
-                                           float sigmaColor, float sigmaSpace, const T borderValue,
-                                           const eDeviceType device) {
+                                           float sigmaColor, float sigmaSpace, T borderValue, eDeviceType device) {
     BorderWrapper<T, B> inputWrapper(input, borderValue);
     ImageWrapper<T> outputWrapper(output);
-
-    int radius = diameter >> 1;
 
     if (outputWrapper.channels() > 4 || outputWrapper.channels() < 1) {
         throw Exception("Invalid channel size: cannot be greater than 4 or less than 1.", eStatusType::OUT_OF_BOUNDS);
@@ -64,9 +61,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         sigmaSpace = 1.0f;
     }
 
-    if (radius <= 0) {
-        radius = std::round(sigmaSpace * 1.5f);
-    }
+    const int radius =
+        (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
 
     float spaceCoeff = -1 / (2 * sigmaSpace * sigmaSpace);
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
@@ -78,8 +74,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         uint32_t zGridSize = outputWrapper.batches();
         dim3 grid(xGridSize, yGridSize, zGridSize);
 
-        Kernels::Device::bilateral_filter<T><<<grid, block, 0, stream>>>(
-            inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace, spaceCoeff, colorCoeff);
+        Kernels::Device::bilateral_filter<T>
+            <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, radius, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
         int divisor = std::gcd(4, outputWrapper.height());  // greatest common divisor
         int dividend = std::gcd((numThreads / divisor), outputWrapper.width());
@@ -94,9 +90,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         for (int j = 0; j < divisor; j++) {
             for (int i = 0; i < dividend; i++) {
                 threads.push_back(std::thread(Kernels::Host::bilateral_filter<T, BorderWrapper<T, B>, ImageWrapper<T>>,
-                                              inputWrapper, outputWrapper, radius, sigmaColor, sigmaSpace,
-                                              rollingHeight, rollingWidth, prevHeight, prevWidth, spaceCoeff,
-                                              colorCoeff));
+                                              inputWrapper, outputWrapper, radius, rollingHeight, rollingWidth,
+                                              prevHeight, prevWidth, spaceCoeff, colorCoeff));
                 prevWidth = rollingWidth;
                 rollingWidth += factorW;
             }
@@ -105,7 +100,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
             prevHeight = rollingHeight;
             rollingHeight += factorH;
         }
-        for (int i = 0; i < threads.size(); i++) {
+        for (size_t i = 0; i < threads.size(); i++) {
             threads[i].join();
         }
     }
@@ -113,11 +108,11 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
 
 template <typename T>
 void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
-                                     float sigmaColor, float sigmaSpace, eBorderType borderMode,
-                                     const float4 borderValue, const eDeviceType device) {
+                                     float sigmaColor, float sigmaSpace, eBorderType borderMode, float4 borderValue,
+                                     eDeviceType device) {
     // Select kernel dispatcher based on requested border mode.
     // clang-format off
-    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, const eDeviceType)>>
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, int, float, float, T, eDeviceType)>>
         funcs = {
             {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_REPLICATE>},
             {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_bilateral_filter_border_mode<T, eBorderType::BORDER_TYPE_CONSTANT>},
@@ -136,8 +131,8 @@ void dispatch_bilateral_filter_dtype(hipStream_t stream, const Tensor &input, co
 }
 
 void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                                 int diameter, float sigmaColor, float sigmaSpace, const eBorderType borderMode,
-                                 const float4 borderValue, const eDeviceType device) {
+                                 int diameter, float sigmaColor, float sigmaSpace, eBorderType borderMode,
+                                 float4 borderValue, eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
@@ -165,7 +160,7 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     // clang-format off
     static const std::unordered_map<
         eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, int, float, float,
-                                                 eBorderType, const float4, const eDeviceType)>, 4>>
+                                                 eBorderType, float4, eDeviceType)>, 4>>
         funcs = {
             {eDataType::DATA_TYPE_U8, {dispatch_bilateral_filter_dtype<uchar1>, 0, dispatch_bilateral_filter_dtype<uchar3>, dispatch_bilateral_filter_dtype<uchar4>}},
             {eDataType::DATA_TYPE_S8, {dispatch_bilateral_filter_dtype<char1>, 0, dispatch_bilateral_filter_dtype<char3>, dispatch_bilateral_filter_dtype<char4>}},
@@ -181,7 +176,5 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     auto func = funcs.at(dtype)[channels - 1];
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     func(stream, input, output, diameter, sigmaColor, sigmaSpace, borderMode, borderValue, device);
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 }  // namespace roccv

@@ -160,20 +160,16 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
     Histogram op;
     op(stream, input, std::nullopt, histogram, device);
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     // Copy data from histogram tensor into a host allocated vector
     std::vector<BT> result(histogram.shape().size());
     CopyTensorIntoVector(result, histogram);
 
     // Run roccv::Histogram operator with mask to obtain actual results
-    hipStream_t streamMask;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&streamMask));
-
     Histogram maskOp;
     maskOp(stream, input, mask, histogramWithMask, device);
-    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(streamMask));
-    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(streamMask));
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
     // Copy data from histogramWithMask tensor into a host allocated vector
     std::vector<BT> maskResult(histogramWithMask.shape().size());
@@ -186,6 +182,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // GPU correctness tests

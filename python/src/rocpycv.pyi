@@ -1,14 +1,67 @@
-"""
+from typing import ClassVar, overload
 
-        Python API reference
-        -----------------------
-        This is the Python API reference for rocCV.
-    
-"""
-from __future__ import annotations
-import collections.abc
-import typing
-__all__: list[str] = ['BGR', 'BINARY', 'BINARY_INV', 'BOTH', 'BT2020', 'BT601', 'BT709', 'BndBox', 'BndBoxes', 'Box', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB', 'COLOR_BGR2YUV', 'COLOR_RGB2BGR', 'COLOR_RGB2GRAY', 'COLOR_RGB2YUV', 'COLOR_YUV2BGR', 'COLOR_YUV2RGB', 'CONSTANT', 'CPU', 'CUBIC', 'ColorRGBA', 'Exception', 'F32', 'F64', 'GPU', 'Grayscale', 'HWC', 'LINEAR', 'N', 'NC', 'NCHW', 'NEAREST', 'NHWC', 'NW', 'NWC', 'NormalizeFlags', 'REFLECT', 'REFLECT101', 'REMAP_ABSOLUTE', 'REMAP_ABSOLUTE_NORMALIZED', 'REMAP_RELATIVE_NORMALIZED', 'REPLICATE', 'RGB', 'S16', 'S32', 'S8', 'Size2D', 'Stream', 'TOZERO', 'TOZERO_INV', 'TRUNC', 'Tensor', 'U16', 'U32', 'U8', 'WRAP', 'X', 'Y', 'YUV', 'YVU', 'bilateral_filter', 'bilateral_filter_into', 'bndbox', 'bndbox_into', 'center_crop', 'center_crop_into', 'composite', 'composite_into', 'copymakeborder', 'copymakeborder_into', 'custom_crop', 'custom_crop_into', 'cvtcolor', 'cvtcolor_into', 'eAxis', 'eBorderType', 'eChannelType', 'eColorConversionCode', 'eColorSpec', 'eDataType', 'eDeviceType', 'eInterpolationType', 'eRemapType', 'eTensorLayout', 'eThresholdType', 'flip', 'flip_into', 'from_dlpack', 'gamma_contrast', 'gamma_contrast_into', 'histogram', 'histogram_into', 'nms', 'nms_into', 'normalize', 'normalize_into', 'remap', 'remap_into', 'resize', 'resize_into', 'rotate', 'rotate_into', 'threshold', 'threshold_into', 'warp_affine', 'warp_affine_into', 'warp_perspective', 'warp_perspective_into']
+4S16: eDataType
+BGR: eChannelType
+BINARY: eThresholdType
+BINARY_INV: eThresholdType
+BOTH: eAxis
+BT2020: eColorSpec
+BT601: eColorSpec
+BT709: eColorSpec
+COLOR_BGR2GRAY: eColorConversionCode
+COLOR_BGR2RGB: eColorConversionCode
+COLOR_BGR2YUV: eColorConversionCode
+COLOR_BGR2YUV_NV12: eColorConversionCode
+COLOR_BGR2YUV_NV21: eColorConversionCode
+COLOR_RGB2BGR: eColorConversionCode
+COLOR_RGB2GRAY: eColorConversionCode
+COLOR_RGB2YUV: eColorConversionCode
+COLOR_RGB2YUV_NV12: eColorConversionCode
+COLOR_RGB2YUV_NV21: eColorConversionCode
+COLOR_YUV2BGR: eColorConversionCode
+COLOR_YUV2BGR_NV12: eColorConversionCode
+COLOR_YUV2BGR_NV21: eColorConversionCode
+COLOR_YUV2RGB: eColorConversionCode
+COLOR_YUV2RGB_NV12: eColorConversionCode
+COLOR_YUV2RGB_NV21: eColorConversionCode
+CONSTANT: eBorderType
+CPU: eDeviceType
+CUBIC: eInterpolationType
+F32: eDataType
+F64: eDataType
+GPU: eDeviceType
+Grayscale: eChannelType
+HWC: eTensorLayout
+LINEAR: eInterpolationType
+N: eTensorLayout
+NC: eTensorLayout
+NCHW: eTensorLayout
+NEAREST: eInterpolationType
+NHWC: eTensorLayout
+NW: eTensorLayout
+NWC: eTensorLayout
+REFLECT: eBorderType
+REFLECT101: eBorderType
+REMAP_ABSOLUTE: eRemapType
+REMAP_ABSOLUTE_NORMALIZED: eRemapType
+REMAP_RELATIVE_NORMALIZED: eRemapType
+REPLICATE: eBorderType
+RGB: eChannelType
+S16: eDataType
+S32: eDataType
+S8: eDataType
+TOZERO: eThresholdType
+TOZERO_INV: eThresholdType
+TRUNC: eThresholdType
+U16: eDataType
+U32: eDataType
+U8: eDataType
+WRAP: eBorderType
+X: eAxis
+Y: eAxis
+YUV: eChannelType
+YVU: eChannelType
+
 class BndBox:
     borderColor: ColorRGBA
     box: Box
@@ -335,38 +388,28 @@ class eChannelType:
     def value(self) -> int:
         ...
 class eColorConversionCode:
-    """
-    Members:
-    
-      COLOR_RGB2YUV
-    
-      COLOR_BGR2YUV
-    
-      COLOR_YUV2RGB
-    
-      COLOR_YUV2BGR
-    
-      COLOR_RGB2BGR
-    
-      COLOR_BGR2RGB
-    
-      COLOR_RGB2GRAY
-    
-      COLOR_BGR2GRAY
-    """
-    COLOR_BGR2GRAY: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2GRAY: 7>
-    COLOR_BGR2RGB: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2RGB: 5>
-    COLOR_BGR2YUV: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2YUV: 1>
-    COLOR_RGB2BGR: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2BGR: 4>
-    COLOR_RGB2GRAY: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2GRAY: 6>
-    COLOR_RGB2YUV: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2YUV: 0>
-    COLOR_YUV2BGR: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2BGR: 3>
-    COLOR_YUV2RGB: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2RGB: 2>
-    __members__: typing.ClassVar[dict[str, eColorConversionCode]]  # value = {'COLOR_RGB2YUV': <eColorConversionCode.COLOR_RGB2YUV: 0>, 'COLOR_BGR2YUV': <eColorConversionCode.COLOR_BGR2YUV: 1>, 'COLOR_YUV2RGB': <eColorConversionCode.COLOR_YUV2RGB: 2>, 'COLOR_YUV2BGR': <eColorConversionCode.COLOR_YUV2BGR: 3>, 'COLOR_RGB2BGR': <eColorConversionCode.COLOR_RGB2BGR: 4>, 'COLOR_BGR2RGB': <eColorConversionCode.COLOR_BGR2RGB: 5>, 'COLOR_RGB2GRAY': <eColorConversionCode.COLOR_RGB2GRAY: 6>, 'COLOR_BGR2GRAY': <eColorConversionCode.COLOR_BGR2GRAY: 7>}
-    def __eq__(self, other: typing.Any) -> bool:
-        ...
-    def __getstate__(self) -> int:
-        ...
+    __members__: ClassVar[dict] = ...  # read-only
+    COLOR_BGR2GRAY: ClassVar[eColorConversionCode] = ...
+    COLOR_BGR2RGB: ClassVar[eColorConversionCode] = ...
+    COLOR_BGR2YUV: ClassVar[eColorConversionCode] = ...
+    COLOR_BGR2YUV_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_BGR2YUV_NV21: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2BGR: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2GRAY: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2YUV: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2YUV_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_RGB2YUV_NV21: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2BGR: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2BGR_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2BGR_NV21: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2RGB: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2RGB_NV12: ClassVar[eColorConversionCode] = ...
+    COLOR_YUV2RGB_NV21: ClassVar[eColorConversionCode] = ...
+    __entries: ClassVar[dict] = ...
+    def __init__(self, value: int) -> None:
+        """__init__(self: rocpycv.rocpycv.eColorConversionCode, value: int) -> None"""
+    def __eq__(self, other: object) -> bool:
+        """__eq__(self: object, other: object) -> bool"""
     def __hash__(self) -> int:
         ...
     def __index__(self) -> int:
@@ -952,8 +995,54 @@ def cvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCod
                 Returns:
                     None
     """
-def flip(src: Tensor, flip_code: typing.SupportsInt, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
+    """advcvtcolor(src: rocpycv.rocpycv.Tensor, conversion_code: rocpycv.rocpycv.eColorConversionCode, color_spec: rocpycv.rocpycv.eColorSpec, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
+
+
+    
+                Executes the Advanced Color Convert operation on the given HIP stream.
+
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+            
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
+                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+          
     """
+def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
+    """advcvtcolor_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, conversion_code: rocpycv.rocpycv.eColorConversionCode, color_spec: rocpycv.rocpycv.eColorSpec, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
+
+
+
+                Executes the Advanced Color Convert operation on the given HIP stream.
+
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+            
+                Args:
+                    dst (rocpycv.Tensor): Output tensor for storing modified image data.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
+                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+
+                Returns:
+                    None
+          
+    """
+def flip(src: Tensor, flip_code: int, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
+    """flip(src: rocpycv.rocpycv.Tensor, flip_code: int, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
+
+
+          
                 Executes the Flip operation on the given HIP stream.
     
                 See also:
@@ -1365,56 +1454,5 @@ def warp_perspective_into(dst: Tensor, src: Tensor, xform: list, inverted: bool,
                 
                 Returns:
                     None
+          
     """
-BGR: eChannelType  # value = <eChannelType.BGR: 2>
-BINARY: eThresholdType  # value = <eThresholdType.BINARY: 1>
-BINARY_INV: eThresholdType  # value = <eThresholdType.BINARY_INV: 2>
-BOTH: eAxis  # value = <eAxis.BOTH: -1>
-BT2020: eColorSpec  # value = <eColorSpec.BT2020: 2>
-BT601: eColorSpec  # value = <eColorSpec.BT601: 0>
-BT709: eColorSpec  # value = <eColorSpec.BT709: 1>
-COLOR_BGR2GRAY: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2GRAY: 7>
-COLOR_BGR2RGB: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2RGB: 5>
-COLOR_BGR2YUV: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2YUV: 1>
-COLOR_RGB2BGR: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2BGR: 4>
-COLOR_RGB2GRAY: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2GRAY: 6>
-COLOR_RGB2YUV: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2YUV: 0>
-COLOR_YUV2BGR: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2BGR: 3>
-COLOR_YUV2RGB: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2RGB: 2>
-CONSTANT: eBorderType  # value = <eBorderType.CONSTANT: 0>
-CPU: eDeviceType  # value = <eDeviceType.CPU: 1>
-CUBIC: eInterpolationType  # value = <eInterpolationType.CUBIC: 2>
-F32: eDataType  # value = <eDataType.F32: 6>
-F64: eDataType  # value = <eDataType.F64: 7>
-GPU: eDeviceType  # value = <eDeviceType.GPU: 0>
-Grayscale: eChannelType  # value = <eChannelType.Grayscale: 16>
-HWC: eTensorLayout  # value = <eTensorLayout.HWC: 1>
-LINEAR: eInterpolationType  # value = <eInterpolationType.LINEAR: 1>
-N: eTensorLayout  # value = <eTensorLayout.N: 4>
-NC: eTensorLayout  # value = <eTensorLayout.NC: 2>
-NCHW: eTensorLayout  # value = <eTensorLayout.NCHW: 8>
-NEAREST: eInterpolationType  # value = <eInterpolationType.NEAREST: 0>
-NHWC: eTensorLayout  # value = <eTensorLayout.NHWC: 0>
-NW: eTensorLayout  # value = <eTensorLayout.NW: 3>
-NWC: eTensorLayout  # value = <eTensorLayout.NWC: 9>
-REFLECT: eBorderType  # value = <eBorderType.REFLECT: 2>
-REFLECT101: eBorderType  # value = <eBorderType.REFLECT101: 3>
-REMAP_ABSOLUTE: eRemapType  # value = <eRemapType.REMAP_ABSOLUTE: 0>
-REMAP_ABSOLUTE_NORMALIZED: eRemapType  # value = <eRemapType.REMAP_ABSOLUTE_NORMALIZED: 1>
-REMAP_RELATIVE_NORMALIZED: eRemapType  # value = <eRemapType.REMAP_RELATIVE_NORMALIZED: 2>
-REPLICATE: eBorderType  # value = <eBorderType.REPLICATE: 1>
-RGB: eChannelType  # value = <eChannelType.RGB: 1>
-S16: eDataType  # value = <eDataType.S16: 3>
-S32: eDataType  # value = <eDataType.S32: 5>
-S8: eDataType  # value = <eDataType.S8: 1>
-TOZERO: eThresholdType  # value = <eThresholdType.TOZERO: 8>
-TOZERO_INV: eThresholdType  # value = <eThresholdType.TOZERO_INV: 16>
-TRUNC: eThresholdType  # value = <eThresholdType.TRUNC: 4>
-U16: eDataType  # value = <eDataType.U16: 2>
-U32: eDataType  # value = <eDataType.U32: 4>
-U8: eDataType  # value = <eDataType.U8: 0>
-WRAP: eBorderType  # value = <eBorderType.WRAP: 4>
-X: eAxis  # value = <eAxis.X: 0>
-Y: eAxis  # value = <eAxis.Y: 1>
-YUV: eChannelType  # value = <eChannelType.YUV: 4>
-YVU: eChannelType  # value = <eChannelType.YVU: 8>

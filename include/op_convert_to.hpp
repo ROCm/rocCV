@@ -69,6 +69,6 @@ class ConvertTo final : public IOperator {
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                    const double alpha = 1.0, const double beta = 0.0, const eDeviceType device = eDeviceType::GPU) const;
+                    double alpha = 1.0, double beta = 0.0, eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv

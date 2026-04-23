@@ -70,12 +70,25 @@ class Remap final : public IOperator {
      *       TensorLayout  | Yes
      *       DataType      | Yes
      *       Channels      | Yes
-     *       Width         | Yes
-     *       Height        | Yes
+     *       Width         | No
+     *       Height        | No
      *       Batch Size    | Yes
+     * 
+     * Input/Map dependency:
+     *
+     *       Property      |  Input == Map
+     *      -------------- | -------------
+     *       TensorLayout  | No
+     *       DataType      | No
+     *       Channels      | No (Map must have exactly 2 channels)
+     *       Width         | No
+     *       Height        | No
+     *       Batch Size    | Yes or 1
      *
      *  Currently supported remap types:
      *      - REMAP_ABSOLUTE
+     *      - REMAP_ABSOLUTE_NORMALIZED
+     *      - REMAP_RELATIVE_NORMALIZED
      *
      *
      * @param[in] stream The HIP stream to run this operation on.
@@ -95,8 +108,8 @@ class Remap final : public IOperator {
      * (Default: eDeviceType::GPU)
      */
     void operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output,
-                    const roccv::Tensor& map, const eInterpolationType inInterpolation,
-                    const eInterpolationType mapInterpolation, const eRemapType mapValueType, const bool alignCorners,
-                    const eBorderType borderType, const float4 borderValue, eDeviceType device = eDeviceType::GPU);
+                    const roccv::Tensor& map, eInterpolationType inInterpolation,
+                    eInterpolationType mapInterpolation, eRemapType mapValueType, bool alignCorners,
+                    eBorderType borderType, float4 borderValue, eDeviceType device = eDeviceType::GPU);
 };
 }  // namespace roccv

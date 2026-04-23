@@ -160,6 +160,8 @@ static const std::array<float, 6> MAT_SCALE =       {2.0f,  0, 0,     0, 1, 0};
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     // clang-format off

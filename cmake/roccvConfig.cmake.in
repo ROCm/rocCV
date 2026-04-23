@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+set(roccv_VERSION @PROJECT_VERSION@)
+
+include(CMakeFindDependencyMacro)
+
+# Re-find transitive dependencies so the imported target works (HIP is PUBLIC)
+find_dependency(HIP)
+
+include("${CMAKE_CURRENT_LIST_DIR}/roccvTargets.cmake")
+
+check_required_components(roccv)
