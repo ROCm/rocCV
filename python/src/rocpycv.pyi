@@ -1,67 +1,14 @@
-from typing import ClassVar, overload
+"""
 
-4S16: eDataType
-BGR: eChannelType
-BINARY: eThresholdType
-BINARY_INV: eThresholdType
-BOTH: eAxis
-BT2020: eColorSpec
-BT601: eColorSpec
-BT709: eColorSpec
-COLOR_BGR2GRAY: eColorConversionCode
-COLOR_BGR2RGB: eColorConversionCode
-COLOR_BGR2YUV: eColorConversionCode
-COLOR_BGR2YUV_NV12: eColorConversionCode
-COLOR_BGR2YUV_NV21: eColorConversionCode
-COLOR_RGB2BGR: eColorConversionCode
-COLOR_RGB2GRAY: eColorConversionCode
-COLOR_RGB2YUV: eColorConversionCode
-COLOR_RGB2YUV_NV12: eColorConversionCode
-COLOR_RGB2YUV_NV21: eColorConversionCode
-COLOR_YUV2BGR: eColorConversionCode
-COLOR_YUV2BGR_NV12: eColorConversionCode
-COLOR_YUV2BGR_NV21: eColorConversionCode
-COLOR_YUV2RGB: eColorConversionCode
-COLOR_YUV2RGB_NV12: eColorConversionCode
-COLOR_YUV2RGB_NV21: eColorConversionCode
-CONSTANT: eBorderType
-CPU: eDeviceType
-CUBIC: eInterpolationType
-F32: eDataType
-F64: eDataType
-GPU: eDeviceType
-Grayscale: eChannelType
-HWC: eTensorLayout
-LINEAR: eInterpolationType
-N: eTensorLayout
-NC: eTensorLayout
-NCHW: eTensorLayout
-NEAREST: eInterpolationType
-NHWC: eTensorLayout
-NW: eTensorLayout
-NWC: eTensorLayout
-REFLECT: eBorderType
-REFLECT101: eBorderType
-REMAP_ABSOLUTE: eRemapType
-REMAP_ABSOLUTE_NORMALIZED: eRemapType
-REMAP_RELATIVE_NORMALIZED: eRemapType
-REPLICATE: eBorderType
-RGB: eChannelType
-S16: eDataType
-S32: eDataType
-S8: eDataType
-TOZERO: eThresholdType
-TOZERO_INV: eThresholdType
-TRUNC: eThresholdType
-U16: eDataType
-U32: eDataType
-U8: eDataType
-WRAP: eBorderType
-X: eAxis
-Y: eAxis
-YUV: eChannelType
-YVU: eChannelType
-
+        Python API reference
+        -----------------------
+        This is the Python API reference for rocCV.
+    
+"""
+from __future__ import annotations
+import collections.abc
+import typing
+__all__: list[str] = ['BGR', 'BINARY', 'BINARY_INV', 'BOTH', 'BT2020', 'BT601', 'BT709', 'BndBox', 'BndBoxes', 'Box', 'CHW', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB', 'COLOR_BGR2YUV', 'COLOR_BGR2YUV_NV12', 'COLOR_BGR2YUV_NV21', 'COLOR_RGB2BGR', 'COLOR_RGB2GRAY', 'COLOR_RGB2YUV', 'COLOR_RGB2YUV_NV12', 'COLOR_RGB2YUV_NV21', 'COLOR_YUV2BGR', 'COLOR_YUV2BGR_NV12', 'COLOR_YUV2BGR_NV21', 'COLOR_YUV2RGB', 'COLOR_YUV2RGB_NV12', 'COLOR_YUV2RGB_NV21', 'CONSTANT', 'CPU', 'CUBIC', 'ColorRGBA', 'Exception', 'F32', 'F64', 'GPU', 'Grayscale', 'HWC', 'LINEAR', 'N', 'NC', 'NCHW', 'NEAREST', 'NHWC', 'NW', 'NWC', 'NormalizeFlags', 'REFLECT', 'REFLECT101', 'REMAP_ABSOLUTE', 'REMAP_ABSOLUTE_NORMALIZED', 'REMAP_RELATIVE_NORMALIZED', 'REPLICATE', 'RGB', 'S16', 'S32', 'S8', 'Size2D', 'Stream', 'TOZERO', 'TOZERO_INV', 'TRUNC', 'Tensor', 'U16', 'U32', 'U8', 'WRAP', 'X', 'Y', 'YUV', 'YVU', 'advcvtcolor', 'advcvtcolor_into', 'bilateral_filter', 'bilateral_filter_into', 'bndbox', 'bndbox_into', 'center_crop', 'center_crop_into', 'composite', 'composite_into', 'convert_to', 'convert_to_into', 'copymakeborder', 'copymakeborder_into', 'custom_crop', 'custom_crop_into', 'cvtcolor', 'cvtcolor_into', 'eAxis', 'eBorderType', 'eChannelType', 'eColorConversionCode', 'eColorSpec', 'eDataType', 'eDeviceType', 'eInterpolationType', 'eRemapType', 'eTensorLayout', 'eThresholdType', 'flip', 'flip_into', 'from_dlpack', 'gamma_contrast', 'gamma_contrast_into', 'histogram', 'histogram_into', 'nms', 'nms_into', 'normalize', 'normalize_into', 'reformat', 'reformat_into', 'remap', 'remap_into', 'resize', 'resize_into', 'rotate', 'rotate_into', 'threshold', 'threshold_into', 'warp_affine', 'warp_affine_into', 'warp_perspective', 'warp_perspective_into']
 class BndBox:
     borderColor: ColorRGBA
     box: Box
@@ -70,13 +17,13 @@ class BndBox:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, box: Box, thickness: typing.SupportsInt, borderColor: ColorRGBA, fillColor: ColorRGBA) -> None:
+    def __init__(self, box: Box, thickness: typing.SupportsInt | typing.SupportsIndex, borderColor: ColorRGBA, fillColor: ColorRGBA) -> None:
         ...
     @property
     def thickness(self) -> int:
         ...
     @thickness.setter
-    def thickness(self, arg0: typing.SupportsInt) -> None:
+    def thickness(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
 class BndBoxes:
     def __init__(self, bndboxes: collections.abc.Sequence[collections.abc.Sequence[BndBox]]) -> None:
@@ -86,62 +33,62 @@ class Box:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, x: typing.SupportsInt, y: typing.SupportsInt, width: typing.SupportsInt, height: typing.SupportsInt) -> None:
+    def __init__(self, x: typing.SupportsInt | typing.SupportsIndex, y: typing.SupportsInt | typing.SupportsIndex, width: typing.SupportsInt | typing.SupportsIndex, height: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def height(self) -> int:
         ...
     @height.setter
-    def height(self, arg0: typing.SupportsInt) -> None:
+    def height(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def width(self) -> int:
         ...
     @width.setter
-    def width(self, arg0: typing.SupportsInt) -> None:
+    def width(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def x(self) -> int:
         ...
     @x.setter
-    def x(self, arg0: typing.SupportsInt) -> None:
+    def x(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def y(self) -> int:
         ...
     @y.setter
-    def y(self, arg0: typing.SupportsInt) -> None:
+    def y(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
 class ColorRGBA:
     @typing.overload
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, r: typing.SupportsInt, g: typing.SupportsInt, b: typing.SupportsInt, a: typing.SupportsInt) -> None:
+    def __init__(self, r: typing.SupportsInt | typing.SupportsIndex, g: typing.SupportsInt | typing.SupportsIndex, b: typing.SupportsInt | typing.SupportsIndex, a: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def c0(self) -> int:
         ...
     @c0.setter
-    def c0(self, arg0: typing.SupportsInt) -> None:
+    def c0(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def c1(self) -> int:
         ...
     @c1.setter
-    def c1(self, arg0: typing.SupportsInt) -> None:
+    def c1(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def c2(self) -> int:
         ...
     @c2.setter
-    def c2(self, arg0: typing.SupportsInt) -> None:
+    def c2(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def c3(self) -> int:
         ...
     @c3.setter
-    def c3(self, arg0: typing.SupportsInt) -> None:
+    def c3(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
 class Exception(Exception):
     pass
@@ -161,7 +108,7 @@ class NormalizeFlags:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -169,7 +116,7 @@ class NormalizeFlags:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -184,19 +131,19 @@ class Size2D:
     def __init__(self) -> None:
         ...
     @typing.overload
-    def __init__(self, w: typing.SupportsInt, h: typing.SupportsInt) -> None:
+    def __init__(self, w: typing.SupportsInt | typing.SupportsIndex, h: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def h(self) -> int:
         ...
     @h.setter
-    def h(self, arg0: typing.SupportsInt) -> None:
+    def h(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     @property
     def w(self) -> int:
         ...
     @w.setter
-    def w(self, arg0: typing.SupportsInt) -> None:
+    def w(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
 class Stream:
     """
@@ -219,7 +166,7 @@ class Tensor:
         """
         Returns a tuple containing the DLPack device and device id for the tensor.
         """
-    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt], layout: eTensorLayout, dtype: eDataType, device: eDeviceType = ...) -> None:
+    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: eTensorLayout, dtype: eDataType, device: eDeviceType = ...) -> None:
         """
         Constructs a tensor object.
         """
@@ -243,7 +190,7 @@ class Tensor:
         """
         Returns the number of dimensions of the tensor.
         """
-    def reshape(self, new_shape: collections.abc.Sequence[typing.SupportsInt], layout: eTensorLayout) -> Tensor:
+    def reshape(self, new_shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: eTensorLayout) -> Tensor:
         """
         Creates a new tensor with the specified shape.
         """
@@ -277,7 +224,7 @@ class eAxis:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -285,7 +232,7 @@ class eAxis:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -323,7 +270,7 @@ class eBorderType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -331,7 +278,7 @@ class eBorderType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -369,7 +316,7 @@ class eChannelType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -377,7 +324,7 @@ class eChannelType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -388,33 +335,67 @@ class eChannelType:
     def value(self) -> int:
         ...
 class eColorConversionCode:
-    __members__: ClassVar[dict] = ...  # read-only
-    COLOR_BGR2GRAY: ClassVar[eColorConversionCode] = ...
-    COLOR_BGR2RGB: ClassVar[eColorConversionCode] = ...
-    COLOR_BGR2YUV: ClassVar[eColorConversionCode] = ...
-    COLOR_BGR2YUV_NV12: ClassVar[eColorConversionCode] = ...
-    COLOR_BGR2YUV_NV21: ClassVar[eColorConversionCode] = ...
-    COLOR_RGB2BGR: ClassVar[eColorConversionCode] = ...
-    COLOR_RGB2GRAY: ClassVar[eColorConversionCode] = ...
-    COLOR_RGB2YUV: ClassVar[eColorConversionCode] = ...
-    COLOR_RGB2YUV_NV12: ClassVar[eColorConversionCode] = ...
-    COLOR_RGB2YUV_NV21: ClassVar[eColorConversionCode] = ...
-    COLOR_YUV2BGR: ClassVar[eColorConversionCode] = ...
-    COLOR_YUV2BGR_NV12: ClassVar[eColorConversionCode] = ...
-    COLOR_YUV2BGR_NV21: ClassVar[eColorConversionCode] = ...
-    COLOR_YUV2RGB: ClassVar[eColorConversionCode] = ...
-    COLOR_YUV2RGB_NV12: ClassVar[eColorConversionCode] = ...
-    COLOR_YUV2RGB_NV21: ClassVar[eColorConversionCode] = ...
-    __entries: ClassVar[dict] = ...
-    def __init__(self, value: int) -> None:
-        """__init__(self: rocpycv.rocpycv.eColorConversionCode, value: int) -> None"""
-    def __eq__(self, other: object) -> bool:
-        """__eq__(self: object, other: object) -> bool"""
+    """
+    Members:
+    
+      COLOR_RGB2YUV
+    
+      COLOR_BGR2YUV
+    
+      COLOR_YUV2RGB
+    
+      COLOR_YUV2BGR
+    
+      COLOR_RGB2BGR
+    
+      COLOR_BGR2RGB
+    
+      COLOR_RGB2GRAY
+    
+      COLOR_BGR2GRAY
+    
+      COLOR_YUV2RGB_NV12
+    
+      COLOR_YUV2BGR_NV12
+    
+      COLOR_YUV2RGB_NV21
+    
+      COLOR_YUV2BGR_NV21
+    
+      COLOR_RGB2YUV_NV12
+    
+      COLOR_BGR2YUV_NV12
+    
+      COLOR_RGB2YUV_NV21
+    
+      COLOR_BGR2YUV_NV21
+    """
+    COLOR_BGR2GRAY: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2GRAY: 7>
+    COLOR_BGR2RGB: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2RGB: 5>
+    COLOR_BGR2YUV: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2YUV: 1>
+    COLOR_BGR2YUV_NV12: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2YUV_NV12: 13>
+    COLOR_BGR2YUV_NV21: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_BGR2YUV_NV21: 15>
+    COLOR_RGB2BGR: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2BGR: 4>
+    COLOR_RGB2GRAY: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2GRAY: 6>
+    COLOR_RGB2YUV: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2YUV: 0>
+    COLOR_RGB2YUV_NV12: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2YUV_NV12: 12>
+    COLOR_RGB2YUV_NV21: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_RGB2YUV_NV21: 14>
+    COLOR_YUV2BGR: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2BGR: 3>
+    COLOR_YUV2BGR_NV12: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2BGR_NV12: 9>
+    COLOR_YUV2BGR_NV21: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2BGR_NV21: 11>
+    COLOR_YUV2RGB: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2RGB: 2>
+    COLOR_YUV2RGB_NV12: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2RGB_NV12: 8>
+    COLOR_YUV2RGB_NV21: typing.ClassVar[eColorConversionCode]  # value = <eColorConversionCode.COLOR_YUV2RGB_NV21: 10>
+    __members__: typing.ClassVar[dict[str, eColorConversionCode]]  # value = {'COLOR_RGB2YUV': <eColorConversionCode.COLOR_RGB2YUV: 0>, 'COLOR_BGR2YUV': <eColorConversionCode.COLOR_BGR2YUV: 1>, 'COLOR_YUV2RGB': <eColorConversionCode.COLOR_YUV2RGB: 2>, 'COLOR_YUV2BGR': <eColorConversionCode.COLOR_YUV2BGR: 3>, 'COLOR_RGB2BGR': <eColorConversionCode.COLOR_RGB2BGR: 4>, 'COLOR_BGR2RGB': <eColorConversionCode.COLOR_BGR2RGB: 5>, 'COLOR_RGB2GRAY': <eColorConversionCode.COLOR_RGB2GRAY: 6>, 'COLOR_BGR2GRAY': <eColorConversionCode.COLOR_BGR2GRAY: 7>, 'COLOR_YUV2RGB_NV12': <eColorConversionCode.COLOR_YUV2RGB_NV12: 8>, 'COLOR_YUV2BGR_NV12': <eColorConversionCode.COLOR_YUV2BGR_NV12: 9>, 'COLOR_YUV2RGB_NV21': <eColorConversionCode.COLOR_YUV2RGB_NV21: 10>, 'COLOR_YUV2BGR_NV21': <eColorConversionCode.COLOR_YUV2BGR_NV21: 11>, 'COLOR_RGB2YUV_NV12': <eColorConversionCode.COLOR_RGB2YUV_NV12: 12>, 'COLOR_BGR2YUV_NV12': <eColorConversionCode.COLOR_BGR2YUV_NV12: 13>, 'COLOR_RGB2YUV_NV21': <eColorConversionCode.COLOR_RGB2YUV_NV21: 14>, 'COLOR_BGR2YUV_NV21': <eColorConversionCode.COLOR_BGR2YUV_NV21: 15>}
+    def __eq__(self, other: typing.Any) -> bool:
+        ...
+    def __getstate__(self) -> int:
+        ...
     def __hash__(self) -> int:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -422,7 +403,7 @@ class eColorConversionCode:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -454,7 +435,7 @@ class eColorSpec:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -462,7 +443,7 @@ class eColorSpec:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -511,7 +492,7 @@ class eDataType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -519,7 +500,7 @@ class eDataType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -548,7 +529,7 @@ class eDeviceType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -556,7 +537,7 @@ class eDeviceType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -588,7 +569,7 @@ class eInterpolationType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -596,7 +577,7 @@ class eInterpolationType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -628,7 +609,7 @@ class eRemapType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -636,7 +617,7 @@ class eRemapType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -663,7 +644,10 @@ class eTensorLayout:
       NCHW
     
       NWC
+    
+      CHW
     """
+    CHW: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.CHW: 10>
     HWC: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.HWC: 1>
     N: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.N: 4>
     NC: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.NC: 2>
@@ -671,7 +655,7 @@ class eTensorLayout:
     NHWC: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.NHWC: 0>
     NW: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.NW: 3>
     NWC: typing.ClassVar[eTensorLayout]  # value = <eTensorLayout.NWC: 9>
-    __members__: typing.ClassVar[dict[str, eTensorLayout]]  # value = {'NHWC': <eTensorLayout.NHWC: 0>, 'HWC': <eTensorLayout.HWC: 1>, 'NC': <eTensorLayout.NC: 2>, 'NW': <eTensorLayout.NW: 3>, 'N': <eTensorLayout.N: 4>, 'NCHW': <eTensorLayout.NCHW: 8>, 'NWC': <eTensorLayout.NWC: 9>}
+    __members__: typing.ClassVar[dict[str, eTensorLayout]]  # value = {'NHWC': <eTensorLayout.NHWC: 0>, 'HWC': <eTensorLayout.HWC: 1>, 'NC': <eTensorLayout.NC: 2>, 'NW': <eTensorLayout.NW: 3>, 'N': <eTensorLayout.N: 4>, 'NCHW': <eTensorLayout.NCHW: 8>, 'NWC': <eTensorLayout.NWC: 9>, 'CHW': <eTensorLayout.CHW: 10>}
     def __eq__(self, other: typing.Any) -> bool:
         ...
     def __getstate__(self) -> int:
@@ -680,7 +664,7 @@ class eTensorLayout:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -688,7 +672,7 @@ class eTensorLayout:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -726,7 +710,7 @@ class eThresholdType:
         ...
     def __index__(self) -> int:
         ...
-    def __init__(self, value: typing.SupportsInt) -> None:
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __int__(self) -> int:
         ...
@@ -734,7 +718,7 @@ class eThresholdType:
         ...
     def __repr__(self) -> str:
         ...
-    def __setstate__(self, state: typing.SupportsInt) -> None:
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
         ...
     def __str__(self) -> str:
         ...
@@ -744,7 +728,42 @@ class eThresholdType:
     @property
     def value(self) -> int:
         ...
-def bilateral_filter(src: Tensor, diameter: typing.SupportsInt, sigmaColor: typing.SupportsFloat, sigmaSpace: typing.SupportsFloat, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the Advanced Color Convert operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+    
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
+                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+    """
+def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the Advanced Color Convert operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+    
+                Args:
+                    dst (rocpycv.Tensor): Output tensor for storing modified image data.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
+                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    None
+    """
+def bilateral_filter(src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Bilateral Filter operation on the given HIP stream.
     
@@ -764,7 +783,7 @@ def bilateral_filter(src: Tensor, diameter: typing.SupportsInt, sigmaColor: typi
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def bilateral_filter_into(dst: Tensor, src: Tensor, diameter: typing.SupportsInt, sigmaColor: typing.SupportsFloat, sigmaSpace: typing.SupportsFloat, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def bilateral_filter_into(dst: Tensor, src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the Bilateral Filter operation on the given HIP stream.
     
@@ -852,7 +871,7 @@ def center_crop_into(dst: Tensor, src: Tensor, crop_size: tuple, stream: rocpycv
                 Returns:
                     None
     """
-def composite(foreground: Tensor, background: Tensor, fgmask: Tensor, outchannels: typing.SupportsInt, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def composite(foreground: Tensor, background: Tensor, fgmask: Tensor, outchannels: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Composite operation on the given HIP stream.
     
@@ -888,7 +907,43 @@ def composite_into(dst: Tensor, foreground: Tensor, background: Tensor, fgmask: 
                 Returns:
                     None
     """
-def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt, bottom: typing.SupportsInt, left: typing.SupportsInt, right: typing.SupportsInt, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def convert_to(src: Tensor, dtype: eDataType, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the Convert To operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    dtype (eDataType): Datatype of the output tensor.
+                    alpha (double, optional): Scalar for output data. Defaults to 1.0.
+                    beta (double, optional): Offset for the data. Defaults to 0.0.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+    """
+def convert_to_into(dst: Tensor, src: Tensor, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the Convert To operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    dst (rocpycv.Tensor): The output tensor with gamma correction applied.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    alpha (double, optional): Scalar for output data. Defaults to 1.0.
+                    beta (double, optional): Offset for the data. Defaults to 0.0.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    None
+    """
+def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, bottom: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, right: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the CopyMakeBorder operation on the given HIP stream.
     
@@ -909,7 +964,7 @@ def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: li
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt, left: typing.SupportsInt, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the CopyMakeBorder operation on the given HIP stream.
     
@@ -995,54 +1050,8 @@ def cvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCod
                 Returns:
                     None
     """
-def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
-    """advcvtcolor(src: rocpycv.rocpycv.Tensor, conversion_code: rocpycv.rocpycv.eColorConversionCode, color_spec: rocpycv.rocpycv.eColorSpec, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
-
-
-    
-                Executes the Advanced Color Convert operation on the given HIP stream.
-
-                See also:
-                    Refer to the rocCV C++ API reference for more information on this operation.
-            
-                Args:
-                    src (rocpycv.Tensor): Input tensor containing one or more images.
-                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
-                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
-                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
-
-                Returns:
-                    rocpycv.Tensor: The output tensor.
-          
+def flip(src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
-def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: Stream | None = ..., device: eDeviceType = ...) -> None:
-    """advcvtcolor_into(dst: rocpycv.rocpycv.Tensor, src: rocpycv.rocpycv.Tensor, conversion_code: rocpycv.rocpycv.eColorConversionCode, color_spec: rocpycv.rocpycv.eColorSpec, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> None
-
-
-
-                Executes the Advanced Color Convert operation on the given HIP stream.
-
-                See also:
-                    Refer to the rocCV C++ API reference for more information on this operation.
-            
-                Args:
-                    dst (rocpycv.Tensor): Output tensor for storing modified image data.
-                    src (rocpycv.Tensor): Input tensor containing one or more images.
-                    conversion_code (eColorConversionCode): Conversion code specifying the formats being converted.
-                    color_spec (eColorSpec): Color specification selecting BT601/BT709/BT2020 conversion matrices.
-                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
-                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
-
-                Returns:
-                    None
-          
-    """
-def flip(src: Tensor, flip_code: int, stream: Stream | None = ..., device: eDeviceType = ...) -> Tensor:
-    """flip(src: rocpycv.rocpycv.Tensor, flip_code: int, stream: Optional[rocpycv.rocpycv.Stream] = None, device: rocpycv.rocpycv.eDeviceType = <eDeviceType.GPU: 0>) -> rocpycv.rocpycv.Tensor
-
-
-          
                 Executes the Flip operation on the given HIP stream.
     
                 See also:
@@ -1057,7 +1066,7 @@ def flip(src: Tensor, flip_code: int, stream: Stream | None = ..., device: eDevi
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def flip_into(dst: Tensor, src: Tensor, flip_code: typing.SupportsInt, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def flip_into(dst: Tensor, src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the Flip operation on the given HIP stream.
     
@@ -1078,7 +1087,7 @@ def from_dlpack(buffer: typing.Any, layout: eTensorLayout) -> Tensor:
     """
     Wraps a DLPack supported tensor in a rocpycv tensor.
     """
-def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Gamma Contrast operation on the given HIP stream.
     
@@ -1094,7 +1103,7 @@ def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat, stream: rocpycv.Str
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: typing.SupportsFloat, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the Gamma Contrast operation on the given HIP stream.
     
@@ -1144,7 +1153,7 @@ def histogram_into(dst: Tensor, src: Tensor, mask: rocpycv.Tensor | None, stream
                 Returns:
                     None
     """
-def nms(src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def nms(src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Non-maximum Suppression operation on the given HIP stream.
     
@@ -1162,7 +1171,7 @@ def nms(src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat = 1.1
                 Returns:
                     rocpycv.Tensor: The output tensor of shape [i, j], containing 1 (kept) or 0 (suppressed) for each bounding box (j) per batch (i). Results will be written to this tensor.
     """
-def nms_into(dst: Tensor, src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def nms_into(dst: Tensor, src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the Non-maximum Suppression operation on the given HIP stream.
     
@@ -1181,7 +1190,7 @@ def nms_into(dst: Tensor, src: Tensor, scores: Tensor, score_threshold: typing.S
                 Returns:
                     None
     """
-def normalize(src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | None = None, globalscale: typing.SupportsFloat = 1.0, globalshift: typing.SupportsFloat = 0.0, epsilon: typing.SupportsFloat = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def normalize(src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | typing.SupportsIndex | None = None, globalscale: typing.SupportsFloat | typing.SupportsIndex = 1.0, globalshift: typing.SupportsFloat | typing.SupportsIndex = 0.0, epsilon: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Normalize operation on the given HIP stream.
     
@@ -1202,7 +1211,7 @@ def normalize(src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsIn
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | None = None, globalscale: typing.SupportsFloat = 1.0, globalshift: typing.SupportsFloat = 0.0, epsilon: typing.SupportsFloat = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | typing.SupportsIndex | None = None, globalscale: typing.SupportsFloat | typing.SupportsIndex = 1.0, globalshift: typing.SupportsFloat | typing.SupportsIndex = 0.0, epsilon: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                   Executes the Normalize operation on the given HIP stream.
       
@@ -1223,6 +1232,38 @@ def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags:
                   
                   Returns:
                       None
+    """
+def reformat(input: Tensor, out_layout: eTensorLayout, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the Reformat operation and returns the result as a new tensor.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+    
+                Args:
+                    input (rocpycv.Tensor): Input tensor to reformat.
+                    out_layout (rocpycv.eTensorLayout): The layout to reformat the input tensor to.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The reformatted tensor.
+    """
+def reformat_into(output: Tensor, input: Tensor, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the Reformat operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+    
+                Args:
+                    output (rocpycv.Tensor): Output tensor to store the result.
+                    input (rocpycv.Tensor): Input tensor to reformat.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    None
     """
 def remap(src: Tensor, map: Tensor, in_interpolation: eInterpolationType, map_interpolation: eInterpolationType, map_value_type: eRemapType, align_corners: bool, border_type: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
@@ -1303,7 +1344,7 @@ def resize_into(dst: Tensor, src: Tensor, interp: eInterpolationType, stream: ro
                 Returns:
                     None
     """
-def rotate(src: Tensor, angle_deg: typing.SupportsFloat, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def rotate(src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Rotate operation on the given HIP stream.
     
@@ -1321,7 +1362,7 @@ def rotate(src: Tensor, angle_deg: typing.SupportsFloat, shift: tuple, interpola
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def rotate_into(dst: Tensor, src: Tensor, angle_deg: typing.SupportsFloat, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def rotate_into(dst: Tensor, src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the Rotate operation on the given HIP stream.
     
@@ -1340,7 +1381,7 @@ def rotate_into(dst: Tensor, src: Tensor, angle_deg: typing.SupportsFloat, shift
                 Returns:
                     None
     """
-def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt | typing.SupportsIndex, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Thresholding operation on the given HIP stream.
     
@@ -1356,7 +1397,7 @@ def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
     """
-def threshold_into(dst: Tensor, src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def threshold_into(dst: Tensor, src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt | typing.SupportsIndex, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the Thresholding operation on the given HIP stream.
     
@@ -1454,5 +1495,65 @@ def warp_perspective_into(dst: Tensor, src: Tensor, xform: list, inverted: bool,
                 
                 Returns:
                     None
-          
     """
+BGR: eChannelType  # value = <eChannelType.BGR: 2>
+BINARY: eThresholdType  # value = <eThresholdType.BINARY: 1>
+BINARY_INV: eThresholdType  # value = <eThresholdType.BINARY_INV: 2>
+BOTH: eAxis  # value = <eAxis.BOTH: -1>
+BT2020: eColorSpec  # value = <eColorSpec.BT2020: 2>
+BT601: eColorSpec  # value = <eColorSpec.BT601: 0>
+BT709: eColorSpec  # value = <eColorSpec.BT709: 1>
+CHW: eTensorLayout  # value = <eTensorLayout.CHW: 10>
+COLOR_BGR2GRAY: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2GRAY: 7>
+COLOR_BGR2RGB: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2RGB: 5>
+COLOR_BGR2YUV: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2YUV: 1>
+COLOR_BGR2YUV_NV12: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2YUV_NV12: 13>
+COLOR_BGR2YUV_NV21: eColorConversionCode  # value = <eColorConversionCode.COLOR_BGR2YUV_NV21: 15>
+COLOR_RGB2BGR: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2BGR: 4>
+COLOR_RGB2GRAY: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2GRAY: 6>
+COLOR_RGB2YUV: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2YUV: 0>
+COLOR_RGB2YUV_NV12: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2YUV_NV12: 12>
+COLOR_RGB2YUV_NV21: eColorConversionCode  # value = <eColorConversionCode.COLOR_RGB2YUV_NV21: 14>
+COLOR_YUV2BGR: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2BGR: 3>
+COLOR_YUV2BGR_NV12: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2BGR_NV12: 9>
+COLOR_YUV2BGR_NV21: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2BGR_NV21: 11>
+COLOR_YUV2RGB: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2RGB: 2>
+COLOR_YUV2RGB_NV12: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2RGB_NV12: 8>
+COLOR_YUV2RGB_NV21: eColorConversionCode  # value = <eColorConversionCode.COLOR_YUV2RGB_NV21: 10>
+CONSTANT: eBorderType  # value = <eBorderType.CONSTANT: 0>
+CPU: eDeviceType  # value = <eDeviceType.CPU: 1>
+CUBIC: eInterpolationType  # value = <eInterpolationType.CUBIC: 2>
+F32: eDataType  # value = <eDataType.F32: 6>
+F64: eDataType  # value = <eDataType.F64: 7>
+GPU: eDeviceType  # value = <eDeviceType.GPU: 0>
+Grayscale: eChannelType  # value = <eChannelType.Grayscale: 16>
+HWC: eTensorLayout  # value = <eTensorLayout.HWC: 1>
+LINEAR: eInterpolationType  # value = <eInterpolationType.LINEAR: 1>
+N: eTensorLayout  # value = <eTensorLayout.N: 4>
+NC: eTensorLayout  # value = <eTensorLayout.NC: 2>
+NCHW: eTensorLayout  # value = <eTensorLayout.NCHW: 8>
+NEAREST: eInterpolationType  # value = <eInterpolationType.NEAREST: 0>
+NHWC: eTensorLayout  # value = <eTensorLayout.NHWC: 0>
+NW: eTensorLayout  # value = <eTensorLayout.NW: 3>
+NWC: eTensorLayout  # value = <eTensorLayout.NWC: 9>
+REFLECT: eBorderType  # value = <eBorderType.REFLECT: 2>
+REFLECT101: eBorderType  # value = <eBorderType.REFLECT101: 3>
+REMAP_ABSOLUTE: eRemapType  # value = <eRemapType.REMAP_ABSOLUTE: 0>
+REMAP_ABSOLUTE_NORMALIZED: eRemapType  # value = <eRemapType.REMAP_ABSOLUTE_NORMALIZED: 1>
+REMAP_RELATIVE_NORMALIZED: eRemapType  # value = <eRemapType.REMAP_RELATIVE_NORMALIZED: 2>
+REPLICATE: eBorderType  # value = <eBorderType.REPLICATE: 1>
+RGB: eChannelType  # value = <eChannelType.RGB: 1>
+S16: eDataType  # value = <eDataType.S16: 3>
+S32: eDataType  # value = <eDataType.S32: 5>
+S8: eDataType  # value = <eDataType.S8: 1>
+TOZERO: eThresholdType  # value = <eThresholdType.TOZERO: 8>
+TOZERO_INV: eThresholdType  # value = <eThresholdType.TOZERO_INV: 16>
+TRUNC: eThresholdType  # value = <eThresholdType.TRUNC: 4>
+U16: eDataType  # value = <eDataType.U16: 2>
+U32: eDataType  # value = <eDataType.U32: 4>
+U8: eDataType  # value = <eDataType.U8: 0>
+WRAP: eBorderType  # value = <eBorderType.WRAP: 4>
+X: eAxis  # value = <eAxis.X: 0>
+Y: eAxis  # value = <eAxis.Y: 1>
+YUV: eChannelType  # value = <eChannelType.YUV: 4>
+YVU: eChannelType  # value = <eChannelType.YVU: 8>
