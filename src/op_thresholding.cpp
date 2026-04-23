@@ -34,14 +34,16 @@ THE SOFTWARE.
 
 namespace roccv {
 Threshold::Threshold(eThresholdType threshType, int32_t maxBatchSize)
-    : m_threshType(threshType), m_maxBatchSize(maxBatchSize) {}
+    : m_threshType(threshType), m_maxBatchSize(maxBatchSize) {
+    // TODO: Determine if we still require m_maxBatchSize.
+    (void)m_maxBatchSize;
+}
 
 Threshold::~Threshold() {}
 
 template <typename T>
 void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &thresh,
-                              const Tensor &maxVal, eThresholdType m_threshType, int32_t m_maxBatchSize,
-                              eDeviceType device) {
+                              const Tensor &maxVal, eThresholdType m_threshType, eDeviceType device) {
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 
@@ -49,67 +51,51 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
     const auto width = input.shape()[input.shape().layout().width_index()];
 
     if (device == eDeviceType::GPU) {
-        switch (m_threshType) {
-            case THRESH_BINARY: {
-                dim3 block = detail::GetBlockSize2D();
-                dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
-                Kernels::Device::binary_generic<<<grid, block, 0, stream>>>(
-                    inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                    GenericTensorWrapper<double>(maxVal), m_maxBatchSize);
-                break;
-            }
-            case THRESH_BINARY_INV: {
-                dim3 block = detail::GetBlockSize2D();
-                dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
-                Kernels::Device::binary_inv_generic<<<grid, block, 0, stream>>>(
-                    inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                    GenericTensorWrapper<double>(maxVal), m_maxBatchSize);
-                break;
-            }
-            case THRESH_TRUNC: {
-                dim3 block = detail::GetBlockSize2D();
-                dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
-                Kernels::Device::trunc_generic<<<grid, block, 0, stream>>>(
-                    inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh), m_maxBatchSize);
-                break;
-            }
-            case THRESH_TOZERO: {
-                dim3 block = detail::GetBlockSize2D();
-                dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
-                Kernels::Device::tozero_generic<<<grid, block, 0, stream>>>(
-                    inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh), m_maxBatchSize);
-                break;
-            }
-            case THRESH_TOZERO_INV: {
-                dim3 block = detail::GetBlockSize2D();
-                dim3 grid = detail::GetGridSize2D(width, height, m_maxBatchSize, block);
-                Kernels::Device::tozeroinv_generic<<<grid, block, 0, stream>>>(
-                    inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh), m_maxBatchSize);
-                break;
-            }
-        }
+        dim3 block = detail::GetBlockSize2D();
+        dim3 grid = detail::GetGridSize2D(width, height, outputWrapper.batches(), block);
 
+        switch (m_threshType) {
+            case THRESH_BINARY:
+                Kernels::Device::binary_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
+                                                                            GenericTensorWrapper<double>(thresh),
+                                                                            GenericTensorWrapper<double>(maxVal));
+                break;
+            case THRESH_BINARY_INV:
+                Kernels::Device::binary_inv_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
+                                                                                GenericTensorWrapper<double>(thresh),
+                                                                                GenericTensorWrapper<double>(maxVal));
+                break;
+            case THRESH_TRUNC:
+                Kernels::Device::trunc_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
+                                                                           GenericTensorWrapper<double>(thresh));
+                break;
+            case THRESH_TOZERO:
+                Kernels::Device::tozero_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
+                                                                            GenericTensorWrapper<double>(thresh));
+                break;
+            case THRESH_TOZERO_INV:
+                Kernels::Device::tozeroinv_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
+                                                                               GenericTensorWrapper<double>(thresh));
+                break;
+        }
     } else if (device == eDeviceType::CPU) {
         switch (m_threshType) {
             case THRESH_BINARY:
                 Kernels::Host::binary_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                                              GenericTensorWrapper<double>(maxVal), m_maxBatchSize);
+                                              GenericTensorWrapper<double>(maxVal));
                 break;
             case THRESH_BINARY_INV:
                 Kernels::Host::binary_inv_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                                                  GenericTensorWrapper<double>(maxVal), m_maxBatchSize);
+                                                  GenericTensorWrapper<double>(maxVal));
                 break;
             case THRESH_TRUNC:
-                Kernels::Host::trunc_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                                             m_maxBatchSize);
+                Kernels::Host::trunc_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh));
                 break;
             case THRESH_TOZERO:
-                Kernels::Host::tozero_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                                              m_maxBatchSize);
+                Kernels::Host::tozero_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh));
                 break;
             case THRESH_TOZERO_INV:
-                Kernels::Host::tozeroinv_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
-                                                 m_maxBatchSize);
+                Kernels::Host::tozeroinv_generic(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh));
                 break;
         }
     }
@@ -141,17 +127,15 @@ void Threshold::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == input.shape(input.layout().batch_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) ==
-                            input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) == input.shape(input.layout().width_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) == input.shape(input.layout().height_index()));
-    CHECK_TENSOR_COMPARISON(m_maxBatchSize == input.shape(input.layout().batch_index()));
+
+    // Ensure the threshold and max value tensors have the same batch size as the input tensor.
+    CHECK_TENSOR_COMPARISON(thresh.shape("N") == input.shape("N"));
+    CHECK_TENSOR_COMPARISON(maxVal.shape("N") == input.shape("N"));
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const Tensor &, eThresholdType, int32_t, eDeviceType)>, 4>>
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const Tensor &, const Tensor &, eThresholdType, eDeviceType)>, 4>>
         funcs = 
         {
             {eDataType::DATA_TYPE_U8, {dispatch_threshold_dtype<uchar1>, 0, dispatch_threshold_dtype<uchar3>, dispatch_threshold_dtype<uchar4>}},
@@ -163,6 +147,6 @@ void Threshold::operator()(hipStream_t stream, const Tensor &input, const Tensor
     // clang-format on
 
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
-    func(stream, input, output, thresh, maxVal, m_threshType, m_maxBatchSize, device);
+    func(stream, input, output, thresh, maxVal, m_threshType, device);
 }
 }  // namespace roccv

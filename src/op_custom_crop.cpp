@@ -63,8 +63,8 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
                            DATA_TYPE_S32, DATA_TYPE_F32, DATA_TYPE_F64);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
 
-    size_t batchSize = input.shape(input.layout().batch_index());
-    size_t channels = input.shape(input.layout().channels_index());
+    auto batchSize = input.shape(input.layout().batch_index());
+    auto channels = input.shape(input.layout().channels_index());
 
     CHECK_TENSOR_DEVICE(output, device);
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());

@@ -23,16 +23,37 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+#include "core/detail/internal_structs.hpp"
+#include "operator_types.h"
 
 namespace Kernels {
 namespace Host {
+
+using namespace roccv::detail;
+    
 template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
-void remap(SrcWrapper input, DstWrapper output, MapWrapper map) {
+void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int mapBatchSize, RemapParams params) {
+    
+    float2 srcCoord = make_float2(0.f, 0.f);
+    float2 mapCoord = make_float2(0.f, 0.f);
+    float2 dstCoord = make_float2(0.f, 0.f);
+    
     for (int b = 0; b < output.batches(); b++) {
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
-                float2 mapCoordinates = map.at(b, y, x, 0);
-                output.at(b, y, x, 0) = input.at(b, mapCoordinates.y, mapCoordinates.x, 0);
+                
+                dstCoord.x = static_cast<float>(x);
+                dstCoord.y = static_cast<float>(y);
+                
+                mapCoord.x = (dstCoord.x + params.dstOffset) * params.mapScale.x;
+                mapCoord.y = (dstCoord.y + params.dstOffset) * params.mapScale.y;
+                
+                float2 mapValue = map.at((mapBatchSize == 1 ? 0 : b), mapCoord.y, mapCoord.x, 0);
+
+                srcCoord.x = dstCoord.x * params.srcScale.x + mapValue.x * params.valScale.x + params.srcOffset.x;
+                srcCoord.y = dstCoord.y * params.srcScale.y + mapValue.y * params.valScale.y + params.srcOffset.y;
+
+                output.at(b, y, x, 0) = input.at(b, srcCoord.y, srcCoord.x, 0);
             }
         }
     }

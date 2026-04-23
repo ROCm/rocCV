@@ -102,19 +102,19 @@ endif()
 if(CMAKE_BUILD_TYPE MATCHES Debug)
 	# -O0 		-- Don't Optimize output file
 	# -g  		-- generate debugging information --- dwarf-4 for making valgrind work
-    # -Wall     -- Print all warnings
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -gdwarf-4")
 else()
 	# -O3       -- Optimize output file
 	# -DNDEBUG  -- turn off asserts
 	# -fPIC     -- Generate position-independent code if possible
-    # -Wall     -- Print all warnings
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -fPIC")
 endif()
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
 
 # Set all warnings
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-copy-with-user-provided-copy")
+# -Wall                -- Print all warnings
+# -Wextra              -- Print extra warnings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
 # Enable LLVM code coverage if build type is Debug and ENABLE_CODE_COVERAGE is set.
 if(ENABLE_CODE_COVERAGE AND CMAKE_BUILD_TYPE MATCHES Debug)

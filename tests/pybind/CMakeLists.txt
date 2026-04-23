@@ -2,7 +2,7 @@
 #
 # MIT License
 #
-# Copyright (c) 2023 Advanced Micro Devices, Inc.
+# Copyright (c) 2026 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
 # SOFTWARE.
 #
 ################################################################################
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.15)
 
 project(roccv-pybind-test)
 
@@ -129,63 +129,70 @@ if(Python3_FOUND AND ROCCV_PYBIND_SCRIPTS)
   )
   set_property(TEST roccv_pybind_test_op_cvt_color PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 11 - Test:OP -- Composite
+  # 11 - Test:OP -- Advanced Color Convert
+  add_test(NAME roccv_pybind_test_op_adv_cvt_color
+    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_adv_cvt_color.py ${PYTEST_FLAGS}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  )
+  set_property(TEST roccv_pybind_test_op_adv_cvt_color PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
+
+  # 12 - Test:OP -- Composite
   add_test(NAME roccv_pybind_test_op_composite
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_composite.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_composite PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 12 - Test:OP -- Custom Crop
+  # 13 - Test:OP -- Custom Crop
   add_test(NAME roccv_pybind_test_op_custom_crop
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_custom_crop.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_custom_crop PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 13 - Test:OP -- Flip
+  # 14 - Test:OP -- Flip
   add_test(NAME roccv_pybind_test_op_flip
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_flip.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_flip PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 14 - Test:OP -- Gamma Contrast
+  # 15 - Test:OP -- Gamma Contrast
   add_test(NAME roccv_pybind_test_op_gamma_contrast
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_gamma_contrast.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_gamma_contrast PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 15 - Test:OP -- Remap
+  # 16 - Test:OP -- Remap
   add_test(NAME roccv_pybind_test_op_remap
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_remap.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_remap PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 16 - Test:OP -- Resize
+  # 17 - Test:OP -- Resize
   add_test(NAME roccv_pybind_test_op_resize
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_resize.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_resize PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 17 - Test:OP -- Warp Affine
+  # 18 - Test:OP -- Warp Affine
   add_test(NAME roccv_pybind_test_op_warp_affine
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_warp_affine.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_warp_affine PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 18 - Test:OP -- CopyMakeBorder
+  # 19 - Test:OP -- CopyMakeBorder
   add_test(NAME roccv_pybind_test_op_copy_make_border
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_copy_make_border.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   )
   set_property(TEST roccv_pybind_test_op_copy_make_border PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 19 - Test:OP -- Center Crop
+  # 20 - Test:OP -- Center Crop
   add_test(NAME roccv_pybind_test_op_center_crop
     COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_center_crop.py ${PYTEST_FLAGS}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

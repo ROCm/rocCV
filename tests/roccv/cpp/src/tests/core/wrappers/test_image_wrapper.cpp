@@ -70,6 +70,8 @@ void TestImageWrapperConstructor(int imageCount, Size2D imageSize, ImageFormat f
 }  // namespace
 
 int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
     TEST_CASES_BEGIN();
 
     TEST_CASE(TestImageWrapperConstructor<uchar3>(2, {54, 67}, FMT_RGB8));

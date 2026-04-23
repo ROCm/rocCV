@@ -35,12 +35,12 @@ PyTensor PyOpWarpPerspective::Execute(PyTensor& input, py::list xform, bool isIn
 
     // Ensure xform is of the correct size.
     if (xform.size() != 9) {
-        std::runtime_error("xform must be of size 9.");
+        throw std::runtime_error("xform must be of size 9.");
     }
 
     // Copy list contents into perspective transform matrix
     PerspectiveTransform perspectiveTransform;
-    for (int i = 0; i < xform.size(); i++) {
+    for (size_t i = 0; i < xform.size(); i++) {
         perspectiveTransform[i] = xform[i].cast<float>();
     }
 
@@ -58,12 +58,12 @@ void PyOpWarpPerspective::ExecuteInto(PyTensor& output, PyTensor& input, py::lis
 
     // Ensure xform is of the correct size.
     if (xform.size() != 9) {
-        std::runtime_error("xform must be of size 9.");
+        throw std::runtime_error("xform must be of size 9.");
     }
 
     // Copy list contents into perspective transform matrix
     PerspectiveTransform perspectiveTransform;
-    for (int i = 0; i < xform.size(); i++) {
+    for (size_t i = 0; i < xform.size(); i++) {
         perspectiveTransform[i] = xform[i].cast<float>();
     }
 
