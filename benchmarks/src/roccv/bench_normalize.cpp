@@ -89,6 +89,8 @@ static roccvbench::BenchmarkResults RunNormalizeBenchmark(roccvbench::BenchmarkP
 
 // GPU benchmarks
 DEFINE_NORMALIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_RGB8, FMT_RGB8);
+DEFINE_NORMALIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_U8, FMT_U8);
+DEFINE_NORMALIZE_BENCHMARK(GPU, eDeviceType::GPU, FMT_F32, FMT_F32);
 
 // CPU benchmarks
 DEFINE_NORMALIZE_BENCHMARK(CPU, eDeviceType::CPU, FMT_RGB8, FMT_RGB8);
