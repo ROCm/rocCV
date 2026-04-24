@@ -60,7 +60,7 @@ Useful options (see `--help` for the full list):
 
 ### Analyzing Results
 
-`benchmarks/analyze_results.py` reads the raw CSV and serves two purposes:
+`benchmarks/analyze_results.py` reads the raw CSV and serves two purposes. Run it **from the rocCV project root** — the example paths below (`benchmarks/analyze_results.py`, `build/results.csv`) are relative to that directory. Adjust them if you invoke from elsewhere.
 
 **1. Inspection** — print per-group statistics so you can see how noisy each configuration was.
 
@@ -72,7 +72,7 @@ python3 benchmarks/analyze_results.py build/results.csv --category Resize --show
 
 For each group of repeated runs, the table reports `n`, `mean`, `median`, `std`, `cv` (std/mean), `min`, `max`, `range/med`, and the count of samples each outlier rule would flag (`>2σ` and `>1.5·IQR`). `--show-runs` additionally dumps every per-run timing in execution order — useful for spotting drift.
 
-**2. Export** — collapse to one row per configuration with outliers removed.
+**2. Export** — collapse to one row per configuration with outliers removed. Each output row carries the host/device metadata (`gpu`, `cpu`, `cpu_threads`) so the file is self-describing for downstream consumers.
 
 ```bash
 python3 benchmarks/analyze_results.py build/results.csv --export build/results_clean.csv
