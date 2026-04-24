@@ -26,8 +26,10 @@
 #include <hip/hip_runtime.h>
 
 #include <chrono>
+#include <limits>
 #include <random>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
