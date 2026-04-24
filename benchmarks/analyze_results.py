@@ -190,8 +190,9 @@ def collapsed_row(group: pd.DataFrame, key_columns: list[str], rule: str) -> dic
     return row
 
 
-def export_cleaned(df: pd.DataFrame, output_path: str, rule: str) -> tuple[int, int]:
-    """Write a collapsed CSV. Returns (n_groups, n_total_dropped)."""
+def export_cleaned(df: pd.DataFrame, output_path: str, rule: str, metadata: dict) -> tuple[int, int]:
+    """Write a collapsed CSV. Each row carries the host/device metadata so the
+    file is self-describing for downstream consumers. Returns (n_groups, n_total_dropped)."""
     rows: list[dict] = []
     total_dropped = 0
     for cat in sorted(df["category"].dropna().unique()):
@@ -199,6 +200,7 @@ def export_cleaned(df: pd.DataFrame, output_path: str, rule: str) -> tuple[int, 
         keys = group_key_columns(sub)
         for _, group in sub.groupby(keys, dropna=False, sort=False):
             row = collapsed_row(group, keys, rule)
+            row.update(metadata)
             total_dropped += row["n_dropped"]
             rows.append(row)
     pd.DataFrame(rows).to_csv(output_path, index=False)
@@ -263,7 +265,7 @@ def main() -> int:
         print()
 
     if args.export:
-        n_groups, n_dropped = export_cleaned(df, args.export, args.outlier_rule)
+        n_groups, n_dropped = export_cleaned(df, args.export, args.outlier_rule, metadata)
         print(
             f"Exported {n_groups} groups to {args.export} "
             f"(rule={args.outlier_rule}, samples dropped={n_dropped})."
