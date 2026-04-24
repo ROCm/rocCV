@@ -86,7 +86,7 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
                 HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 

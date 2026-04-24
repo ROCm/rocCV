@@ -51,7 +51,7 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
                 cv::copyMakeBorder(mats[i], outputs[i], top, top, left, left, border, 0);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
 
     return results;
 }

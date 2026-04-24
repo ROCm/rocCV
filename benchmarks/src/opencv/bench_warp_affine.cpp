@@ -54,7 +54,7 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
                                0);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
     return results;
 }
 

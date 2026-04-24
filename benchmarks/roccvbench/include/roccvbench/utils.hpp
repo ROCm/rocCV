@@ -79,24 +79,22 @@ T GetParamValue(const BenchmarkParamsList& params, const std::string& key) {
 }
 
 /**
- * @brief Records the execution time in seconds of a block of code <code> by running it <numRuns> times and taking
- * the mean of the results. The resulting mean is written to <executionTime>.
- *
+ * @brief Records the execution time in seconds of a block of code <code> by running it <numRuns> + <warmupRuns>
+ * times. The first <warmupRuns> iterations are discarded; each subsequent run's wall-clock duration (in seconds)
+ * is appended to <executionTimes>, preserving execution order so downstream tooling can run its own statistical
+ * analysis on the raw samples.
  */
-#define ROCCV_BENCH_RECORD_BLOCK(code, executionTime, numRuns, warmupRuns)                                      \
-    {                                                                                                           \
-        double totalExecutionTime = 0.0;                                                                        \
-        int numValidRuns = 0;                                                                                   \
-        for (int i = 0; i < numRuns + warmupRuns; i++) {                                                        \
-            auto blockStart = std::chrono::high_resolution_clock::now();                                        \
-            code;                                                                                               \
-            auto blockEnd = std::chrono::high_resolution_clock::now();                                          \
-            if (i >= warmupRuns) {                                                                              \
-                totalExecutionTime += std::chrono::duration<double, std::milli>(blockEnd - blockStart).count(); \
-                numValidRuns++;                                                                                 \
-            }                                                                                                   \
-        }                                                                                                       \
-        executionTime = (totalExecutionTime / numValidRuns) / 1000.0;                                           \
+#define ROCCV_BENCH_RECORD_BLOCK(code, executionTimes, numRuns, warmupRuns)                                  \
+    {                                                                                                        \
+        for (int i = 0; i < numRuns + warmupRuns; i++) {                                                     \
+            auto blockStart = std::chrono::high_resolution_clock::now();                                     \
+            code;                                                                                            \
+            auto blockEnd = std::chrono::high_resolution_clock::now();                                       \
+            if (i >= warmupRuns) {                                                                           \
+                executionTimes.push_back(                                                                    \
+                    std::chrono::duration<double, std::milli>(blockEnd - blockStart).count() / 1000.0);      \
+            }                                                                                                \
+        }                                                                                                    \
     }
 
 }  // namespace roccvbench

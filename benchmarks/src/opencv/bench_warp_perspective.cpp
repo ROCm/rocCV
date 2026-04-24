@@ -54,7 +54,7 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
                                     cv::BORDER_CONSTANT, 0);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
     return results;
 }
 

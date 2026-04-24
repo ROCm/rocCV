@@ -56,7 +56,7 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
                 cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputs[i]);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
     return results;
 }
 

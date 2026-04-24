@@ -50,7 +50,7 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
                 cv::cvtColor(mats[i], outputs[i], code);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
     return results;
 }
 

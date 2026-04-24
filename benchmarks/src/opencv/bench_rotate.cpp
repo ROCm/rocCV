@@ -49,7 +49,7 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
                 cv::rotate(mats[i], outputs[i], rotate_flag);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
 
     return results;
 }

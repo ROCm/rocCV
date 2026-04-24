@@ -50,7 +50,7 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
                 cv::flip(mats[i], outputs[i], flipType);
             }
         },
-        results.executionTime, runs, warmupRuns);
+        results.executionTimes, runs, warmupRuns);
     return results;
 }
 
