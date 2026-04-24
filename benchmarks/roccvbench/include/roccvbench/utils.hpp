@@ -21,14 +21,26 @@
 
 #pragma once
 
+#include <core/hip_assert.h>
+#include <core/util_enums.h>
+#include <hip/hip_runtime.h>
+
 #include <chrono>
+#include <limits>
 #include <random>
 #include <stdexcept>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "structs.hpp"
 
 namespace roccvbench {
+
+/// Fixed seed used by every random source in the benchmark suite so input data
+/// is byte-for-byte identical across collection sessions. Pinning this removes
+/// data-dependent operators (e.g., threshold) as a source of run-to-run variance.
+inline constexpr unsigned long long kBenchSeed = 0xC0FFEEULL;
 
 /**
  * @brief Generates a one-dimensional vector of the given size and type.
@@ -39,8 +51,7 @@ namespace roccvbench {
  */
 template <typename T>
 std::vector<T> RandVector(size_t size) {
-    std::random_device dev;
-    std::mt19937 gen(dev());
+    std::mt19937 gen(static_cast<std::mt19937::result_type>(kBenchSeed));
     std::vector<T> result(size);
 
     if constexpr (std::is_floating_point_v<T>) {
@@ -78,25 +89,78 @@ T GetParamValue(const BenchmarkParamsList& params, const std::string& key) {
     throw std::runtime_error("Parameter not found: " + key);
 }
 
-/**
- * @brief Records the execution time in seconds of a block of code <code> by running it <numRuns> times and taking
- * the mean of the results. The resulting mean is written to <executionTime>.
- *
- */
-#define ROCCV_BENCH_RECORD_BLOCK(code, executionTime, numRuns, warmupRuns)                                      \
-    {                                                                                                           \
-        double totalExecutionTime = 0.0;                                                                        \
-        int numValidRuns = 0;                                                                                   \
-        for (int i = 0; i < numRuns + warmupRuns; i++) {                                                        \
-            auto blockStart = std::chrono::high_resolution_clock::now();                                        \
-            code;                                                                                               \
-            auto blockEnd = std::chrono::high_resolution_clock::now();                                          \
-            if (i >= warmupRuns) {                                                                              \
-                totalExecutionTime += std::chrono::duration<double, std::milli>(blockEnd - blockStart).count(); \
-                numValidRuns++;                                                                                 \
-            }                                                                                                   \
-        }                                                                                                       \
-        executionTime = (totalExecutionTime / numValidRuns) / 1000.0;                                           \
+namespace detail {
+
+// Per-run timer. CPU specialization uses a monotonic host clock; GPU
+// specialization uses HIP events so the recorded interval is the kernel's
+// device-side execution time, exclusive of host scheduling and stream-sync
+// overhead.
+template <eDeviceType DeviceType>
+class RunTimer;
+
+template <>
+class RunTimer<eDeviceType::CPU> {
+   public:
+    void start(hipStream_t /*stream*/) { startTime_ = std::chrono::steady_clock::now(); }
+    double stopSeconds(hipStream_t /*stream*/) {
+        return std::chrono::duration<double>(std::chrono::steady_clock::now() - startTime_).count();
     }
+
+   private:
+    std::chrono::steady_clock::time_point startTime_;
+};
+
+template <>
+class RunTimer<eDeviceType::GPU> {
+   public:
+    RunTimer() {
+        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&startEvent_));
+        HIP_VALIDATE_NO_ERRORS(hipEventCreate(&stopEvent_));
+    }
+    ~RunTimer() {
+        // Best-effort cleanup; nothing useful to do with errors during destruction.
+        (void)hipEventDestroy(startEvent_);
+        (void)hipEventDestroy(stopEvent_);
+    }
+    RunTimer(const RunTimer&) = delete;
+    RunTimer& operator=(const RunTimer&) = delete;
+
+    void start(hipStream_t stream) { HIP_VALIDATE_NO_ERRORS(hipEventRecord(startEvent_, stream)); }
+    double stopSeconds(hipStream_t stream) {
+        HIP_VALIDATE_NO_ERRORS(hipEventRecord(stopEvent_, stream));
+        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(stopEvent_));
+        float ms = 0.0f;
+        HIP_VALIDATE_NO_ERRORS(hipEventElapsedTime(&ms, startEvent_, stopEvent_));
+        return static_cast<double>(ms) / 1000.0;
+    }
+
+   private:
+    hipEvent_t startEvent_, stopEvent_;
+};
+
+}  // namespace detail
+
+/**
+ * @brief Runs `fn` (numRuns + warmupRuns) times. The first `warmupRuns` iterations are discarded; each subsequent
+ * run's elapsed time (in seconds) is appended to `executionTimes` in execution order. The CPU instantiation uses
+ * std::chrono::steady_clock; the GPU instantiation uses HIP events so the recorded interval reflects on-device
+ * kernel time only.
+ */
+template <eDeviceType DeviceType, typename Fn>
+inline void RecordRuns(hipStream_t stream, int numRuns, int warmupRuns, std::vector<double>& executionTimes, Fn&& fn) {
+    detail::RunTimer<DeviceType> timer;
+    for (int i = 0; i < numRuns + warmupRuns; i++) {
+        timer.start(stream);
+        fn();
+        const double t = timer.stopSeconds(stream);
+        if (i >= warmupRuns) executionTimes.push_back(t);
+    }
+}
+
+/// CPU-only convenience overload for benchmarks that don't have a HIP stream (e.g., OpenCV).
+template <typename Fn>
+inline void RecordRunsCpu(int numRuns, int warmupRuns, std::vector<double>& executionTimes, Fn&& fn) {
+    RecordRuns<eDeviceType::CPU>(nullptr, numRuns, warmupRuns, executionTimes, std::forward<Fn>(fn));
+}
 
 }  // namespace roccvbench

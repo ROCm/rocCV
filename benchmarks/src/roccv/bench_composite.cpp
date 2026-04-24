@@ -67,14 +67,8 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(stream, foreground, background, mask, output, DeviceType);
-            if constexpr (DeviceType == eDeviceType::GPU) {
-                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-            }
-        },
-        results.executionTime, runs, warmupRuns);
+    roccvbench::RecordRuns<DeviceType>(stream, runs, warmupRuns, results.executionTimes,
+                                       [&]() { op(stream, foreground, background, mask, output, DeviceType); });
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
