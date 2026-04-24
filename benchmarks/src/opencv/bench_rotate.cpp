@@ -43,13 +43,11 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::rotate(mats[i], outputs[i], rotate_flag);
-            }
-        },
-        results.executionTimes, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < mats.size(); i++) {
+            cv::rotate(mats[i], outputs[i], rotate_flag);
+        }
+    });
 
     return results;
 }

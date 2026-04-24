@@ -44,13 +44,11 @@ static roccvbench::BenchmarkResults RunCvtColorBenchmark(roccvbench::BenchmarkPa
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::cvtColor(mats[i], outputs[i], code);
-            }
-        },
-        results.executionTimes, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < mats.size(); i++) {
+            cv::cvtColor(mats[i], outputs[i], code);
+        }
+    });
     return results;
 }
 

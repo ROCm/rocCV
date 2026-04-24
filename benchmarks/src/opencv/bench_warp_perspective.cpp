@@ -47,14 +47,12 @@ static roccvbench::BenchmarkResults RunWarpPerspectiveBenchmark(roccvbench::Benc
     RegisterMemoryUsage(transform, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::warpPerspective(mats[i], outputs[i], transform, outputs[i].size(), cv::INTER_LINEAR,
-                                    cv::BORDER_CONSTANT, 0);
-            }
-        },
-        results.executionTimes, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < mats.size(); i++) {
+            cv::warpPerspective(mats[i], outputs[i], transform, outputs[i].size(), cv::INTER_LINEAR,
+                                cv::BORDER_CONSTANT, 0);
+        }
+    });
     return results;
 }
 

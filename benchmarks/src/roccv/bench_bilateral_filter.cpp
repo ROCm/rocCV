@@ -63,14 +63,9 @@ static roccvbench::BenchmarkResults RunBilateralFilterBenchmark(roccvbench::Benc
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(stream, input, output, diameter, sigmaColor, sigmaSpace, border, borderValue, DeviceType);
-            if constexpr (DeviceType == eDeviceType::GPU) {
-                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-            }
-        },
-        results.executionTimes, runs, warmupRuns);
+    roccvbench::RecordRuns<DeviceType>(stream, runs, warmupRuns, results.executionTimes, [&]() {
+        op(stream, input, output, diameter, sigmaColor, sigmaSpace, border, borderValue, DeviceType);
+    });
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 

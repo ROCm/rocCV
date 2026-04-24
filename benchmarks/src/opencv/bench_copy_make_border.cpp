@@ -45,13 +45,11 @@ static roccvbench::BenchmarkResults RunCopyMakeBorderBenchmark(roccvbench::Bench
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::copyMakeBorder(mats[i], outputs[i], top, top, left, left, border, 0);
-            }
-        },
-        results.executionTimes, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < mats.size(); i++) {
+            cv::copyMakeBorder(mats[i], outputs[i], top, top, left, left, border, 0);
+        }
+    });
 
     return results;
 }

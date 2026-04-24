@@ -79,14 +79,8 @@ static roccvbench::BenchmarkResults RunRotateBenchmark(roccvbench::BenchmarkPara
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            op(stream, input, output, angle, shift, interpolation, DeviceType);
-            if constexpr (DeviceType == eDeviceType::GPU) {
-                HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-            }
-        },
-        results.executionTimes, runs, warmupRuns);
+    roccvbench::RecordRuns<DeviceType>(stream, runs, warmupRuns, results.executionTimes,
+                                       [&]() { op(stream, input, output, angle, shift, interpolation, DeviceType); });
 
     HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
 
