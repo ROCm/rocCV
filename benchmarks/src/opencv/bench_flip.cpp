@@ -44,13 +44,11 @@ static roccvbench::BenchmarkResults RunFlipBenchmark(roccvbench::BenchmarkParams
     RegisterMemoryUsage(mats, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::flip(mats[i], outputs[i], flipType);
-            }
-        },
-        results.executionTime, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < mats.size(); i++) {
+            cv::flip(mats[i], outputs[i], flipType);
+        }
+    });
     return results;
 }
 

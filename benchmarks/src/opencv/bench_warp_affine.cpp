@@ -47,14 +47,11 @@ static roccvbench::BenchmarkResults RunWarpAffineBenchmark(roccvbench::Benchmark
     RegisterMemoryUsage(affineMat, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < mats.size(); i++) {
-                cv::warpAffine(mats[i], outputs[i], affineMat, outputs[i].size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT,
-                               0);
-            }
-        },
-        results.executionTime, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < mats.size(); i++) {
+            cv::warpAffine(mats[i], outputs[i], affineMat, outputs[i].size(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, 0);
+        }
+    });
     return results;
 }
 
