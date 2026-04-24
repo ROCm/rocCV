@@ -26,6 +26,7 @@
 #include <format>
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "results.hpp"
 
@@ -33,10 +34,10 @@ namespace roccvbench {
 
 /**
  * @brief Acts as the return value for benchmark units. Contains information pertaining to the benchmark results.
- *
+ * `executionTimes` holds one entry per timed (non-warmup) run, in seconds, in execution order.
  */
 struct BenchmarkResults {
-    double executionTime = 0.0;
+    std::vector<double> executionTimes;
     size_t readMemoryBytes = 0;
     size_t writtenMemoryBytes = 0;
 };
