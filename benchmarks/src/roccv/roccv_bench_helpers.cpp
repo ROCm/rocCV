@@ -30,23 +30,28 @@
 #include <unordered_map>
 
 namespace {
+#define ROCRAND_CHECK(status)                                                 \
+    if (status != rocrand_status::ROCRAND_STATUS_SUCCESS) {                   \
+        throw std::runtime_error("ROCRAND error: " + std::to_string(status)); \
+    }
 
 class RandomGenerator {
    public:
     RandomGenerator(eDeviceType device) {
         switch (device) {
             case eDeviceType::GPU: {
-                rocrand_create_generator(&m_gen, ROCRAND_RNG_PSEUDO_DEFAULT);
+                ROCRAND_CHECK(rocrand_create_generator(&m_gen, ROCRAND_RNG_PSEUDO_DEFAULT));
                 break;
             }
             case eDeviceType::CPU: {
-                rocrand_create_generator_host_blocking(&m_gen, ROCRAND_RNG_PSEUDO_DEFAULT);
+                ROCRAND_CHECK(rocrand_create_generator_host_blocking(&m_gen, ROCRAND_RNG_PSEUDO_DEFAULT));
                 break;
             }
             default: {
                 throw std::runtime_error("Unsupported device type.");
             }
         }
+        ROCRAND_CHECK(rocrand_set_seed(m_gen, roccvbench::kBenchSeed));
     }
 
     /**
