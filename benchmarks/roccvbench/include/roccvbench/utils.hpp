@@ -35,6 +35,11 @@
 
 namespace roccvbench {
 
+/// Fixed seed used by every random source in the benchmark suite so input data
+/// is byte-for-byte identical across collection sessions. Pinning this removes
+/// data-dependent operators (e.g., threshold) as a source of run-to-run variance.
+inline constexpr unsigned long long kBenchSeed = 0xC0FFEEULL;
+
 /**
  * @brief Generates a one-dimensional vector of the given size and type.
  *
@@ -44,8 +49,7 @@ namespace roccvbench {
  */
 template <typename T>
 std::vector<T> RandVector(size_t size) {
-    std::random_device dev;
-    std::mt19937 gen(dev());
+    std::mt19937 gen(static_cast<std::mt19937::result_type>(kBenchSeed));
     std::vector<T> result(size);
 
     if constexpr (std::is_floating_point_v<T>) {

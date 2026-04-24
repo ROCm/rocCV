@@ -47,6 +47,7 @@ class RandomGenerator {
                 throw std::runtime_error("Unsupported device type.");
             }
         }
+        rocrand_set_seed(m_gen, roccvbench::kBenchSeed);
     }
 
     /**
