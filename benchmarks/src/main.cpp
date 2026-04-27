@@ -349,26 +349,32 @@ int main(int argc, char** argv) {
 
                     auto result = benchmark.func(params);
 
-                    roccvbench::RunData runData;
+                    // Emit one row per timed run so downstream tooling can perform its own
+                    // statistical analysis on the raw samples instead of a pre-aggregated mean.
+                    for (size_t runIdx = 0; runIdx < result.executionTimes.size(); ++runIdx) {
+                        roccvbench::RunData runData;
 
-                    // Inject benchmark params into runData
-                    for (const auto& param : benchmark.params) {
-                        runData.addValue(param.key, param.strValue);
+                        // Inject benchmark params into runData
+                        for (const auto& param : benchmark.params) {
+                            runData.addValue(param.key, param.strValue);
+                        }
+
+                        runData.addValue("samples", config.samples);
+                        runData.addValue("height", config.height);
+                        runData.addValue("width", config.width);
+                        runData.addValue("runs", config.runs);
+                        runData.addValue("warmupRuns", config.warmupRuns);
+                        runData.addValue("name", benchmark.name);
+                        runData.addValue("category", benchmark.category);
+                        runData.addValue("run_index", static_cast<int>(runIdx));
+                        runData.addValue("execution_time", result.executionTimes[runIdx]);
+                        runData.addValue("read_memory_bytes", result.readMemoryBytes);
+                        runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
+                        runData.addValue("shape",
+                                         std::format("{}x{}x{}", config.samples, config.height, config.width));
+
+                        results.registerRun(runData);
                     }
-
-                    runData.addValue("samples", config.samples);
-                    runData.addValue("height", config.height);
-                    runData.addValue("width", config.width);
-                    runData.addValue("runs", config.runs);
-                    runData.addValue("warmupRuns", config.warmupRuns);
-                    runData.addValue("name", benchmark.name);
-                    runData.addValue("category", benchmark.category);
-                    runData.addValue("execution_time", result.executionTime);
-                    runData.addValue("read_memory_bytes", result.readMemoryBytes);
-                    runData.addValue("written_memory_bytes", result.writtenMemoryBytes);
-                    runData.addValue("shape", std::format("{}x{}x{}", config.samples, config.height, config.width));
-
-                    results.registerRun(runData);
                 }
                 std::cout << std::endl;
             }

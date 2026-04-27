@@ -185,7 +185,6 @@ endif()
 file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 pybind11_add_module(${PROJECT_NAME} MODULE ${sources} WITH_SOABI)
 target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include")
-set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
 target_link_libraries(${PROJECT_NAME}
@@ -197,12 +196,28 @@ target_link_libraries(${PROJECT_NAME}
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_VISIBILITY_PRESET "hidden"
     CUDA_VISIBILITY_PRESET "hidden"
+    POSITION_INDEPENDENT_CODE ON
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"
     BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
     INSTALL_RPATH "\$ORIGIN/..;\$ORIGIN;\$ORIGIN/../rocm_sysdeps/lib;\$ORIGIN/../llvm/lib"
 )
 
 # install rocpycv lib -- {ROCM_PATH)/lib
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME} COMPONENT runtime)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
-message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColorReset}")
+install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv.pyi DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
+message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
+
+# PyBind Test - Installed
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/pybind
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)
+
+install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/roccv/python
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/roccv/test/pybind
+        COMPONENT test
+        PATTERN "__pycache__" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        PATTERN ".pytest_cache" EXCLUDE)

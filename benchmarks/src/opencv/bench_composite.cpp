@@ -50,13 +50,11 @@ static roccvbench::BenchmarkResults RunCompositeBenchmark(roccvbench::BenchmarkP
     RegisterMemoryUsage(weights2, results.readMemoryBytes);
     RegisterMemoryUsage(outputs, results.writtenMemoryBytes);
 
-    ROCCV_BENCH_RECORD_BLOCK(
-        {
-            for (size_t i = 0; i < backgrounds.size(); i++) {
-                cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputs[i]);
-            }
-        },
-        results.executionTime, runs, warmupRuns);
+    roccvbench::RecordRunsCpu(runs, warmupRuns, results.executionTimes, [&]() {
+        for (size_t i = 0; i < backgrounds.size(); i++) {
+            cv::blendLinear(backgrounds[i], foregrounds[i], weights1[i], weights2[i], outputs[i]);
+        }
+    });
     return results;
 }
 
