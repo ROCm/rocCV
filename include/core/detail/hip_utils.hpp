@@ -55,7 +55,7 @@ void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
  * @param[in] targetBlockSize The target block size.
  * @return The block size.
  */
-static inline dim3 GetBlockSize2D(int targetBlockSize = 512) {
+static inline dim3 GetBlockSize2D(int targetBlockSize = 256) {
     int deviceId;
     int warpSize;
 
