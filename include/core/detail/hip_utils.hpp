@@ -50,19 +50,94 @@ void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
 }
 
 /**
- * @brief Get the block size for a 2D kernel.
+ * @brief Get the device's wavefront/warp size, cached per-thread.
  *
- * @param[in] targetBlockSize The target block size.
- * @return The block size.
+ * Re-queries the runtime if the active HIP device has changed since the
+ * last call from the calling thread (so multi-device callers stay correct
+ * without paying for a query on every launch).
  */
-static inline dim3 GetBlockSize2D(int targetBlockSize = 128) {
+inline int CachedWarpSize() {
+    static thread_local int cachedDeviceId = -1;
+    static thread_local int cachedWarpSize = 0;
     int deviceId;
-    int warpSize;
-
     HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
-    HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&warpSize, hipDeviceAttributeWarpSize, deviceId));
+    if (deviceId != cachedDeviceId) {
+        HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&cachedWarpSize, hipDeviceAttributeWarpSize, deviceId));
+        cachedDeviceId = deviceId;
+    }
+    return cachedWarpSize;
+}
 
-    return dim3(warpSize, targetBlockSize / warpSize, 1);
+/**
+ * @brief Cache hipOccupancyMaxPotentialBlockSize per (kernel, device).
+ *
+ * The driver picks a thread count that maximizes resident wavefronts per CU
+ * for the given kernel on the current device, accounting for the kernel's
+ * register and static-shared-memory usage. The result is bounded above by
+ * Cap so the API's drive toward maximum occupancy can't override workload-
+ * class judgment (memory-bound ops gain nothing past ~50% occupancy and
+ * can lose throughput to cache pressure with overly large blocks).
+ *
+ * Each (Kernel, Cap) instantiation gets its own thread-local cache slot,
+ * so the runtime query runs once per (kernel, device, cap) per thread.
+ *
+ * @tparam Kernel The __global__ function pointer (auto NTTP — each unique
+ *                kernel address gets its own cached result).
+ * @tparam Cap    Upper bound on the returned block size.
+ */
+template <auto Kernel, int Cap>
+inline int CachedOccupancyBlockSize() {
+    static thread_local int cachedDeviceId = -1;
+    static thread_local int cachedBlockSize = 0;
+    int deviceId;
+    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
+    if (deviceId != cachedDeviceId) {
+        int minGridSize;
+        HIP_VALIDATE_NO_ERRORS(hipOccupancyMaxPotentialBlockSize(&minGridSize, &cachedBlockSize, Kernel, 0, Cap));
+        cachedDeviceId = deviceId;
+    }
+    return cachedBlockSize;
+}
+
+/**
+ * @brief Pick a 1D block size for a pointwise kernel via runtime occupancy
+ *        query, capped at Cap, and cached per (kernel, device).
+ *
+ * Use for pointwise kernels (no neighborhood reads). The driver returns a
+ * thread count tuned to this specific kernel's register pressure on the
+ * current device — important on architectures with very different SIMD-per-CU
+ * counts and register-file sizes (e.g. CDNA wants more wavefronts in flight
+ * per CU than RDNA to hide HBM latency).
+ *
+ * Pair with GetGridSize1D — see its docs for the row-major launch shape.
+ *
+ * @tparam Kernel The __global__ function pointer.
+ * @tparam Cap    Upper bound on threads per block.
+ * @return dim3(blockSize, 1, 1).
+ */
+template <auto Kernel, int Cap = 256>
+inline dim3 GetBlockSize1D() {
+    return dim3(CachedOccupancyBlockSize<Kernel, Cap>(), 1, 1);
+}
+
+/**
+ * @brief Pick a 2D block size for a stencil/transform kernel via runtime
+ *        occupancy query, capped at Cap, and cached per (kernel, device).
+ *
+ * Use for kernels with 2D locality (stencils, interpolation neighborhoods,
+ * affine warps). Reshapes the queried thread count as
+ * (warpSize, blockSize / warpSize, 1) so threadIdx.x is wavefront-aligned
+ * for coalescing while threadIdx.y stacks rows for tile-style cache reuse.
+ *
+ * @tparam Kernel The __global__ function pointer.
+ * @tparam Cap    Upper bound on threads per block.
+ * @return dim3(warpSize, blockSize / warpSize, 1).
+ */
+template <auto Kernel, int Cap = 512>
+inline dim3 GetBlockSize2D() {
+    int blockSize = CachedOccupancyBlockSize<Kernel, Cap>();
+    int warpSize = CachedWarpSize();
+    return dim3(warpSize, blockSize / warpSize, 1);
 }
 
 /**
@@ -76,35 +151,6 @@ static inline dim3 GetBlockSize2D(int targetBlockSize = 128) {
  */
 static inline dim3 GetGridSize2D(size_t width, size_t height, size_t batchSize, dim3 blockSize) {
     return dim3((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batchSize);
-}
-
-/**
- * @brief Get the block size for a 1D kernel — all threads on the x axis.
- *
- * Use for pointwise kernels (no neighborhood reads). There is no locality
- * benefit to grouping threads from different rows in the same block when
- * each thread only touches its own pixel; a 1D block keeps every wavefront
- * on a single contiguous row, maximizing coalescing and eliminating the
- * y-axis index math and bottom-edge tail-wave waste of a 2D launch.
- *
- * Pair with GetGridSize1D, which lays the rows of the image out along
- * gridDim.y so existing kernels can derive y directly from blockIdx.y
- * without any indexing changes (since blockDim.y == 1 collapses the
- * standard `y = blockDim.y * blockIdx.y + threadIdx.y` to `y = blockIdx.y`).
- *
- * @param[in] targetBlockSize Total threads per block. Should be a multiple
- *                            of warpSize; otherwise it is silently floored
- *                            to the nearest multiple. Defaults to 256.
- * @return The block size: dim3(targetBlockSize, 1, 1), aligned to warpSize.
- */
-static inline dim3 GetBlockSize1D(int targetBlockSize = 128) {
-    int deviceId;
-    int warpSize;
-
-    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
-    HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&warpSize, hipDeviceAttributeWarpSize, deviceId));
-
-    return dim3((targetBlockSize / warpSize) * warpSize, 1, 1);
 }
 
 /**

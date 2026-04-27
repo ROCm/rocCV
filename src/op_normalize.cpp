@@ -50,10 +50,13 @@ void dispatch_normalize_stddev(hipStream_t stream, const Tensor& input, const Te
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetBlockSize1D();
+            constexpr auto kernel =
+                Kernels::Device::normalize<ScaleStddev, ImageWrapper<T>, ImageWrapper<T>, ImageWrapper<work_type>,
+                                            ImageWrapper<work_type>>;
+            dim3 block = detail::GetBlockSize1D<kernel>();
             dim3 grid = detail::GetGridSize1D(outputWrap.width(), outputWrap.height(), outputWrap.batches(), block);
-            Kernels::Device::normalize<ScaleStddev>
-                <<<grid, block, 0, stream>>>(inputWrap, baseWrap, scaleWrap, outputWrap, global_scale, shift, epsilon);
+            kernel<<<grid, block, 0, stream>>>(inputWrap, baseWrap, scaleWrap, outputWrap, global_scale, shift,
+                                                 epsilon);
             break;
         }
         case eDeviceType::CPU: {

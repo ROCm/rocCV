@@ -89,11 +89,12 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetBlockSize2D();
+            constexpr auto kernel = Kernels::Device::remap<
+                InterpolationWrapper<T, B, I>, ImageWrapper<T>, InterpolationWrapper<float2, B, M>>;
+            dim3 block = detail::GetBlockSize2D<kernel>();
             dim3 grid =
                 detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
-            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor,
-                                                               mapBatchSize, params);
+            kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor, mapBatchSize, params);
             break;
         }
 

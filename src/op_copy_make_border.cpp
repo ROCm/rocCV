@@ -44,9 +44,11 @@ void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& inp
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetBlockSize1D();
+            constexpr auto kernel =
+                Kernels::Device::copy_make_border<BorderWrapper<T, BorderMode>, ImageWrapper<T>>;
+            dim3 block = detail::GetBlockSize1D<kernel>();
             dim3 grid = detail::GetGridSize1D(out_desc.width(), out_desc.height(), out_desc.batches(), block);
-            Kernels::Device::copy_make_border<<<grid, block, 0, stream>>>(in_desc, out_desc, top, left);
+            kernel<<<grid, block, 0, stream>>>(in_desc, out_desc, top, left);
             break;
         }
         case eDeviceType::CPU: {

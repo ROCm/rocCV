@@ -45,10 +45,12 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetBlockSize2D();
+            constexpr auto kernel = Kernels::Device::resize<
+                InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, I>, ImageWrapper<T>>;
+            dim3 block = detail::GetBlockSize2D<kernel>();
             dim3 grid =
                 detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
-            Kernels::Device::resize<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
+            kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
             break;
         }
 

@@ -50,7 +50,8 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
     auto batchSize = inputWrapper.batches();
     switch (device) {
         case eDeviceType::GPU: {
-            const dim3 block = detail::GetBlockSize1D();
+            constexpr auto kernel = Kernels::Device::bndbox_kernel<has_alpha, T, ImageWrapper<T>, ImageWrapper<T>>;
+            const dim3 block = detail::GetBlockSize1D<kernel>();
             const dim3 grid = detail::GetGridSize1D(width, height, batchSize, block);
 
             Rect_t *rects_ptr = nullptr;
@@ -61,8 +62,8 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
                 HIP_VALIDATE_NO_ERRORS(
                     hipMemcpyAsync(rects_ptr, rects->data(), sizeof(Rect_t) * n_rects, hipMemcpyHostToDevice, stream));
             }
-            Kernels::Device::bndbox_kernel<has_alpha, T>
-                <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, rects_ptr, n_rects, batchSize, height, width);
+            kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, rects_ptr, n_rects, batchSize, height,
+                                                width);
             if (n_rects > 0) {
                 HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
             }

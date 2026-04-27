@@ -60,9 +60,12 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetBlockSize2D();
+            constexpr auto kernel = Kernels::Device::rotate<
+                InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType>, ImageWrapper<T>,
+                ArrayWrapper<double, 6>>;
+            dim3 block = detail::GetBlockSize2D<kernel>();
             dim3 grid = detail::GetGridSize2D(outputWrap.width(), outputWrap.height(), outputWrap.batches(), block);
-            Kernels::Device::rotate<<<grid, block, 0, stream>>>(inputWrap, outputWrap, matWrap);
+            kernel<<<grid, block, 0, stream>>>(inputWrap, outputWrap, matWrap);
             break;
         }
 

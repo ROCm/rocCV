@@ -68,14 +68,14 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
 
     if (device == eDeviceType::GPU) {
-        dim3 block = detail::GetBlockSize2D();
+        constexpr auto kernel = Kernels::Device::bilateral_filter<T, BorderWrapper<T, B>, ImageWrapper<T>>;
+        dim3 block = detail::GetBlockSize2D<kernel>();
         uint32_t xGridSize = (outputWrapper.width() + (block.x * 2) - 1) / (block.x * 2);
         uint32_t yGridSize = (outputWrapper.height() + (block.y * 2) - 1) / (block.y * 2);
         uint32_t zGridSize = outputWrapper.batches();
         dim3 grid(xGridSize, yGridSize, zGridSize);
 
-        Kernels::Device::bilateral_filter<T>
-            <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, radius, spaceCoeff, colorCoeff);
+        kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, radius, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
         int divisor = std::gcd(4, outputWrapper.height());  // greatest common divisor
         int dividend = std::gcd((numThreads / divisor), outputWrapper.width());
