@@ -55,9 +55,9 @@ void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block = detail::GetBlockSize2D();
+            dim3 block = detail::GetBlockSize1D();
             dim3 grid =
-                detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
+                detail::GetGridSize1D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
             Kernels::Device::convert_to<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, alpha_ab, beta_ab);
             break;
         }

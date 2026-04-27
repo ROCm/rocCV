@@ -78,4 +78,59 @@ static inline dim3 GetGridSize2D(size_t width, size_t height, size_t batchSize, 
     return dim3((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, batchSize);
 }
 
+/**
+ * @brief Get the block size for a 1D kernel — all threads on the x axis.
+ *
+ * Use for pointwise kernels (no neighborhood reads). There is no locality
+ * benefit to grouping threads from different rows in the same block when
+ * each thread only touches its own pixel; a 1D block keeps every wavefront
+ * on a single contiguous row, maximizing coalescing and eliminating the
+ * y-axis index math and bottom-edge tail-wave waste of a 2D launch.
+ *
+ * Pair with GetGridSize1D, which lays the rows of the image out along
+ * gridDim.y so existing kernels can derive y directly from blockIdx.y
+ * without any indexing changes (since blockDim.y == 1 collapses the
+ * standard `y = blockDim.y * blockIdx.y + threadIdx.y` to `y = blockIdx.y`).
+ *
+ * The default of 256 threads is intentionally smaller than the 2D default
+ * of 512: pointwise ops are bandwidth-bound, so 4 wavefronts per block on
+ * AMD (warp=64) is enough to keep memory in flight on every CU while
+ * producing less tail waste than 512 on narrow images.
+ *
+ * @param[in] targetBlockSize Total threads per block. Should be a multiple
+ *                            of warpSize; otherwise it is silently floored
+ *                            to the nearest multiple. Defaults to 256.
+ * @return The block size: dim3(targetBlockSize, 1, 1), aligned to warpSize.
+ */
+static inline dim3 GetBlockSize1D(int targetBlockSize = 256) {
+    int deviceId;
+    int warpSize;
+
+    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
+    HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&warpSize, hipDeviceAttributeWarpSize, deviceId));
+
+    return dim3((targetBlockSize / warpSize) * warpSize, 1, 1);
+}
+
+/**
+ * @brief Get the grid size for a 1D-row-major launch.
+ *
+ * Lays one image row along gridDim.y and the batch along gridDim.z. The
+ * block from GetBlockSize1D has blockDim.y == 1, so the kernel's standard
+ * `y = blockDim.y * blockIdx.y + threadIdx.y` collapses to `y = blockIdx.y`
+ * with no kernel changes required.
+ *
+ * Caller is responsible for ensuring height does not exceed the device's
+ * gridDim.y limit (typically 65535) and batchSize does not exceed gridDim.z.
+ *
+ * @param[in] width      The width of the image.
+ * @param[in] height     The height of the image (becomes gridDim.y).
+ * @param[in] batchSize  The number of images (becomes gridDim.z).
+ * @param[in] blockSize  Block size from GetBlockSize1D.
+ * @return The grid size: dim3(ceil(width / blockSize.x), height, batchSize).
+ */
+static inline dim3 GetGridSize1D(size_t width, size_t height, size_t batchSize, dim3 blockSize) {
+    return dim3((width + blockSize.x - 1) / blockSize.x, height, batchSize);
+}
+
 }  // namespace roccv::detail
