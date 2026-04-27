@@ -115,7 +115,7 @@ inline int CachedOccupancyBlockSize() {
  * @tparam Cap    Upper bound on threads per block.
  * @return dim3(blockSize, 1, 1).
  */
-template <auto Kernel, int Cap = 256>
+template <auto Kernel, int Cap = 512>
 inline dim3 GetBlockSize1D() {
     return dim3(CachedOccupancyBlockSize<Kernel, Cap>(), 1, 1);
 }
@@ -133,7 +133,7 @@ inline dim3 GetBlockSize1D() {
  * @tparam Cap    Upper bound on threads per block.
  * @return dim3(warpSize, blockSize / warpSize, 1).
  */
-template <auto Kernel, int Cap = 512>
+template <auto Kernel, int Cap = 1024>
 inline dim3 GetBlockSize2D() {
     int blockSize = CachedOccupancyBlockSize<Kernel, Cap>();
     int warpSize = CachedWarpSize();
