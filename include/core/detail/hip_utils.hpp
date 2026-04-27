@@ -55,7 +55,7 @@ void LaunchHostFuncAsync(hipStream_t stream, Callable&& cb) {
  * @param[in] targetBlockSize The target block size.
  * @return The block size.
  */
-static inline dim3 GetBlockSize2D(int targetBlockSize = 256) {
+static inline dim3 GetBlockSize2D(int targetBlockSize = 128) {
     int deviceId;
     int warpSize;
 
@@ -92,17 +92,12 @@ static inline dim3 GetGridSize2D(size_t width, size_t height, size_t batchSize, 
  * without any indexing changes (since blockDim.y == 1 collapses the
  * standard `y = blockDim.y * blockIdx.y + threadIdx.y` to `y = blockIdx.y`).
  *
- * The default of 256 threads is intentionally smaller than the 2D default
- * of 512: pointwise ops are bandwidth-bound, so 4 wavefronts per block on
- * AMD (warp=64) is enough to keep memory in flight on every CU while
- * producing less tail waste than 512 on narrow images.
- *
  * @param[in] targetBlockSize Total threads per block. Should be a multiple
  *                            of warpSize; otherwise it is silently floored
  *                            to the nearest multiple. Defaults to 256.
  * @return The block size: dim3(targetBlockSize, 1, 1), aligned to warpSize.
  */
-static inline dim3 GetBlockSize1D(int targetBlockSize = 256) {
+static inline dim3 GetBlockSize1D(int targetBlockSize = 128) {
     int deviceId;
     int warpSize;
 
