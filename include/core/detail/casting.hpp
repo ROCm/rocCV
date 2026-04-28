@@ -141,18 +141,25 @@ __device__ __host__ T ScalarSaturateCast(U v) {
 template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && (NumElements<T> <= NumElements<U>)>>
 __device__ __host__ T SaturateCast(U v) {
+    using B = BaseType<T>;
     if constexpr (std::is_same_v<T, U>) {
         return v;
+    } else if constexpr (NumElements<T> == 1) {
+        return T{ScalarSaturateCast<B>(GetElement(v, 0))};
+    } else if constexpr (NumElements<T> == 2) {
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)),
+                 ScalarSaturateCast<B>(GetElement(v, 1))};
+    } else if constexpr (NumElements<T> == 3) {
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)),
+                 ScalarSaturateCast<B>(GetElement(v, 1)),
+                 ScalarSaturateCast<B>(GetElement(v, 2))};
+    } else {
+        static_assert(NumElements<T> == 4, "SaturateCast supports up to 4-element vectors");
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)),
+                 ScalarSaturateCast<B>(GetElement(v, 1)),
+                 ScalarSaturateCast<B>(GetElement(v, 2)),
+                 ScalarSaturateCast<B>(GetElement(v, 3))};
     }
-
-    T ret{};
-
-    GetElement(ret, 0) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 0));
-    if constexpr (NumElements<T> >= 2) GetElement(ret, 1) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 1));
-    if constexpr (NumElements<T> >= 3) GetElement(ret, 2) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 2));
-    if constexpr (NumElements<T> >= 4) GetElement(ret, 3) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 3));
-
-    return ret;
 }
 
 /**
@@ -243,18 +250,25 @@ __device__ __host__ T ScalarRangeCast(U v) {
 template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && NumElements<T> <= NumElements<U>>>
 __device__ __host__ T RangeCast(U v) {
+    using B = BaseType<T>;
     if constexpr (std::is_same_v<T, U>) {
         return v;
+    } else if constexpr (NumElements<T> == 1) {
+        return T{ScalarRangeCast<B>(GetElement(v, 0))};
+    } else if constexpr (NumElements<T> == 2) {
+        return T{ScalarRangeCast<B>(GetElement(v, 0)),
+                 ScalarRangeCast<B>(GetElement(v, 1))};
+    } else if constexpr (NumElements<T> == 3) {
+        return T{ScalarRangeCast<B>(GetElement(v, 0)),
+                 ScalarRangeCast<B>(GetElement(v, 1)),
+                 ScalarRangeCast<B>(GetElement(v, 2))};
+    } else {
+        static_assert(NumElements<T> == 4, "RangeCast supports up to 4-element vectors");
+        return T{ScalarRangeCast<B>(GetElement(v, 0)),
+                 ScalarRangeCast<B>(GetElement(v, 1)),
+                 ScalarRangeCast<B>(GetElement(v, 2)),
+                 ScalarRangeCast<B>(GetElement(v, 3))};
     }
-
-    T ret{};
-
-    GetElement(ret, 0) = ScalarRangeCast<BaseType<T>>(GetElement(v, 0));
-    if constexpr (NumElements<T> >= 2) GetElement(ret, 1) = ScalarRangeCast<BaseType<T>>(GetElement(v, 1));
-    if constexpr (NumElements<T> >= 3) GetElement(ret, 2) = ScalarRangeCast<BaseType<T>>(GetElement(v, 2));
-    if constexpr (NumElements<T> >= 4) GetElement(ret, 3) = ScalarRangeCast<BaseType<T>>(GetElement(v, 3));
-
-    return ret;
 }
 
 /**
@@ -268,21 +282,28 @@ __device__ __host__ T RangeCast(U v) {
 template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && NumElements<T> <= NumElements<U>>>
 __device__ __host__ T StaticCast(U v) {
+    using B = BaseType<T>;
     if constexpr (std::is_same_v<T, U>) {
         // Both same type, just return the value.
         return v;
     } else if constexpr (!IsCompound<T> && !IsCompound<U>) {
         // Both scalar values. Reduces to a standard static cast.
         return static_cast<T>(v);
+    } else if constexpr (NumElements<T> == 1) {
+        return T{StaticCast<B>(GetElement(v, 0))};
+    } else if constexpr (NumElements<T> == 2) {
+        return T{StaticCast<B>(GetElement(v, 0)),
+                 StaticCast<B>(GetElement(v, 1))};
+    } else if constexpr (NumElements<T> == 3) {
+        return T{StaticCast<B>(GetElement(v, 0)),
+                 StaticCast<B>(GetElement(v, 1)),
+                 StaticCast<B>(GetElement(v, 2))};
     } else {
-        // Vector types. Perform casting on each element.
-        T ret{};
-        GetElement(ret, 0) = StaticCast<BaseType<T>>(GetElement(v, 0));
-        if constexpr (NumElements<T> >= 2) GetElement(ret, 1) = StaticCast<BaseType<T>>(GetElement(v, 1));
-        if constexpr (NumElements<T> >= 3) GetElement(ret, 2) = StaticCast<BaseType<T>>(GetElement(v, 2));
-        if constexpr (NumElements<T> >= 4) GetElement(ret, 3) = StaticCast<BaseType<T>>(GetElement(v, 3));
-
-        return ret;
+        static_assert(NumElements<T> == 4, "StaticCast supports up to 4-element vectors");
+        return T{StaticCast<B>(GetElement(v, 0)),
+                 StaticCast<B>(GetElement(v, 1)),
+                 StaticCast<B>(GetElement(v, 2)),
+                 StaticCast<B>(GetElement(v, 3))};
     }
 }
 }  // namespace roccv::detail
