@@ -139,6 +139,22 @@ class PyTensor : public std::enable_shared_from_this<PyTensor> {
     eDeviceType getDevice();
 
     /**
+     * @brief Returns the address of the tensor's underlying data buffer as an
+     * unsigned integer. For GPU tensors this is a HIP device address; for CPU
+     * tensors it is a host address. Use ``device()`` to disambiguate.
+     *
+     * The pointer is non-owning. The caller is responsible for ensuring this
+     * PyTensor remains alive for as long as the pointer is used; otherwise the
+     * underlying buffer may be freed and the pointer left dangling.
+     *
+     * Intended for zero-copy interop with frameworks that accept a raw
+     * pointer + shape + dtype (e.g. ``migraphx.argument_from_pointer``).
+     *
+     * @return uintptr_t
+     */
+    uintptr_t getDataPtr();
+
+    /**
      * @brief Gets the underlying roccv::Tensor that this tensor container wraps.
      *
      * @return std::shared_ptr<roccv::Tensor>

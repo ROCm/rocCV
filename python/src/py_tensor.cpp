@@ -178,6 +178,11 @@ eTensorLayout PyTensor::getLayout() { return m_tensor->layout().elayout(); }
 
 eDeviceType PyTensor::getDevice() { return m_tensor->device(); }
 
+uintptr_t PyTensor::getDataPtr() {
+    auto tensorData = m_tensor->exportData<roccv::TensorDataStrided>();
+    return reinterpret_cast<uintptr_t>(tensorData.basePtr());
+}
+
 std::shared_ptr<roccv::Tensor> PyTensor::getTensor() { return m_tensor; }
 
 py::tuple PyTensor::getDLDevice() {
@@ -207,6 +212,11 @@ void PyTensor::Export(pybind11::module& m) {
         .def("shape", &PyTensor::getShape, "Returns a list representing the tensor shape.")
         .def("layout", &PyTensor::getLayout, "Returns the layout for this tensor.")
         .def("device", &PyTensor::getDevice, "Returns the device this tensor is on.")
+        .def("data_ptr", &PyTensor::getDataPtr,
+             "Returns the address of the tensor's underlying buffer as an integer. "
+             "For GPU tensors this is a HIP device address; for CPU tensors a host address. "
+             "The pointer is non-owning -- keep the tensor alive for as long as the pointer is used. "
+             "Intended for zero-copy interop with frameworks like MIGraphX.")
         .def("ndim", &PyTensor::getRank, "Returns the number of dimensions of the tensor.")
         .def("dtype", &PyTensor::getDataType, "Returns the data type of the tensor.")
         .def("__dlpack_device__", &PyTensor::getDLDevice,
