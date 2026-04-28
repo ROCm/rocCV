@@ -49,15 +49,18 @@ __device__ __host__ inline U IEEERound(U v) {
 }
 
 /**
- * @brief Clamps v to [lo, hi]. Uses fminf/fmin/fmaxf/fmax on device to avoid
- * the branchy std::clamp implementation.
+ * @brief Clamps v to [lo, hi].
+ * @param[in] v The value to clamp.
+ * @param[in] lo The lower bound of the clamp.
+ * @param[in] hi The upper bound of the clamp.
+ * @return The value v clamped to [lo, hi].
  */
 template <typename U>
 __device__ __host__ inline U FpClamp(U v, U lo, U hi) {
     static_assert(std::is_floating_point_v<U>, "FpClamp requires a floating-point input");
 #ifdef __HIP_DEVICE_COMPILE__
     if constexpr (std::is_same_v<U, float>) {
-        return fminf(fmaxf(v, lo), hi);
+        return __builtin_amdgcn_fmed3f(v, lo, hi);
     } else {
         return fmin(fmax(v, lo), hi);
     }
@@ -147,18 +150,14 @@ __device__ __host__ T SaturateCast(U v) {
     } else if constexpr (NumElements<T> == 1) {
         return T{ScalarSaturateCast<B>(GetElement(v, 0))};
     } else if constexpr (NumElements<T> == 2) {
-        return T{ScalarSaturateCast<B>(GetElement(v, 0)),
-                 ScalarSaturateCast<B>(GetElement(v, 1))};
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)), ScalarSaturateCast<B>(GetElement(v, 1))};
     } else if constexpr (NumElements<T> == 3) {
-        return T{ScalarSaturateCast<B>(GetElement(v, 0)),
-                 ScalarSaturateCast<B>(GetElement(v, 1)),
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)), ScalarSaturateCast<B>(GetElement(v, 1)),
                  ScalarSaturateCast<B>(GetElement(v, 2))};
     } else {
         static_assert(NumElements<T> == 4, "SaturateCast supports up to 4-element vectors");
-        return T{ScalarSaturateCast<B>(GetElement(v, 0)),
-                 ScalarSaturateCast<B>(GetElement(v, 1)),
-                 ScalarSaturateCast<B>(GetElement(v, 2)),
-                 ScalarSaturateCast<B>(GetElement(v, 3))};
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)), ScalarSaturateCast<B>(GetElement(v, 1)),
+                 ScalarSaturateCast<B>(GetElement(v, 2)), ScalarSaturateCast<B>(GetElement(v, 3))};
     }
 }
 
@@ -256,18 +255,14 @@ __device__ __host__ T RangeCast(U v) {
     } else if constexpr (NumElements<T> == 1) {
         return T{ScalarRangeCast<B>(GetElement(v, 0))};
     } else if constexpr (NumElements<T> == 2) {
-        return T{ScalarRangeCast<B>(GetElement(v, 0)),
-                 ScalarRangeCast<B>(GetElement(v, 1))};
+        return T{ScalarRangeCast<B>(GetElement(v, 0)), ScalarRangeCast<B>(GetElement(v, 1))};
     } else if constexpr (NumElements<T> == 3) {
-        return T{ScalarRangeCast<B>(GetElement(v, 0)),
-                 ScalarRangeCast<B>(GetElement(v, 1)),
+        return T{ScalarRangeCast<B>(GetElement(v, 0)), ScalarRangeCast<B>(GetElement(v, 1)),
                  ScalarRangeCast<B>(GetElement(v, 2))};
     } else {
         static_assert(NumElements<T> == 4, "RangeCast supports up to 4-element vectors");
-        return T{ScalarRangeCast<B>(GetElement(v, 0)),
-                 ScalarRangeCast<B>(GetElement(v, 1)),
-                 ScalarRangeCast<B>(GetElement(v, 2)),
-                 ScalarRangeCast<B>(GetElement(v, 3))};
+        return T{ScalarRangeCast<B>(GetElement(v, 0)), ScalarRangeCast<B>(GetElement(v, 1)),
+                 ScalarRangeCast<B>(GetElement(v, 2)), ScalarRangeCast<B>(GetElement(v, 3))};
     }
 }
 
@@ -292,17 +287,12 @@ __device__ __host__ T StaticCast(U v) {
     } else if constexpr (NumElements<T> == 1) {
         return T{StaticCast<B>(GetElement(v, 0))};
     } else if constexpr (NumElements<T> == 2) {
-        return T{StaticCast<B>(GetElement(v, 0)),
-                 StaticCast<B>(GetElement(v, 1))};
+        return T{StaticCast<B>(GetElement(v, 0)), StaticCast<B>(GetElement(v, 1))};
     } else if constexpr (NumElements<T> == 3) {
-        return T{StaticCast<B>(GetElement(v, 0)),
-                 StaticCast<B>(GetElement(v, 1)),
-                 StaticCast<B>(GetElement(v, 2))};
+        return T{StaticCast<B>(GetElement(v, 0)), StaticCast<B>(GetElement(v, 1)), StaticCast<B>(GetElement(v, 2))};
     } else {
         static_assert(NumElements<T> == 4, "StaticCast supports up to 4-element vectors");
-        return T{StaticCast<B>(GetElement(v, 0)),
-                 StaticCast<B>(GetElement(v, 1)),
-                 StaticCast<B>(GetElement(v, 2)),
+        return T{StaticCast<B>(GetElement(v, 0)), StaticCast<B>(GetElement(v, 1)), StaticCast<B>(GetElement(v, 2)),
                  StaticCast<B>(GetElement(v, 3))};
     }
 }
