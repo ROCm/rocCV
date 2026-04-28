@@ -28,6 +28,9 @@ using namespace roccv::tests;
 using namespace roccv;
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+
     TEST_CASES_BEGIN();
 
     TEST_CASE(EXPECT_EQ(SaturateCast<int>(1.0f), 1));

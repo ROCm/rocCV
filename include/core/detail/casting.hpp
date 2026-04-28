@@ -22,10 +22,49 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 
 #include "core/detail/type_traits.hpp"
 
 namespace roccv::detail {
+
+/**
+ * @brief Rounds a floating-point value to the nearest integer using IEEE
+ * half-to-even rounding (the default rounding mode). Matches the semantics of
+ * __float2int_rn on device. Selects single- vs double-precision based on the
+ * argument type to avoid silent precision loss when U is double.
+ */
+template <typename U>
+__device__ __host__ inline U IEEERound(U v) {
+    static_assert(std::is_floating_point_v<U>, "IEEERound requires a floating-point input");
+#ifdef __HIP_DEVICE_COMPILE__
+    if constexpr (std::is_same_v<U, float>) {
+        return rintf(v);
+    } else {
+        return rint(v);
+    }
+#else
+    return std::rint(v);
+#endif
+}
+
+/**
+ * @brief Clamps v to [lo, hi]. Uses fminf/fmin/fmaxf/fmax on device to avoid
+ * the branchy std::clamp implementation.
+ */
+template <typename U>
+__device__ __host__ inline U FpClamp(U v, U lo, U hi) {
+    static_assert(std::is_floating_point_v<U>, "FpClamp requires a floating-point input");
+#ifdef __HIP_DEVICE_COMPILE__
+    if constexpr (std::is_same_v<U, float>) {
+        return fminf(fmaxf(v, lo), hi);
+    } else {
+        return fmin(fmax(v, lo), hi);
+    }
+#else
+    return std::clamp(v, lo, hi);
+#endif
+}
 
 /**
  * @brief ScalarSaturateCast is for implementation purposes only. Use SaturateCast directly.
@@ -36,25 +75,17 @@ __device__ __host__ T ScalarSaturateCast(U v) {
     constexpr bool bigToSmall = !smallToBig;
 
     if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U>) {
-        // Float -> integral: clamp to [min, max] then round.
+        // Float -> integral: clamp to [min, max] then round (IEEE half-to-even).
         constexpr U minVal = static_cast<U>(std::numeric_limits<T>::lowest());
         constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
 
         if constexpr (sizeof(T) <= 2) {
             // 8/16 bit integer cases. These can be represented exactly in floating point.
-#ifdef __HIP_DEVICE_COMPILE__
-            return static_cast<T>(rintf(fminf(fmaxf(v, minVal), maxVal)));
-#else
-            return static_cast<T>(std::round(std::clamp(v, minVal, maxVal)));
-#endif
+            return static_cast<T>(IEEERound(FpClamp(v, minVal, maxVal)));
         } else {
-            // 32/64 bit integer cases.
-#ifdef __HIP_DEVICE_COMPILE__
-            U rounded = rintf(v);
-#else
-            U rounded = std::round(v);
-#endif
-
+            // 32/64 bit integer cases. maxVal may round up to an unrepresentable
+            // value when cast back, so compare against the rounded source.
+            const U rounded = IEEERound(v);
             return rounded >= maxVal   ? std::numeric_limits<T>::max()
                    : rounded <= minVal ? std::numeric_limits<T>::min()
                                        : static_cast<T>(rounded);
@@ -136,10 +167,19 @@ __device__ __host__ T ScalarRangeCast(U v) {
     }
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_signed_v<T>) {
-        // Float to signed integers
-        return v >= T{1}    ? std::numeric_limits<T>::max()
-               : v <= T{-1} ? std::numeric_limits<T>::min()
-                            : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+        // Float to signed integer. Map [-1, 1] -> [min, max] with IEEE half-to-even rounding.
+        constexpr U scale = static_cast<U>(std::numeric_limits<T>::max());
+
+        if constexpr (sizeof(T) <= 2) {
+            // 8/16 bit signed cases. These can be represented exactly in floating point,
+            // so clamp first then round.
+            return static_cast<T>(IEEERound(FpClamp(v, U{-1}, U{1}) * scale));
+        } else {
+            // 32/64 bit signed cases.
+            return v >= U{1}    ? std::numeric_limits<T>::max()
+                   : v <= U{-1} ? std::numeric_limits<T>::min()
+                                : static_cast<T>(IEEERound(scale * v));
+        }
     }
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_unsigned_v<T>) {
@@ -149,13 +189,17 @@ __device__ __host__ T ScalarRangeCast(U v) {
         if constexpr (sizeof(T) <= 2) {
             // 8/16 bit integer cases. These can be represented exactly in floating point.
 #ifdef __HIP_DEVICE_COMPILE__
-            return static_cast<T>(__float2int_rn(__saturatef(v) * scale));
+            if constexpr (std::is_same_v<U, float>) {
+                return static_cast<T>(__float2int_rn(__saturatef(v) * scale));
+            } else {
+                return static_cast<T>(IEEERound(FpClamp(v, U{0}, U{1}) * scale));
+            }
 #else
-            return static_cast<T>(lrintf(fminf(fmaxf(v, 0.0f), 1.0f) * scale));
+            return static_cast<T>(IEEERound(FpClamp(v, U{0}, U{1}) * scale));
 #endif
         } else {
             // 32/64 bit integer cases.
-            return v >= U{1} ? std::numeric_limits<T>::max() : v <= U{0} ? 0 : static_cast<T>(std::round(v * scale));
+            return v >= U{1} ? std::numeric_limits<T>::max() : v <= U{0} ? T{0} : static_cast<T>(IEEERound(v * scale));
         }
     }
 
