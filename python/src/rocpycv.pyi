@@ -170,9 +170,9 @@ class Tensor:
         """
         Returns a tuple containing the DLPack device and device id for the tensor.
         """
-    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: eTensorLayout, dtype: eDataType, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
+    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: typing.Any, dtype: typing.Any, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
         """
-        Constructs a tensor object.
+        Constructs a tensor object. ``layout`` may be an ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NHWC``) or a layout string (``"NHWC"``). ``dtype`` may be an ``rocpycv.eDataType`` (e.g. ``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``).
         """
     def copy_to(self, device: eDeviceType) -> Tensor:
         """
@@ -198,9 +198,9 @@ class Tensor:
         """
         Returns the number of dimensions of the tensor.
         """
-    def reshape(self, new_shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: eTensorLayout) -> Tensor:
+    def reshape(self, new_shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: typing.Any) -> Tensor:
         """
-        Creates a new tensor with the specified shape.
+        Creates a new tensor with the specified shape. ``layout`` may be an ``rocpycv.eTensorLayout`` or a layout string (e.g. ``"NHWC"``).
         """
     def shape(self) -> list[int]:
         """
@@ -1089,9 +1089,9 @@ def flip_into(dst: Tensor, src: Tensor, flip_code: typing.SupportsInt | typing.S
                 Returns:
                     None
     """
-def from_dlpack(buffer: typing.Any, layout: eTensorLayout) -> Tensor:
+def from_dlpack(buffer: typing.Any, layout: typing.Any) -> Tensor:
     """
-    Wraps a DLPack supported tensor in a rocpycv tensor.
+    Wraps a DLPack supported tensor in a rocpycv tensor. ``layout`` may be an ``rocpycv.eTensorLayout`` or a layout string (e.g. ``"NHWC"``).
     """
 def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """

@@ -123,15 +123,15 @@ def main() -> None:
     print(f"Input image shape: {np_image.shape}")
 
     # Load/allocate tensors on the GPU
-    input_tensor  : rocpycv.Tensor = rocpycv.from_dlpack(np_image, rocpycv.NHWC).copy_to(rocpycv.GPU)
-    resized       : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
-    rgb           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
-    f32           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
-    normalized    : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
-    preprocessed  : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), rocpycv.NCHW, rocpycv.F32)
+    input_tensor  : rocpycv.Tensor = rocpycv.from_dlpack(np_image, "NHWC").copy_to(rocpycv.GPU)
+    resized       : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.uint8)
+    rgb           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.uint8)
+    f32           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.float32)
+    normalized    : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.float32)
+    preprocessed  : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), "NCHW", np.float32)
 
-    mean_t        : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
-    std_t         : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
+    mean_t        : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), "NHWC").copy_to(rocpycv.GPU)
+    std_t         : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), "NHWC").copy_to(rocpycv.GPU)
 
     # Setup MIGraphX arguments/shapes
     in_shape   : migraphx.shape    = migraphx.shape(type="float_type", lens=preprocessed.shape())

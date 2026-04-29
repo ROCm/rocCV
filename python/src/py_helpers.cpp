@@ -22,7 +22,11 @@ THE SOFTWARE.
 
 #include "py_helpers.hpp"
 
+#include <core/tensor_layout.hpp>
+#include <pybind11/numpy.h>
+
 #include <stdexcept>
+#include <string>
 
 eDataType DLTypeToRoccvType(DLDataType dtype) {
     if (dtype.bits == 8) {
@@ -147,4 +151,49 @@ int2 GetInt2FromTuple(py::tuple src) {
         std::runtime_error("Cannot convert py::tuple to int2. py::tuple.size() != 2.");
     }
     return make_int2(src[0].cast<int>(), src[1].cast<int>());
+}
+
+eTensorLayout LayoutFromPyObject(py::object obj) {
+    if (py::isinstance<eTensorLayout>(obj)) {
+        return obj.cast<eTensorLayout>();
+    }
+
+    if (py::isinstance<py::str>(obj)) {
+        std::string s = obj.cast<std::string>();
+        for (const auto& [layout, name] : roccv::TensorLayout::layoutStringTable) {
+            if (name == s) return layout;
+        }
+        throw std::runtime_error("Unknown tensor layout string: '" + s + "'.");
+    }
+
+    throw std::runtime_error("layout must be an rocpycv.eTensorLayout or a layout string (e.g. 'NHWC').");
+}
+
+eDataType DataTypeFromPyObject(py::object obj) {
+    if (py::isinstance<eDataType>(obj)) {
+        return obj.cast<eDataType>();
+    }
+
+    // np.dtype() accepts numpy scalar types (np.float32), dtype instances, and dtype strings,
+    // so we delegate the parsing to NumPy itself rather than enumerating cases here.
+    py::dtype dt;
+    try {
+        static const py::object np_dtype = py::module_::import("numpy").attr("dtype");
+        dt = np_dtype(obj).cast<py::dtype>();
+    } catch (const std::exception&) {
+        throw std::runtime_error(
+            "dtype must be an rocpycv.eDataType or a NumPy dtype/scalar type (e.g. np.float32).");
+    }
+
+    DLDataTypeCode code;
+    switch (dt.kind()) {
+        case 'u': code = kDLUInt; break;
+        case 'i': code = kDLInt; break;
+        case 'f': code = kDLFloat; break;
+        default:
+            throw std::runtime_error("Unsupported NumPy dtype for rocpycv.Tensor (kind '" +
+                                     std::string(1, dt.kind()) + "').");
+    }
+    DLDataType dl{static_cast<uint8_t>(code), static_cast<uint8_t>(dt.itemsize() * 8), 1};
+    return DLTypeToRoccvType(dl);
 }

@@ -87,3 +87,22 @@ extern double2 GetDouble2FromTuple(py::tuple src);
  * @return int2
  */
 extern int2 GetInt2FromTuple(py::tuple src);
+
+/**
+ * @brief Resolves a Python object to an eTensorLayout. Accepts either an rocpycv.eTensorLayout enum
+ * value, or a layout string such as "NHWC". Throws std::runtime_error for unsupported inputs.
+ *
+ * @param obj A Python object describing the tensor layout.
+ * @return eTensorLayout
+ */
+extern eTensorLayout LayoutFromPyObject(py::object obj);
+
+/**
+ * @brief Resolves a Python object to an eDataType. Accepts either an rocpycv.eDataType enum value,
+ * or anything coercible to a NumPy dtype (e.g. ``np.float32``, ``np.dtype("uint8")``,
+ * ``"float32"``). Throws std::runtime_error for unsupported inputs.
+ *
+ * @param obj A Python object describing the tensor data type.
+ * @return eDataType
+ */
+extern eDataType DataTypeFromPyObject(py::object obj);
