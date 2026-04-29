@@ -54,10 +54,8 @@ def read_image(image_path: str) -> np.ndarray:
 
 def load_or_compile_model(onnx_path: str, use_fp16: bool = True) -> migraphx.program:
     """Load a cached compiled model, or parse + compile + cache the ONNX file."""
-    # TODO: Support other batch sizes later
-    batch_size = 1
     precision_tag = "fp16" if use_fp16 else "fp32"
-    cache_path = f"{os.path.splitext(onnx_path)[0]}_b{batch_size}_{precision_tag}.mxr"
+    cache_path = f"{os.path.splitext(onnx_path)[0]}_b{BATCH_SIZE}_{precision_tag}.mxr"
 
     if os.path.exists(cache_path):
         print(f"Loading cached compiled model: {cache_path}")
@@ -66,7 +64,7 @@ def load_or_compile_model(onnx_path: str, use_fp16: bool = True) -> migraphx.pro
     print(f"Parsing ONNX: {onnx_path}")
     model = migraphx.parse_onnx(
         onnx_path,
-        map_input_dims={"data": [batch_size, 3, INPUT_H, INPUT_W]},
+        map_input_dims={"data": [BATCH_SIZE, 3, INPUT_H, INPUT_W]},
     )
 
     if use_fp16:
@@ -144,7 +142,7 @@ def main() -> None:
 
     # Begin preprocessing
     print("Preprocessing with rocCV...")
-    stream = rocpycv.Stream()
+    stream : rocpycv.Stream = rocpycv.Stream()
 
     rocpycv.resize_into(resized, input_tensor, rocpycv.CUBIC, stream)
     rocpycv.cvtcolor_into(rgb, resized, rocpycv.COLOR_BGR2RGB, stream)

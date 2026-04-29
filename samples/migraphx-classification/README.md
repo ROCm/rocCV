@@ -4,10 +4,7 @@ This sample demonstrates how to use rocCV to preprocess an image on the GPU and 
 
 ## Dependencies
 
-- A rocCV build with the Python bindings (`rocpycv`) on `PYTHONPATH`. Build rocCV with Python 3.11 by passing the following to cmake:
-  ```shell
-  -DPYTHON_VERSION_SUGGESTED=3.11
-  ```
+- A rocCV build with the Python bindings (`rocpycv`) on `PYTHONPATH`.
 - [MIGraphX](https://github.com/ROCm/AMDMIGraphX) with its Python bindings.
 - `opencv-python` and `numpy`.
 - A ResNet50 ONNX model with input name `data` and shape `[N, 3, 224, 224]` (e.g. the ONNX Model Zoo `resnet50-v1-7.onnx`).
@@ -16,7 +13,7 @@ This sample demonstrates how to use rocCV to preprocess an image on the GPU and 
 ## Command line
 
 ```shell
-python3.11 migraphx_classification.py \
+python3 migraphx_classification.py \
     --input  path/to/image.jpg \
     --model  path/to/resnet50.onnx \
     --labels path/to/imagenet_classes.txt \
