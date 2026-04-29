@@ -52,9 +52,60 @@ THE SOFTWARE.
 
 PYBIND11_MODULE(rocpycv, m) {
     m.doc() = R"pbdoc(
-        Python API reference
-        -----------------------
-        This is the Python API reference for rocCV.
+        rocpycv — AMD GPU-accelerated image pre/post-processing
+        =======================================================
+
+        rocpycv is the Python binding for rocCV, a HIP/ROCm image processing
+        library. It exposes a NumPy-friendly :class:`Tensor` and a suite of
+        operators (resize, normalize, color conversion, geometric warps, ...)
+        that run on either GPU (default) or CPU.
+
+        Quick start
+        -----------
+        .. code-block:: python
+
+            import numpy as np
+            import rocpycv
+
+            # Wrap a NumPy array as a CPU Tensor (zero-copy via DLPack), then
+            # copy it to the GPU (explicit H2D transfer).
+            host = np.zeros((1, 480, 640, 3), np.uint8)
+            src  = rocpycv.from_dlpack(host, "NHWC").copy_to(rocpycv.GPU)
+
+            # Functional form: operators allocate and return a new Tensor.
+            resized = rocpycv.resize(src, (1, 224, 224, 3), rocpycv.LINEAR)
+            chw     = rocpycv.reformat(resized, "NCHW")
+
+            # ``*_into`` form: write into a caller-allocated output, optionally
+            # on a stream — useful in hot preprocessing loops.
+            stream = rocpycv.Stream()
+            out    = rocpycv.Tensor((1, 224, 224, 3), np.uint8, "NHWC")
+            rocpycv.resize_into(out, src, rocpycv.LINEAR, stream)
+            stream.synchronize()
+
+        Tensors
+        -------
+        :class:`Tensor` arguments accept either rocpycv enums or familiar
+        Python types:
+
+        * ``dtype``  — ``rocpycv.F32`` or any NumPy dtype/scalar (``np.float32``).
+        * ``layout`` — ``rocpycv.NHWC`` or a layout string (``"NHWC"``).
+
+        For zero-copy interop, tensors implement the DLPack protocol — pass any
+        ``__dlpack__``-supporting object (NumPy array, PyTorch tensor, ...) to
+        :func:`from_dlpack`, and use :meth:`Tensor.data_ptr` to hand a raw GPU
+        pointer to inference frameworks such as MIGraphX.
+
+        Operators
+        ---------
+        Most operators come in two forms:
+
+        * ``op(src, ...)``       — allocates and returns a new :class:`Tensor`.
+        * ``op_into(dst, src, ...)`` — writes into a pre-allocated output,
+          avoiding per-call allocation in tight loops.
+
+        All operators accept an optional ``stream`` (a :class:`Stream` wrapping
+        a ``hipStream_t``) and a ``device`` argument (defaults to GPU).
     )pbdoc";
     PyException::Export(m);
     PyEnums::Export(m);
