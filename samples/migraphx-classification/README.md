@@ -41,7 +41,7 @@ The preprocessing pipeline runs entirely on the GPU through `rocpycv`:
 ## MIGraphX Interop
 
 The compiled MIGraphX program is built with `offload_copy=False`, so input and output buffers must already live on the GPU. The sample binds:
-- The rocCV preprocessed tensor's GPU pointer (`tensor.data_ptr()`) as the `data` input via `migraphx.argument_from_pointer`.
+- The rocCV preprocessed tensor's GPU pointer (`preprocessed.data_ptr()`) as the `data` input via `migraphx.argument_from_pointer`.
 - A `migraphx.allocate_gpu` buffer as the output.
 
 Inference is launched with `model.run_async` using the same HIP stream as the preprocessing pipeline (`stream.handle()`), so preprocessing and inference are serialized on a single stream with no extra synchronization until the final `stream.synchronize()`.

@@ -123,21 +123,21 @@ def main() -> None:
     print(f"Input image shape: {np_image.shape}")
 
     # Load/allocate tensors on the GPU
-    input_tensor : rocpycv.Tensor = rocpycv.from_dlpack(np_image, rocpycv.NHWC).copy_to(rocpycv.GPU)
-    resized      : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
-    rgb          : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
-    f32          : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
-    normalized   : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
-    nchw         : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), rocpycv.NCHW, rocpycv.F32)
+    input_tensor  : rocpycv.Tensor = rocpycv.from_dlpack(np_image, rocpycv.NHWC).copy_to(rocpycv.GPU)
+    resized       : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
+    rgb           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
+    f32           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
+    normalized    : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
+    preprocessed  : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), rocpycv.NCHW, rocpycv.F32)
 
-    mean_t       : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
-    std_t        : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
+    mean_t        : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
+    std_t         : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
 
     # Setup MIGraphX arguments/shapes
-    in_shape   : migraphx.shape    = migraphx.shape(type="float_type", lens=nchw.shape())
+    in_shape   : migraphx.shape    = migraphx.shape(type="float_type", lens=preprocessed.shape())
     out_shape  : migraphx.shape    = migraphx.shape(type="float_type", lens=[BATCH_SIZE, 1000])
 
-    in_arg     : migraphx.argument = migraphx.argument_from_pointer(in_shape, nchw.data_ptr())
+    in_arg     : migraphx.argument = migraphx.argument_from_pointer(in_shape, preprocessed.data_ptr())
     out_buf    : migraphx.buffer   = migraphx.allocate_gpu(out_shape)
 
     # Begin preprocessing
@@ -148,9 +148,9 @@ def main() -> None:
     rocpycv.cvtcolor_into(rgb, resized, rocpycv.COLOR_BGR2RGB, stream)
     rocpycv.convert_to_into(f32, rgb, 1.0, 0.0, stream)
     rocpycv.normalize_into(normalized, f32, mean_t, std_t, rocpycv.NormalizeFlags.SCALE_IS_STDDEV, 1.0, 0.0, 0.0, stream)
-    rocpycv.reformat_into(nchw, normalized, stream)
+    rocpycv.reformat_into(preprocessed, normalized, stream)
     
-    print(f"Preprocessed tensor shape (NCHW): {nchw.shape()}")
+    print(f"Preprocessed tensor shape (NCHW): {preprocessed.shape()}")
 
     print("Running MIGraphX inference...")
 
