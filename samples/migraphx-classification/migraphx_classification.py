@@ -41,6 +41,7 @@ IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32) * 255.0
 IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32) * 255.0
 
 INPUT_H, INPUT_W = 224, 224
+BATCH_SIZE = 1
 
 
 def read_image(image_path: str) -> np.ndarray:
@@ -51,11 +52,12 @@ def read_image(image_path: str) -> np.ndarray:
     return np.stack([bgr])
 
 
-def load_or_compile_model(onnx_path: str) -> migraphx.program:
+def load_or_compile_model(onnx_path: str, use_fp16: bool = True) -> migraphx.program:
     """Load a cached compiled model, or parse + compile + cache the ONNX file."""
     # TODO: Support other batch sizes later
     batch_size = 1
-    cache_path = f"{os.path.splitext(onnx_path)[0]}_b{batch_size}.mxr"
+    precision_tag = "fp16" if use_fp16 else "fp32"
+    cache_path = f"{os.path.splitext(onnx_path)[0]}_b{batch_size}_{precision_tag}.mxr"
 
     if os.path.exists(cache_path):
         print(f"Loading cached compiled model: {cache_path}")
@@ -66,6 +68,12 @@ def load_or_compile_model(onnx_path: str) -> migraphx.program:
         onnx_path,
         map_input_dims={"data": [batch_size, 3, INPUT_H, INPUT_W]},
     )
+
+    if use_fp16:
+        print("Quantizing to FP16...")
+        # Inserts internal float -> half conversions; model inputs/outputs stay
+        # float32, so the existing F32 buffer setup remains unchanged.
+        migraphx.quantize_fp16(model)
 
     print("Compiling for GPU...")
     # offload_copy=False allows us to bind GPU buffers directly to allow for
@@ -110,44 +118,43 @@ def softmax(x: np.ndarray, axis: int = -1) -> np.ndarray:
 def main() -> None:
     args = parse_args()
 
-    # 1. Load the model
     model = load_or_compile_model(args.model)
 
     print(f"Reading image: {args.input}")
     np_image = read_image(args.input)
     print(f"Input image shape: {np_image.shape}")
 
+    # Load/allocate tensors on the GPU
+    input_tensor : rocpycv.Tensor = rocpycv.from_dlpack(np_image, rocpycv.NHWC).copy_to(rocpycv.GPU)
+    resized      : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
+    rgb          : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.U8)
+    f32          : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
+    normalized   : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), rocpycv.NHWC, rocpycv.F32)
+    nchw         : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), rocpycv.NCHW, rocpycv.F32)
+
+    mean_t       : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
+    std_t        : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
+
+    # Setup MIGraphX arguments/shapes
+    in_shape   : migraphx.shape    = migraphx.shape(type="float_type", lens=nchw.shape())
+    out_shape  : migraphx.shape    = migraphx.shape(type="float_type", lens=[BATCH_SIZE, 1000])
+
+    in_arg     : migraphx.argument = migraphx.argument_from_pointer(in_shape, nchw.data_ptr())
+    out_buf    : migraphx.buffer   = migraphx.allocate_gpu(out_shape)
+
+    # Begin preprocessing
     print("Preprocessing with rocCV...")
     stream = rocpycv.Stream()
 
-    # 2. Convert the image to a rocCV tensor in NHWC layout.
-    tensor = rocpycv.from_dlpack(np_image, rocpycv.NHWC).copy_to(rocpycv.GPU)
-
-    # 3. Convert from BGR to RGB for MIGraphX.
-    tensor = rocpycv.cvtcolor(tensor, rocpycv.COLOR_BGR2RGB, stream, rocpycv.GPU)
-
-    # 4. Resize to 224x224.
-    tensor = rocpycv.resize(tensor, (1, INPUT_H, INPUT_W, 3), rocpycv.CUBIC, stream, rocpycv.GPU)
-
-    # 5. Cast U8 -> F32 (no scaling; normalize step folds in /255).
-    tensor = rocpycv.convert_to(tensor, rocpycv.eDataType.F32, 1.0, 0.0, stream, rocpycv.GPU)
-
-    # 6. ImageNet normalize: (pixel - mean) / std.
-    mean_t = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
-    std_t = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), rocpycv.NHWC).copy_to(rocpycv.GPU)
-    tensor = rocpycv.normalize(tensor, mean_t, std_t, rocpycv.NormalizeFlags.SCALE_IS_STDDEV, 1.0, 0.0, 0.0, stream, rocpycv.GPU)
-
-    # 7. NHWC -> NCHW (MIGraphX / ONNX expects NCHW).
-    tensor = rocpycv.reformat(tensor, rocpycv.eTensorLayout.NCHW, stream, rocpycv.GPU)
-    print(f"Preprocessed tensor shape (NCHW): {tensor.shape()}")
+    rocpycv.resize_into(resized, input_tensor, rocpycv.CUBIC, stream)
+    rocpycv.cvtcolor_into(rgb, resized, rocpycv.COLOR_BGR2RGB, stream)
+    rocpycv.convert_to_into(f32, rgb, 1.0, 0.0, stream)
+    rocpycv.normalize_into(normalized, f32, mean_t, std_t, rocpycv.NormalizeFlags.SCALE_IS_STDDEV, 1.0, 0.0, 0.0, stream)
+    rocpycv.reformat_into(nchw, normalized, stream)
+    
+    print(f"Preprocessed tensor shape (NCHW): {nchw.shape()}")
 
     print("Running MIGraphX inference...")
-
-    # Setup MIGraphX arguments/shapes
-    in_shape = migraphx.shape(type="float_type", lens=tensor.shape())
-    out_shape = migraphx.shape(type="float_type", lens=[1, 1000])
-    in_arg = migraphx.argument_from_pointer(in_shape, tensor.data_ptr())
-    out_buf = migraphx.allocate_gpu(out_shape)
 
     outputs = model.run_async(
         {"data": in_arg, "main:#output_0": out_buf},
@@ -156,6 +163,7 @@ def main() -> None:
     )
     stream.synchronize()
 
+    # Postprocess the inference results
     logits = np.array(migraphx.from_gpu(outputs[0]))
     probs = softmax(logits, axis=1)
 

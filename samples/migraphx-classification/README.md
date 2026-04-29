@@ -35,8 +35,8 @@ On the first run, the script compiles the ONNX model for the GPU and caches the 
 
 The preprocessing pipeline runs entirely on the GPU through `rocpycv`:
 
-1. **CvtColor**: Converts the OpenCV BGR image to RGB.
-2. **Resize**: Resizes to 224x224 using cubic interpolation.
+1. **Resize**: Resizes to 224x224 using cubic interpolation.
+2. **CvtColor**: Converts the OpenCV BGR image to RGB.
 3. **Convert To**: Casts U8 pixels to float32 (no scaling — the `/255` step is folded into the normalize parameters).
 4. **Normalize**: Applies ImageNet mean/std normalization. The mean and std constants are pre-multiplied by 255 so the operator can normalize directly from the [0, 255] float pixel range in a single pass.
 5. **Reformat**: Converts the tensor from NHWC to NCHW, the layout MIGraphX/ONNX expects.
