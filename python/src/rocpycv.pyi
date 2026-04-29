@@ -913,16 +913,17 @@ def composite_into(dst: Tensor, foreground: Tensor, background: Tensor, fgmask: 
                 Returns:
                     None
     """
-def convert_to(src: Tensor, dtype: eDataType, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
+def convert_to(src: Tensor, dtype: typing.Any, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Convert To operation on the given HIP stream.
     
                 See also:
                     Refer to the rocCV C++ API reference for more information on this operation.
-                
+    
                 Args:
                     src (rocpycv.Tensor): Input tensor containing one or more images.
-                    dtype (eDataType): Datatype of the output tensor.
+                    dtype: Datatype of the output tensor. Either an ``rocpycv.eDataType``
+                        (e.g. ``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``).
                     alpha (double, optional): Scalar for output data. Defaults to 1.0.
                     beta (double, optional): Offset for the data. Defaults to 0.0.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
@@ -1239,7 +1240,7 @@ def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags:
                   Returns:
                       None
     """
-def reformat(input: Tensor, out_layout: eTensorLayout, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
+def reformat(input: Tensor, out_layout: typing.Any, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Reformat operation and returns the result as a new tensor.
     
@@ -1248,7 +1249,8 @@ def reformat(input: Tensor, out_layout: eTensorLayout, stream: rocpycv.Stream | 
     
                 Args:
                     input (rocpycv.Tensor): Input tensor to reformat.
-                    out_layout (rocpycv.eTensorLayout): The layout to reformat the input tensor to.
+                    out_layout: The layout to reformat the input tensor to. Either an
+                        ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NCHW``) or a layout string (``"NCHW"``).
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
     
