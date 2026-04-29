@@ -59,7 +59,7 @@ DLManagedTensor* createDLManagedTensor(std::shared_ptr<roccv::Tensor> tensor, st
     return dlTensor;
 }
 
-PyTensor::PyTensor(std::vector<int64_t> shape, eTensorLayout layout, eDataType dtype, eDeviceType device) {
+PyTensor::PyTensor(std::vector<int64_t> shape, eDataType dtype, eTensorLayout layout, eDeviceType device) {
     roccv::TensorShape tShape(roccv::TensorShape(roccv::TensorLayout(layout), shape));
     m_tensor = std::make_shared<roccv::Tensor>(tShape, roccv::DataType(dtype), device);
 }
@@ -202,15 +202,15 @@ void PyTensor::Export(pybind11::module& m) {
 
     pybind11::class_<PyTensor, std::shared_ptr<PyTensor>> tensor(m, "Tensor");
     tensor
-        .def(pybind11::init([](std::vector<int64_t> shape, py::object layout, py::object dtype, eDeviceType device) {
-                 return std::make_shared<PyTensor>(shape, LayoutFromPyObject(layout), DataTypeFromPyObject(dtype),
+        .def(pybind11::init([](std::vector<int64_t> shape, py::object dtype, py::object layout, eDeviceType device) {
+                 return std::make_shared<PyTensor>(shape, DataTypeFromPyObject(dtype), LayoutFromPyObject(layout),
                                                    device);
              }),
-             "shape"_a, "layout"_a, "dtype"_a, "device"_a = eDeviceType::GPU,
-             "Constructs a tensor object. ``layout`` may be an ``rocpycv.eTensorLayout`` (e.g. "
-             "``rocpycv.NHWC``) or a layout string (``\"NHWC\"``). ``dtype`` may be an "
-             "``rocpycv.eDataType`` (e.g. ``rocpycv.F32``) or a NumPy dtype/scalar type "
-             "(e.g. ``np.float32``).")
+             "shape"_a, "dtype"_a, "layout"_a, "device"_a = eDeviceType::GPU,
+             "Constructs a tensor object. ``dtype`` may be an ``rocpycv.eDataType`` (e.g. "
+             "``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``). ``layout`` "
+             "may be an ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NHWC``) or a layout string "
+             "(``\"NHWC\"``).")
         .def("copy_to", &PyTensor::copyTo, "device"_a,
              "Returns a deep copy of the tensor with data copied to a specified device type.")
         .def("__dlpack__", &PyTensor::toDLPack, "stream"_a = py::none(),

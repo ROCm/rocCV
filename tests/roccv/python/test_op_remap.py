@@ -44,7 +44,7 @@ from test_helpers import generate_tensor, compare_tensors
 
 def test_op_remap(samples, width, height, channels, dtype, map_interp, interp, map_type, align_corners, border_mode, border_val, device):
     input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
 
     if (map_type == rocpycv.REMAP_ABSOLUTE):

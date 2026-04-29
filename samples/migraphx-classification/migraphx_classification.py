@@ -124,11 +124,11 @@ def main() -> None:
 
     # Load/allocate tensors on the GPU
     input_tensor  : rocpycv.Tensor = rocpycv.from_dlpack(np_image, "NHWC").copy_to(rocpycv.GPU)
-    resized       : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.uint8)
-    rgb           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.uint8)
-    f32           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.float32)
-    normalized    : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), "NHWC", np.float32)
-    preprocessed  : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), "NCHW", np.float32)
+    resized       : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), np.uint8, "NHWC")
+    rgb           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), np.uint8, "NHWC")
+    f32           : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), np.float32, "NHWC")
+    normalized    : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, INPUT_H, INPUT_W, 3), np.float32, "NHWC")
+    preprocessed  : rocpycv.Tensor = rocpycv.Tensor((BATCH_SIZE, 3, INPUT_H, INPUT_W), np.float32, "NCHW")
 
     mean_t        : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_MEAN.reshape(1, 1, 1, 3), "NHWC").copy_to(rocpycv.GPU)
     std_t         : rocpycv.Tensor = rocpycv.from_dlpack(IMAGENET_STD.reshape(1, 1, 1, 3), "NHWC").copy_to(rocpycv.GPU)

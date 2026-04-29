@@ -38,11 +38,11 @@ class PyTensor : public std::enable_shared_from_this<PyTensor> {
      * wrap.
      *
      * @param shape The shape of the tensor.
-     * @param layout The layout of the tensor.
      * @param dtype The data type of the tensor.
+     * @param layout The layout of the tensor.
      * @param device The device of the tensor.
      */
-    PyTensor(std::vector<int64_t> shape, eTensorLayout layout, eDataType dtype, eDeviceType device);
+    PyTensor(std::vector<int64_t> shape, eDataType dtype, eTensorLayout layout, eDeviceType device);
 
     /**
      * @brief Wraps an existing roccv::Tensor inside of a newly constructed PyTensor.

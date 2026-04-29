@@ -44,7 +44,7 @@ def generate_boxes(samples: int, num_boxes: int, device: rocpycv.eDeviceType) ->
 def test_op_non_max_suppression(samples, num_boxes, device):
     boxes = generate_boxes(samples, num_boxes, device)
     scores = generate_tensor_generic([samples, num_boxes], rocpycv.eTensorLayout.NW, rocpycv.eDataType.F32, device)
-    output_golden = rocpycv.Tensor([samples, num_boxes], rocpycv.eTensorLayout.NW, rocpycv.eDataType.U8, device)
+    output_golden = rocpycv.Tensor([samples, num_boxes], rocpycv.eDataType.U8, rocpycv.eTensorLayout.NW, device)
 
     stream = rocpycv.Stream()
     # Hardcoding the score and IoU threshold here. The only thing we care about is the resulting size of the

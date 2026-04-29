@@ -170,9 +170,9 @@ class Tensor:
         """
         Returns a tuple containing the DLPack device and device id for the tensor.
         """
-    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: typing.Any, dtype: typing.Any, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
+    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], dtype: typing.Any, layout: typing.Any, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
         """
-        Constructs a tensor object. ``layout`` may be an ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NHWC``) or a layout string (``"NHWC"``). ``dtype`` may be an ``rocpycv.eDataType`` (e.g. ``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``).
+        Constructs a tensor object. ``dtype`` may be an ``rocpycv.eDataType`` (e.g. ``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``). ``layout`` may be an ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NHWC``) or a layout string (``"NHWC"``).
         """
     def copy_to(self, device: eDeviceType) -> Tensor:
         """
