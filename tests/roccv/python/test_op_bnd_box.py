@@ -49,7 +49,7 @@ def generate_boxes(samples: int, height: int, width: int) -> rocpycv.BndBoxes:
     (3, 150, 50),
     (7, 15, 23)
 ])
-def test_op_remap(samples, height, width, channels, device):
+def test_op_bndbox(samples, height, width, channels, device):
     input = generate_tensor(samples, width, height, channels, rocpycv.eDataType.U8, device)
     boxes = generate_boxes(samples, height, width)
     output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eDataType.U8, rocpycv.eTensorLayout.NHWC, device)
