@@ -21,6 +21,7 @@
 #
 # ##############################################################################
 
+import numpy as np
 import pytest
 import rocpycv
 
@@ -44,3 +45,41 @@ def test_tensor_basic_properties(shape, layout, dtype, device):
     assert tensor.device() == device
     assert tensor.dtype() == dtype
     assert tensor.data_ptr() != 0
+
+
+@pytest.mark.parametrize(
+    "dtype_in, expected_dtype",
+    [
+        (rocpycv.eDataType.U8, rocpycv.eDataType.U8),
+        (rocpycv.eDataType.F32, rocpycv.eDataType.F32),
+        (np.uint8, rocpycv.eDataType.U8),
+        (np.float32, rocpycv.eDataType.F32),
+        (np.int32, rocpycv.eDataType.S32),
+        (np.dtype("uint16"), rocpycv.eDataType.U16),
+    ],
+)
+@pytest.mark.parametrize(
+    "layout_in, expected_layout, shape",
+    [
+        (rocpycv.eTensorLayout.NHWC, rocpycv.eTensorLayout.NHWC, [2, 32, 64, 3]),
+        ("NHWC", rocpycv.eTensorLayout.NHWC, [2, 32, 64, 3]),
+        ("NCHW", rocpycv.eTensorLayout.NCHW, [1, 3, 16, 16]),
+        ("HWC", rocpycv.eTensorLayout.HWC, [8, 8, 4]),
+    ],
+)
+def test_tensor_construction_from_numpy_and_strings(dtype_in, expected_dtype, layout_in, expected_layout, shape):
+    tensor = rocpycv.Tensor(shape, dtype_in, layout_in, rocpycv.eDeviceType.GPU)
+
+    assert tensor.shape() == shape
+    assert tensor.dtype() == expected_dtype
+    assert tensor.layout() == expected_layout
+
+
+def test_tensor_construction_invalid_dtype_raises():
+    with pytest.raises(Exception):
+        rocpycv.Tensor([1, 8, 8, 3], "not_a_dtype", rocpycv.eTensorLayout.NHWC, rocpycv.eDeviceType.GPU)
+
+
+def test_tensor_construction_invalid_layout_raises():
+    with pytest.raises(Exception):
+        rocpycv.Tensor([1, 8, 8, 3], rocpycv.eDataType.U8, "ZYXW", rocpycv.eDeviceType.GPU)
