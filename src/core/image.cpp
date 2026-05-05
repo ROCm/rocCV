@@ -95,10 +95,6 @@ Image::Requirements Image::CalcRequirements(Size2D size, ImageFormat format) {
 
     const int64_t bytesPerPixel = static_cast<int64_t>(DataType(format.dtype()).size()) * format.channels();
 
-    // Designated aggregate init: planeRowStride[0] is set explicitly; the
-    // remaining ROCCV_MAX_IMAGE_PLANES-1 slots are zeroed by the trailing-
-    // elements rule for brace-enclosed array initializers. alignBytes stays at
-    // 0 since CalcRequirements always produces packed rows for now.
     // TODO: derive a sensible default base/row alignment from device attributes.
     return ImageRequirements{
         .size = size,
@@ -137,8 +133,6 @@ ImageFormat Image::format() const noexcept { return m_metadata.format(); }
 
 eDeviceType Image::device() const noexcept { return m_metadata.device(); }
 
-ImageData Image::exportData() const { return m_metadata; }
-
 // -----------------------------------------------------------------------------
 // ImageWrapData
 // -----------------------------------------------------------------------------
@@ -149,14 +143,10 @@ Image ImageWrapData(const ImageData& data, ImageDataCleanupFunc cleanup) {
         throw Exception("ImageWrapData requires strided image data.", eStatusType::INVALID_VALUE);
     }
 
-    // Storage tracks plane(0)'s base pointer. Single-plane today; multi-plane
-    // wraps would need a richer storage shape (or to abandon storing the
-    // pointer here at all).
+    // Single-plane assumption: storage tracks plane(0). Multi-plane wraps will
+    // need a richer storage shape.
     void* basePtr = strided->plane(0).basePtr;
 
-    // Deleter captures both the original ImageData snapshot and the user's
-    // cleanup callback. View-only (cleanup == nullptr) means the deleter
-    // touches nothing but the storage object itself.
     auto storage = std::shared_ptr<ImageStorage>(new ImageStorage(basePtr), [data, cleanup](ImageStorage* s) {
         if (cleanup) {
             cleanup(data);

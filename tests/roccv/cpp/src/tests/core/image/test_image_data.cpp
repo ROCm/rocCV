@@ -33,11 +33,6 @@ using namespace roccv::tests;
 
 namespace {
 
-// EXPECT_EQ feeds both sides through std::to_string, which only accepts
-// numeric types. Wrap enum/pointer/bool comparisons in these casts.
-auto AsInt = [](auto v) { return static_cast<int>(v); };
-auto AsAddr = [](void* p) { return reinterpret_cast<uintptr_t>(p); };
-
 // ImageData carries pointers but never dereferences them; the buffer is a
 // metadata snapshot. Use opaque sentinel pointers in tests so we can verify
 // values flow through without needing real allocations.

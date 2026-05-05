@@ -107,53 +107,25 @@ class Image {
     Image& operator=(Image&&) noexcept = default;
     ~Image() = default;
 
-    /**
-     * @brief Image dimensions in pixels.
-     */
     Size2D size() const noexcept;
-
-    /**
-     * @brief Pixel format.
-     */
     ImageFormat format() const noexcept;
-
-    /**
-     * @brief Device the underlying buffer resides on.
-     */
     eDeviceType device() const noexcept;
 
-    /**
-     * @brief Snapshot of the image's data buffer (pointer, stride, format).
-     *
-     * The returned ImageData references the same underlying buffer; lifetime
-     * is controlled by this Image's refcount, not by the snapshot.
-     */
-    ImageData exportData() const;
+    // Reference into m_metadata; valid as long as this Image (or any handle
+    // sharing its storage) is alive.
+    const ImageData& exportData() const noexcept { return m_metadata; }
 
-    /**
-     * @brief Exports the image's data buffer and casts it to a specified image data object.
-     *
-     * Throws std::bad_cast if the underlying buffer kind does not match what
-     * `Derived` expects (e.g. exportData<ImageDataStridedHip>() on a host-resident
-     * image throws std::bad_cast). Convenience wrapper around ImageData::cast<>.
-     *
-     * @tparam Derived The ImageData subclass to cast to.
-     * @return The image data casted to the image data object specified
-     */
+    // Throws std::bad_cast if the underlying buffer kind doesn't match Derived.
     template <typename Derived>
     Derived exportData() const {
-        ImageData data = exportData();
-        std::optional<Derived> derived_data = data.cast<Derived>();
-        if (!derived_data.has_value()) {
+        auto derived = m_metadata.cast<Derived>();
+        if (!derived.has_value()) {
             throw std::bad_cast();
         }
-
-        return derived_data.value();
+        return derived.value();
     }
 
    private:
-    // Internal ctor used by ImageWrapData and the allocating public ctors via
-    // delegation. Stores `metadata` and `storage` verbatim — no allocation.
     Image(ImageData metadata, std::shared_ptr<ImageStorage> storage);
 
     friend Image ImageWrapData(const ImageData& data, ImageDataCleanupFunc cleanup);

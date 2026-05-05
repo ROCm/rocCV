@@ -44,9 +44,6 @@ class ImageStorage {
     ImageStorage(const ImageStorage&) = delete;
     ImageStorage& operator=(const ImageStorage&) = delete;
 
-    /**
-     * @brief Returns the raw data pointer this storage is tracking.
-     */
     void* data() const noexcept { return m_data; }
 
    private:

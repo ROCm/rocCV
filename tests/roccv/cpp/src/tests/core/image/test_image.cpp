@@ -39,11 +39,6 @@ using namespace roccv::tests;
 
 namespace {
 
-// EXPECT_EQ pipes through std::to_string, so wrap enums/pointers/bools.
-auto AsInt = [](auto v) { return static_cast<int>(v); };
-auto AsAddr = [](void* p) { return reinterpret_cast<uintptr_t>(p); };
-auto AsSize = [](auto v) { return static_cast<size_t>(v); };
-
 void* const FAKE_PTR_A = reinterpret_cast<void*>(0xAAAAAAAAull);
 
 /**
@@ -233,10 +228,7 @@ void TestImageCopySharesBuffer() {
         EXPECT_EQ(AsAddr(second.exportData().cast<ImageDataStrided>()->plane(0).basePtr), AsAddr(buf));
 
         // Drop `first`; buffer must NOT be freed yet — `second` still holds it.
-        {
-            Image consumed = std::move(first);
-            (void)consumed;
-        }
+        { Image sink = std::move(first); }
         EXPECT_EQ(alloc.hipFrees, 0);
     }
     // All handles dropped — exactly one free.
@@ -317,20 +309,15 @@ void TestImageExportDataTypedMismatch() {
 // =============================================================================
 
 /**
- * @brief View-only wrap (no cleanup callback) must not free the wrapped
- * buffer when the Image is destroyed.
+ * @brief View-only wrap (no cleanup callback) round-trips metadata and must
+ * not crash when the Image is destroyed (no free attempt on the sentinel ptr).
  */
 void TestImageWrapDataViewOnly() {
-    int frees = 0;
-    {
-        Image wrapped = ImageWrapData(MakeFakeHipData(640, 480, FAKE_PTR_A));
-        EXPECT_EQ(wrapped.size().w, 640);
-        EXPECT_EQ(wrapped.size().h, 480);
-        EXPECT_EQ(AsInt(wrapped.device()), AsInt(eDeviceType::GPU));
-        EXPECT_EQ(AsAddr(wrapped.exportData().cast<ImageDataStrided>()->plane(0).basePtr), AsAddr(FAKE_PTR_A));
-    }
-    // No callback was registered — nothing observable should have changed.
-    EXPECT_EQ(frees, 0);
+    Image wrapped = ImageWrapData(MakeFakeHipData(640, 480, FAKE_PTR_A));
+    EXPECT_EQ(wrapped.size().w, 640);
+    EXPECT_EQ(wrapped.size().h, 480);
+    EXPECT_EQ(AsInt(wrapped.device()), AsInt(eDeviceType::GPU));
+    EXPECT_EQ(AsAddr(wrapped.exportData().cast<ImageDataStrided>()->plane(0).basePtr), AsAddr(FAKE_PTR_A));
 }
 
 /**
