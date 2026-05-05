@@ -93,17 +93,19 @@ Image::Requirements Image::CalcRequirements(Size2D size, ImageFormat format) {
         throw Exception("Image dimensions must be >= 1.", eStatusType::INVALID_VALUE);
     }
 
-    ImageRequirements reqs;
-    reqs.size = size;
-    reqs.format = format;
-
     const int64_t bytesPerPixel = static_cast<int64_t>(DataType(format.dtype()).size()) * format.channels();
-    reqs.planeRowStride[0] = bytesPerPixel * size.w;  // packed; no row padding while alignBytes is unused.
 
+    // Designated aggregate init: planeRowStride[0] is set explicitly; the
+    // remaining ROCCV_MAX_IMAGE_PLANES-1 slots are zeroed by the trailing-
+    // elements rule for brace-enclosed array initializers. alignBytes stays at
+    // 0 since CalcRequirements always produces packed rows for now.
     // TODO: derive a sensible default base/row alignment from device attributes.
-    reqs.alignBytes = 0;
-
-    return reqs;
+    return ImageRequirements{
+        .size = size,
+        .format = format,
+        .planeRowStride = {bytesPerPixel * size.w},
+        .alignBytes = 0,
+    };
 }
 
 // -----------------------------------------------------------------------------
