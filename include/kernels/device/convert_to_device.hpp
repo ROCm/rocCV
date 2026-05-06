@@ -23,6 +23,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
@@ -33,6 +34,7 @@ template <typename SrcWrapper, typename DstWrapper, typename DT_AB>
 __global__ void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_AB beta) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using dst_type = typename DstWrapper::ValueType;
+    using work_type = MakeType<DT_AB, NumElements<dst_type>>;
 
     const int x = threadIdx.x + blockIdx.x * blockDim.x;
     const int y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -40,8 +42,9 @@ __global__ void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_
 
     if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
 
-    output.at(batch, y, x, 0) = SaturateCast<dst_type>(alpha * (input.at(batch, y, x, 0)) + beta);
-
+    work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
+    work_type result = alpha * src_val + beta;
+    output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
 }
-}   // namespace Device
-}   // namespace Kernels
+}  // namespace Device
+}  // namespace Kernels
