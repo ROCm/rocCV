@@ -33,11 +33,14 @@ template <typename SrcWrapper, typename DstWrapper, typename DT_AB>
 void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_AB beta) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using dst_type = typename DstWrapper::ValueType;
+    using work_type = MakeType<DT_AB, NumElements<dst_type>>;
 #pragma omp parallel for
     for (int batch = 0; batch < output.batches(); batch++) {
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
-                output.at(batch, y, x, 0) = SaturateCast<dst_type>(alpha * (input.at(batch, y, x, 0)) + beta);
+                work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
+                work_type result = alpha * src_val + beta;
+                output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
             }
         }
     }
