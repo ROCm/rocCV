@@ -22,6 +22,9 @@
 
 #include "core/image.hpp"
 
+#include <algorithm>
+#include <iterator>
+
 #include "core/data_type.hpp"
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
@@ -61,27 +64,6 @@ std::shared_ptr<ImageStorage> makeStorage(const ImageRequirements& reqs, const I
     });
 }
 
-// Builds the canonical ImageData stored on Image from a freshly-allocated
-// (or wrapped) buffer plus its layout description. Single-plane today —
-// ImageFormat is interleaved-only, so only planes[0] is populated.
-ImageData makeImageData(const ImageRequirements& reqs, void* buf, eDeviceType device) {
-    ImageBufferStrided strided{};
-    strided.numPlanes = 1;
-    strided.planes[0].width = reqs.size.w;
-    strided.planes[0].height = reqs.size.h;
-    strided.planes[0].rowStride = reqs.planeRowStride[0];
-    strided.planes[0].basePtr = buf;
-
-    switch (device) {
-        case eDeviceType::GPU:
-            return ImageDataStridedHip(reqs.format, strided);
-        case eDeviceType::CPU:
-            return ImageDataStridedHost(reqs.format, strided);
-    }
-
-    throw Exception("Unsupported device type in Image::makeImageData.", eStatusType::INVALID_VALUE);
-}
-
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -118,20 +100,41 @@ Image::Image(const Requirements& reqs, eDeviceType device)
     : Image(reqs, GlobalContext().getDefaultAllocator(), device) {}
 
 Image::Image(const Requirements& reqs, const IAllocator& alloc, eDeviceType device)
-    : m_data(makeStorage(reqs, alloc, device)), m_metadata(makeImageData(reqs, m_data->data(), device)) {}
+    : Image(reqs, device, makeStorage(reqs, alloc, device)) {}
 
-Image::Image(ImageData metadata, std::shared_ptr<ImageStorage> storage)
-    : m_data(std::move(storage)), m_metadata(std::move(metadata)) {}
+Image::Image(const Requirements& reqs, eDeviceType device, std::shared_ptr<ImageStorage> storage)
+    : m_data(std::move(storage)),
+      m_size(reqs.size),
+      m_format(reqs.format),
+      m_device(device),
+      m_planeRowStride{} {
+    std::copy(std::begin(reqs.planeRowStride), std::end(reqs.planeRowStride), m_planeRowStride.begin());
+}
 
 // -----------------------------------------------------------------------------
-// Accessors
+// exportData
 // -----------------------------------------------------------------------------
 
-Size2D Image::size() const noexcept { return m_metadata.cast<ImageDataStrided>()->size(); }
+ImageData Image::exportData() const {
+    // TODO: derive numPlanes from m_format when planar formats land. Today's
+    // ImageFormat is interleaved-only, so plane 0 covers the whole image and
+    // its dimensions match m_size verbatim.
+    ImageBufferStrided strided{};
+    strided.numPlanes = 1;
+    strided.planes[0].width = m_size.w;
+    strided.planes[0].height = m_size.h;
+    strided.planes[0].rowStride = m_planeRowStride[0];
+    strided.planes[0].basePtr = m_data->data();
 
-ImageFormat Image::format() const noexcept { return m_metadata.format(); }
+    switch (m_device) {
+        case eDeviceType::GPU:
+            return ImageDataStridedHip(m_format, strided);
+        case eDeviceType::CPU:
+            return ImageDataStridedHost(m_format, strided);
+    }
 
-eDeviceType Image::device() const noexcept { return m_metadata.device(); }
+    throw Exception("Unsupported device type in Image::exportData.", eStatusType::INVALID_VALUE);
+}
 
 // -----------------------------------------------------------------------------
 // ImageWrapData
@@ -143,18 +146,32 @@ Image ImageWrapData(const ImageData& data, ImageDataCleanupFunc cleanup) {
         throw Exception("ImageWrapData requires strided image data.", eStatusType::INVALID_VALUE);
     }
 
-    // Single-plane assumption: storage tracks plane(0). Multi-plane wraps will
-    // need a richer storage shape.
-    void* basePtr = strided->plane(0).basePtr;
+    // Single-plane assumption: storage tracks plane(0) and Requirements only
+    // populates planeRowStride[0]. Multi-plane wraps will need to copy each
+    // plane's stride and either store per-plane base pointers or derive them
+    // from a single owning allocation.
+    const ImagePlaneStrided& plane0 = strided->plane(0);
 
-    auto storage = std::shared_ptr<ImageStorage>(new ImageStorage(basePtr), [data, cleanup](ImageStorage* s) {
-        if (cleanup) {
-            cleanup(data);
-        }
-        delete s;
-    });
+    // Designated initializers to avoid value-initializing ImageFormat through
+    // its explicit default ctor (which copy-list-init refuses).
+    Image::Requirements reqs{
+        .size = Size2D{plane0.width, plane0.height},
+        .format = data.format(),
+        .planeRowStride = {plane0.rowStride},
+        .alignBytes = 0,
+    };
 
-    return Image(data, std::move(storage));
+    // The deleter captures `data` by value so the original snapshot survives
+    // long enough to be passed to the cleanup callback on last-handle drop.
+    auto storage = std::shared_ptr<ImageStorage>(new ImageStorage(plane0.basePtr),
+                                                 [data, cleanup](ImageStorage* s) {
+                                                     if (cleanup) {
+                                                         cleanup(data);
+                                                     }
+                                                     delete s;
+                                                 });
+
+    return Image(reqs, data.device(), std::move(storage));
 }
 
 }  // namespace roccv
