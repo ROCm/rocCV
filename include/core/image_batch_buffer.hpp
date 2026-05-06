@@ -50,9 +50,9 @@ namespace roccv {
  *    CPU-resident batch this MAY alias `formatList`; for a GPU-resident batch
  *    it is a separate host mirror kept in sync by the producer.
  *
- * `uniqueFormat` is the common ImageFormat across all images, or a default-
- * constructed (0-channel) ImageFormat sentinel if formats are heterogeneous or
- * the batch is empty. Cached to fast-path the homogeneous case.
+ * `uniqueFormat` is the common ImageFormat across all images, or FMT_NONE if
+ * formats are heterogeneous or the batch is empty. Cached to fast-path the
+ * homogeneous case.
  *
  * `maxWidth` / `maxHeight` are the bounding box across all images. Used by
  * operators to size launch grids. Both are 0 when the batch is empty.

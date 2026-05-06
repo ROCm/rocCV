@@ -137,9 +137,8 @@ class ImageBatchVarShapeData : public ImageBatchData {
     Size2D maxSize() const;
 
     /**
-     * @brief Returns the common ImageFormat across all images, or a
-     * default-constructed (0-channel) ImageFormat sentinel if formats are
-     * heterogeneous or the batch is empty.
+     * @brief Returns the common ImageFormat across all images, or FMT_NONE if
+     * formats are heterogeneous or the batch is empty.
      */
     ImageFormat uniqueFormat() const;
 
