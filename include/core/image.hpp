@@ -134,14 +134,7 @@ class Image {
      * std::bad_cast if the underlying buffer kind doesn't match Derived.
      */
     template <typename Derived>
-    Derived exportData() const {
-        ImageData data = exportData();
-        auto derived = data.cast<Derived>();
-        if (!derived.has_value()) {
-            throw std::bad_cast();
-        }
-        return derived.value();
-    }
+    Derived exportData() const;
 
    private:
     Image(const Requirements& reqs, eDeviceType device, std::shared_ptr<ImageStorage> storage);
@@ -154,6 +147,16 @@ class Image {
     eDeviceType m_device;
     std::array<int64_t, ROCCV_MAX_IMAGE_PLANES> m_planeRowStride;
 };
+
+template <typename Derived>
+Derived Image::exportData() const {
+    ImageData data = exportData();
+    auto derived = data.cast<Derived>();
+    if (!derived.has_value()) {
+        throw std::bad_cast();
+    }
+    return derived.value();
+}
 
 /**
  * @brief Wrap an externally-owned buffer as an Image without allocating.
