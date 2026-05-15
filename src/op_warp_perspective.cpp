@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/math/math.hpp"
-#include "core/detail/type_traits.hpp"
 #include "kernels/device/warp_perspective_device.hpp"
 #include "kernels/host/warp_perspective_host.hpp"
 
@@ -37,7 +36,8 @@ void dispatch_warp_perspective_interp(hipStream_t stream, const Tensor &input, c
                                       const PerspectiveTransform transMatrix, T borderValue, eDeviceType device) {
     ArrayWrapper<float, 9> transform(transMatrix);
     ImageWrapper<T> outputWrapper(output);
-    InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);
+    BorderWrapper<B, ImageWrapper<T>> inputBorder(ImageWrapper<T>(input), borderValue);
+    InterpolationWrapper<B, I, ImageWrapper<T>> inputWrapper(inputBorder);
 
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
