@@ -39,6 +39,10 @@ namespace roccv {
 template <typename T>
 void dispatch_{{OP_SNAKE}}(hipStream_t stream, const Tensor& input, const Tensor& output{{PARAMS_CPP_DECL}},
                            eDeviceType device) {
+    // NOTE: The scaffold assumes the input and output share the same vector type T (same dtype, same channel
+    // count, same layout family). If this operator changes dtype, layout, or channel count between input and
+    // output, split this into two template parameters (e.g. <SrcT, DstT>) and build distinct wrappers — and
+    // update the dispatch table below to match.
     ImageWrapper<T> inputWrapper(input);
     ImageWrapper<T> outputWrapper(output);
 

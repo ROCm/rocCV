@@ -28,6 +28,10 @@ PyTensor PyOp{{OP_PASCAL}}::Execute(PyTensor& input{{PARAMS_PY_DECL}},
                                     std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     auto inputTensor = input.getTensor();
+    // NOTE: Scaffolded for operators whose output shape and dtype match the input. For shape-changing ops
+    // (e.g. Resize, Crop) or dtype-changing ops (e.g. ConvertTo), pass the output shape/dtype as explicit
+    // arguments and construct the output tensor accordingly — or remove this Execute overload and require
+    // the caller to use ExecuteInto with a pre-allocated destination.
     auto outputTensor = std::make_shared<roccv::Tensor>(inputTensor->shape(), inputTensor->dtype(), device);
     roccv::{{OP_PASCAL}} op;
     op(hipStream, *inputTensor, *outputTensor{{PARAMS_CPP_FWD}}, device);

@@ -23,7 +23,7 @@ Collect (in order):
 
 4. **Supported input tensor layouts.** Multi-select from: `NHWC, HWC, NCHW, CHW, NC, HW`, etc. Default suggestion: `NHWC, HWC`.
 
-5. **Supported channel counts.** Multi-select or "any". Default suggestion: `1, 3, 4`. (Channel count drives both the validation and the dispatch table's per-row entries.)
+5. **Supported channel counts.** Multi-select from `{1, 2, 3, 4}`. Default suggestion: `1, 3, 4`. The dispatch table is a fixed 4-element `std::array` indexed by `channels - 1`, and HIP vector types only exist for widths 1–4 (e.g. `uchar1`–`uchar4`, `float1`–`float4`) — so do not accept channel counts outside this range. (Channel count drives both the validation and the dispatch table's per-row entries.)
 
 6. **Output relationship to input** — for each of the following, ask whether output must match input:
    - layout (default: yes)
@@ -64,7 +64,7 @@ Read each template from `templates/` and write the destination file with substit
 - `{{VALIDATION_LAYOUTS}}` — comma-separated `TENSOR_LAYOUT_*` enum values for `CHECK_TENSOR_LAYOUT`
 - `{{VALIDATION_CHANNELS}}` — comma-separated integers for `CHECK_TENSOR_CHANNELS`
 - `{{OUTPUT_VALIDATION}}` — the block of output-vs-input `CHECK_TENSOR_COMPARISON(...)` lines. Include layout/dtype/shape lines only when the spec says they must match. If shape may differ, comment out the shape check and add a `// TODO:` for the user to encode the per-dimension constraints. Append any extra preconditions from Step 1.7 here.
-- `{{DISPATCH_TABLE}}` — the body of the `funcs` `unordered_map`. One row per supported dtype; each row is a 4-element `std::array` indexed by `channels - 1`. Use `dispatch_{{OP_SNAKE}}<vector_type>` for supported channel counts and `0` for unsupported. Map dtype → vector type prefix as:
+- `{{DISPATCH_TABLE}}` — the body of the `funcs` `unordered_map`. One row per supported dtype; each row is a **fixed 4-element** `std::array` indexed by `channels - 1`. The skill only supports channel counts in `{1, 2, 3, 4}` — Step 1.5 must reject anything outside that range, since wider channel counts would index out of bounds and have no matching HIP vector type. Use `dispatch_{{OP_SNAKE}}<vector_type>` for supported channel counts and `0` for unsupported. Map dtype → vector type prefix as:
   - `U8` → `uchar`, `U16` → `ushort`, `U32` → `uint`, `S8` → `char`, `S16` → `short`, `S32` → `int`, `F32` → `float`, `F64` → `double`
   - Then suffix with channel count: e.g. F32 + 3ch → `float3`, U8 + 1ch → `uchar1`.
 - `{{TEST_CORRECTNESS_GPU}}` and `{{TEST_CORRECTNESS_CPU}}` — `TEST_CASE(TestCorrectness<...>(...));` lines. Generate one per supported dtype × representative channel count so every dispatch row is exercised at least once on both devices. Use `FMT_*` constants matching the dtype + channel combo (e.g. `FMT_RGB8` for uchar3, `FMT_RGBf32` for float3, `FMT_U8` for uchar1, `FMT_S32` for int1, `FMT_F32` for float1, `FMT_RGBA8` for uchar4, `FMT_RGBAf32` for float4).

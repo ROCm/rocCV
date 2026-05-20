@@ -39,6 +39,9 @@ from test_helpers import generate_tensor, compare_tensors
 def test_op_{{OP_SNAKE}}(samples, width, height, channels, dtype{{PARAMS_PYTEST_NAMES}}, device):
     input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
     stream = rocpycv.Stream()
+    # NOTE: Scaffolded for operators whose output shape and dtype match the input. For shape-changing ops
+    # (Resize, Crop, etc.) or dtype-changing ops, parametrize the output shape/dtype and construct the
+    # golden tensor accordingly.
     output_tensor_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.{{PYTEST_LAYOUT}}, dtype, device)
     rocpycv.{{OP_PY_FUNC}}_into(output_tensor_golden, input_tensor{{PARAMS_PYTEST_FORWARD}}, stream, device)
     output_tensor = rocpycv.{{OP_PY_FUNC}}(input_tensor{{PARAMS_PYTEST_FORWARD}}, stream, device)

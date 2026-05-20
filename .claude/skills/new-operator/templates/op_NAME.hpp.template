@@ -50,7 +50,7 @@ class {{OP_PASCAL}} final : public IOperator {
      * Output:
      *       Supported TensorLayout(s): [{{LAYOUTS_DOXYGEN}}]
      *                        Channels: [{{CHANNELS_DOXYGEN}}]
-     *       Supported DataType(s)      [{{DTYPES_DOXYGEN}}]
+     *       Supported DataType(s):     [{{DTYPES_DOXYGEN}}]
      *
      * Input/Output dependency:
      *
