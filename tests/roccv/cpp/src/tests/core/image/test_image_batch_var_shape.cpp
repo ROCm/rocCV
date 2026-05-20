@@ -22,87 +22,21 @@
 
 #include <hip/hip_runtime.h>
 #include <stdint.h>
-#include <stdlib.h>
 
-#include <core/detail/allocators/i_allocator.hpp>
 #include <core/image.hpp>
 #include <core/image_batch_data.hpp>
 #include <core/image_batch_var_shape.hpp>
-#include <core/image_buffer.hpp>
-#include <core/image_data.hpp>
 #include <core/image_format.hpp>
 #include <utility>
 #include <vector>
 
+#include "image_test_helpers.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
-
-/**
- * @brief Test allocator that distinguishes pinned-host from regular-host
- * allocations and tallies each entry-point. Pure host-backed; no actual GPU
- * dependency on the descriptor buffers — tests verify metadata round-trip and
- * pointer identity, never dereference device memory through these.
- */
-class CountingAllocator : public IAllocator {
-   public:
-    mutable int hipAllocs = 0;
-    mutable int hipFrees = 0;
-    mutable int hostAllocs = 0;
-    mutable int hostFrees = 0;
-    mutable int pinnedAllocs = 0;
-    mutable int pinnedFrees = 0;
-
-    void* allocHipMem(size_t size) const override {
-        ++hipAllocs;
-        return std::malloc(size);
-    }
-    void freeHipMem(void* ptr) const noexcept override {
-        ++hipFrees;
-        std::free(ptr);
-    }
-
-    void* allocHostMem(size_t size, int32_t /*alignment*/ = 0) const override {
-        ++hostAllocs;
-        return std::malloc(size);
-    }
-    void freeHostMem(void* ptr) const noexcept override {
-        ++hostFrees;
-        std::free(ptr);
-    }
-
-    void* allocHostPinnedMem(size_t size) const override {
-        ++pinnedAllocs;
-        return std::malloc(size);
-    }
-    void freeHostPinnedMem(void* ptr) const noexcept override {
-        ++pinnedFrees;
-        std::free(ptr);
-    }
-};
-
-// Build a single-plane GPU-resident image wrapper around a sentinel pointer.
-// The pointer is never dereferenced — pushBack only reads the descriptor.
-Image MakeFakeGpuImage(int32_t w, int32_t h, ImageFormat fmt, void* basePtr) {
-    ImageBufferStrided buf{};
-    buf.numPlanes = 1;
-    buf.planes[0] = {w, h, static_cast<int64_t>(w * fmt.channels()), basePtr};
-    return ImageWrapData(ImageDataStridedHip(fmt, buf));
-}
-
-Image MakeFakeHostImage(int32_t w, int32_t h, ImageFormat fmt, void* basePtr) {
-    ImageBufferStrided buf{};
-    buf.numPlanes = 1;
-    buf.planes[0] = {w, h, static_cast<int64_t>(w * fmt.channels()), basePtr};
-    return ImageWrapData(ImageDataStridedHost(fmt, buf));
-}
-
-void* const FAKE_A = reinterpret_cast<void*>(0xA0000000ull);
-void* const FAKE_B = reinterpret_cast<void*>(0xB0000000ull);
-void* const FAKE_C = reinterpret_cast<void*>(0xC0000000ull);
 
 // =============================================================================
 // Construction
@@ -136,7 +70,7 @@ void TestPushBackSingle() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
 
-    Image img = MakeFakeGpuImage(640, 480, FMT_RGB8, FAKE_A);
+    Image img = MakeFakeGpuImage(640, 480, FAKE_PTR_A);
     batch.pushBack(img);
 
     EXPECT_EQ(batch.numImages(), 1);
@@ -149,9 +83,9 @@ void TestPushBackMultipleHeterogeneousSizes() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
 
-    batch.pushBack(MakeFakeGpuImage(640, 480, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(320, 240, FMT_RGB8, FAKE_B));
-    batch.pushBack(MakeFakeGpuImage(800, 200, FMT_RGB8, FAKE_C));
+    batch.pushBack(MakeFakeGpuImage(640, 480, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(320, 240, FAKE_PTR_B));
+    batch.pushBack(MakeFakeGpuImage(800, 200, FAKE_PTR_C));
 
     EXPECT_EQ(batch.numImages(), 3);
     EXPECT_EQ(batch.maxSize().w, 800);
@@ -164,9 +98,9 @@ void TestPushBackIteratorRange() {
     ImageBatchVarShape batch(8, alloc);
 
     std::vector<Image> imgs;
-    imgs.push_back(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
-    imgs.push_back(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
-    imgs.push_back(MakeFakeGpuImage(300, 300, FMT_RGB8, FAKE_C));
+    imgs.push_back(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
+    imgs.push_back(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
+    imgs.push_back(MakeFakeGpuImage(300, 300, FAKE_PTR_C));
 
     batch.pushBack(imgs.begin(), imgs.end());
 
@@ -182,17 +116,17 @@ void TestPushBackCapacityOverflow() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(2, alloc);
 
-    batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGB8, FAKE_B));
+    batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_B));
 
-    EXPECT_EXCEPTION(batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGB8, FAKE_C)), eStatusType::OUT_OF_BOUNDS);
+    EXPECT_EXCEPTION(batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_C)), eStatusType::OUT_OF_BOUNDS);
 }
 
 void TestPushBackHostImageRejected() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
 
-    Image cpuImg = MakeFakeHostImage(64, 64, FMT_U8, FAKE_A);
+    Image cpuImg = MakeFakeHostImage(64, 64, FAKE_PTR_A, FMT_U8);
     EXPECT_EXCEPTION(batch.pushBack(cpuImg), eStatusType::INVALID_VALUE);
 }
 
@@ -208,13 +142,13 @@ void TestPushBackRangeRollbackOnFailure() {
 
     // Pre-populate so we can confirm the rollback restores exactly the
     // pre-call state, not just back to zero.
-    batch.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
+    batch.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
     EXPECT_EQ(batch.numImages(), 1);
 
     // Mid-range CPU image — should rollback the partially-pushed entries.
     std::vector<Image> imgs;
-    imgs.push_back(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
-    imgs.push_back(MakeFakeHostImage(300, 300, FMT_RGB8, FAKE_C));  // Will throw.
+    imgs.push_back(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
+    imgs.push_back(MakeFakeHostImage(300, 300, FAKE_PTR_C));  // Will throw.
 
     EXPECT_EXCEPTION(batch.pushBack(imgs.begin(), imgs.end()), eStatusType::INVALID_VALUE);
 
@@ -228,9 +162,9 @@ void TestPushBackRangeOverflowPrechecked() {
     ImageBatchVarShape batch(2, alloc);
 
     std::vector<Image> imgs;
-    imgs.push_back(MakeFakeGpuImage(10, 10, FMT_RGB8, FAKE_A));
-    imgs.push_back(MakeFakeGpuImage(20, 20, FMT_RGB8, FAKE_B));
-    imgs.push_back(MakeFakeGpuImage(30, 30, FMT_RGB8, FAKE_C));  // 3rd overflows capacity 2.
+    imgs.push_back(MakeFakeGpuImage(10, 10, FAKE_PTR_A));
+    imgs.push_back(MakeFakeGpuImage(20, 20, FAKE_PTR_B));
+    imgs.push_back(MakeFakeGpuImage(30, 30, FAKE_PTR_C));  // 3rd overflows capacity 2.
 
     EXPECT_EXCEPTION(batch.pushBack(imgs.begin(), imgs.end()), eStatusType::OUT_OF_BOUNDS);
     // Pre-checked: nothing was pushed.
@@ -245,8 +179,8 @@ void TestPopBack() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
 
-    batch.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
+    batch.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
     batch.popBack();
 
     EXPECT_EQ(batch.numImages(), 1);
@@ -258,9 +192,9 @@ void TestPopBackMultiple() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
 
-    batch.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
-    batch.pushBack(MakeFakeGpuImage(300, 300, FMT_RGB8, FAKE_C));
+    batch.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
+    batch.pushBack(MakeFakeGpuImage(300, 300, FAKE_PTR_C));
     batch.popBack(2);
 
     EXPECT_EQ(batch.numImages(), 1);
@@ -270,7 +204,7 @@ void TestPopBackMultiple() {
 void TestPopBackUnderflow() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
-    batch.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
+    batch.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
 
     EXPECT_EXCEPTION(batch.popBack(2), eStatusType::OUT_OF_BOUNDS);
     // State preserved.
@@ -281,8 +215,8 @@ void TestClearAndReuse() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
 
-    batch.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
+    batch.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
     batch.clear();
 
     EXPECT_EQ(batch.numImages(), 0);
@@ -290,7 +224,7 @@ void TestClearAndReuse() {
     EXPECT_EQ(AsInt(batch.uniqueFormat() == FMT_NONE), 1);
 
     // Reuse after clear.
-    batch.pushBack(MakeFakeGpuImage(50, 50, FMT_U8, FAKE_C));
+    batch.pushBack(MakeFakeGpuImage(50, 50, FAKE_PTR_C, FMT_U8));
     EXPECT_EQ(batch.numImages(), 1);
     EXPECT_EQ(AsInt(batch.uniqueFormat() == FMT_U8), 1);
 }
@@ -302,16 +236,16 @@ void TestClearAndReuse() {
 void TestUniqueFormatHomogeneous() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
-    batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(128, 128, FMT_RGB8, FAKE_B));
+    batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(128, 128, FAKE_PTR_B));
     EXPECT_EQ(AsInt(batch.uniqueFormat() == FMT_RGB8), 1);
 }
 
 void TestUniqueFormatHeterogeneous() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
-    batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGBA8, FAKE_B));
+    batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_B, FMT_RGBA8));
     EXPECT_EQ(AsInt(batch.uniqueFormat() == FMT_NONE), 1);
 }
 
@@ -344,8 +278,8 @@ void TestExportDataEmpty() {
 
 void TestExportDataMetadata() {
     ImageBatchVarShape batch(4);
-    batch.pushBack(MakeFakeGpuImage(640, 480, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(320, 240, FMT_RGB8, FAKE_B));
+    batch.pushBack(MakeFakeGpuImage(640, 480, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(320, 240, FAKE_PTR_B));
 
     auto data = batch.exportData(0);
     EXPECT_EQ(data.numImages(), 2);
@@ -362,7 +296,7 @@ void TestExportDataMetadata() {
 
 void TestExportDataCastRoundTrip() {
     ImageBatchVarShape batch(4);
-    batch.pushBack(MakeFakeGpuImage(64, 64, FMT_RGB8, FAKE_A));
+    batch.pushBack(MakeFakeGpuImage(64, 64, FAKE_PTR_A));
 
     auto hipData = batch.exportData<ImageBatchVarShapeDataStridedHip>(0);
     EXPECT_EQ(hipData.numImages(), 1);
@@ -383,8 +317,8 @@ void TestMoveConstruction() {
     CountingAllocator alloc;
     {
         ImageBatchVarShape src(4, alloc);
-        src.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
-        src.pushBack(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
+        src.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
+        src.pushBack(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
 
         ImageBatchVarShape dst(std::move(src));
         EXPECT_EQ(dst.numImages(), 2);
@@ -406,9 +340,9 @@ void TestMoveConstruction() {
 void TestIteratorRangeFor() {
     CountingAllocator alloc;
     ImageBatchVarShape batch(4, alloc);
-    batch.pushBack(MakeFakeGpuImage(100, 100, FMT_RGB8, FAKE_A));
-    batch.pushBack(MakeFakeGpuImage(200, 200, FMT_RGB8, FAKE_B));
-    batch.pushBack(MakeFakeGpuImage(300, 300, FMT_RGB8, FAKE_C));
+    batch.pushBack(MakeFakeGpuImage(100, 100, FAKE_PTR_A));
+    batch.pushBack(MakeFakeGpuImage(200, 200, FAKE_PTR_B));
+    batch.pushBack(MakeFakeGpuImage(300, 300, FAKE_PTR_C));
 
     int32_t expectedW = 100;
     int32_t count = 0;

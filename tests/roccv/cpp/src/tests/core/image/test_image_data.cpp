@@ -26,26 +26,13 @@
 #include <core/image_data.hpp>
 #include <core/image_format.hpp>
 
+#include "image_test_helpers.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
-
-// ImageData carries pointers but never dereferences them; the buffer is a
-// metadata snapshot. Use opaque sentinel pointers in tests so we can verify
-// values flow through without needing real allocations.
-void* const FAKE_PTR_A = reinterpret_cast<void*>(0xAAAAAAAAull);
-void* const FAKE_PTR_B = reinterpret_cast<void*>(0xBBBBBBBBull);
-void* const FAKE_PTR_C = reinterpret_cast<void*>(0xCCCCCCCCull);
-
-ImageBufferStrided MakeSinglePlaneBuffer(int32_t width, int32_t height, int64_t rowStride, void* basePtr) {
-    ImageBufferStrided buf{};
-    buf.numPlanes = 1;
-    buf.planes[0] = {width, height, rowStride, basePtr};
-    return buf;
-}
 
 ImageBufferStrided MakeThreePlaneBuffer() {
     // Mimics a planar layout (e.g. YUV420-style) with sub-sampled chroma — three

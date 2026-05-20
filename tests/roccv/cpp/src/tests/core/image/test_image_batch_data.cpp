@@ -27,18 +27,13 @@
 #include <core/image_buffer.hpp>
 #include <core/image_format.hpp>
 
+#include "image_test_helpers.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
-
-// ImageBatchData carries pointers but never dereferences them; the buffer is a
-// metadata snapshot. Use opaque sentinel pointers so we can verify values flow
-// through the hierarchy without needing real allocations.
-void* const FAKE_IMG_PTR_A = reinterpret_cast<void*>(0xA0A0A0A0ull);
-void* const FAKE_IMG_PTR_B = reinterpret_cast<void*>(0xB0B0B0B0ull);
 
 // Static descriptor/format storage for the batch buffer. These are real host
 // allocations (so the pointers are valid) but the batch tests only read
@@ -47,19 +42,12 @@ ImageBufferStrided g_imageList[2];
 ImageFormat g_formatList[2] = {FMT_RGB8, FMT_RGB8};
 ImageFormat g_hostFormatList[2] = {FMT_RGB8, FMT_RGB8};
 
-ImageBufferStrided MakeSinglePlaneBuffer(int32_t width, int32_t height, int64_t rowStride, void* basePtr) {
-    ImageBufferStrided buf{};
-    buf.numPlanes = 1;
-    buf.planes[0] = {width, height, rowStride, basePtr};
-    return buf;
-}
-
 // Builds a homogeneous two-image varshape descriptor with a known bounding box
 // and uniqueFormat. The returned struct's pointers reference module-static
 // arrays so addresses remain stable across calls within a test.
 ImageBatchVarShapeBufferStrided MakeHomogeneousBuffer() {
-    g_imageList[0] = MakeSinglePlaneBuffer(640, 480, 640 * 3, FAKE_IMG_PTR_A);
-    g_imageList[1] = MakeSinglePlaneBuffer(320, 240, 320 * 3, FAKE_IMG_PTR_B);
+    g_imageList[0] = MakeSinglePlaneBuffer(640, 480, 640 * 3, FAKE_PTR_A);
+    g_imageList[1] = MakeSinglePlaneBuffer(320, 240, 320 * 3, FAKE_PTR_B);
     g_formatList[0] = FMT_RGB8;
     g_formatList[1] = FMT_RGB8;
     g_hostFormatList[0] = FMT_RGB8;
@@ -137,8 +125,8 @@ void TestImageBatchVarShapeDataEmpty() {
  * verbatim; uniqueFormat is FMT_NONE since no single format spans the batch.
  */
 void TestImageBatchVarShapeDataHeterogeneousFormats() {
-    g_imageList[0] = MakeSinglePlaneBuffer(640, 480, 640 * 3, FAKE_IMG_PTR_A);
-    g_imageList[1] = MakeSinglePlaneBuffer(320, 240, 320 * 4, FAKE_IMG_PTR_B);
+    g_imageList[0] = MakeSinglePlaneBuffer(640, 480, 640 * 3, FAKE_PTR_A);
+    g_imageList[1] = MakeSinglePlaneBuffer(320, 240, 320 * 4, FAKE_PTR_B);
     g_formatList[0] = FMT_RGB8;
     g_formatList[1] = FMT_RGBA8;
     g_hostFormatList[0] = FMT_RGB8;

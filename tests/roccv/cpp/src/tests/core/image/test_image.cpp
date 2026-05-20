@@ -21,75 +21,20 @@
  */
 
 #include <stdint.h>
-#include <stdlib.h>
 
-#include <core/detail/allocators/i_allocator.hpp>
 #include <core/image.hpp>
-#include <core/image_buffer.hpp>
 #include <core/image_data.hpp>
 #include <core/image_format.hpp>
-#include <stdexcept>
 #include <typeinfo>
 #include <utility>
 
+#include "image_test_helpers.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
-
-void* const FAKE_PTR_A = reinterpret_cast<void*>(0xAAAAAAAAull);
-
-/**
- * @brief Test allocator that backs allocations with malloc and tallies how
- * many times each entry point is invoked. Pure host-side; no GPU dependency.
- *
- * The Hip path returns malloc'd memory because no test dereferences it — we
- * only care that ptr round-trips through Image and that free is called the
- * right number of times.
- */
-class CountingAllocator : public IAllocator {
-   public:
-    mutable int hipAllocs = 0;
-    mutable int hipFrees = 0;
-    mutable int hostAllocs = 0;
-    mutable int hostFrees = 0;
-    mutable size_t lastAllocBytes = 0;
-
-    void* allocHipMem(size_t size) const override {
-        ++hipAllocs;
-        lastAllocBytes = size;
-        return std::malloc(size);
-    }
-    void freeHipMem(void* ptr) const noexcept override {
-        ++hipFrees;
-        std::free(ptr);
-    }
-
-    void* allocHostMem(size_t size, int32_t /*alignment*/ = 0) const override {
-        ++hostAllocs;
-        lastAllocBytes = size;
-        return std::malloc(size);
-    }
-    void freeHostMem(void* ptr) const noexcept override {
-        ++hostFrees;
-        std::free(ptr);
-    }
-
-    // Unused by the Image paths under test. Trip loudly if invoked unexpectedly.
-    void* allocHostPinnedMem(size_t) const override { throw std::runtime_error("unused in tests"); }
-    void freeHostPinnedMem(void*) const noexcept override { std::abort(); }
-};
-
-// Build a single-plane ImageData snapshot referencing a sentinel pointer. Used
-// for ImageWrapData tests where we never dereference the buffer.
-ImageDataStridedHip MakeFakeHipData(int32_t width, int32_t height, void* basePtr, ImageFormat fmt = FMT_RGB8) {
-    ImageBufferStrided buf{};
-    buf.numPlanes = 1;
-    buf.planes[0] = {width, height, static_cast<int64_t>(width * fmt.channels()), basePtr};
-    return ImageDataStridedHip(fmt, buf);
-}
 
 // =============================================================================
 // CalcRequirements
