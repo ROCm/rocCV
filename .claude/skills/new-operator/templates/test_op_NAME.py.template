@@ -1,0 +1,47 @@
+# ##############################################################################
+# Copyright (c) 2026 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# ##############################################################################
+
+import pytest
+import rocpycv
+
+from test_helpers import generate_tensor, compare_tensors
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
+@pytest.mark.parametrize("dtype", [{{PYTEST_DTYPES}}])
+@pytest.mark.parametrize("channels", [{{PYTEST_CHANNELS}}])
+{{PARAMS_PYTEST_PARAMETRIZE}}
+@pytest.mark.parametrize("samples,width,height", [
+    (1, 65, 30),
+    (3, 45, 20),
+    (5, 23, 106),
+])
+def test_op_{{OP_SNAKE}}(samples, width, height, channels, dtype{{PARAMS_PYTEST_NAMES}}, device):
+    input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
+    stream = rocpycv.Stream()
+    output_tensor_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.{{PYTEST_LAYOUT}}, dtype, device)
+    rocpycv.{{OP_PY_FUNC}}_into(output_tensor_golden, input_tensor{{PARAMS_PYTEST_FORWARD}}, stream, device)
+    output_tensor = rocpycv.{{OP_PY_FUNC}}(input_tensor{{PARAMS_PYTEST_FORWARD}}, stream, device)
+    stream.synchronize()
+
+    compare_tensors(output_tensor, output_tensor_golden)

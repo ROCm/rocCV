@@ -1,0 +1,70 @@
+/**
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+#pragma once
+
+#include <operator_types.h>
+
+#include <i_operator.hpp>
+
+#include "core/tensor.hpp"
+
+namespace roccv {
+/**
+ * @brief Class for managing the {{OP_PASCAL}} operator.
+ *
+ */
+class {{OP_PASCAL}} final : public IOperator {
+   public:
+    {{OP_PASCAL}}() {}
+    ~{{OP_PASCAL}}() {}
+
+    /**
+     * @brief Run the {{OP_PASCAL}} operator on an image batch.
+     *
+     * Limitations:
+     *
+     * Input:
+     *       Supported TensorLayout(s): [{{LAYOUTS_DOXYGEN}}]
+     *                        Channels: [{{CHANNELS_DOXYGEN}}]
+     *       Supported DataType(s):     [{{DTYPES_DOXYGEN}}]
+     *
+     * Output:
+     *       Supported TensorLayout(s): [{{LAYOUTS_DOXYGEN}}]
+     *                        Channels: [{{CHANNELS_DOXYGEN}}]
+     *       Supported DataType(s)      [{{DTYPES_DOXYGEN}}]
+     *
+     * Input/Output dependency:
+     *
+     *       Property      |  Input == Output
+     *      -------------- | -------------
+{{IO_DEPENDENCY_TABLE}}
+     *
+     * @param[in] stream HIP stream to run this operator on.
+     * @param[in] input Input tensor with image batch data.
+     * @param[out] output Output tensor for storing modified image batch data.
+{{PARAMS_DOXYGEN}}
+     * @param[in] device The device to run this operation on. (Default: GPU)
+     */
+    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output{{PARAMS_CPP_DECL}},
+                    eDeviceType device = eDeviceType::GPU) const;
+};
+}  // namespace roccv
