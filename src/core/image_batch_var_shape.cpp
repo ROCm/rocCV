@@ -46,12 +46,20 @@ ImageBatchVarShape::ImageBatchVarShape(int32_t capacity, const IAllocator& alloc
     const size_t imagesBytes = sizeof(ImageBufferStrided) * capacity;
     const size_t formatsBytes = sizeof(ImageFormat) * capacity;
 
-    m_devImagesBuffer = static_cast<ImageBufferStrided*>(m_allocator.allocHipMem(imagesBytes));
-    m_devFormatsBuffer = static_cast<ImageFormat*>(m_allocator.allocHipMem(formatsBytes));
-    m_hostImagesBuffer = static_cast<ImageBufferStrided*>(m_allocator.allocHostPinnedMem(imagesBytes));
-    m_hostFormatsBuffer = static_cast<ImageFormat*>(m_allocator.allocHostPinnedMem(formatsBytes));
+    try {
+        m_devImagesBuffer = static_cast<ImageBufferStrided*>(m_allocator.allocHipMem(imagesBytes));
+        m_devFormatsBuffer = static_cast<ImageFormat*>(m_allocator.allocHipMem(formatsBytes));
+        m_hostImagesBuffer = static_cast<ImageBufferStrided*>(m_allocator.allocHostPinnedMem(imagesBytes));
+        m_hostFormatsBuffer = static_cast<ImageFormat*>(m_allocator.allocHostPinnedMem(formatsBytes));
 
-    HIP_VALIDATE_NO_ERRORS(hipEventCreateWithFlags(&m_postFence, hipEventDisableTiming));
+        HIP_VALIDATE_NO_ERRORS(hipEventCreateWithFlags(&m_postFence, hipEventDisableTiming));
+    } catch (...) {
+        if (m_hostFormatsBuffer != nullptr) m_allocator.freeHostPinnedMem(m_hostFormatsBuffer);
+        if (m_hostImagesBuffer != nullptr) m_allocator.freeHostPinnedMem(m_hostImagesBuffer);
+        if (m_devFormatsBuffer != nullptr) m_allocator.freeHipMem(m_devFormatsBuffer);
+        if (m_devImagesBuffer != nullptr) m_allocator.freeHipMem(m_devImagesBuffer);
+        throw;
+    }
 }
 
 ImageBatchVarShape::~ImageBatchVarShape() {

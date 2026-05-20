@@ -87,7 +87,7 @@ void TestCalcRequirementsRejectsInvalidDims() {
  * fit in int64.
  */
 void TestCalcRequirementsLargeDims() {
-    // 8K image, RGBA32 (4 channels * 4 bytes = 16 B/pixel) → 8192 * 16 = 131072 B/row.
+    // 8K image, RGBA8 (4 channels * 1 byte = 4 B/pixel) → 8192 * 4 = 32768 B/row.
     auto reqs = Image::CalcRequirements({8192, 4320}, FMT_RGBA8);
     EXPECT_EQ(reqs.planeRowStride[0], static_cast<int64_t>(8192 * 4));
 }
@@ -173,7 +173,9 @@ void TestImageCopySharesBuffer() {
         EXPECT_EQ(AsAddr(second.exportData().cast<ImageDataStrided>()->plane(0).basePtr), AsAddr(buf));
 
         // Drop `first`; buffer must NOT be freed yet — `second` still holds it.
-        { Image sink = std::move(first); }
+        {
+            Image sink = std::move(first);
+        }
         EXPECT_EQ(alloc.hipFrees, 0);
     }
     // All handles dropped — exactly one free.

@@ -76,9 +76,9 @@ void TestImageBatchVarShapeDataStridedHipConstruction() {
     EXPECT_EQ(data.maxSize().w, 640);
     EXPECT_EQ(data.maxSize().h, 480);
     EXPECT_EQ(data.uniqueFormat().channels(), 3);
-    EXPECT_EQ(AsAddr(const_cast<ImageFormat*>(data.formatList())), AsAddr(g_formatList));
-    EXPECT_EQ(AsAddr(const_cast<ImageFormat*>(data.hostFormatList())), AsAddr(g_hostFormatList));
-    EXPECT_EQ(AsAddr(const_cast<ImageBufferStrided*>(data.imageList())), AsAddr(g_imageList));
+    EXPECT_EQ(AsAddr(data.formatList()), AsAddr(g_formatList));
+    EXPECT_EQ(AsAddr(data.hostFormatList()), AsAddr(g_hostFormatList));
+    EXPECT_EQ(AsAddr(data.imageList()), AsAddr(g_imageList));
     EXPECT_EQ(data.imageList()[0].planes[0].width, 640);
     EXPECT_EQ(data.imageList()[1].planes[0].width, 320);
 }
@@ -95,7 +95,7 @@ void TestImageBatchVarShapeDataStridedHostConstruction() {
     EXPECT_EQ(data.maxSize().w, 640);
     EXPECT_EQ(data.maxSize().h, 480);
     EXPECT_EQ(data.uniqueFormat().channels(), 3);
-    EXPECT_EQ(AsAddr(const_cast<ImageBufferStrided*>(data.imageList())), AsAddr(g_imageList));
+    EXPECT_EQ(AsAddr(data.imageList()), AsAddr(g_imageList));
 }
 
 /**
@@ -161,14 +161,12 @@ void TestImageBatchVarShapeDataSugarCtor() {
     EXPECT_EQ(wide.numImages(), sugar.numImages());
     EXPECT_EQ(wide.maxSize().w, sugar.maxSize().w);
     EXPECT_EQ(wide.maxSize().h, sugar.maxSize().h);
-    EXPECT_EQ(AsAddr(const_cast<ImageBufferStrided*>(wide.imageList())),
-              AsAddr(const_cast<ImageBufferStrided*>(sugar.imageList())));
+    EXPECT_EQ(AsAddr(wide.imageList()), AsAddr(sugar.imageList()));
 
     ImageBatchVarShapeDataStridedHost wideHost(2, ImageBatchBuffer{.varShapeStrided = buf});
     ImageBatchVarShapeDataStridedHost sugarHost(2, buf);
     EXPECT_EQ(AsInt(wideHost.device()), AsInt(sugarHost.device()));
-    EXPECT_EQ(AsAddr(const_cast<ImageBufferStrided*>(wideHost.imageList())),
-              AsAddr(const_cast<ImageBufferStrided*>(sugarHost.imageList())));
+    EXPECT_EQ(AsAddr(wideHost.imageList()), AsAddr(sugarHost.imageList()));
 }
 
 /**
@@ -237,7 +235,7 @@ void TestImageBatchDataCast() {
         EXPECT_EQ(AsInt(asHip->device()), AsInt(eDeviceType::GPU));
         EXPECT_EQ(asHip->numImages(), 2);
         EXPECT_EQ(asHip->maxSize().w, 640);
-        EXPECT_EQ(AsAddr(const_cast<ImageBufferStrided*>(asHip->imageList())), AsAddr(g_imageList));
+        EXPECT_EQ(AsAddr(asHip->imageList()), AsAddr(g_imageList));
 
         auto asStrided = base.cast<ImageBatchVarShapeDataStrided>();
         EXPECT_EQ(AsInt(asStrided.has_value()), 1);

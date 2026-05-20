@@ -201,7 +201,7 @@ namespace tests {
 // EXPECT_EQ pipes through std::to_string, so wrap enums/pointers/bools through
 // these casts before comparing.
 inline auto AsInt = [](auto v) { return static_cast<int>(v); };
-inline auto AsAddr = [](void* p) { return reinterpret_cast<uintptr_t>(p); };
+inline auto AsAddr = [](const void* p) { return reinterpret_cast<uintptr_t>(p); };
 inline auto AsSize = [](auto v) { return static_cast<size_t>(v); };
 
 /**

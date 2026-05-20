@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <core/data_type.hpp>
 #include <core/detail/allocators/i_allocator.hpp>
 #include <core/image.hpp>
 #include <core/image_buffer.hpp>
@@ -103,14 +104,14 @@ inline ImageBufferStrided MakeSinglePlaneBuffer(int32_t width, int32_t height, i
 // Single-plane GPU-resident ImageData snapshot with packed-row stride implied
 // by `fmt`. For tests that need an ImageData but won't touch the pixels.
 inline ImageDataStridedHip MakeFakeHipData(int32_t width, int32_t height, void* basePtr, ImageFormat fmt = FMT_RGB8) {
-    return ImageDataStridedHip(fmt, MakeSinglePlaneBuffer(width, height, static_cast<int64_t>(width * fmt.channels()),
-                                                          basePtr));
+    const int64_t rowStride = static_cast<int64_t>(width) * fmt.channels() * DataType(fmt.dtype()).size();
+    return ImageDataStridedHip(fmt, MakeSinglePlaneBuffer(width, height, rowStride, basePtr));
 }
 
 // Host counterpart of MakeFakeHipData.
 inline ImageDataStridedHost MakeFakeHostData(int32_t width, int32_t height, void* basePtr, ImageFormat fmt = FMT_RGB8) {
-    return ImageDataStridedHost(fmt, MakeSinglePlaneBuffer(width, height, static_cast<int64_t>(width * fmt.channels()),
-                                                           basePtr));
+    const int64_t rowStride = static_cast<int64_t>(width) * fmt.channels() * DataType(fmt.dtype()).size();
+    return ImageDataStridedHost(fmt, MakeSinglePlaneBuffer(width, height, rowStride, basePtr));
 }
 
 // Single-plane GPU-resident Image wrapping a sentinel pointer via ImageWrapData.

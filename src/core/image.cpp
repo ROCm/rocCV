@@ -77,11 +77,19 @@ Image::Requirements Image::CalcRequirements(Size2D size, ImageFormat format) {
 
     const int64_t bytesPerPixel = static_cast<int64_t>(DataType(format.dtype()).size()) * format.channels();
 
+    // Guard signed-overflow in the rowStride = bytesPerPixel * width product
+    // (UB on overflow). Realistic image sizes don't approach INT64_MAX, but
+    // pathological callers shouldn't silently propagate garbage into strides.
+    int64_t rowStride = 0;
+    if (__builtin_mul_overflow(bytesPerPixel, static_cast<int64_t>(size.w), &rowStride)) {
+        throw Exception("Image row stride overflows int64.", eStatusType::INVALID_VALUE);
+    }
+
     // TODO: derive a sensible default base/row alignment from device attributes.
     return ImageRequirements{
         .size = size,
         .format = format,
-        .planeRowStride = {bytesPerPixel * size.w},
+        .planeRowStride = {rowStride},
         .alignBytes = 0,
     };
 }
@@ -103,11 +111,7 @@ Image::Image(const Requirements& reqs, const IAllocator& alloc, eDeviceType devi
     : Image(reqs, device, makeStorage(reqs, alloc, device)) {}
 
 Image::Image(const Requirements& reqs, eDeviceType device, std::shared_ptr<ImageStorage> storage)
-    : m_data(std::move(storage)),
-      m_size(reqs.size),
-      m_format(reqs.format),
-      m_device(device),
-      m_planeRowStride{} {
+    : m_data(std::move(storage)), m_size(reqs.size), m_format(reqs.format), m_device(device), m_planeRowStride{} {
     std::copy(std::begin(reqs.planeRowStride), std::end(reqs.planeRowStride), m_planeRowStride.begin());
 }
 
@@ -163,13 +167,18 @@ Image ImageWrapData(const ImageData& data, ImageDataCleanupFunc cleanup) {
 
     // The deleter captures `data` by value so the original snapshot survives
     // long enough to be passed to the cleanup callback on last-handle drop.
-    auto storage = std::shared_ptr<ImageStorage>(new ImageStorage(plane0.basePtr),
-                                                 [data, cleanup](ImageStorage* s) {
-                                                     if (cleanup) {
-                                                         cleanup(data);
-                                                     }
-                                                     delete s;
-                                                 });
+    // Swallow exceptions from `cleanup` — shared_ptr deleters run during
+    // destruction, and a throw would propagate into std::terminate.
+    auto storage =
+        std::shared_ptr<ImageStorage>(new ImageStorage(plane0.basePtr), [data, cleanup](ImageStorage* s) noexcept {
+            if (cleanup) {
+                try {
+                    cleanup(data);
+                } catch (...) {
+                }
+            }
+            delete s;
+        });
 
     return Image(reqs, data.device(), std::move(storage));
 }

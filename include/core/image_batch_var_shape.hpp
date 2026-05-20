@@ -25,6 +25,7 @@
 #include <hip/hip_runtime.h>
 #include <stdint.h>
 
+#include <iterator>
 #include <optional>
 #include <vector>
 
@@ -123,9 +124,8 @@ class ImageBatchVarShape {
 
     /**
      * @brief The common ImageFormat across all images, or FMT_NONE if formats
-     * are heterogeneous or the batch is empty. After popping the only image
-     * with a given heterogenizing format, the cached value may stay FMT_NONE
-     * until the next emptying operation — conservative, never wrong.
+     * are heterogeneous or the batch is empty. popBack invalidates the cache
+     * so the next call rescans and may return an exact format again.
      */
     ImageFormat uniqueFormat() const;
 
