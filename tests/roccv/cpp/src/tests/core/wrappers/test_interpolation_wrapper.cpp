@@ -21,9 +21,9 @@
 
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
+#include "core/detail/vector_utils.hpp"
 #include <core/wrappers/interpolation_wrapper.hpp>
 
-#include "core/detail/vector_utils.hpp"
 #include "test_helpers.hpp"
 
 using namespace roccv;
@@ -45,7 +45,7 @@ namespace {
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenLinear(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x) {
+T GoldenLinear(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x) {
     // Defines the vectorized float type for intermediate calculations.
     using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
 
@@ -86,7 +86,7 @@ T GoldenLinear(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample,
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenNearest(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x) {
+T GoldenNearest(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x) {
     // Nearest neighbor interpolation. Rounds given floating point values to the nearest integer.
     return input.at(sample, lroundf(y), lroundf(x), 0);
 }
@@ -98,7 +98,7 @@ T GoldenNearest(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample
  * @return None.
  */
 void CalBicubicWeights(float dist, float* weight) {
-    const float A = -0.5f;  // Note OpenCV sets alpha to -0.75f
+    const float A = -0.5f; // Note OpenCV sets alpha to -0.75f
 
     weight[0] = ((A * (dist + 1) - 5 * A) * (dist + 1) + 8 * A) * (dist + 1) - 4 * A;
     weight[1] = ((A + 2) * dist - (A + 3)) * dist * dist + 1;
@@ -107,8 +107,7 @@ void CalBicubicWeights(float dist, float* weight) {
 }
 
 /**
- * @brief Golden model for Bicubic interpolation. This is the Catmull-Rom cubic interpolation commonly used in CV
- * libraries.
+ * @brief Golden model for Bicubic interpolation. This is the Catmull-Rom cubic interpolation commonly used in CV libraries.
  *
  * @tparam T Image datatype.
  * @tparam BorderType Border type for boundary conditions.
@@ -119,7 +118,7 @@ void CalBicubicWeights(float dist, float* weight) {
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenBicubic(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x) {
+T GoldenBicubic(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x) {
     // Defines the vectorized float type for intermediate calculations.
     using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
 
@@ -136,8 +135,7 @@ T GoldenBicubic(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample
     WorkType sum = SetAll<WorkType>(0.0f);
     for (int indexY = -1; indexY <= 2; indexY++) {
         for (int indexX = -1; indexX <= 2; indexX++) {
-            sum += detail::RangeCast<WorkType>(input.at(sample, intY + indexY, intX + indexX, 0)) *
-                   (weightX[indexX + 1] * weightY[indexY + 1]);
+            sum += detail::RangeCast<WorkType>(input.at(sample, intY + indexY, intX + indexX, 0)) * (weightX[indexX + 1] * weightY[indexY + 1]);
         }
     }
 
@@ -158,7 +156,7 @@ T GoldenBicubic(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenInterpolationAt(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x,
+T GoldenInterpolationAt(BorderWrapper<T, BorderType> input, int64_t sample, float y, float x,
                         eInterpolationType interp) {
     switch (interp) {
         case eInterpolationType::INTERP_TYPE_NEAREST:
@@ -204,11 +202,9 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
     std::vector<detail::BaseType<T>> goldenOutput;
 
     // Use roccv::InterpolationWrapper to get actual output
-    InterpolationWrapper<BorderType, InterpType, ImageWrapper<T>> actualWrap(
-        (BorderWrapper<BorderType, ImageWrapper<T>>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h),
-                                                    borderVal)));
-    BorderWrapper<BorderType, ImageWrapper<T>> goldenWrap(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h),
-                                                          borderVal);
+    InterpolationWrapper<T, BorderType, InterpType> actualWrap(
+        (BorderWrapper<T, BorderType>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal)));
+    BorderWrapper<T, BorderType> goldenWrap(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal);
 
     for (int b = 0; b < batchSize; b++) {
         for (float y = 0; y < imageSize.h; y += idxDelta) {
@@ -224,8 +220,7 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
             }
         }
     }
-    if constexpr (std::is_integral_v<detail::BaseType<T>> && std::is_signed_v<detail::BaseType<T>> &&
-                  sizeof(detail::BaseType<T>) == 4) {
+    if constexpr (std::is_integral_v<detail::BaseType<T>> && std::is_signed_v<detail::BaseType<T>> && sizeof(detail::BaseType<T>) == 4) {
         CompareVectorsNear(actualOutput, goldenOutput, NEAR_EQUAL_THRESHOLD * 2);
     } else {
         CompareVectorsNear(actualOutput, goldenOutput);
@@ -233,7 +228,7 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
 }
 }  // namespace
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
@@ -327,7 +322,7 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<float1, eBorderType::BORDER_TYPE_REFLECT, eInterpolationType::INTERP_TYPE_CUBIC>(1, {20, 53}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<float3, eBorderType::BORDER_TYPE_CONSTANT, eInterpolationType::INTERP_TYPE_CUBIC>(3, {38, 10}, make_float4(0, 0, 0, 1), 0.1f)));
     TEST_CASE((TestCorrectness<float4, eBorderType::BORDER_TYPE_WRAP, eInterpolationType::INTERP_TYPE_CUBIC>(5, {65, 21}, make_float4(1, 0.5, 0.5, 1), 0.1f)));
-    // clang-format on
+     // clang-format on
 
     TEST_CASES_END();
 }

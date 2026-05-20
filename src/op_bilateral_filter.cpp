@@ -43,7 +43,7 @@ BilateralFilter::~BilateralFilter() {}
 template <typename T, eBorderType B>
 void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
                                            float sigmaColor, float sigmaSpace, T borderValue, eDeviceType device) {
-    BorderWrapper<B, ImageWrapper<T>> inputWrapper(ImageWrapper<T>(input), borderValue);
+    BorderWrapper<T, B> inputWrapper(input, borderValue);
     ImageWrapper<T> outputWrapper(output);
 
     if (outputWrapper.channels() > 4 || outputWrapper.channels() < 1) {
@@ -61,7 +61,8 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         sigmaSpace = 1.0f;
     }
 
-    const int radius = (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
+    const int radius =
+        (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
 
     float spaceCoeff = -1 / (2 * sigmaSpace * sigmaSpace);
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
@@ -88,10 +89,9 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
 
         for (int j = 0; j < divisor; j++) {
             for (int i = 0; i < dividend; i++) {
-                threads.push_back(
-                    std::thread(Kernels::Host::bilateral_filter<T, BorderWrapper<B, ImageWrapper<T>>, ImageWrapper<T>>,
-                                inputWrapper, outputWrapper, radius, rollingHeight, rollingWidth, prevHeight, prevWidth,
-                                spaceCoeff, colorCoeff));
+                threads.push_back(std::thread(Kernels::Host::bilateral_filter<T, BorderWrapper<T, B>, ImageWrapper<T>>,
+                                              inputWrapper, outputWrapper, radius, rollingHeight, rollingWidth,
+                                              prevHeight, prevWidth, spaceCoeff, colorCoeff));
                 prevWidth = rollingWidth;
                 rollingWidth += factorW;
             }

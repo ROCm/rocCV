@@ -68,9 +68,9 @@ std::vector<detail::BaseType<T>> GoldenRotate(std::vector<detail::BaseType<T>>& 
     T borderVal = detail::SaturateCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
 
     ImageWrapper<T> outputWrapper(output, batchSize, imageSize.w, imageSize.h);
-    InterpolationWrapper<eBorderType::BORDER_TYPE_CONSTANT, InterpType, ImageWrapper<T>> inputWrapper(
-        BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, ImageWrapper<T>>(
-            ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal));
+    InterpolationWrapper<T, eBorderType::BORDER_TYPE_CONSTANT, InterpType> inputWrapper(
+        BorderWrapper<T, eBorderType::BORDER_TYPE_CONSTANT>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h),
+                                                            borderVal));
 
     /**
      * Affine warp for a combined rotation and translate looks like the following when in its inverse representation:

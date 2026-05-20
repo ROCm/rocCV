@@ -23,37 +23,38 @@
 
 #include <hip/hip_runtime.h>
 
-#include <algorithm>
-#include <cstdlib>
-
 #include "core/wrappers/image_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
 
 /**
- * @brief Wrapper class which adds border-handling behavior on top of an underlying image wrapper.
+ * @brief Wrapper class for ImageWrapper. This extends the descriptors by defining behaviors for when tensor
+ * coordinates go out of scope.
  *
- * Templated on the wrapper type W (e.g. ImageWrapper<T>, VarShapeImageWrapper<T>) so that the same
- * border math is shared between uniform-shape and variable-shape image batches. The pixel value
- * type T is recovered from W::ValueType.
- *
+ * @tparam T The underlying data type of the tensor.
  * @tparam BorderType The border type to use when coordinates are out of bounds.
- * @tparam W The underlying image wrapper type. Must expose ValueType, at(n,h,w,c), width(n), and height(n).
  */
-template <eBorderType BorderType, typename W>
+template <typename T, eBorderType BorderType>
 class BorderWrapper {
    public:
-    using ValueType = typename W::ValueType;
-
     /**
-     * @brief Constructs a BorderWrapper from an existing image wrapper. Extends its capabilities to handle out
-     * of bound coordinates.
+     * @brief Wraps an ImageWrapper and extends its capabilities to handle out of bounds coordinates.
      *
-     * @param image_wrapper The image wrapper to wrap around the BorderWrapper.
+     * @param tensor The tensor to wrap.
      * @param border_value The fallback border color to use when using a constant border mode.
      */
-    BorderWrapper(W image_wrapper, ValueType border_value) : m_desc(image_wrapper), m_border_value(border_value) {}
+    BorderWrapper(const Tensor& tensor, T border_value) : m_desc(tensor), m_border_value(border_value) {}
+
+    /**
+     * @brief Constructs a BorderWrapper from an existing ImageWrapper. Extends its capabilities to handle out of bound
+     * coordinates.
+     *
+     * @param image_wrapper The ImageWrapper to wrap around the BorderWrapper.
+     * @param border_value The fallback border color to use when using a constant border mode.
+     */
+    BorderWrapper(ImageWrapper<T> image_wrapper, T border_value)
+        : m_desc(image_wrapper), m_border_value(border_value) {}
 
     /**
      * @brief Returns a reference to the underlying data given image coordinates. If the coordinates fall out of bounds,
@@ -65,14 +66,11 @@ class BorderWrapper {
      * @param c The channel index.
      * @return A reference to the underlying data or a fallback border value of type T.
      */
-    __device__ __host__ const ValueType at(int64_t n, int64_t h, int64_t w, int64_t c) const {
-        const int64_t imgWidth = width(n);
-        const int64_t imgHeight = height(n);
-
+    __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
         // Constant border type implementation. This is a special case which doesn't remap values, but rather returns
         // the provided constant value.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_CONSTANT) {
-            if (w < 0 || w >= imgWidth || h < 0 || h >= imgHeight)
+            if (w < 0 || w >= width() || h < 0 || h >= height())
                 return m_border_value;
             else
                 return m_desc.at(n, h, w, c);
@@ -82,12 +80,13 @@ class BorderWrapper {
         // required at image borders. While this may cause branch divergence, a good bulk of the pixels should fall
         // within image bounds and will take the same branch. This is preferred over having to do expensive calculations
         // for EVERY pixel in the image (most of which do not require said calculations).
-        if (w >= 0 && w < imgWidth && h >= 0 && h < imgHeight) {
+        if (w >= 0 && w < width() && h >= 0 && h < height()) {
             return m_desc.at(n, h, w, c);
         }
 
         // Otherwise, do some additional calculations to map the provided x and y coordinates to be within bounds.
         int64_t x = w, y = h;
+        int64_t imgWidth = width(), imgHeight = height();
 
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
@@ -140,20 +139,18 @@ class BorderWrapper {
     }
 
     /**
-     * @brief Retrives the height of the image at batch index n.
+     * @brief Retrives the height of the images.
      *
-     * @param n Batch index. Ignored when W is a uniform-shape wrapper.
      * @return Image height.
      */
-    __device__ __host__ inline int64_t height(int64_t n = 0) const { return m_desc.height(n); }
+    __device__ __host__ inline int64_t height() const { return m_desc.height(); }
 
     /**
-     * @brief Retrieves the width of the image at batch index n.
+     * @brief Retrieves the width of the image.
      *
-     * @param n Batch index. Ignored when W is a uniform-shape wrapper.
      * @return Image width.
      */
-    __device__ __host__ inline int64_t width(int64_t n = 0) const { return m_desc.width(n); }
+    __device__ __host__ inline int64_t width() const { return m_desc.width(); }
 
     /**
      * @brief Retrieves the number of batches in the image tensor.
@@ -170,7 +167,7 @@ class BorderWrapper {
     __device__ __host__ inline int64_t channels() const { return m_desc.channels(); }
 
    private:
-    W m_desc;
-    ValueType m_border_value;
+    ImageWrapper<T> m_desc;
+    T m_border_value;
 };
 }  // namespace roccv
