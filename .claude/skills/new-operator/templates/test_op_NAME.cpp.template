@@ -111,6 +111,14 @@ int main(int argc, char** argv) {
     (void)argv;
     TEST_CASES_BEGIN();
 
+    // TODO: The cases below are scaffolded defaults — one per supported dtype/channel combo on each
+    // device, exercising a single parameter value. Add more comprehensive coverage tailored to this
+    // operator before considering the test suite complete: varied parameter values (edge/identity
+    // values, extremes, invalid-but-checked values), additional shape combinations (non-power-of-two,
+    // single-pixel, large), each supported tensor layout, and any operator-specific edge cases
+    // (e.g. saturation at dtype boundaries, NaN/Inf handling for float dtypes, behavior on degenerate
+    // inputs). Add new TestNegative* cases for any preconditions specific to this operator.
+
     TEST_CASE(TestNegative{{OP_PASCAL}}());
 
     // GPU correctness tests — one per supported dtype/channel combination.

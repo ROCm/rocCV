@@ -125,6 +125,7 @@ Output a short summary:
   - Kernel body in `{{OP_SNAKE}}_device.hpp` and `{{OP_SNAKE}}_host.hpp`
   - Golden model in the C++ test
   - Any operator-specific validation not captured in Step 1.7
+  - **Expand the test suites.** Both `test_op_{{OP_SNAKE}}.cpp` and `test_op_{{OP_SNAKE}}.py` carry only scaffolded defaults — one case per supported dtype/channel combo with a single parameter value. The user must add more comprehensive coverage tailored to the operator: more parameter values (edge/identity/extremes), additional shape combinations, every supported layout, and operator-specific edge cases (saturation, NaN/Inf, degenerate inputs). The test templates already contain a TODO comment block calling this out — re-state it in the report so the user doesn't ship with only scaffolded coverage.
 - Reminder: rebuild with `cmake --build build --parallel`. Do not run benchmarks; the user runs those.
 
 ## Notes

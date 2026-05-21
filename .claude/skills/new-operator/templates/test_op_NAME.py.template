@@ -4,6 +4,13 @@ import rocpycv
 from test_helpers import generate_tensor, compare_tensors
 
 
+# TODO: The parametrize ranges below are scaffolded defaults — they cover every supported
+# dtype/channel combo on both devices with a small set of shapes and a couple of parameter values.
+# Add more comprehensive coverage tailored to this operator before considering the test suite
+# complete: more parameter values (edge/identity, extremes, invalid-but-checked), additional shape
+# combinations, each supported tensor layout, and any operator-specific edge cases (saturation at
+# dtype boundaries, NaN/Inf handling for float dtypes, degenerate inputs). Add separate negative-path
+# tests for any preconditions specific to this operator.
 @pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
 @pytest.mark.parametrize("dtype", [{{PYTEST_DTYPES}}])
 @pytest.mark.parametrize("channels", [{{PYTEST_CHANNELS}}])
