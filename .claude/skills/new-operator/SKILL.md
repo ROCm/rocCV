@@ -37,7 +37,12 @@ Echo the collected spec back as a compact bullet list before generating files, a
 
 ## Step 2 — generate the 8 files
 
-Read each template from `templates/` and write the destination file with substitutions applied. Templates use these placeholders:
+Read each template from `templates/` and write the destination file with **two prefixes prepended**, then substitutions applied:
+
+1. **License header** — templates don't carry the copyright block. Prepend the contents of `templates/copyright_c.txt` for every `.hpp`/`.cpp` destination, and `templates/copyright_py.txt` for the Python test. Write the header verbatim; do not modify the year (bump it manually if you're scaffolding in a new year).
+2. **Template body** — read the template, apply placeholder substitutions, write after the license header.
+
+Templates use these placeholders:
 
 ### Naming
 - `{{OP_SNAKE}}` — snake_case operator name
@@ -73,6 +78,17 @@ Read each template from `templates/` and write the destination file with substit
 - `{{PYTEST_LAYOUT}}` — the layout label used to construct the golden tensor (use `NHWC` if NHWC is supported, otherwise the first supported layout)
 
 When a placeholder represents an empty list (no extras), emit an empty string — not a stray comma.
+
+### Adding spec-driven includes
+
+Templates carry only the includes needed for the pass-through scaffold. If the spec from Step 1 introduces types the scaffold doesn't already cover, add the corresponding include yourself:
+
+- Extra param uses an enum from `operator_types.h` (e.g. `eBorderType`, `eInterpolationType`, `eAxis`) → add `#include "operator_types.h"` to the kernel headers (`*_device.hpp`, `*_host.hpp`). The op header already includes it.
+- Extra param is a `Tensor` (per-sample params) → both the op header (`op_*.hpp`) and the pybind header (`py_op_*.hpp`) already pull in `core/tensor.hpp` and `py_tensor.hpp` respectively; no extra include needed.
+- Extra param uses `std::vector`, `std::array`, etc. → add the relevant standard header to whichever file references it directly.
+- Golden model in the C++ test uses `<algorithm>`, `<cmath>`, etc. → add as needed; the test template only carries what the scaffold itself uses.
+
+When in doubt, err toward fewer includes — `clang` will tell you what's missing on the first build.
 
 ### Destination paths (do NOT create directories — they all exist)
 
