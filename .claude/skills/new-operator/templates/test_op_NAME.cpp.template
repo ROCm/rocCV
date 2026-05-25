@@ -1,0 +1,131 @@
+#include <core/detail/casting.hpp>
+#include <core/detail/type_traits.hpp>
+#include <core/wrappers/image_wrapper.hpp>
+#include <op_{{OP_SNAKE}}.hpp>
+
+#include "test_helpers.hpp"
+
+using namespace roccv;
+using namespace roccv::tests;
+
+// Keep all non-entrypoint functions in an anonymous namespace to prevent redefinition errors across translation units.
+namespace {
+
+/**
+ * @brief Verified golden C++ model for the {{OP_PASCAL}} operation.
+ *
+ * TODO: replace the pass-through body with a verified reference implementation.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+std::vector<BT> Golden{{OP_PASCAL}}(std::vector<BT>& input, int32_t batchSize, int32_t width,
+                                    int32_t height{{PARAMS_CPP_DECL}}) {
+    std::vector<BT> output(input.size());
+
+    ImageWrapper<T> src(input, batchSize, width, height);
+    ImageWrapper<T> dst(output, batchSize, width, height);
+
+    for (int b = 0; b < batchSize; ++b) {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                // TODO: replace this pass-through with the actual reference computation.
+                dst.at(b, y, x, 0) = detail::SaturateCast<T>(src.at(b, y, x, 0));
+            }
+        }
+    }
+
+    return output;
+}
+
+template <typename T, typename BT = detail::BaseType<T>>
+void TestCorrectness(int batchSize, int width, int height{{PARAMS_CPP_DECL}}, ImageFormat format, eDeviceType device) {
+    Tensor input(batchSize, {width, height}, format, device);
+    Tensor output(batchSize, {width, height}, format, device);
+
+    std::vector<BT> inputData(input.shape().size());
+    FillVector(inputData);
+
+    CopyVectorIntoTensor(input, inputData);
+
+    std::vector<BT> ref = Golden{{OP_PASCAL}}<T>(inputData, batchSize, width, height{{PARAMS_CPP_FWD}});
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    {{OP_PASCAL}} op;
+    op(stream, input, output{{PARAMS_CPP_FWD}}, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    std::vector<BT> result(output.shape().size());
+    CopyTensorIntoVector(result, output);
+
+    CompareVectors(result, ref);
+}
+
+void TestNegative{{OP_PASCAL}}() {
+    TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
+    Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+    Tensor validCPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
+    {{OP_PASCAL}} op;
+
+    {
+        // Output tensor on CPU for GPU operation
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validCPUTensor{{PARAMS_CPP_FWD}}, eDeviceType::GPU),
+                         eStatusType::INVALID_OPERATION);
+    }
+
+    {
+        // Input tensor on CPU for GPU operation
+        EXPECT_EXCEPTION(op(nullptr, validCPUTensor, validGPUTensor{{PARAMS_CPP_FWD}}, eDeviceType::GPU),
+                         eStatusType::INVALID_OPERATION);
+    }
+
+    {
+        // Unsupported layout
+        TensorShape invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
+        Tensor invalidTensor(invalidLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor{{PARAMS_CPP_FWD}}, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Unsupported data type
+        Tensor invalidTensor(validGPUTensor.shape(), DataType(eDataType::DATA_TYPE_U32), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor{{PARAMS_CPP_FWD}}, eDeviceType::GPU),
+                         eStatusType::NOT_IMPLEMENTED);
+    }
+
+    {
+        // Input/output shape mismatch
+        Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {2, 2, 2, 2}), DataType(eDataType::DATA_TYPE_U8),
+                             eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor{{PARAMS_CPP_FWD}}, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    TEST_CASES_BEGIN();
+
+    // TODO: The cases below are scaffolded defaults — one per supported dtype/channel combo on each
+    // device, exercising a single parameter value. Add more comprehensive coverage tailored to this
+    // operator before considering the test suite complete: varied parameter values (edge/identity
+    // values, extremes, invalid-but-checked values), additional shape combinations (non-power-of-two,
+    // single-pixel, large), each supported tensor layout, and any operator-specific edge cases
+    // (e.g. saturation at dtype boundaries, NaN/Inf handling for float dtypes, behavior on degenerate
+    // inputs). Add new TestNegative* cases for any preconditions specific to this operator.
+
+    TEST_CASE(TestNegative{{OP_PASCAL}}());
+
+    // GPU correctness tests — one per supported dtype/channel combination.
+{{TEST_CORRECTNESS_GPU}}
+
+    // CPU correctness tests.
+{{TEST_CORRECTNESS_CPU}}
+
+    TEST_CASES_END();
+}

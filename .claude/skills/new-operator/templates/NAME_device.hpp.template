@@ -1,0 +1,17 @@
+#pragma once
+
+#include <hip/hip_runtime.h>
+
+namespace Kernels::Device {
+template <typename SrcWrapper, typename DstWrapper>
+__global__ void {{OP_SNAKE}}(SrcWrapper input, DstWrapper output{{PARAMS_CPP_DECL}}) {
+    const int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const int b = blockIdx.z;
+
+    if (x >= output.width() || y >= output.height()) return;
+
+    // TODO: implement the operator. The default below is a pass-through copy.
+    output.at(b, y, x, 0) = input.at(b, y, x, 0);
+}
+}  // namespace Kernels::Device
