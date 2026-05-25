@@ -1,0 +1,67 @@
+#include "op_{{OP_SNAKE}}.hpp"
+
+#include <hip/hip_runtime.h>
+
+#include <array>
+#include <functional>
+#include <unordered_map>
+
+#include "common/validation_helpers.hpp"
+#include "core/exception.hpp"
+#include "core/status_type.h"
+#include "core/wrappers/image_wrapper.hpp"
+#include "kernels/device/{{OP_SNAKE}}_device.hpp"
+#include "kernels/host/{{OP_SNAKE}}_host.hpp"
+
+namespace roccv {
+
+template <typename T>
+void dispatch_{{OP_SNAKE}}(hipStream_t stream, const Tensor& input, const Tensor& output{{PARAMS_CPP_DECL}},
+                           eDeviceType device) {
+    // NOTE: The scaffold assumes the input and output share the same vector type T (same dtype, same channel
+    // count, same layout family). If this operator changes dtype, layout, or channel count between input and
+    // output, split this into two template parameters (e.g. <SrcT, DstT>) and build distinct wrappers — and
+    // update the dispatch table below to match.
+    ImageWrapper<T> inputWrapper(input);
+    ImageWrapper<T> outputWrapper(output);
+
+    switch (device) {
+        case eDeviceType::GPU: {
+            dim3 block(64, 16);
+            dim3 grid((outputWrapper.width() + block.x - 1) / block.x,
+                      (outputWrapper.height() + block.y - 1) / block.y, outputWrapper.batches());
+            Kernels::Device::{{OP_SNAKE}}<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper{{PARAMS_CPP_FWD}});
+            break;
+        }
+
+        case eDeviceType::CPU: {
+            Kernels::Host::{{OP_SNAKE}}(inputWrapper, outputWrapper{{PARAMS_CPP_FWD}});
+            break;
+        }
+    }
+}
+
+void {{OP_PASCAL}}::operator()(hipStream_t stream, const Tensor& input, const Tensor& output{{PARAMS_CPP_DECL}},
+                               eDeviceType device) const {
+    // Tensor validation. Generated from the operator spec — keep in sync with the dispatch table below.
+    CHECK_TENSOR_DEVICE(input, device);
+    CHECK_TENSOR_DATATYPES(input, {{VALIDATION_DTYPES}});
+    CHECK_TENSOR_CHANNELS(input, {{VALIDATION_CHANNELS}});
+    CHECK_TENSOR_LAYOUT(input, {{VALIDATION_LAYOUTS}});
+
+    CHECK_TENSOR_DEVICE(output, device);
+{{OUTPUT_VALIDATION}}
+
+    // clang-format off
+    static const std::unordered_map<
+    eDataType, std::array<std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output{{PARAMS_CPP_DECL}},
+        eDeviceType device)>, 4>>
+        funcs = {
+{{DISPATCH_TABLE}}
+        };
+    // clang-format on
+    auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    func(stream, input, output{{PARAMS_CPP_FWD}}, device);
+}
+}  // namespace roccv
