@@ -1,0 +1,34 @@
+import pytest
+import rocpycv
+
+from test_helpers import generate_tensor, compare_tensors
+
+
+# TODO: The parametrize ranges below are scaffolded defaults — they cover every supported
+# dtype/channel combo on both devices with a small set of shapes and a couple of parameter values.
+# Add more comprehensive coverage tailored to this operator before considering the test suite
+# complete: more parameter values (edge/identity, extremes, invalid-but-checked), additional shape
+# combinations, each supported tensor layout, and any operator-specific edge cases (saturation at
+# dtype boundaries, NaN/Inf handling for float dtypes, degenerate inputs). Add separate negative-path
+# tests for any preconditions specific to this operator.
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.CPU, rocpycv.eDeviceType.GPU])
+@pytest.mark.parametrize("dtype", [{{PYTEST_DTYPES}}])
+@pytest.mark.parametrize("channels", [{{PYTEST_CHANNELS}}])
+{{PARAMS_PYTEST_PARAMETRIZE}}
+@pytest.mark.parametrize("samples,width,height", [
+    (1, 65, 30),
+    (3, 45, 20),
+    (5, 23, 106),
+])
+def test_op_{{OP_SNAKE}}(samples, width, height, channels, dtype{{PARAMS_PYTEST_NAMES}}, device):
+    input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
+    stream = rocpycv.Stream()
+    # NOTE: Scaffolded for operators whose output shape and dtype match the input. For shape-changing ops
+    # (Resize, Crop, etc.) or dtype-changing ops, parametrize the output shape/dtype and construct the
+    # golden tensor accordingly.
+    output_tensor_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.{{PYTEST_LAYOUT}}, dtype, device)
+    rocpycv.{{OP_PY_FUNC}}_into(output_tensor_golden, input_tensor{{PARAMS_PYTEST_FORWARD}}, stream, device)
+    output_tensor = rocpycv.{{OP_PY_FUNC}}(input_tensor{{PARAMS_PYTEST_FORWARD}}, stream, device)
+    stream.synchronize()
+
+    compare_tensors(output_tensor, output_tensor_golden)
