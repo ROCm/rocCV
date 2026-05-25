@@ -1,0 +1,49 @@
+#pragma once
+
+#include <operator_types.h>
+
+#include <i_operator.hpp>
+
+#include "core/tensor.hpp"
+
+namespace roccv {
+/**
+ * @brief Class for managing the {{OP_PASCAL}} operator.
+ *
+ */
+class {{OP_PASCAL}} final : public IOperator {
+   public:
+    {{OP_PASCAL}}() {}
+    ~{{OP_PASCAL}}() {}
+
+    /**
+     * @brief Run the {{OP_PASCAL}} operator on an image batch.
+     *
+     * Limitations:
+     *
+     * Input:
+     *       Supported TensorLayout(s): [{{LAYOUTS_DOXYGEN}}]
+     *                        Channels: [{{CHANNELS_DOXYGEN}}]
+     *       Supported DataType(s):     [{{DTYPES_DOXYGEN}}]
+     *
+     * Output:
+     *       Supported TensorLayout(s): [{{LAYOUTS_DOXYGEN}}]
+     *                        Channels: [{{CHANNELS_DOXYGEN}}]
+     *       Supported DataType(s):     [{{DTYPES_DOXYGEN}}]
+     *
+     * Input/Output dependency:
+     *
+     *       Property      |  Input == Output
+     *      -------------- | -------------
+{{IO_DEPENDENCY_TABLE}}
+     *
+     * @param[in] stream HIP stream to run this operator on.
+     * @param[in] input Input tensor with image batch data.
+     * @param[out] output Output tensor for storing modified image batch data.
+{{PARAMS_DOXYGEN}}
+     * @param[in] device The device to run this operation on. (Default: GPU)
+     */
+    void operator()(hipStream_t stream, const Tensor &input, const Tensor &output{{PARAMS_CPP_DECL}},
+                    eDeviceType device = eDeviceType::GPU) const;
+};
+}  // namespace roccv
