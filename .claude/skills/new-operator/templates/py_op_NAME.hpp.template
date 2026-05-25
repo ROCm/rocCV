@@ -1,0 +1,18 @@
+#pragma once
+
+#include <operator_types.h>
+#include <pybind11/pybind11.h>
+
+#include "py_stream.hpp"
+#include "py_tensor.hpp"
+
+namespace py = pybind11;
+
+class PyOp{{OP_PASCAL}} {
+   public:
+    static void Export(py::module& m);
+    static PyTensor Execute(PyTensor& input{{PARAMS_PY_DECL}},
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
+    static void ExecuteInto(PyTensor& output, PyTensor& input{{PARAMS_PY_DECL}},
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
+};
