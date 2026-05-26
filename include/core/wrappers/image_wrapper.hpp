@@ -42,6 +42,8 @@ class ImageWrapper {
     using ValueType = T;
     using BaseType = detail::BaseType<T>;
 
+    ImageWrapper() = default;
+
     /**
      * @brief Creates an ImageWrapper from a Tensor.
      *
@@ -139,16 +141,22 @@ class ImageWrapper {
     /**
      * @brief Retrives the height of the images.
      *
+     * @param n Batch index. Ignored for uniform-shape ImageWrapper; included so the signature matches
+     *          VarShapeImageWrapper, allowing both to satisfy the wrapper concept consumed by
+     *          BorderWrapper / InterpolationWrapper.
      * @return Image height.
      */
-    __device__ __host__ inline int64_t height() const { return shape.h; }
+    __device__ __host__ inline int64_t height(int64_t /*n*/ = 0) const { return shape.h; }
 
     /**
      * @brief Retrieves the width of the image.
      *
+     * @param n Batch index. Ignored for uniform-shape ImageWrapper; included so the signature matches
+     *          VarShapeImageWrapper, allowing both to satisfy the wrapper concept consumed by
+     *          BorderWrapper / InterpolationWrapper.
      * @return Image width.
      */
-    __device__ __host__ inline int64_t width() const { return shape.w; }
+    __device__ __host__ inline int64_t width(int64_t /*n*/ = 0) const { return shape.w; }
 
     /**
      * @brief Retrieves the number of batches in the image tensor.
