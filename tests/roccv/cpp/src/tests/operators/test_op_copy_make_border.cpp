@@ -58,10 +58,10 @@ std::vector<BT> GoldenCopyMakeBorder(std::vector<BT> input, int batchSize, Size2
     // Wrap the input images in a BorderWrapper to handle out of bounds image behavior. The BorderWrapper has already
     // been tested in another test so it can be used reliably.
     auto inputWrap =
-        MakeBorderWrapper<BorderType>(ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), borderVal);
+        MakeBorderWrapper<BorderType>(TensorWrapper<T>(input, batchSize, inputSize.w, inputSize.h), borderVal);
 
     std::vector<BT> output(batchSize * outputSize.h * outputSize.w * channels);
-    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
+    TensorWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < outputSize.h; y++) {

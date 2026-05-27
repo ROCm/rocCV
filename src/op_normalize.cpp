@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/tensor.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/normalize_device.hpp"
 #include "kernels/host/normalize_host.hpp"
 
@@ -42,10 +42,10 @@ void dispatch_normalize_stddev(hipStream_t stream, const Tensor& input, const Te
     // tensors.
     using work_type = detail::MakeType<float, detail::NumComponents<T>>;
 
-    ImageWrapper<T> inputWrap(input);
-    ImageWrapper<T> outputWrap(output);
-    ImageWrapper<work_type> scaleWrap(scale);
-    ImageWrapper<work_type> baseWrap(base);
+    TensorWrapper<T> inputWrap(input);
+    TensorWrapper<T> outputWrap(output);
+    TensorWrapper<work_type> scaleWrap(scale);
+    TensorWrapper<work_type> baseWrap(base);
 
     switch (device) {
         case eDeviceType::GPU: {

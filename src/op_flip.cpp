@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/exception.hpp"
 #include "core/status_type.h"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/flip_device.hpp"
 #include "kernels/host/flip_host.hpp"
 
@@ -37,8 +37,8 @@ namespace roccv {
 
 template <typename T, eAxis FlipType>
 void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
+    TensorWrapper<T> inputWrapper(input);
+    TensorWrapper<T> outputWrapper(output);
 
     switch (device) {
         case eDeviceType::GPU: {

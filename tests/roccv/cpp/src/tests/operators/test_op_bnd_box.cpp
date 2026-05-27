@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <algorithm>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <iostream>
 #include <op_bnd_box.hpp>
 
@@ -85,8 +85,8 @@ template <typename T, typename BT = detail::BaseType<T>>
 void GenerateGoldenBndBox(std::vector<BT> &input, std::vector<BT> &output, int32_t batchSize, int32_t width,
                           int32_t height, const BndBoxes &bboxes) {
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
 
     // Working type for internal pixel format, which has 4 channels.
     using WorkType = detail::MakeType<BT, 4>;

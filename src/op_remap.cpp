@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "core/detail/internal_structs.hpp"
 #include "core/detail/math/math.hpp"
 #include "core/detail/type_traits.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/remap_device.hpp"
 #include "kernels/host/remap_host.hpp"
@@ -76,10 +76,10 @@ template <typename T, eBorderType B, eInterpolationType I, eInterpolationType M>
 void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &map,
                               const eRemapType mapValueType, const bool alignCorners, const T borderValue,
                               const eDeviceType device) {
-    ImageWrapper<T> outputWrapper(output);
+    TensorWrapper<T> outputWrapper(output);
     auto wrappedMapTensor =
-        MakeInterpolationWrapper<M>(MakeBorderWrapper<B>(ImageWrapper<float2>(map), make_float2(0, 0)));
-    auto inputWrapper = MakeInterpolationWrapper<I>(MakeBorderWrapper<B>(ImageWrapper<T>(input), borderValue));
+        MakeInterpolationWrapper<M>(MakeBorderWrapper<B>(TensorWrapper<float2>(map), make_float2(0, 0)));
+    auto inputWrapper = MakeInterpolationWrapper<I>(MakeBorderWrapper<B>(TensorWrapper<T>(input), borderValue));
 
     int mapBatchSize = wrappedMapTensor.batches();
 

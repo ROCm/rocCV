@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
 #include <iostream>
 #include <op_remap.hpp>
@@ -97,14 +97,14 @@ std::vector<BT> GoldenRemap(std::vector<BT>& input, int32_t batchSize, int32_t m
 
     // Create interpolation wrapper for input vector
     auto src = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<BorderType>(
-        ImageWrapper<T>(input, batchSize, inWidth, inHeight), detail::SaturateCast<T>(borderValue)));
+        TensorWrapper<T>(input, batchSize, inWidth, inHeight), detail::SaturateCast<T>(borderValue)));
 
     // Wrap the output vector for simplified data access
-    ImageWrapper<T> dst(output, batchSize, outWidth, outHeight);
+    TensorWrapper<T> dst(output, batchSize, outWidth, outHeight);
 
     // Create an interpolation wrapper for the map tensor
     auto map = MakeInterpolationWrapper<MapInterpType>(
-        MakeBorderWrapper<BorderType>(ImageWrapper<float2>(mapData.data(), mapBatchSize, mapWidth, mapHeight),
+        MakeBorderWrapper<BorderType>(TensorWrapper<float2>(mapData.data(), mapBatchSize, mapWidth, mapHeight),
                                       detail::SaturateCast<float2>(borderValue)));
 
     int2 srcSize = make_int2(src.width(), src.height());

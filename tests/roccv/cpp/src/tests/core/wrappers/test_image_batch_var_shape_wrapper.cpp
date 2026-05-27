@@ -29,7 +29,7 @@
 #include <core/image_format.hpp>
 #include <core/wrappers/border_wrapper.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
-#include <core/wrappers/var_shape_image_wrapper.hpp>
+#include <core/wrappers/image_batch_var_shape_wrapper.hpp>
 #include <vector>
 
 #include "test_helpers.hpp"
@@ -43,7 +43,7 @@ namespace {
 // Each launch covers exactly one image — the host loop steps through n and resizes the
 // grid to that image's dimensions, which avoids needing a max-bounds check inside the kernel.
 template <typename T>
-__global__ void VarShapeCopyKernel(VarShapeImageWrapper<T> src, VarShapeImageWrapper<T> dst, int32_t n) {
+__global__ void VarShapeCopyKernel(ImageBatchVarShapeWrapper<T> src, ImageBatchVarShapeWrapper<T> dst, int32_t n) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= dst.width(n) || y >= dst.height(n)) return;
@@ -91,8 +91,8 @@ void TestRoundtripCopy(const std::vector<Size2D>& sizes, ImageFormat fmt) {
 
     auto srcData = srcBatch.exportData(stream);
     auto dstData = dstBatch.exportData(stream);
-    VarShapeImageWrapper<T> srcWrap(srcData);
-    VarShapeImageWrapper<T> dstWrap(dstData);
+    ImageBatchVarShapeWrapper<T> srcWrap(srcData);
+    ImageBatchVarShapeWrapper<T> dstWrap(dstData);
 
     // Launch one kernel per image (sizes vary so a single 3D launch can't bound y to per-image height cleanly).
     for (int32_t i = 0; i < numImages; ++i) {
@@ -116,11 +116,11 @@ void TestRoundtripCopy(const std::vector<Size2D>& sizes, ImageFormat fmt) {
 }
 
 // Border-composition test: write the BORDER_TYPE_CONSTANT fallback for every output pixel by reading from a coordinate
-// that is guaranteed to be out of bounds for every image (-1, -1). Confirms BorderWrapper<B, VarShapeImageWrapper<T>>
+// that is guaranteed to be out of bounds for every image (-1, -1). Confirms BorderWrapper<B, ImageBatchVarShapeWrapper<T>>
 // correctly delegates to width(n) / height(n) for per-image bounds; otherwise it would dereference invalid memory.
 template <typename T>
 __global__ void VarShapeBorderConstantKernel(
-    BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, VarShapeImageWrapper<T>> src, VarShapeImageWrapper<T> dst,
+    BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, ImageBatchVarShapeWrapper<T>> src, ImageBatchVarShapeWrapper<T> dst,
     int32_t n) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -150,8 +150,8 @@ void TestBorderConstantComposition(const std::vector<Size2D>& sizes, ImageFormat
     auto srcData = srcBatch.exportData(stream);
     auto dstData = dstBatch.exportData(stream);
 
-    auto srcWrap = MakeBorderWrapper<eBorderType::BORDER_TYPE_CONSTANT>(VarShapeImageWrapper<T>(srcData), borderValue);
-    VarShapeImageWrapper<T> dstWrap(dstData);
+    auto srcWrap = MakeBorderWrapper<eBorderType::BORDER_TYPE_CONSTANT>(ImageBatchVarShapeWrapper<T>(srcData), borderValue);
+    ImageBatchVarShapeWrapper<T> dstWrap(dstData);
 
     for (int32_t i = 0; i < numImages; ++i) {
         dim3 block(16, 16);
@@ -186,9 +186,9 @@ void TestBorderConstantComposition(const std::vector<Size2D>& sizes, ImageFormat
 template <typename T>
 __global__ void VarShapeInterpNearestKernel(
     InterpolationWrapper<eInterpolationType::INTERP_TYPE_NEAREST,
-                         BorderWrapper<eBorderType::BORDER_TYPE_REPLICATE, VarShapeImageWrapper<T>>>
+                         BorderWrapper<eBorderType::BORDER_TYPE_REPLICATE, ImageBatchVarShapeWrapper<T>>>
         src,
-    VarShapeImageWrapper<T> dst, int32_t n) {
+    ImageBatchVarShapeWrapper<T> dst, int32_t n) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= dst.width(n) || y >= dst.height(n)) return;
@@ -229,8 +229,8 @@ void TestInterpolationNearestComposition(const std::vector<Size2D>& sizes, Image
     auto dstData = dstBatch.exportData(stream);
 
     auto srcWrap = MakeInterpolationWrapper<eInterpolationType::INTERP_TYPE_NEAREST>(
-        MakeBorderWrapper<eBorderType::BORDER_TYPE_REPLICATE>(VarShapeImageWrapper<T>(srcData), T{}));
-    VarShapeImageWrapper<T> dstWrap(dstData);
+        MakeBorderWrapper<eBorderType::BORDER_TYPE_REPLICATE>(ImageBatchVarShapeWrapper<T>(srcData), T{}));
+    ImageBatchVarShapeWrapper<T> dstWrap(dstData);
 
     for (int32_t i = 0; i < numImages; ++i) {
         dim3 block(16, 16);
@@ -262,7 +262,7 @@ void TestAccessors(const std::vector<Size2D>& sizes, ImageFormat fmt) {
         batch.pushBack(handles[i]);
     }
     auto data = batch.exportData(0);
-    VarShapeImageWrapper<T> wrap(data);
+    ImageBatchVarShapeWrapper<T> wrap(data);
 
     EXPECT_EQ(wrap.batches(), static_cast<int64_t>(numImages));
     EXPECT_EQ(wrap.channels(), static_cast<int64_t>(detail::NumElements<T>));
@@ -297,13 +297,13 @@ int main(int argc, char** argv) {
 
     TEST_CASE(TestAccessors<uchar3>({{16, 12}, {32, 24}, {7, 5}}, FMT_RGB8));
 
-    // BorderWrapper composed over VarShapeImageWrapper: constant-fill via guaranteed-OOB read.
+    // BorderWrapper composed over ImageBatchVarShapeWrapper: constant-fill via guaranteed-OOB read.
     TEST_CASE(
         TestBorderConstantComposition<uchar3>({{16, 12}, {32, 24}, {7, 5}}, FMT_RGB8, make_uchar3(0xAB, 0xCD, 0xEF)));
     TEST_CASE(TestBorderConstantComposition<uchar4>({{16, 12}, {32, 24}, {7, 5}}, FMT_RGBA8,
                                                     make_uchar4(0x12, 0x34, 0x56, 0x78)));
 
-    // InterpolationWrapper<NEAREST> composed over VarShapeImageWrapper: integer-coord roundtrip is identity.
+    // InterpolationWrapper<NEAREST> composed over ImageBatchVarShapeWrapper: integer-coord roundtrip is identity.
     TEST_CASE(TestInterpolationNearestComposition<uchar1>({{16, 12}, {32, 24}, {7, 5}}, FMT_U8));
     TEST_CASE(TestInterpolationNearestComposition<uchar3>({{16, 12}, {32, 24}, {7, 5}}, FMT_RGB8));
     TEST_CASE(TestInterpolationNearestComposition<uchar4>({{16, 12}, {32, 24}, {7, 5}}, FMT_RGBA8));

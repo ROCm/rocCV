@@ -56,11 +56,11 @@ std::vector<detail::BaseType<T>> GoldenWarpAffine(std::vector<detail::BaseType<T
                                                   Size2D inputSize, Size2D outputSize, float4 borderValue) {
     // Create interpolation wrapper for input vector
     auto inputWrap = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<BorderType>(
-        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue)));
+        TensorWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue)));
 
-    // Create ImageWrapper for output vector. We also need to create said output vector.
+    // Create TensorWrapper for output vector. We also need to create said output vector.
     std::vector<detail::BaseType<T>> output(batchSize * outputSize.w * outputSize.h * detail::NumElements<T>);
-    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
+    TensorWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
     // Prepare the transformation matrix. An affine transform is effectively a 3x3 perspective transform with its last
     // row set to [0, 0, 1].

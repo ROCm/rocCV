@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include <core/detail/type_traits.hpp>
 #include <core/detail/vector_utils.hpp>
 #include <core/wrappers/border_wrapper.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_bilateral_filter.hpp>
 
 #include "test_helpers.hpp"
@@ -51,8 +51,8 @@ namespace {
 template <typename T, eBorderType borderMode, typename BT = detail::BaseType<T>>
 void GenerateGoldenBilateral(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, Size2D imageSize,
                              int diameter, float sigmaColor, float sigmaSpace, T borderValue) {
-    auto src = MakeBorderWrapper<borderMode>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
-    ImageWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
+    auto src = MakeBorderWrapper<borderMode>(TensorWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
+    TensorWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
     using namespace roccv::detail;
     using Worktype = MakeType<float, NumElements<T>>;
 

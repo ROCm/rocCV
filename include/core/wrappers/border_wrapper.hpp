@@ -22,7 +22,7 @@
 #pragma once
 
 #include "core/detail/sampling_helpers.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
@@ -89,7 +89,7 @@ __device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, in
 /**
  * @brief Wrapper class which adds border-handling behavior on top of an underlying image wrapper.
  *
- * Templated on the wrapper type W (e.g. ImageWrapper<T>, VarShapeImageWrapper<T>) so the same border math
+ * Templated on the wrapper type W (e.g. TensorWrapper<T>, ImageBatchVarShapeWrapper<T>) so the same border math
  * serves both uniform-shape and variable-shape image batches. The pixel value type T is recovered from
  * W::ValueType. W must expose: ValueType, at(n,h,w,c), width(n), height(n), batches(), channels().
  *

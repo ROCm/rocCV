@@ -33,8 +33,8 @@
 namespace roccv {
 
 /**
- * @brief VarShapeImageWrapper is a non-owning, kernel-friendly view over an ImageBatchVarShape's
- * device-side descriptor table. It satisfies the same wrapper concept as ImageWrapper<T>
+ * @brief ImageBatchVarShapeWrapper is a non-owning, kernel-friendly view over an ImageBatchVarShape's
+ * device-side descriptor table. It satisfies the same wrapper concept as TensorWrapper<T>
  * (ValueType, at(n,h,w,c), width(n), height(n), batches(), channels()) so it composes with
  * BorderWrapper / InterpolationWrapper unchanged.
  *
@@ -48,19 +48,19 @@ namespace roccv {
  * @tparam T The datatype of an individual pixel (e.g. uchar1, uchar3, uchar4, float1, float4).
  */
 template <typename T>
-class VarShapeImageWrapper {
+class ImageBatchVarShapeWrapper {
    public:
     using ValueType = T;
     using BaseType = detail::BaseType<T>;
 
-    VarShapeImageWrapper() = default;
+    ImageBatchVarShapeWrapper() = default;
 
     /**
-     * @brief Creates a VarShapeImageWrapper from a GPU-resident varshape batch data snapshot.
+     * @brief Creates a ImageBatchVarShapeWrapper from a GPU-resident varshape batch data snapshot.
      *
      * @param data The exported descriptor table from ImageBatchVarShape::exportData(stream).
      */
-    __host__ VarShapeImageWrapper(const ImageBatchVarShapeDataStridedHip& data)
+    __host__ ImageBatchVarShapeWrapper(const ImageBatchVarShapeDataStridedHip& data)
         : m_imageList(data.imageList()), m_numImages(data.numImages()) {
 #ifndef NDEBUG
         // ImageBatchVarShape rejects multi-plane at pushBack; assert here as a belt-and-braces
@@ -68,7 +68,7 @@ class VarShapeImageWrapper {
         const ImageFormat* formats = data.hostFormatList();
         for (int32_t i = 0; i < m_numImages; ++i) {
             assert(formats[i].channels() == detail::NumElements<T> &&
-                   "VarShapeImageWrapper<T>: per-image channel count must match NumElements<T>");
+                   "ImageBatchVarShapeWrapper<T>: per-image channel count must match NumElements<T>");
         }
 #endif
     }
@@ -109,7 +109,7 @@ class VarShapeImageWrapper {
    private:
     __device__ __host__ inline T* doGetPtr(int64_t n, int64_t h, int64_t w, int64_t c) const {
         // Single-plane interleaved NHWC layout: pixel stride is sizeof(T), channel stride is
-        // sizeof(BaseType). Match ImageWrapper<T>::at semantics — returns a T* offset to (h, w)
+        // sizeof(BaseType). Match TensorWrapper<T>::at semantics — returns a T* offset to (h, w)
         // and additionally shifted by c channels.
         const ImagePlaneStrided& p = m_imageList[n].planes[0];
         unsigned char* addr =

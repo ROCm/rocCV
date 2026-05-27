@@ -31,30 +31,30 @@
 namespace roccv {
 
 /**
- * @brief ImageWrapper is a non-owning wrapper for roccv::Tensors with a NHWC/NCHW/HWC layout. It provides
+ * @brief TensorWrapper is a non-owning wrapper for roccv::Tensors with a NHWC/NCHW/HWC layout. It provides
  * methods for accessing the underlying data within HIP kernels.
  *
  * @tparam T The datatype of the underlying tensor data.
  */
 template <typename T>
-class ImageWrapper {
+class TensorWrapper {
    public:
     using ValueType = T;
     using BaseType = detail::BaseType<T>;
 
-    ImageWrapper() = default;
+    TensorWrapper() = default;
 
     /**
-     * @brief Creates an ImageWrapper from a Tensor.
+     * @brief Creates an TensorWrapper from a Tensor.
      *
-     * @param tensor The Tensor to be represented by the ImageWrapper.
+     * @param tensor The Tensor to be represented by the TensorWrapper.
      */
-    ImageWrapper(const Tensor& tensor) {
+    TensorWrapper(const Tensor& tensor) {
         if (tensor.layout() != eTensorLayout::TENSOR_LAYOUT_NHWC &&
             tensor.layout() != eTensorLayout::TENSOR_LAYOUT_NCHW &&
             tensor.layout() != eTensorLayout::TENSOR_LAYOUT_HWC &&
             tensor.layout() != eTensorLayout::TENSOR_LAYOUT_CHW) {
-            throw Exception("The given tensor layout is not supported for ImageWrapper", eStatusType::NOT_IMPLEMENTED);
+            throw Exception("The given tensor layout is not supported for TensorWrapper", eStatusType::NOT_IMPLEMENTED);
         }
 
         // Copy tensor data into image tensor descriptor
@@ -73,14 +73,14 @@ class ImageWrapper {
     }
 
     /**
-     * @brief Creates an ImageWrapper from a vector.
+     * @brief Creates an TensorWrapper from a vector.
      *
      * @param input The input vector to wrap.
      * @param batchSize The number of images within the batch.
      * @param width The width of each image within the batch.
      * @param height The height of each image within the batch.
      */
-    ImageWrapper(std::vector<BaseType>& input, int32_t batchSize, int32_t width, int32_t height) {
+    TensorWrapper(std::vector<BaseType>& input, int32_t batchSize, int32_t width, int32_t height) {
         // Calculate strides based on input (byte-wise strides)
         stride.c = sizeof(BaseType);
         stride.w = stride.c * detail::NumElements<T>;
@@ -98,14 +98,14 @@ class ImageWrapper {
     }
 
     /**
-     * @brief Creates an ImageWrapper from a pointer.
+     * @brief Creates an TensorWrapper from a pointer.
      *
      * @param input The input pointer to wrap.
      * @param batchSize The number of images within the batch.
      * @param width The width of each image within the batch.
      * @param height The height of each image within the batch.
      */
-    ImageWrapper(void* input, int32_t batchSize, int32_t width, int32_t height) {
+    TensorWrapper(void* input, int32_t batchSize, int32_t width, int32_t height) {
         // Calculate strides based on input (byte-wise strides)
         stride.c = sizeof(BaseType);
         stride.w = stride.c * detail::NumElements<T>;
@@ -141,8 +141,8 @@ class ImageWrapper {
     /**
      * @brief Retrives the height of the images.
      *
-     * @param n Batch index. Ignored for uniform-shape ImageWrapper; included so the signature matches
-     *          VarShapeImageWrapper, allowing both to satisfy the wrapper concept consumed by
+     * @param n Batch index. Ignored for uniform-shape TensorWrapper; included so the signature matches
+     *          ImageBatchVarShapeWrapper, allowing both to satisfy the wrapper concept consumed by
      *          BorderWrapper / InterpolationWrapper.
      * @return Image height.
      */
@@ -151,8 +151,8 @@ class ImageWrapper {
     /**
      * @brief Retrieves the width of the image.
      *
-     * @param n Batch index. Ignored for uniform-shape ImageWrapper; included so the signature matches
-     *          VarShapeImageWrapper, allowing both to satisfy the wrapper concept consumed by
+     * @param n Batch index. Ignored for uniform-shape TensorWrapper; included so the signature matches
+     *          ImageBatchVarShapeWrapper, allowing both to satisfy the wrapper concept consumed by
      *          BorderWrapper / InterpolationWrapper.
      * @return Image width.
      */

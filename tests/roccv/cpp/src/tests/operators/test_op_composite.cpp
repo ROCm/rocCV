@@ -21,7 +21,7 @@
 
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_composite.hpp>
 
 #include "test_helpers.hpp"
@@ -56,17 +56,17 @@ std::vector<detail::BaseType<OutputType>> GoldenComposite(std::vector<detail::Ba
     // number of elements as the InputType. For example, if input type is uchar3, working type is float3.
     using WorkType = detail::MakeType<float, detail::NumElements<InputType>>;
 
-    // Wrap input data into ImageWrappers for easy data access
-    ImageWrapper<InputType> fgWrap(foreground, batchSize, width, height);
-    ImageWrapper<InputType> bgWrap(background, batchSize, width, height);
-    ImageWrapper<MaskType> maskWrap(mask, batchSize, width, height);
+    // Wrap input data into TensorWrappers for easy data access
+    TensorWrapper<InputType> fgWrap(foreground, batchSize, width, height);
+    TensorWrapper<InputType> bgWrap(background, batchSize, width, height);
+    TensorWrapper<MaskType> maskWrap(mask, batchSize, width, height);
 
     // Size of the output depends on the requested number of output channels. If it is 3, then the output images will
     // have 3 channels. If it is 4, then an additional alpha channel is added to the output. This alpha channel is
     // always fully on.
     int numOutElements = batchSize * width * height * detail::NumElements<OutputType>;
     std::vector<detail::BaseType<OutputType>> output(numOutElements);
-    ImageWrapper<OutputType> outWrap(output, batchSize, width, height);
+    TensorWrapper<OutputType> outWrap(output, batchSize, width, height);
 
     for (int b = 0; b < batchSize; b++) {
         for (int y = 0; y < height; y++) {

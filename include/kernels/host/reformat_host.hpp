@@ -23,7 +23,7 @@
 
 #include <hip/hip_runtime.h>
 
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 
 namespace Kernels::Host {
 
@@ -36,7 +36,7 @@ namespace Kernels::Host {
  * @param[out] output The output tensor.
  */
 template <int Channels, typename T>
-void reformat(roccv::ImageWrapper<T> input, roccv::ImageWrapper<T> output) {
+void reformat(roccv::TensorWrapper<T> input, roccv::TensorWrapper<T> output) {
 #pragma omp parallel for
     for (int b = 0; b < output.batches(); b++) {
         for (int y = 0; y < output.height(); y++) {

@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/hip_utils.hpp"
 #include "core/tensor.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/bnd_box_device.hpp"
 #include "kernels/host/bnd_box_host.hpp"
 
@@ -44,8 +44,8 @@ BndBox::~BndBox() {}
 template <bool has_alpha, typename T>
 void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
                             std::shared_ptr<std::vector<Rect_t>> rects, eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
+    TensorWrapper<T> inputWrapper(input);
+    TensorWrapper<T> outputWrapper(output);
 
     auto width = inputWrapper.width();
     auto height = inputWrapper.height();

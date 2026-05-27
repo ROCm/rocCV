@@ -25,7 +25,7 @@
 
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/border_wrapper.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/copy_make_border_device.hpp"
 #include "kernels/host/copy_make_border_host.hpp"
@@ -38,8 +38,8 @@ namespace roccv {
 template <typename T, eBorderType BorderMode>
 void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,
                                            int32_t left, T border_value, eDeviceType device) {
-    auto in_desc = MakeBorderWrapper<BorderMode>(ImageWrapper<T>(input), border_value);
-    ImageWrapper<T> out_desc(output);
+    auto in_desc = MakeBorderWrapper<BorderMode>(TensorWrapper<T>(input), border_value);
+    TensorWrapper<T> out_desc(output);
 
     switch (device) {
         case eDeviceType::GPU: {

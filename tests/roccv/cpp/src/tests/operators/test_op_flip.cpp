@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <algorithm>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_flip.hpp>
 #include "test_helpers.hpp"
 
@@ -52,8 +52,8 @@ std::vector<BT> GoldenFlip(std::vector<BT>& input, int32_t batchSize, int32_t wi
     std::vector<BT> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
 
     for (int b = 0; b < batchSize; ++b) {
         for (int y = 0; y < height; ++y) {

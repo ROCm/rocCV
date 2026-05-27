@@ -45,7 +45,7 @@ namespace {
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenLinear(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x) {
+T GoldenLinear(BorderWrapper<BorderType, TensorWrapper<T>> input, int64_t sample, float y, float x) {
     // Defines the vectorized float type for intermediate calculations.
     using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
 
@@ -86,7 +86,7 @@ T GoldenLinear(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample,
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenNearest(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x) {
+T GoldenNearest(BorderWrapper<BorderType, TensorWrapper<T>> input, int64_t sample, float y, float x) {
     // Nearest neighbor interpolation. Rounds given floating point values to the nearest integer.
     return input.at(sample, lroundf(y), lroundf(x), 0);
 }
@@ -119,7 +119,7 @@ void CalBicubicWeights(float dist, float* weight) {
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenBicubic(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x) {
+T GoldenBicubic(BorderWrapper<BorderType, TensorWrapper<T>> input, int64_t sample, float y, float x) {
     // Defines the vectorized float type for intermediate calculations.
     using WorkType = detail::MakeType<float, detail::NumComponents<T>>;
 
@@ -158,7 +158,7 @@ T GoldenBicubic(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample
  * @return T The interpolated pixel.
  */
 template <typename T, eBorderType BorderType>
-T GoldenInterpolationAt(BorderWrapper<BorderType, ImageWrapper<T>> input, int64_t sample, float y, float x,
+T GoldenInterpolationAt(BorderWrapper<BorderType, TensorWrapper<T>> input, int64_t sample, float y, float x,
                         eInterpolationType interp) {
     switch (interp) {
         case eInterpolationType::INTERP_TYPE_NEAREST:
@@ -205,9 +205,9 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
 
     // Use roccv::InterpolationWrapper to get actual output
     auto actualWrap = MakeInterpolationWrapper<InterpType>(
-        MakeBorderWrapper<BorderType>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal));
+        MakeBorderWrapper<BorderType>(TensorWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal));
     auto goldenWrap =
-        MakeBorderWrapper<BorderType>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal);
+        MakeBorderWrapper<BorderType>(TensorWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal);
 
     for (int b = 0; b < batchSize; b++) {
         for (float y = 0; y < imageSize.h; y += idxDelta) {
