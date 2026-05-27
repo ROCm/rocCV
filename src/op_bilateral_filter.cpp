@@ -43,7 +43,7 @@ BilateralFilter::~BilateralFilter() {}
 template <typename T, eBorderType B>
 void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
                                            float sigmaColor, float sigmaSpace, T borderValue, eDeviceType device) {
-    BorderWrapper<B, ImageWrapper<T>> inputWrapper(ImageWrapper<T>(input), borderValue);
+    auto inputWrapper = MakeBorderWrapper<B>(ImageWrapper<T>(input), borderValue);
     ImageWrapper<T> outputWrapper(output);
 
     if (outputWrapper.channels() > 4 || outputWrapper.channels() < 1) {
@@ -88,10 +88,9 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
 
         for (int j = 0; j < divisor; j++) {
             for (int i = 0; i < dividend; i++) {
-                threads.push_back(
-                    std::thread(Kernels::Host::bilateral_filter<T, BorderWrapper<B, ImageWrapper<T>>, ImageWrapper<T>>,
-                                inputWrapper, outputWrapper, radius, rollingHeight, rollingWidth, prevHeight, prevWidth,
-                                spaceCoeff, colorCoeff));
+                threads.push_back(std::thread(
+                    Kernels::Host::bilateral_filter<T, decltype(inputWrapper), ImageWrapper<T>>, inputWrapper,
+                    outputWrapper, radius, rollingHeight, rollingWidth, prevHeight, prevWidth, spaceCoeff, colorCoeff));
                 prevWidth = rollingWidth;
                 rollingWidth += factorW;
             }

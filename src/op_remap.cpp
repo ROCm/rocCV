@@ -77,10 +77,9 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
                               const eRemapType mapValueType, const bool alignCorners, const T borderValue,
                               const eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
-    InterpolationWrapper<B, M, ImageWrapper<float2>> wrappedMapTensor(
-        BorderWrapper<B, ImageWrapper<float2>>(ImageWrapper<float2>(map), make_float2(0, 0)));
-    InterpolationWrapper<B, I, ImageWrapper<T>> inputWrapper(
-        BorderWrapper<B, ImageWrapper<T>>(ImageWrapper<T>(input), borderValue));
+    auto wrappedMapTensor =
+        MakeInterpolationWrapper<M>(MakeBorderWrapper<B>(ImageWrapper<float2>(map), make_float2(0, 0)));
+    auto inputWrapper = MakeInterpolationWrapper<I>(MakeBorderWrapper<B>(ImageWrapper<T>(input), borderValue));
 
     int mapBatchSize = wrappedMapTensor.batches();
 

@@ -55,8 +55,8 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
     T borderVal = detail::SaturateCast<T>(make_float4(0.0f, 0.0f, 0.0f, 0.0f));
 
     ImageWrapper<T> outputWrap(output);
-    InterpolationWrapper<eBorderType::BORDER_TYPE_CONSTANT, InterpType, ImageWrapper<T>> inputWrap(
-        BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, ImageWrapper<T>>(ImageWrapper<T>(input), borderVal));
+    auto inputWrap = MakeInterpolationWrapper<InterpType>(
+        MakeBorderWrapper<eBorderType::BORDER_TYPE_CONSTANT>(ImageWrapper<T>(input), borderVal));
 
     switch (device) {
         case eDeviceType::GPU: {

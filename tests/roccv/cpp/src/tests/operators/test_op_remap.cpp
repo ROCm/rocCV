@@ -96,17 +96,16 @@ std::vector<BT> GoldenRemap(std::vector<BT>& input, int32_t batchSize, int32_t m
     std::vector<BT> output(outputSize);
 
     // Create interpolation wrapper for input vector
-    InterpolationWrapper<BorderType, InterpType, ImageWrapper<T>> src((BorderWrapper<BorderType, ImageWrapper<T>>(
-        ImageWrapper<T>(input, batchSize, inWidth, inHeight), detail::SaturateCast<T>(borderValue))));
+    auto src = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<BorderType>(
+        ImageWrapper<T>(input, batchSize, inWidth, inHeight), detail::SaturateCast<T>(borderValue)));
 
     // Wrap the output vector for simplified data access
     ImageWrapper<T> dst(output, batchSize, outWidth, outHeight);
 
     // Create an interpolation wrapper for the map tensor
-    InterpolationWrapper<BorderType, MapInterpType, ImageWrapper<float2>> map(
-        (BorderWrapper<BorderType, ImageWrapper<float2>>(
-            ImageWrapper<float2>(mapData.data(), mapBatchSize, mapWidth, mapHeight),
-            detail::SaturateCast<float2>(borderValue))));
+    auto map = MakeInterpolationWrapper<MapInterpType>(
+        MakeBorderWrapper<BorderType>(ImageWrapper<float2>(mapData.data(), mapBatchSize, mapWidth, mapHeight),
+                                      detail::SaturateCast<float2>(borderValue)));
 
     int2 srcSize = make_int2(src.width(), src.height());
     int2 dstSize = make_int2(dst.width(), dst.height());

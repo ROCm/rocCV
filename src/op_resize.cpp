@@ -38,8 +38,8 @@ template <typename T, eInterpolationType I>
 void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
     ImageWrapper<T> outputWrapper(output);
     // Resize operation should clamp values at the border (REPLICATE border mode)
-    InterpolationWrapper<eBorderType::BORDER_TYPE_REPLICATE, I, ImageWrapper<T>> inputWrapper(
-        BorderWrapper<eBorderType::BORDER_TYPE_REPLICATE, ImageWrapper<T>>(ImageWrapper<T>(input), T{}));
+    auto inputWrapper =
+        MakeInterpolationWrapper<I>(MakeBorderWrapper<eBorderType::BORDER_TYPE_REPLICATE>(ImageWrapper<T>(input), T{}));
 
     float scaleX = inputWrapper.width() / static_cast<float>(outputWrapper.width());
     float scaleY = inputWrapper.height() / static_cast<float>(outputWrapper.height());

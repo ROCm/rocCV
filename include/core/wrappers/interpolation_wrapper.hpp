@@ -29,20 +29,23 @@
 
 namespace roccv {
 /**
- * @brief A kernel-friendly wrapper which provides interpolation logic on top of an underlying image wrapper.
+ * @brief A kernel-friendly wrapper which provides interpolation logic on top of a BorderWrapper.
  *
- * Templated on the wrapper type W (e.g. ImageWrapper<T>, VarShapeImageWrapper<T>) so the same interpolation math
- * serves both uniform-shape and variable-shape image batches. The pixel value type T is recovered from
- * W::ValueType. Read-only access; do not use for output tensors.
+ * Templated directly on the BorderWrapper type so the redundant border-mode and underlying-wrapper template
+ * parameters need only be spelled once (in the BorderWrapper type). Recover the border mode via
+ * BW::kBorderType and the underlying wrapper type via BW::WrapperType.
  *
- * @tparam B Border type to use for interpolation.
- * @tparam I Interpolation type to use.
- * @tparam W The underlying image wrapper type. Must expose ValueType, at(n,h,w,c), width(n), height(n).
+ * Read-only access; do not use for output tensors.
+ *
+ * @tparam I  Interpolation type to use.
+ * @tparam BW The BorderWrapper type to wrap. Must expose ValueType plus at(n,h,w,c), width(n), height(n).
  */
-template <eBorderType B, eInterpolationType I, typename W>
+template <eInterpolationType I, typename BW>
 class InterpolationWrapper {
    public:
-    using ValueType = typename W::ValueType;
+    using ValueType = typename BW::ValueType;
+    using BorderType = BW;
+    static constexpr eInterpolationType kInterpolationType = I;
 
     /**
      * @brief Wraps a BorderWrapper in an InterpolationWrapper. Extends capabilities to interpolate pixel values
@@ -50,7 +53,7 @@ class InterpolationWrapper {
      *
      * @param borderWrapper The BorderWrapper to wrap.
      */
-    InterpolationWrapper(BorderWrapper<B, W> borderWrapper) : m_desc(borderWrapper) {}
+    InterpolationWrapper(BW borderWrapper) : m_desc(borderWrapper) {}
 
     /**
      * @brief This function calculates the weighting coefficients for the Catmull-Rom cubic interpolation.
@@ -172,6 +175,19 @@ class InterpolationWrapper {
     __device__ __host__ inline int64_t channels() const { return m_desc.channels(); }
 
    private:
-    BorderWrapper<B, W> m_desc;
+    BW m_desc;
 };
+
+/**
+ * @brief Factory for InterpolationWrapper. Deduces the BorderWrapper type BW (and its border mode +
+ * underlying wrapper) from the argument; callers only need to spell the interpolation policy.
+ *
+ * @tparam I The interpolation type.
+ * @param borderWrap An already-constructed BorderWrapper (typically via MakeBorderWrapper<B>(...)).
+ */
+template <eInterpolationType I, typename BW>
+auto MakeInterpolationWrapper(BW borderWrap) {
+    return InterpolationWrapper<I, BW>(borderWrap);
+}
+
 }  // namespace roccv

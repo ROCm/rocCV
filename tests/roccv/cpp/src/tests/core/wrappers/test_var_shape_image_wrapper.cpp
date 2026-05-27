@@ -150,8 +150,7 @@ void TestBorderConstantComposition(const std::vector<Size2D>& sizes, ImageFormat
     auto srcData = srcBatch.exportData(stream);
     auto dstData = dstBatch.exportData(stream);
 
-    BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, VarShapeImageWrapper<T>> srcWrap(VarShapeImageWrapper<T>(srcData),
-                                                                                      borderValue);
+    auto srcWrap = MakeBorderWrapper<eBorderType::BORDER_TYPE_CONSTANT>(VarShapeImageWrapper<T>(srcData), borderValue);
     VarShapeImageWrapper<T> dstWrap(dstData);
 
     for (int32_t i = 0; i < numImages; ++i) {
@@ -186,8 +185,8 @@ void TestBorderConstantComposition(const std::vector<Size2D>& sizes, ImageFormat
 // composes correctly over a VarShape backing.
 template <typename T>
 __global__ void VarShapeInterpNearestKernel(
-    InterpolationWrapper<eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST,
-                         VarShapeImageWrapper<T>>
+    InterpolationWrapper<eInterpolationType::INTERP_TYPE_NEAREST,
+                         BorderWrapper<eBorderType::BORDER_TYPE_REPLICATE, VarShapeImageWrapper<T>>>
         src,
     VarShapeImageWrapper<T> dst, int32_t n) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -229,10 +228,8 @@ void TestInterpolationNearestComposition(const std::vector<Size2D>& sizes, Image
     auto srcData = srcBatch.exportData(stream);
     auto dstData = dstBatch.exportData(stream);
 
-    using InterpType = InterpolationWrapper<eBorderType::BORDER_TYPE_REPLICATE, eInterpolationType::INTERP_TYPE_NEAREST,
-                                            VarShapeImageWrapper<T>>;
-    using BorderType = BorderWrapper<eBorderType::BORDER_TYPE_REPLICATE, VarShapeImageWrapper<T>>;
-    InterpType srcWrap(BorderType(VarShapeImageWrapper<T>(srcData), T{}));
+    auto srcWrap = MakeInterpolationWrapper<eInterpolationType::INTERP_TYPE_NEAREST>(
+        MakeBorderWrapper<eBorderType::BORDER_TYPE_REPLICATE>(VarShapeImageWrapper<T>(srcData), T{}));
     VarShapeImageWrapper<T> dstWrap(dstData);
 
     for (int32_t i = 0; i < numImages; ++i) {

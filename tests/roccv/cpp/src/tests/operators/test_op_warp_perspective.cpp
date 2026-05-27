@@ -52,8 +52,8 @@ std::vector<detail::BaseType<T>> GoldenWarpPerspective(std::vector<detail::BaseT
                                                        const std::array<float, 9>& mat, bool isInverted, int batchSize,
                                                        Size2D inputSize, Size2D outputSize, float4 borderValue) {
     // Create interpolation wrapper for input vector
-    InterpolationWrapper<BorderType, InterpType, ImageWrapper<T>> inputWrap((BorderWrapper<BorderType, ImageWrapper<T>>(
-        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue))));
+    auto inputWrap = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<BorderType>(
+        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue)));
 
     // Create ImageWrapper for output vector. We also need to create said output vector.
     std::vector<detail::BaseType<T>> output(batchSize * outputSize.w * outputSize.h * detail::NumElements<T>);

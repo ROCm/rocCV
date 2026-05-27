@@ -38,7 +38,7 @@ namespace roccv {
 template <typename T, eBorderType BorderMode>
 void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,
                                            int32_t left, T border_value, eDeviceType device) {
-    BorderWrapper<BorderMode, ImageWrapper<T>> in_desc(ImageWrapper<T>(input), border_value);
+    auto in_desc = MakeBorderWrapper<BorderMode>(ImageWrapper<T>(input), border_value);
     ImageWrapper<T> out_desc(output);
 
     switch (device) {

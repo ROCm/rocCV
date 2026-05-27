@@ -161,8 +161,8 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
     FillVector(inputData);
 
     // BorderWrapper to calculate the actual calculated values.
-    BorderWrapper<BorderType, ImageWrapper<T>> borderWrap(
-        ImageWrapper<T>(inputData, batchSize, imageSize.w, imageSize.h), borderVal);
+    auto borderWrap =
+        MakeBorderWrapper<BorderType>(ImageWrapper<T>(inputData, batchSize, imageSize.w, imageSize.h), borderVal);
     std::vector<BT> actualOutput(numElementsWithBorder);
     int actualIndex = 0;
     for (int batch = 0; batch < batchSize; ++batch) {

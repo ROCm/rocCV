@@ -100,6 +100,8 @@ template <eBorderType BorderType, typename W>
 class BorderWrapper {
    public:
     using ValueType = typename W::ValueType;
+    using WrapperType = W;
+    static constexpr eBorderType kBorderType = BorderType;
 
     /**
      * @brief Constructs a BorderWrapper from an existing image wrapper. Extends its capabilities to handle out of
@@ -216,4 +218,18 @@ class BorderWrapper {
     W m_desc;
     ValueType m_border_value;
 };
+
+/**
+ * @brief Factory for BorderWrapper. Deduces the underlying wrapper type W from the argument so callers
+ * only need to spell the border-mode policy explicitly.
+ *
+ * @tparam B The border mode to apply.
+ * @param wrap        The underlying image wrapper.
+ * @param borderValue Fallback value used when B is BORDER_TYPE_CONSTANT.
+ */
+template <eBorderType B, typename W>
+auto MakeBorderWrapper(W wrap, typename W::ValueType borderValue) {
+    return BorderWrapper<B, W>(wrap, borderValue);
+}
+
 }  // namespace roccv

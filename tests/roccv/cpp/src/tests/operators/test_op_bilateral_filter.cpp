@@ -51,8 +51,7 @@ namespace {
 template <typename T, eBorderType borderMode, typename BT = detail::BaseType<T>>
 void GenerateGoldenBilateral(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, Size2D imageSize,
                              int diameter, float sigmaColor, float sigmaSpace, T borderValue) {
-    BorderWrapper<borderMode, ImageWrapper<T>> src(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h),
-                                                   borderValue);
+    auto src = MakeBorderWrapper<borderMode>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
     ImageWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
     using namespace roccv::detail;
     using Worktype = MakeType<float, NumElements<T>>;

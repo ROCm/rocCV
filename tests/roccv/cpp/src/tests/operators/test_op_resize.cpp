@@ -54,9 +54,8 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
 
     // Use the replicate (or clamping) border mode by default to handle out of bounds conditions with certain
     // interpolation modes.
-    InterpolationWrapper<eBorderType::BORDER_TYPE_REPLICATE, InterpType, ImageWrapper<T>> inputWrap(
-        BorderWrapper<eBorderType::BORDER_TYPE_REPLICATE, ImageWrapper<T>>(
-            ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
+    auto inputWrap = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<eBorderType::BORDER_TYPE_REPLICATE>(
+        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
 
     // Determine the scaling factor required to map from the output coordinates to the corresponding input coordinates
     // on both the x and y axes.

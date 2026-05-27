@@ -204,11 +204,10 @@ void TestCorrectness(int64_t batchSize, Size2D imageSize, float4 borderValue, fl
     std::vector<detail::BaseType<T>> goldenOutput;
 
     // Use roccv::InterpolationWrapper to get actual output
-    InterpolationWrapper<BorderType, InterpType, ImageWrapper<T>> actualWrap(
-        (BorderWrapper<BorderType, ImageWrapper<T>>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h),
-                                                    borderVal)));
-    BorderWrapper<BorderType, ImageWrapper<T>> goldenWrap(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h),
-                                                          borderVal);
+    auto actualWrap = MakeInterpolationWrapper<InterpType>(
+        MakeBorderWrapper<BorderType>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal));
+    auto goldenWrap =
+        MakeBorderWrapper<BorderType>(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderVal);
 
     for (int b = 0; b < batchSize; b++) {
         for (float y = 0; y < imageSize.h; y += idxDelta) {
