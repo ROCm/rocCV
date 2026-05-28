@@ -33,9 +33,9 @@ THE SOFTWARE.
 
 namespace roccv {
 
-template <typename BC_DT, typename SRC_DT, typename DST_DT, int NC>
+template <typename BCWrappers, typename SRC_DT, typename DST_DT, int NC>
 void dispatch_brightness_contrast_channels(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                            const GroupBCWrappers<BC_DT> &bc_wrappers, eDeviceType device) {
+                                            const BCWrappers &bc_wrappers, eDeviceType device) {
     
     using SRC_DT_NC = detail::MakeType<SRC_DT, NC>;
     using DST_DT_NC = detail::MakeType<DST_DT, NC>;
@@ -49,7 +49,7 @@ void dispatch_brightness_contrast_channels(hipStream_t stream, const Tensor &inp
             dim3 block(64, 16);
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
-            //Kernels::Device::brightness_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, bc_wrappers);
+            Kernels::Device::brightness_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, bc_wrappers);
             break;
         }
         case eDeviceType::CPU: {
@@ -59,15 +59,15 @@ void dispatch_brightness_contrast_channels(hipStream_t stream, const Tensor &inp
     }
 }
 
-template <typename BC_DT, typename SRC_DT, typename DST_DT>
+template <typename BCWrappers, typename SRC_DT, typename DST_DT>
 void dispatch_brightness_contrast_output_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                       const GroupBCWrappers<BC_DT> &bc_wrappers, eDeviceType device) {
+                                       const BCWrappers &bc_wrappers, eDeviceType device) {
 
     int64_t channels = output.shape(output.layout().channels_index());
     // 4) Select kernel dispatcher based on number of channels.
     // clang-format off
-    static const std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const GroupBCWrappers<BC_DT> &, eDeviceType)>, 4>
-        funcs = {dispatch_brightness_contrast_channels<BC_DT, SRC_DT, DST_DT, 1>, dispatch_brightness_contrast_channels<BC_DT, SRC_DT, DST_DT, 2>, dispatch_brightness_contrast_channels<BC_DT, SRC_DT, DST_DT, 3>, dispatch_brightness_contrast_channels<BC_DT, SRC_DT, DST_DT, 4>};
+    static const std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, const BCWrappers &, eDeviceType)>, 4>
+        funcs = {dispatch_brightness_contrast_channels<BCWrappers, SRC_DT, DST_DT, 1>, dispatch_brightness_contrast_channels<BCWrappers, SRC_DT, DST_DT, 2>, dispatch_brightness_contrast_channels<BCWrappers, SRC_DT, DST_DT, 3>, dispatch_brightness_contrast_channels<BCWrappers, SRC_DT, DST_DT, 4>};
     // clang-format on
 
     auto func = funcs.at(channels - 1);
@@ -75,21 +75,21 @@ void dispatch_brightness_contrast_output_dtype(hipStream_t stream, const Tensor 
     func(stream, input, output, bc_wrappers, device);
 }
 
-template <typename BC_DT, typename SRC_DT>
+template <typename BCWrappers, typename SRC_DT>
 void dispatch_brightness_contrast_input_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                            const GroupBCWrappers<BC_DT> &bc_wrappers, eDeviceType device) {
+                                            const BCWrappers &bc_wrappers, eDeviceType device) {
     
     eDataType output_dtype = output.dtype().etype();
     
     // 3) Select kernel dispatcher based on a base output datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, const GroupBCWrappers<BC_DT> &, eDeviceType)>>
+    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, const BCWrappers &, eDeviceType)>>
         funcs = {
-            {eDataType::DATA_TYPE_U8, dispatch_brightness_contrast_output_dtype<BC_DT, SRC_DT, uchar>},
-            {eDataType::DATA_TYPE_U16,  dispatch_brightness_contrast_output_dtype<BC_DT, SRC_DT, ushort>},
-            {eDataType::DATA_TYPE_S16,  dispatch_brightness_contrast_output_dtype<BC_DT, SRC_DT, short>},
-            {eDataType::DATA_TYPE_S32,  dispatch_brightness_contrast_output_dtype<BC_DT, SRC_DT, int>},
-            {eDataType::DATA_TYPE_F32, dispatch_brightness_contrast_output_dtype<BC_DT, SRC_DT, float>},
+            {eDataType::DATA_TYPE_U8, dispatch_brightness_contrast_output_dtype<BCWrappers, SRC_DT, uchar>},
+            {eDataType::DATA_TYPE_U16,  dispatch_brightness_contrast_output_dtype<BCWrappers, SRC_DT, ushort>},
+            {eDataType::DATA_TYPE_S16,  dispatch_brightness_contrast_output_dtype<BCWrappers, SRC_DT, short>},
+            {eDataType::DATA_TYPE_S32,  dispatch_brightness_contrast_output_dtype<BCWrappers, SRC_DT, int>},
+            {eDataType::DATA_TYPE_F32, dispatch_brightness_contrast_output_dtype<BCWrappers, SRC_DT, float>},
         };
     // clang-format on
     auto func = funcs.at(output_dtype);
@@ -98,21 +98,21 @@ void dispatch_brightness_contrast_input_dtype(hipStream_t stream, const Tensor &
 
 }
 
-template <typename BC_DT>
+template <typename BCWrappers>
 void dispatch_brightness_contrast_bc_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                        const GroupBCWrappers<BC_DT> &bc_wrappers, eDeviceType device) {
+                                        const BCWrappers &bc_wrappers, eDeviceType device) {
     
     eDataType input_dtype = input.dtype().etype();
 
     // 2) Select kernel dispatcher based on a base input datatype.
     // clang-format off
-    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, const GroupBCWrappers<BC_DT> &, eDeviceType)>>
+    static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, const BCWrappers &, eDeviceType)>>
         funcs = {
-            {eDataType::DATA_TYPE_U8, dispatch_brightness_contrast_input_dtype<BC_DT, uchar>},
-            {eDataType::DATA_TYPE_U16,  dispatch_brightness_contrast_input_dtype<BC_DT, ushort>},
-            {eDataType::DATA_TYPE_S16,  dispatch_brightness_contrast_input_dtype<BC_DT, short>},
-            {eDataType::DATA_TYPE_S32,  dispatch_brightness_contrast_input_dtype<BC_DT, int>},
-            {eDataType::DATA_TYPE_F32, dispatch_brightness_contrast_input_dtype<BC_DT, float>},
+            {eDataType::DATA_TYPE_U8, dispatch_brightness_contrast_input_dtype<BCWrappers, uchar>},
+            {eDataType::DATA_TYPE_U16,  dispatch_brightness_contrast_input_dtype<BCWrappers, ushort>},
+            {eDataType::DATA_TYPE_S16,  dispatch_brightness_contrast_input_dtype<BCWrappers, short>},
+            {eDataType::DATA_TYPE_S32,  dispatch_brightness_contrast_input_dtype<BCWrappers, int>},
+            {eDataType::DATA_TYPE_F32, dispatch_brightness_contrast_input_dtype<BCWrappers, float>},
         };
     // clang-format on
     auto func = funcs.at(input_dtype);
@@ -183,7 +183,7 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
             BCWrapper<float>(brightnessShift, 0.0f),
             BCWrapper<float>(contrastCenter, compute_cc_default())
         };
-        dispatch_brightness_contrast_bc_dtype<float>(stream, input, output, wrappers, device);
+        dispatch_brightness_contrast_bc_dtype<GroupBCWrappers<float>>(stream, input, output, wrappers, device);
     } else if (bc_dtype == eDataType::DATA_TYPE_F64) {
         GroupBCWrappers<double> wrappers {
             BCWrapper<double>(brightness, 1.0),
@@ -191,7 +191,7 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
             BCWrapper<double>(brightnessShift, 0.0),
             BCWrapper<double>(contrastCenter, compute_cc_default())
         };
-        dispatch_brightness_contrast_bc_dtype<double>(stream, input, output, wrappers, device);
+        dispatch_brightness_contrast_bc_dtype<GroupBCWrappers<double>>(stream, input, output, wrappers, device);
     } else {
         throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     }
