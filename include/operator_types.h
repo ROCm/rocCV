@@ -240,10 +240,12 @@ class BCWrapper {
 
 template <typename DT>
 struct GroupBCWrappers {
-    BCWrapper<DT> brightness;
-    BCWrapper<DT> contrast;
-    BCWrapper<DT> brightnessShift;
-    BCWrapper<DT> contrastCenter;
+    using ValueType = DT;
+
+    BCWrapper<DT> brightnessWrapper;
+    BCWrapper<DT> contrastWrapper;
+    BCWrapper<DT> brightnessShiftWrapper;
+    BCWrapper<DT> contrastCenterWrapper;
 };
 
 
