@@ -20,10 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <core/hip_assert.h>
+#include <hip/hip_runtime.h>
+
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
+#include <core/image.hpp>
+#include <core/image_batch_var_shape.hpp>
+#include <core/image_data.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
+#include <cstring>
 #include <op_resize.hpp>
+#include <vector>
 
 #include "test_helpers.hpp"
 
@@ -45,7 +53,7 @@ namespace {
  * @return A vector containing the data for the images resized to outputSize.
  */
 template <typename T, eInterpolationType InterpType, typename BT = detail::BaseType<T>>
-std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchSize, Size2D inputSize,
+std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>>& input, int batchSize, Size2D inputSize,
                              Size2D outputSize) {
     size_t numOutputElements = batchSize * outputSize.w * outputSize.h * detail::NumElements<T>;
 
@@ -125,9 +133,96 @@ void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFo
     CompareVectorsNear(actualOutput, goldenOutput);
 }
 
+/**
+ * @brief Copies a packed host pixel buffer into a single-plane Image, honoring the plane's row stride and the
+ * image's residency.
+ */
+template <typename T, typename BT = detail::BaseType<T>>
+void CopyVectorIntoImage(Image& img, const std::vector<BT>& src, Size2D size, eDeviceType device) {
+    const int channels = detail::NumElements<T>;
+    const size_t rowBytes = static_cast<size_t>(size.w) * channels * sizeof(BT);
+
+    switch (device) {
+        case eDeviceType::GPU: {
+            auto data = img.exportData<ImageDataStridedHip>();
+            const ImagePlaneStrided& p = data.plane(0);
+            HIP_VALIDATE_NO_ERRORS(
+                hipMemcpy2D(p.basePtr, p.rowStride, src.data(), rowBytes, rowBytes, size.h, hipMemcpyHostToDevice));
+            break;
+        }
+        case eDeviceType::CPU: {
+            auto data = img.exportData<ImageDataStridedHost>();
+            const ImagePlaneStrided& p = data.plane(0);
+            for (int32_t y = 0; y < size.h; ++y) {
+                std::memcpy(static_cast<unsigned char*>(p.basePtr) + y * p.rowStride,
+                            src.data() + static_cast<size_t>(y) * size.w * channels, rowBytes);
+            }
+            break;
+        }
+    }
+}
+
+/**
+ * @brief Compares roccv::Resize over a variable-shape image batch against a per-image golden model.
+ *
+ * Each input image has its own size; all are resized into a single constant-sized output tensor (NHWC). The golden
+ * result reuses GoldenResize per image (batch of 1, that image's input size) and concatenates, matching the NHWC
+ * output ordering.
+ *
+ * @tparam T The image's pixel datatype.
+ * @tparam InterpType The interpolation type to use during resizing.
+ * @param inputSizes Per-image input sizes (defines the batch size).
+ * @param outputSize The uniform output size for every image.
+ * @param format The image format to use (must match with the given type T).
+ * @param device The device to run this correctness test on.
+ */
+template <typename T, eInterpolationType InterpType, typename BT = detail::BaseType<T>>
+void TestCorrectnessVarShape(const std::vector<Size2D>& inputSizes, Size2D outputSize, ImageFormat format,
+                             eDeviceType device) {
+    const int channels = detail::NumElements<T>;
+    const int32_t numImages = static_cast<int32_t>(inputSizes.size());
+
+    // Build a variable-shape batch from per-image random host data.
+    ImageBatchVarShape batch(numImages, device);
+    std::vector<Image> images;
+    images.reserve(numImages);
+    std::vector<std::vector<BT>> hostInputs(numImages);
+
+    for (int32_t i = 0; i < numImages; ++i) {
+        images.emplace_back(inputSizes[i], format, device);
+        hostInputs[i].resize(static_cast<size_t>(inputSizes[i].w) * inputSizes[i].h * channels);
+        FillVector(hostInputs[i], static_cast<uint32_t>(0x500 + i));
+        CopyVectorIntoImage<T>(images[i], hostInputs[i], inputSizes[i], device);
+        batch.pushBack(images[i]);
+    }
+
+    // Uniform, constant-sized output tensor.
+    Tensor outputTensor(numImages, outputSize, format, device);
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    Resize op;
+    op(stream, batch, outputTensor, InterpType, device);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    std::vector<BT> actualOutput(outputTensor.shape().size());
+    CopyTensorIntoVector(actualOutput, outputTensor);
+
+    // Per-image golden, concatenated in batch order to match the NHWC output layout.
+    std::vector<BT> goldenOutput;
+    goldenOutput.reserve(actualOutput.size());
+    for (int32_t i = 0; i < numImages; ++i) {
+        std::vector<BT> g = GoldenResize<T, InterpType>(hostInputs[i], 1, inputSizes[i], outputSize);
+        goldenOutput.insert(goldenOutput.end(), g.begin(), g.end());
+    }
+
+    CompareVectorsNear(actualOutput, goldenOutput);
+}
+
 }  // namespace
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
@@ -156,6 +251,16 @@ int main(int argc, char **argv) {
     TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_NEAREST>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_NEAREST>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::GPU)));
 
+    // U8 - Cubic interpolation
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_CUBIC>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_CUBIC>(3, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_CUBIC>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::GPU)));
+
+    // F32 - Cubic interpolation
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_CUBIC>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_CUBIC>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_CUBIC>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::GPU)));
+
     // CPU Tests
 
     // U8 - Linear interpolation
@@ -177,6 +282,37 @@ int main(int argc, char **argv) {
     TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_NEAREST>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_NEAREST>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_NEAREST>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::CPU)));
+
+    // U8 - Cubic interpolation
+    TEST_CASE((TestCorrectness<uchar1, eInterpolationType::INTERP_TYPE_CUBIC>(1, {100, 50}, {200, 50}, FMT_U8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, eInterpolationType::INTERP_TYPE_CUBIC>(3, {100, 50}, {100, 50}, FMT_RGB8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar4, eInterpolationType::INTERP_TYPE_CUBIC>(5, {100, 50}, {50, 25}, FMT_RGBA8, eDeviceType::CPU)));
+
+    // F32 - Cubic interpolation
+    TEST_CASE((TestCorrectness<float1, eInterpolationType::INTERP_TYPE_CUBIC>(1, {100, 50}, {200, 50}, FMT_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, eInterpolationType::INTERP_TYPE_CUBIC>(3, {100, 50}, {100, 50}, FMT_RGBf32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float4, eInterpolationType::INTERP_TYPE_CUBIC>(5, {100, 50}, {50, 25}, FMT_RGBAf32, eDeviceType::CPU)));
+
+    // Variable-shape batch -> constant-sized tensor. Heterogeneous input sizes (upscale, downscale, and odd
+    // dimensions) into a single uniform output.
+
+    // GPU
+    TEST_CASE((TestCorrectnessVarShape<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_U8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar4, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGBA8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar3, eInterpolationType::INTERP_TYPE_NEAREST>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<float1, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<float3, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGBf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<float4, eInterpolationType::INTERP_TYPE_NEAREST>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGBAf32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar3, eInterpolationType::INTERP_TYPE_CUBIC>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGB8, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessVarShape<float3, eInterpolationType::INTERP_TYPE_CUBIC>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGBf32, eDeviceType::GPU)));
+
+    // CPU
+    TEST_CASE((TestCorrectnessVarShape<uchar1, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_U8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar3, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGB8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar4, eInterpolationType::INTERP_TYPE_NEAREST>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGBA8, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessVarShape<float3, eInterpolationType::INTERP_TYPE_LINEAR>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGBf32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessVarShape<uchar3, eInterpolationType::INTERP_TYPE_CUBIC>({{100, 50}, {37, 91}, {200, 13}}, {64, 64}, FMT_RGB8, eDeviceType::CPU)));
     // clang-format on
 
     TEST_CASES_END();

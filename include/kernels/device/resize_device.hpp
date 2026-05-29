@@ -24,13 +24,19 @@
 #include <hip/hip_runtime.h>
 
 namespace Kernels::Device {
+// The scale factor is derived per batch index from input.width(batch)/output.width(): for a uniform
+// TensorWrapper input width(n) ignores n and yields the same scale for every image (identical to the prior
+// host-precomputed scale), while for an ImageBatchVarShapeWrapper input it yields each image's own scale.
 template <typename SrcWrapper, typename DstWrapper>
-__global__ void resize(SrcWrapper input, DstWrapper output, float scaleX, float scaleY) {
+__global__ void resize(SrcWrapper input, DstWrapper output) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     const int batch = blockIdx.z;
 
     if (x >= output.width() || y >= output.height()) return;
+
+    float scaleX = input.width(batch) / static_cast<float>(output.width());
+    float scaleY = input.height(batch) / static_cast<float>(output.height());
 
     float srcX = fmaf(x + 0.5f, scaleX, -0.5f);
     float srcY = fmaf(y + 0.5f, scaleY, -0.5f);

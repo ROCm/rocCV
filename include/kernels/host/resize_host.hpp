@@ -24,10 +24,14 @@
 #include <hip/hip_runtime.h>
 
 namespace Kernels::Host {
+// Scale is derived per batch index (input.width(batch)/output.width()): uniform for a TensorWrapper input,
+// per-image for an ImageBatchVarShapeWrapper input. See the device kernel for the rationale.
 template <typename SrcWrapper, typename DstWrapper>
-void resize(SrcWrapper input, DstWrapper output, float scaleX, float scaleY) {
+void resize(SrcWrapper input, DstWrapper output) {
 #pragma omp parallel for
     for (int batch = 0; batch < output.batches(); batch++) {
+        float scaleX = input.width(batch) / static_cast<float>(output.width());
+        float scaleY = input.height(batch) / static_cast<float>(output.height());
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
                 float srcX = fmaf(x + 0.5f, scaleX, -0.5f);

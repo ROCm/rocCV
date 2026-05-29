@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include "core/image_batch_var_shape.hpp"
 #include "core/tensor.hpp"
 #include "i_operator.hpp"
 #include "operator_types.h"
@@ -70,7 +71,7 @@ class Resize final : public IOperator {
      *       Height        | No
      *       Batch         | Yes
      *
-     * Supported interpolation modes: [NEAREST, LINEAR]
+     * Supported interpolation modes: [NEAREST, LINEAR, CUBIC]
      *
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image batch data.
@@ -80,5 +81,46 @@ class Resize final : public IOperator {
      */
     void operator()(hipStream_t stream, const Tensor &in, const Tensor &output, eInterpolationType interpolation,
                     eDeviceType device = eDeviceType::GPU) const;
+
+    /**
+     * @brief Resizes a batch of variable-sized images into a uniform, constant-sized output tensor.
+     *
+     * Every image in the batch is independently resized to the output tensor's per-image width/height using the
+     * given interpolation mode. The batch must share a single ImageFormat (uniqueFormat() != FMT_NONE); the output
+     * tensor's dtype, channel count, and batch dimension must match the batch's format and image count.
+     *
+     * Limitations:
+     *
+     * Input (ImageBatchVarShape):
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s):     [U8, F32]
+     *       Image format must be uniform across the batch.
+     *
+     * Output (Tensor):
+     *       Supported TensorLayout(s): [NHWC]
+     *                        Channels: [1, 3, 4]
+     *       Supported DataType(s)      [U8, F32]
+     *
+     * Input/Output dependency:
+     *
+     *       Property      |  Input == Output
+     *      -------------- | -------------
+     *       DataType      | Yes
+     *       Channels      | Yes
+     *       Width         | No
+     *       Height        | No
+     *       Batch         | Yes (numImages == output N)
+     *
+     * Supported interpolation modes: [NEAREST, LINEAR, CUBIC]
+     *
+     * @param[in] stream The HIP stream to run this operator on.
+     * @param[in] input Variable-shape image batch to resize. Non-const because exporting its descriptor snapshot
+     *                  advances the batch's lazy device-sync state.
+     * @param[out] output Constant-sized output tensor (NHWC) receiving the resized batch.
+     * @param[in] interpolation The interpolation method used when resizing images.
+     * @param[in] device The device to run this operator on. (Default: GPU).
+     */
+    void operator()(hipStream_t stream, ImageBatchVarShape &input, const Tensor &output,
+                    eInterpolationType interpolation, eDeviceType device = eDeviceType::GPU) const;
 };
 }  // namespace roccv
