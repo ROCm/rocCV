@@ -28,8 +28,8 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
-//#include "kernels/device/brightness_contrast_device.hpp"
-//#include "kernels/host/brightness_contrast_host.hpp"
+#include "kernels/device/brightness_contrast_device.hpp"
+#include "kernels/host/brightness_contrast_host.hpp"
 
 namespace roccv {
 
@@ -53,7 +53,7 @@ void dispatch_brightness_contrast_channels(hipStream_t stream, const Tensor &inp
             break;
         }
         case eDeviceType::CPU: {
-            //Kernels::Host::brightness_contrast(inputWrapper, outputWrapper, bc_wrappers);
+            Kernels::Host::brightness_contrast(inputWrapper, outputWrapper, bc_wrappers);
             break;
         }
     }

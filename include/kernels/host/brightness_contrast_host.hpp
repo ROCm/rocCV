@@ -23,36 +23,34 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 
 namespace Kernels {
-namespace Device {
+namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename BCWrappers>
-__global__ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrappers bc_wrappers) {
+void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrappers bc_wrappers) {
     using namespace roccv::detail;
     using dst_type = typename DstWrapper::ValueType;
     using bc_type = typename BCWrappers::ValueType;
     using work_type = MakeType<bc_type, NumElements<dst_type>>;
 
-    // get the pixel coords (=thread)
-    const int x = threadIdx.x + blockIdx.x * blockDim.x;
-    const int y = threadIdx.y + blockIdx.y * blockDim.y;
-    const int batch = blockIdx.z;
+#pragma omp parallel for
+    for (int batch = 0; batch < output.batches(); batch++) {
+        const bc_type brightness = bc_wrappers.brightnessWrapper.at(batch);
+        const bc_type contrast = bc_wrappers.contrastWrapper.at(batch);
+        const bc_type brightnessShift = bc_wrappers.brightnessShiftWrapper.at(batch);
+        const bc_type contrastCenter = bc_wrappers.contrastCenterWrapper.at(batch);
 
-    if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
-
-    // get the brightness/contrast scalars to apply
-    const bc_type brightness = bc_wrappers.brightnessWrapper.at(batch);
-    const bc_type contrast = bc_wrappers.contrastWrapper.at(batch);
-    const bc_type brightnessShift = bc_wrappers.brightnessShiftWrapper.at(batch);
-    const bc_type contrastCenter = bc_wrappers.contrastCenterWrapper.at(batch);
-
-    work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
-    work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
-    output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
+        for (int y = 0; y < output.height(); y++) {
+            for (int x = 0; x < output.width(); x++) {
+                work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
+                work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
+                output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
+            }
+        }
+    }
 }
-}  // namespace Device
+}  // namespace Host
 }  // namespace Kernels

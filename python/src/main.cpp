@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include "operators/py_op_bilateral_filter.hpp"
 #include "operators/py_op_bnd_box.hpp"
+#include "operators/py_op_brightness_contrast.hpp"
 #include "operators/py_op_center_crop.hpp"
 #include "operators/py_op_composite.hpp"
 #include "operators/py_op_convert_to.hpp"
@@ -75,6 +76,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpCvtColor::Export(m);
     PyOpAdvCvtColor::Export(m);
     PyOpBndBox::Export(m);
+    PyOpBrightnessContrast::Export(m);
     PyOpGammaContrast::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
