@@ -72,7 +72,7 @@ void PyOpConvertTo::Export(py::module& m) {
                 Refer to the rocCV C++ API reference for more information on this operation.
             
             Args:
-                dst (rocpycv.Tensor): The output tensor with gamma correction applied.
+                dst (rocpycv.Tensor): Output tensor which image results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
                 alpha (double, optional): Scalar for output data. Defaults to 1.0.
                 beta (double, optional): Offset for the data. Defaults to 0.0.

@@ -72,7 +72,7 @@ void PyOpGammaContrast::Export(py::module& m) {
                 Refer to the rocCV C++ API reference for more information on this operation.
             
             Args:
-                dst (rocpycv.Tensor): The output tensor with gamma correction applied.
+                dst (rocpycv.Tensor): Output tensor which image results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
                 gamma (float): Gamma correction value to apply to the images.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
