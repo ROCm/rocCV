@@ -142,6 +142,9 @@ message("-- ${Cyan}     -D BUILD_PYPACKAGE=${BUILD_PYPACKAGE} [Turn ON/OFF Build
 message("-- ${Cyan}     -D PYTHON_VERSION_SUGGESTED=${PYTHON_VERSION_SUGGESTED} [User provided python version to use for rocCV Python Bindings(default:System Version)]${ColorReset}")
 message("-- ${Cyan}     -D ENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE} [Enable LLVM code coverage [options:ON/OFF](default:OFF)]${ColorReset}")
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
+
 # Set supported GPU Targets
 if(NOT GPU_TARGETS AND NOT AMDGPU_TARGETS)
     find_package(ROCmCMakeBuildTools QUIET)
@@ -177,9 +180,6 @@ else()
     set(GPU_TARGETS "${DEFAULT_GPU_TARGETS}" CACHE STRING "List of specific machine types for library to target")
 endif()
 message("-- ${White}${PROJECT_NAME} -- AMD GPU_TARGETS: ${GPU_TARGETS}${ColorReset}")
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
 # Determine if we are building using the TheRock install of ROCm.
 set(USING_THE_ROCK OFF)
