@@ -151,19 +151,14 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
 
 void Resize::operator()(hipStream_t stream, ImageBatchVarShape& input, const Tensor& output,
                         eInterpolationType interpolation, eDeviceType device) const {
-    // The variable-shape batch resolves dtype/channels from its single shared format; a heterogeneous batch can't
-    // be expressed by the T-templated wrapper and is rejected.
-    ImageFormat format = input.uniqueFormat();
-    if (format == FMT_NONE) {
-        throw Exception("ImageBatchVarShape input must share a single image format across all images.",
-                        eStatusType::INVALID_COMBINATION);
-    }
-
-    if (input.device() != device) {
-        throw Exception("Invalid input batch: Ensure that this batch is allocated on the proper device.",
-                        eStatusType::INVALID_OPERATION);
-    }
+    // The variable-shape batch resolves dtype/channels from its single shared format; a heterogeneous (or empty)
+    // batch can't be expressed by the T-templated wrapper and is rejected.
+    CHECK_IMAGE_BATCH_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
+
+    CHECK_IMAGE_BATCH_UNIFORM_FORMAT(input);
+    CHECK_IMAGE_BATCH_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_F32);
+    CHECK_IMAGE_BATCH_CHANNELS(input, 1, 3, 4);
 
     // The output holds the resized batch as a uniform tensor, so it must carry an explicit batch dimension.
     CHECK_TENSOR_LAYOUT(output, TENSOR_LAYOUT_NHWC);
@@ -171,6 +166,7 @@ void Resize::operator()(hipStream_t stream, ImageBatchVarShape& input, const Ten
     CHECK_TENSOR_CHANNELS(output, 1, 3, 4);
 
     // Output dtype/channels/batch must agree with the input batch.
+    ImageFormat format = input.uniqueFormat();
     CHECK_TENSOR_COMPARISON(output.dtype().etype() == format.dtype());
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) == format.channels());
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == input.numImages());

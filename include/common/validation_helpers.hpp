@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <algorithm>
 #include <vector>
 
+#include "core/image_format.hpp"
 #include "core/tensor.hpp"
 
 /**
@@ -83,4 +84,72 @@ THE SOFTWARE.
         if (std::find(v.begin(), v.end(), tensor.shape(tensor.layout().channels_index())) == v.end()) {      \
             throw roccv::Exception("Unsupported channel count: " #tensor, eStatusType::INVALID_COMBINATION); \
         }                                                                                                    \
+    } while (0);
+
+// ---------------------------------------------------------------------------
+// ImageBatchVarShape validation
+//
+// Mirrors the CHECK_TENSOR_* helpers for variable-shape image batches. Datatype
+// and channel checks read the batch's uniqueFormat(), which collapses to
+// FMT_NONE for an empty or heterogeneous batch — so call
+// CHECK_IMAGE_BATCH_UNIFORM_FORMAT first to get a precise error before those.
+// ---------------------------------------------------------------------------
+
+/**
+ * @brief Validates whether an image batch is located on a specified device.
+ *
+ */
+#define CHECK_IMAGE_BATCH_DEVICE(batch, batch_device)                                         \
+    if (batch.device() != batch_device) {                                                     \
+        throw roccv::Exception("Invalid image batch " #batch                                  \
+                               ": Ensure that this batch is allocated on the proper device.", \
+                               eStatusType::INVALID_OPERATION);                               \
+    }
+
+/**
+ * @brief Validates that an image batch is non-empty.
+ *
+ */
+#define CHECK_IMAGE_BATCH_NOT_EMPTY(batch)                                                            \
+    if (batch.numImages() == 0) {                                                                     \
+        throw roccv::Exception("Image batch " #batch " is empty.", eStatusType::INVALID_COMBINATION); \
+    }
+
+/**
+ * @brief Validates that every image in the batch shares a single ImageFormat. Fails for an empty or
+ * heterogeneous batch (uniqueFormat() == FMT_NONE).
+ *
+ */
+#define CHECK_IMAGE_BATCH_UNIFORM_FORMAT(batch)                                                           \
+    if (batch.uniqueFormat() == FMT_NONE) {                                                               \
+        throw roccv::Exception("Image batch " #batch                                                      \
+                               " must share a single image format across all images (and be non-empty).", \
+                               eStatusType::INVALID_COMBINATION);                                         \
+    }
+
+/**
+ * @brief Validates that the batch's shared-format datatype is supported, based on a list of provided
+ * datatypes. Assumes a uniform format (see CHECK_IMAGE_BATCH_UNIFORM_FORMAT).
+ *
+ */
+#define CHECK_IMAGE_BATCH_DATATYPES(batch, ...)                                                                     \
+    do {                                                                                                            \
+        const std::vector<eDataType> v{__VA_ARGS__};                                                                \
+        if (std::find(v.begin(), v.end(), batch.uniqueFormat().dtype()) == v.end()) {                               \
+            throw roccv::Exception("Unsupported data type for image batch: " #batch, eStatusType::NOT_IMPLEMENTED); \
+        }                                                                                                           \
+    } while (0);
+
+/**
+ * @brief Validates that the batch's shared-format channel count is supported, based on a list of provided
+ * channel counts. Assumes a uniform format (see CHECK_IMAGE_BATCH_UNIFORM_FORMAT).
+ *
+ */
+#define CHECK_IMAGE_BATCH_CHANNELS(batch, ...)                                           \
+    do {                                                                                 \
+        const std::vector<int32_t> v{__VA_ARGS__};                                       \
+        if (std::find(v.begin(), v.end(), batch.uniqueFormat().channels()) == v.end()) { \
+            throw roccv::Exception("Unsupported channel count for image batch: " #batch, \
+                                   eStatusType::INVALID_COMBINATION);                    \
+        }                                                                                \
     } while (0);
