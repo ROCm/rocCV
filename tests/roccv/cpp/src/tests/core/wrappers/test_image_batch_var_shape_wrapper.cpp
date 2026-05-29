@@ -28,8 +28,9 @@
 #include <core/image_data.hpp>
 #include <core/image_format.hpp>
 #include <core/wrappers/border_wrapper.hpp>
-#include <core/wrappers/interpolation_wrapper.hpp>
 #include <core/wrappers/image_batch_var_shape_wrapper.hpp>
+#include <core/wrappers/interpolation_wrapper.hpp>
+#include <cstring>
 #include <vector>
 
 #include "test_helpers.hpp"
@@ -116,12 +117,13 @@ void TestRoundtripCopy(const std::vector<Size2D>& sizes, ImageFormat fmt) {
 }
 
 // Border-composition test: write the BORDER_TYPE_CONSTANT fallback for every output pixel by reading from a coordinate
-// that is guaranteed to be out of bounds for every image (-1, -1). Confirms BorderWrapper<B, ImageBatchVarShapeWrapper<T>>
-// correctly delegates to width(n) / height(n) for per-image bounds; otherwise it would dereference invalid memory.
+// that is guaranteed to be out of bounds for every image (-1, -1). Confirms BorderWrapper<B,
+// ImageBatchVarShapeWrapper<T>> correctly delegates to width(n) / height(n) for per-image bounds; otherwise it would
+// dereference invalid memory.
 template <typename T>
 __global__ void VarShapeBorderConstantKernel(
-    BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, ImageBatchVarShapeWrapper<T>> src, ImageBatchVarShapeWrapper<T> dst,
-    int32_t n) {
+    BorderWrapper<eBorderType::BORDER_TYPE_CONSTANT, ImageBatchVarShapeWrapper<T>> src,
+    ImageBatchVarShapeWrapper<T> dst, int32_t n) {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x >= dst.width(n) || y >= dst.height(n)) return;
@@ -150,7 +152,8 @@ void TestBorderConstantComposition(const std::vector<Size2D>& sizes, ImageFormat
     auto srcData = srcBatch.exportData(stream);
     auto dstData = dstBatch.exportData(stream);
 
-    auto srcWrap = MakeBorderWrapper<eBorderType::BORDER_TYPE_CONSTANT>(ImageBatchVarShapeWrapper<T>(srcData), borderValue);
+    auto srcWrap =
+        MakeBorderWrapper<eBorderType::BORDER_TYPE_CONSTANT>(ImageBatchVarShapeWrapper<T>(srcData), borderValue);
     ImageBatchVarShapeWrapper<T> dstWrap(dstData);
 
     for (int32_t i = 0; i < numImages; ++i) {
@@ -274,6 +277,71 @@ void TestAccessors(const std::vector<Size2D>& sizes, ImageFormat fmt) {
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(0));
 }
 
+// Host-path roundtrip: a CPU-resident batch exports a host snapshot, and the wrapper reads/writes
+// it directly from host code — no kernel launch, no stream. Mirrors TestRoundtripCopy for the GPU
+// path and confirms the residency-agnostic constructor handles the ...Host leaf.
+template <typename T, typename BT = detail::BaseType<T>>
+void TestHostRoundtripCopy(const std::vector<Size2D>& sizes, ImageFormat fmt) {
+    const int channels = detail::NumElements<T>;
+    const int32_t numImages = static_cast<int32_t>(sizes.size());
+
+    std::vector<std::vector<BT>> hostPixels(numImages);
+    for (int32_t i = 0; i < numImages; ++i) {
+        hostPixels[i].resize(static_cast<size_t>(sizes[i].w) * sizes[i].h * channels);
+        FillVector(hostPixels[i], /*seed=*/static_cast<uint32_t>(0x2000 + i));
+    }
+
+    // CPU-resident batches; fill each source image's host buffer directly.
+    ImageBatchVarShape srcBatch(numImages, eDeviceType::CPU);
+    ImageBatchVarShape dstBatch(numImages, eDeviceType::CPU);
+    std::vector<Image> srcImages, dstImages;
+    srcImages.reserve(numImages);
+    dstImages.reserve(numImages);
+    for (int32_t i = 0; i < numImages; ++i) {
+        srcImages.emplace_back(sizes[i], fmt, eDeviceType::CPU);
+        dstImages.emplace_back(sizes[i], fmt, eDeviceType::CPU);
+
+        auto sd = srcImages[i].exportData<ImageDataStridedHost>();
+        const ImagePlaneStrided& sp = sd.plane(0);
+        const size_t rowBytes = static_cast<size_t>(sizes[i].w) * channels * sizeof(BT);
+        for (int32_t y = 0; y < sizes[i].h; ++y) {
+            std::memcpy(static_cast<unsigned char*>(sp.basePtr) + y * sp.rowStride,
+                        hostPixels[i].data() + static_cast<size_t>(y) * sizes[i].w * channels, rowBytes);
+        }
+
+        srcBatch.pushBack(srcImages[i]);
+        dstBatch.pushBack(dstImages[i]);
+    }
+
+    auto srcData = srcBatch.exportData(0);
+    auto dstData = dstBatch.exportData(0);
+    ImageBatchVarShapeWrapper<T> srcWrap(srcData);
+    ImageBatchVarShapeWrapper<T> dstWrap(dstData);
+
+    // Copy whole pixels through the wrapper entirely on the host (same at(n,y,x,0) semantics as
+    // VarShapeCopyKernel, just without a device launch).
+    for (int32_t n = 0; n < numImages; ++n) {
+        for (int64_t y = 0; y < srcWrap.height(n); ++y) {
+            for (int64_t x = 0; x < srcWrap.width(n); ++x) {
+                dstWrap.at(n, y, x, 0) = srcWrap.at(n, y, x, 0);
+            }
+        }
+    }
+
+    // Read dst host buffers back and verify byte-for-byte against the original input.
+    for (int32_t i = 0; i < numImages; ++i) {
+        std::vector<BT> dstHost(static_cast<size_t>(sizes[i].w) * sizes[i].h * channels);
+        auto dd = dstImages[i].exportData<ImageDataStridedHost>();
+        const ImagePlaneStrided& dp = dd.plane(0);
+        const size_t rowBytes = static_cast<size_t>(sizes[i].w) * channels * sizeof(BT);
+        for (int32_t y = 0; y < sizes[i].h; ++y) {
+            std::memcpy(dstHost.data() + static_cast<size_t>(y) * sizes[i].w * channels,
+                        static_cast<const unsigned char*>(dp.basePtr) + y * dp.rowStride, rowBytes);
+        }
+        CompareVectors(dstHost, hostPixels[i]);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -294,6 +362,12 @@ int main(int argc, char** argv) {
 
     // Single image, large.
     TEST_CASE(TestRoundtripCopy<uchar3>({{128, 96}}, FMT_RGB8));
+
+    // CPU path: the same roundtrip driven entirely from host code over a host-resident snapshot.
+    TEST_CASE(TestHostRoundtripCopy<uchar1>({{16, 12}, {32, 24}, {7, 5}, {48, 9}}, FMT_U8));
+    TEST_CASE(TestHostRoundtripCopy<float1>({{16, 12}, {32, 24}, {7, 5}, {48, 9}}, FMT_F32));
+    TEST_CASE(TestHostRoundtripCopy<uchar3>({{16, 12}, {32, 24}, {7, 5}, {48, 9}}, FMT_RGB8));
+    TEST_CASE(TestHostRoundtripCopy<uchar4>({{64, 64}, {64, 64}}, FMT_RGBA8));
 
     TEST_CASE(TestAccessors<uchar3>({{16, 12}, {32, 24}, {7, 5}}, FMT_RGB8));
 

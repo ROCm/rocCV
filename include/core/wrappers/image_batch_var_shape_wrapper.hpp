@@ -34,16 +34,18 @@ namespace roccv {
 
 /**
  * @brief ImageBatchVarShapeWrapper is a non-owning, kernel-friendly view over an ImageBatchVarShape's
- * device-side descriptor table. It satisfies the same wrapper concept as TensorWrapper<T>
+ * descriptor table. It satisfies the same wrapper concept as TensorWrapper<T>
  * (ValueType, at(n,h,w,c), width(n), height(n), batches(), channels()) so it composes with
  * BorderWrapper / InterpolationWrapper unchanged.
  *
  * Single-plane interleaved (NHWC-style) only — ImageBatchVarShape rejects multi-plane images
  * at pushBack, and channel count is derived from T via detail::NumElements<T>.
  *
- * Pointer residency: m_imageList is a device pointer for an ImageBatchVarShapeDataStridedHip;
- * every at()/width()/height() call dereferences it, so this wrapper is only safe to use from
- * device code (or host code that has the descriptor table host-side).
+ * Pointer residency follows the snapshot it is built from: for a GPU batch
+ * (ImageBatchVarShapeDataStridedHip) m_imageList is a device pointer, so the wrapper is usable from
+ * device code; for a CPU batch (ImageBatchVarShapeDataStridedHost) it is a host pointer, usable from
+ * host code. Every at()/width()/height() call dereferences it, so the caller must run the wrapper on
+ * the side matching the snapshot's residency.
  *
  * @tparam T The datatype of an individual pixel (e.g. uchar1, uchar3, uchar4, float1, float4).
  */
@@ -56,22 +58,15 @@ class ImageBatchVarShapeWrapper {
     ImageBatchVarShapeWrapper() = default;
 
     /**
-     * @brief Creates a ImageBatchVarShapeWrapper from a GPU-resident varshape batch data snapshot.
+     * @brief Creates a ImageBatchVarShapeWrapper from a varshape batch data snapshot.
+     *
+     * Accepts either residency through the common ImageBatchVarShapeDataStrided base — a GPU
+     * (...Hip) snapshot yields a device-usable wrapper, a CPU (...Host) snapshot a host-usable one.
      *
      * @param data The exported descriptor table from ImageBatchVarShape::exportData(stream).
      */
-    __host__ ImageBatchVarShapeWrapper(const ImageBatchVarShapeDataStridedHip& data)
-        : m_imageList(data.imageList()), m_numImages(data.numImages()) {
-#ifndef NDEBUG
-        // ImageBatchVarShape rejects multi-plane at pushBack; assert here as a belt-and-braces
-        // check in case a future producer relaxes that.
-        const ImageFormat* formats = data.hostFormatList();
-        for (int32_t i = 0; i < m_numImages; ++i) {
-            assert(formats[i].channels() == detail::NumElements<T> &&
-                   "ImageBatchVarShapeWrapper<T>: per-image channel count must match NumElements<T>");
-        }
-#endif
-    }
+    __host__ ImageBatchVarShapeWrapper(const ImageBatchVarShapeDataStrided& data)
+        : m_imageList(data.imageList()), m_numImages(data.numImages()) {}
 
     /**
      * @brief Returns a reference to data at given image-batch coordinates.
