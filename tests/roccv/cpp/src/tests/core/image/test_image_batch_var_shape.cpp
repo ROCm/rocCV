@@ -56,6 +56,22 @@ void TestConstruction() {
     EXPECT_EQ(alloc.pinnedFrees, 2);
 }
 
+void TestConstructionCpu() {
+    CountingAllocator alloc;
+    {
+        ImageBatchVarShape batch(8, alloc, eDeviceType::CPU);
+        EXPECT_EQ(batch.capacity(), 8);
+        EXPECT_EQ(batch.numImages(), 0);
+        EXPECT_EQ(AsInt(batch.device()), AsInt(eDeviceType::CPU));
+    }
+    // A CPU batch allocates only its two host descriptor buffers — no device
+    // memory, no pinned memory, no fence.
+    EXPECT_EQ(alloc.hostAllocs, 2);
+    EXPECT_EQ(alloc.hostFrees, 2);
+    EXPECT_EQ(alloc.hipAllocs, 0);
+    EXPECT_EQ(alloc.pinnedAllocs, 0);
+}
+
 void TestConstructionRejectsBadCapacity() {
     CountingAllocator alloc;
     EXPECT_EXCEPTION(ImageBatchVarShape(0, alloc), eStatusType::INVALID_VALUE);
@@ -128,6 +144,14 @@ void TestPushBackHostImageRejected() {
 
     Image cpuImg = MakeFakeHostImage(64, 64, FAKE_PTR_A, FMT_U8);
     EXPECT_EXCEPTION(batch.pushBack(cpuImg), eStatusType::INVALID_VALUE);
+}
+
+void TestPushBackGpuImageRejectedOnCpuBatch() {
+    CountingAllocator alloc;
+    ImageBatchVarShape batch(4, alloc, eDeviceType::CPU);
+
+    Image gpuImg = MakeFakeGpuImage(64, 64, FAKE_PTR_A);
+    EXPECT_EXCEPTION(batch.pushBack(gpuImg), eStatusType::INVALID_VALUE);
 }
 
 // Note: pushBack's single-plane validation is defense-in-depth — Image's own
@@ -310,6 +334,69 @@ void TestExportDataCastRoundTrip() {
 }
 
 // =============================================================================
+// CPU path
+// =============================================================================
+
+void TestCpuPushBackAndCaches() {
+    CountingAllocator alloc;
+    ImageBatchVarShape batch(4, alloc, eDeviceType::CPU);
+
+    batch.pushBack(MakeFakeHostImage(640, 480, FAKE_PTR_A));
+    batch.pushBack(MakeFakeHostImage(320, 240, FAKE_PTR_B));
+    batch.pushBack(MakeFakeHostImage(800, 200, FAKE_PTR_C));
+
+    EXPECT_EQ(batch.numImages(), 3);
+    EXPECT_EQ(batch.maxSize().w, 800);
+    EXPECT_EQ(batch.maxSize().h, 480);
+    EXPECT_EQ(AsInt(batch.uniqueFormat() == FMT_RGB8), 1);
+
+    batch.popBack(2);
+    EXPECT_EQ(batch.numImages(), 1);
+    EXPECT_EQ(batch.maxSize().w, 640);
+
+    batch.clear();
+    EXPECT_EQ(batch.numImages(), 0);
+    EXPECT_EQ(batch.maxSize().w, 0);
+    EXPECT_EQ(AsInt(batch.uniqueFormat() == FMT_NONE), 1);
+}
+
+// CPU exportData performs no H2D copy, so it runs against the CountingAllocator's
+// malloc-backed host buffers without needing a real device.
+void TestExportDataHost() {
+    CountingAllocator alloc;
+    ImageBatchVarShape batch(4, alloc, eDeviceType::CPU);
+    batch.pushBack(MakeFakeHostImage(640, 480, FAKE_PTR_A));
+    batch.pushBack(MakeFakeHostImage(320, 240, FAKE_PTR_B));
+
+    auto data = batch.exportData<ImageBatchVarShapeDataStridedHost>(0);
+    EXPECT_EQ(data.numImages(), 2);
+    EXPECT_EQ(AsInt(data.device()), AsInt(eDeviceType::CPU));
+    EXPECT_EQ(data.maxSize().w, 640);
+    EXPECT_EQ(data.maxSize().h, 480);
+    EXPECT_EQ(AsInt(data.uniqueFormat() == FMT_RGB8), 1);
+    EXPECT_EQ(AsInt(data.imageList() != nullptr), 1);
+    EXPECT_EQ(AsInt(data.formatList() != nullptr), 1);
+    // formatList and hostFormatList alias the same host allocation for CPU batches.
+    EXPECT_EQ(AsInt(data.formatList() == data.hostFormatList()), 1);
+    EXPECT_EQ(AsInt(data.hostFormatList()[0] == FMT_RGB8), 1);
+    // Host descriptor table is directly readable: per-image dimensions match.
+    EXPECT_EQ(static_cast<int32_t>(data.imageList()[0].planes[0].width), 640);
+    EXPECT_EQ(static_cast<int32_t>(data.imageList()[1].planes[0].width), 320);
+    EXPECT_EQ(AsInt(data.imageList()[0].planes[0].basePtr == FAKE_PTR_A), 1);
+}
+
+void TestExportDataHostCastRoundTrip() {
+    CountingAllocator alloc;
+    ImageBatchVarShape batch(4, alloc, eDeviceType::CPU);
+    batch.pushBack(MakeFakeHostImage(64, 64, FAKE_PTR_A));
+
+    ImageBatchVarShapeDataStrided data = batch.exportData(0);
+    // A CPU snapshot casts to the host leaf but not the device leaf.
+    EXPECT_EQ(AsInt(data.cast<ImageBatchVarShapeDataStridedHost>().has_value()), 1);
+    EXPECT_EQ(AsInt(data.cast<ImageBatchVarShapeDataStridedHip>().has_value()), 0);
+}
+
+// =============================================================================
 // Move semantics
 // =============================================================================
 
@@ -362,6 +449,7 @@ int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     TEST_CASE(TestConstruction());
+    TEST_CASE(TestConstructionCpu());
     TEST_CASE(TestConstructionRejectsBadCapacity());
 
     TEST_CASE(TestPushBackSingle());
@@ -370,6 +458,7 @@ int main(int argc, char** argv) {
 
     TEST_CASE(TestPushBackCapacityOverflow());
     TEST_CASE(TestPushBackHostImageRejected());
+    TEST_CASE(TestPushBackGpuImageRejectedOnCpuBatch());
     TEST_CASE(TestPushBackRangeRollbackOnFailure());
     TEST_CASE(TestPushBackRangeOverflowPrechecked());
 
@@ -385,6 +474,10 @@ int main(int argc, char** argv) {
     TEST_CASE(TestExportDataEmpty());
     TEST_CASE(TestExportDataMetadata());
     TEST_CASE(TestExportDataCastRoundTrip());
+
+    TEST_CASE(TestCpuPushBackAndCaches());
+    TEST_CASE(TestExportDataHost());
+    TEST_CASE(TestExportDataHostCastRoundTrip());
 
     TEST_CASE(TestMoveConstruction());
 

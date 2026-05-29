@@ -26,78 +26,26 @@
 
 #include "core/detail/context.hpp"
 #include "core/exception.hpp"
-#include "core/hip_assert.h"
 #include "core/image_batch_buffer.hpp"
 #include "core/image_buffer.hpp"
 
 namespace roccv {
 
-ImageBatchVarShape::ImageBatchVarShape(int32_t capacity)
-    : ImageBatchVarShape(capacity, GlobalContext().getDefaultAllocator()) {}
+ImageBatchVarShape::ImageBatchVarShape(int32_t capacity, eDeviceType device)
+    : ImageBatchVarShape(capacity, GlobalContext().getDefaultAllocator(), device) {}
 
-ImageBatchVarShape::ImageBatchVarShape(int32_t capacity, const IAllocator& alloc)
-    : m_capacity(capacity), m_allocator(alloc) {
-    if (capacity <= 0) {
-        throw Exception("ImageBatchVarShape capacity must be positive", eStatusType::INVALID_VALUE);
-    }
-
+ImageBatchVarShape::ImageBatchVarShape(int32_t capacity, const IAllocator& alloc, eDeviceType device)
+    : m_capacity(capacity), m_table(capacity, device, alloc) {
     m_images.reserve(capacity);
-
-    const size_t imagesBytes = sizeof(ImageBufferStrided) * capacity;
-    const size_t formatsBytes = sizeof(ImageFormat) * capacity;
-
-    try {
-        m_devImagesBuffer = static_cast<ImageBufferStrided*>(m_allocator.allocHipMem(imagesBytes));
-        m_devFormatsBuffer = static_cast<ImageFormat*>(m_allocator.allocHipMem(formatsBytes));
-        m_hostImagesBuffer = static_cast<ImageBufferStrided*>(m_allocator.allocHostPinnedMem(imagesBytes));
-        m_hostFormatsBuffer = static_cast<ImageFormat*>(m_allocator.allocHostPinnedMem(formatsBytes));
-
-        HIP_VALIDATE_NO_ERRORS(hipEventCreateWithFlags(&m_postFence, hipEventDisableTiming));
-    } catch (...) {
-        if (m_hostFormatsBuffer != nullptr) m_allocator.freeHostPinnedMem(m_hostFormatsBuffer);
-        if (m_hostImagesBuffer != nullptr) m_allocator.freeHostPinnedMem(m_hostImagesBuffer);
-        if (m_devFormatsBuffer != nullptr) m_allocator.freeHipMem(m_devFormatsBuffer);
-        if (m_devImagesBuffer != nullptr) m_allocator.freeHipMem(m_devImagesBuffer);
-        throw;
-    }
-}
-
-ImageBatchVarShape::~ImageBatchVarShape() {
-    if (m_fencePending && m_postFence != nullptr) {
-        // Drain any in-flight H2D copy before freeing the host mirrors it
-        // reads from. (void) — destructors must not throw.
-        (void)hipEventSynchronize(m_postFence);
-    }
-    if (m_postFence != nullptr) {
-        (void)hipEventDestroy(m_postFence);
-    }
-    if (m_hostFormatsBuffer != nullptr) m_allocator.freeHostPinnedMem(m_hostFormatsBuffer);
-    if (m_hostImagesBuffer != nullptr) m_allocator.freeHostPinnedMem(m_hostImagesBuffer);
-    if (m_devFormatsBuffer != nullptr) m_allocator.freeHipMem(m_devFormatsBuffer);
-    if (m_devImagesBuffer != nullptr) m_allocator.freeHipMem(m_devImagesBuffer);
 }
 
 ImageBatchVarShape::ImageBatchVarShape(ImageBatchVarShape&& other) noexcept
     : m_capacity(other.m_capacity),
-      m_dirtyStartingFromIndex(other.m_dirtyStartingFromIndex),
-      m_fencePending(other.m_fencePending),
-      m_allocator(other.m_allocator),
+      m_table(std::move(other.m_table)),
       m_images(std::move(other.m_images)),
-      m_devImagesBuffer(other.m_devImagesBuffer),
-      m_devFormatsBuffer(other.m_devFormatsBuffer),
-      m_hostImagesBuffer(other.m_hostImagesBuffer),
-      m_hostFormatsBuffer(other.m_hostFormatsBuffer),
-      m_postFence(other.m_postFence),
       m_cacheMaxSize(other.m_cacheMaxSize),
       m_cacheUniqueFormat(other.m_cacheUniqueFormat) {
     other.m_capacity = 0;
-    other.m_dirtyStartingFromIndex = 0;
-    other.m_fencePending = false;
-    other.m_devImagesBuffer = nullptr;
-    other.m_devFormatsBuffer = nullptr;
-    other.m_hostImagesBuffer = nullptr;
-    other.m_hostFormatsBuffer = nullptr;
-    other.m_postFence = nullptr;
     other.m_cacheMaxSize.reset();
     other.m_cacheUniqueFormat.reset();
 }
@@ -107,25 +55,25 @@ void ImageBatchVarShape::pushBack(const Image& img) {
     if (n >= m_capacity) {
         throw Exception("ImageBatchVarShape::pushBack would exceed capacity", eStatusType::OUT_OF_BOUNDS);
     }
-    if (img.device() != eDeviceType::GPU) {
-        throw Exception("ImageBatchVarShape only accepts GPU-resident images", eStatusType::INVALID_VALUE);
+    if (img.device() != m_table.device()) {
+        throw Exception("ImageBatchVarShape only accepts images matching its device", eStatusType::INVALID_VALUE);
     }
 
-    ImageDataStridedHip data = img.exportData<ImageDataStridedHip>();
+    // Export through the strided base so this works for both GPU- and
+    // CPU-resident images (a typed cast<...Hip> would reject host images).
+    auto strided = img.exportData().cast<ImageDataStrided>();
+    if (!strided.has_value()) {
+        throw Exception("ImageBatchVarShape requires strided image data", eStatusType::INVALID_VALUE);
+    }
+    const ImageDataStrided& data = strided.value();
     if (data.numPlanes() != 1) {
         throw Exception("ImageBatchVarShape only supports single-plane images", eStatusType::INVALID_VALUE);
-    }
-
-    if (m_fencePending) {
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_postFence));
-        m_fencePending = false;
     }
 
     ImageBufferStrided slot{};
     slot.numPlanes = 1;
     slot.planes[0] = data.plane(0);
-    m_hostImagesBuffer[n] = slot;
-    m_hostFormatsBuffer[n] = img.format();
+    m_table.writeSlot(n, slot, img.format());
 
     const Size2D imgSize = img.size();
     if (n == 0) {
@@ -157,7 +105,7 @@ void ImageBatchVarShape::popBack(int32_t count) {
     }
 
     m_images.erase(m_images.end() - count, m_images.end());
-    m_dirtyStartingFromIndex = std::min(m_dirtyStartingFromIndex, numImages());
+    m_table.onShrink(numImages());
 
     // maxSize can only shrink on pop; force a rescan on next query. uniqueFormat
     // stays — it may now be conservatively FMT_NONE, but never wrong.
@@ -169,7 +117,7 @@ void ImageBatchVarShape::popBack(int32_t count) {
 
 void ImageBatchVarShape::clear() {
     m_images.clear();
-    m_dirtyStartingFromIndex = 0;
+    m_table.onShrink(0);
     m_cacheMaxSize.reset();
     m_cacheUniqueFormat.reset();
 }
@@ -195,14 +143,17 @@ void ImageBatchVarShape::doUpdateCache() const {
         return;
     }
 
+    const ImageBufferStrided* hostImages = m_table.hostImages();
+    const ImageFormat* hostFormats = m_table.hostFormats();
+
     Size2D maxSz{0, 0};
-    ImageFormat unique = m_hostFormatsBuffer[0];
+    ImageFormat unique = hostFormats[0];
     bool heterogeneous = false;
     for (int32_t i = 0; i < n; ++i) {
-        const ImagePlaneStrided& p0 = m_hostImagesBuffer[i].planes[0];
+        const ImagePlaneStrided& p0 = hostImages[i].planes[0];
         maxSz.w = std::max(maxSz.w, p0.width);
         maxSz.h = std::max(maxSz.h, p0.height);
-        if (!heterogeneous && m_hostFormatsBuffer[i] != unique) {
+        if (!heterogeneous && hostFormats[i] != unique) {
             heterogeneous = true;
         }
     }
@@ -210,31 +161,8 @@ void ImageBatchVarShape::doUpdateCache() const {
     m_cacheUniqueFormat = heterogeneous ? FMT_NONE : unique;
 }
 
-void ImageBatchVarShape::doSyncDirtySuffix(hipStream_t stream) {
-    const int32_t n = numImages();
-    if (m_dirtyStartingFromIndex >= n) {
-        return;
-    }
-    const int32_t dirtyCount = n - m_dirtyStartingFromIndex;
-
-    if (m_fencePending) {
-        HIP_VALIDATE_NO_ERRORS(hipStreamWaitEvent(stream, m_postFence, /*flags=*/0));
-    }
-
-    HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_devImagesBuffer + m_dirtyStartingFromIndex,
-                                          m_hostImagesBuffer + m_dirtyStartingFromIndex,
-                                          sizeof(ImageBufferStrided) * dirtyCount, hipMemcpyHostToDevice, stream));
-    HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_devFormatsBuffer + m_dirtyStartingFromIndex,
-                                          m_hostFormatsBuffer + m_dirtyStartingFromIndex,
-                                          sizeof(ImageFormat) * dirtyCount, hipMemcpyHostToDevice, stream));
-
-    HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_postFence, stream));
-    m_fencePending = true;
-    m_dirtyStartingFromIndex = n;
-}
-
-ImageBatchVarShapeDataStridedHip ImageBatchVarShape::exportData(hipStream_t stream) {
-    doSyncDirtySuffix(stream);
+ImageBatchVarShapeDataStrided ImageBatchVarShape::exportData(hipStream_t stream) {
+    const auto snap = m_table.sync(stream, numImages());
     doUpdateCache();
 
     const Size2D maxSz = m_cacheMaxSize.value();
@@ -242,11 +170,14 @@ ImageBatchVarShapeDataStridedHip ImageBatchVarShape::exportData(hipStream_t stre
     buffer.uniqueFormat = m_cacheUniqueFormat.value();
     buffer.maxWidth = maxSz.w;
     buffer.maxHeight = maxSz.h;
-    buffer.formatList = m_devFormatsBuffer;
-    buffer.hostFormatList = m_hostFormatsBuffer;
-    buffer.imageList = m_devImagesBuffer;
+    buffer.imageList = snap.imageList;
+    buffer.formatList = snap.formatList;
+    buffer.hostFormatList = snap.hostFormatList;
 
-    return ImageBatchVarShapeDataStridedHip(numImages(), buffer);
+    if (m_table.device() == eDeviceType::GPU) {
+        return ImageBatchVarShapeDataStridedHip(numImages(), buffer);
+    }
+    return ImageBatchVarShapeDataStridedHost(numImages(), buffer);
 }
 
 }  // namespace roccv

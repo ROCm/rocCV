@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "core/detail/allocators/i_allocator.hpp"
+#include "core/detail/var_shape_descriptor_table.hpp"
 #include "core/image.hpp"
 #include "core/image_batch_data.hpp"
 #include "core/image_format.hpp"
@@ -57,25 +58,30 @@ namespace roccv {
  * is still in flight, pushBack hipEventSynchronize's on the CPU before
  * mutating, so the snapshot a consumer is reading never tears.
  *
- * GPU-only in v1. CPU-resident images are rejected on push.
+ * Residency is fixed at construction (defaults to GPU). A GPU batch keeps a
+ * device descriptor table mirrored by pinned host buffers and the lazy H2D sync
+ * above; a CPU batch holds a single host-resident descriptor table with no
+ * device buffers, no fence, and no sync (exportData hands the host table
+ * straight to host kernels). pushBack rejects images whose device doesn't match
+ * the batch's.
  */
 class ImageBatchVarShape {
    public:
     using const_iterator = std::vector<Image>::const_iterator;
 
     /**
-     * @brief Construct an empty batch with `capacity` slots, using the global
-     * default allocator.
+     * @brief Construct an empty batch with `capacity` slots on `device`, using
+     * the global default allocator.
      */
-    explicit ImageBatchVarShape(int32_t capacity);
+    explicit ImageBatchVarShape(int32_t capacity, eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Construct an empty batch with `capacity` slots, using the supplied
-     * allocator. The allocator must outlive the batch.
+     * @brief Construct an empty batch with `capacity` slots on `device`, using
+     * the supplied allocator. The allocator must outlive the batch.
      */
-    explicit ImageBatchVarShape(int32_t capacity, const IAllocator &alloc);
+    explicit ImageBatchVarShape(int32_t capacity, const IAllocator &alloc, eDeviceType device = eDeviceType::GPU);
 
-    ~ImageBatchVarShape();
+    ~ImageBatchVarShape() = default;
 
     ImageBatchVarShape(const ImageBatchVarShape &) = delete;
     ImageBatchVarShape &operator=(const ImageBatchVarShape &) = delete;
@@ -84,6 +90,11 @@ class ImageBatchVarShape {
 
     int32_t capacity() const noexcept { return m_capacity; }
     int32_t numImages() const noexcept { return static_cast<int32_t>(m_images.size()); }
+
+    /**
+     * @brief The device the batch (and every image it accepts) resides on.
+     */
+    eDeviceType device() const noexcept { return m_table.device(); }
 
     /**
      * @brief Append an image to the batch. Throws if capacity would be
@@ -130,16 +141,24 @@ class ImageBatchVarShape {
     ImageFormat uniqueFormat() const;
 
     /**
-     * @brief Build (and return by value) a GPU-resident snapshot of the batch.
+     * @brief Build (and return by value) a snapshot of the batch, residency
+     * matching the batch's device.
      *
-     * Synchronizes the dirty suffix of the host mirrors to the device
-     * descriptor table on the supplied stream before returning. The returned
-     * snapshot's `imageList` and `formatList` are device pointers safe for
-     * kernels enqueued on the same stream; `hostFormatList` aliases the pinned
-     * host format mirror and is safe to read from host code. The snapshot is
-     * a metadata view valid as long as this batch outlives it.
+     * The concrete returned object is an ImageBatchVarShapeDataStridedHip for a
+     * GPU batch or an ImageBatchVarShapeDataStridedHost for a CPU batch; both are
+     * returned through the common ImageBatchVarShapeDataStrided base, which
+     * carries the device/buffer-kind tag so callers can recover the leaf via
+     * cast<>() (see the templated overload). The snapshot is a metadata view
+     * valid as long as this batch outlives it.
+     *
+     * GPU: synchronizes the dirty suffix of the host mirrors to the device
+     * descriptor table on `stream` first; `imageList`/`formatList` are device
+     * pointers safe for kernels enqueued on the same stream, and `hostFormatList`
+     * aliases the pinned host format mirror. CPU: `stream` is unused, no sync
+     * occurs, and `imageList`/`formatList`/`hostFormatList` are all host pointers
+     * (`formatList` and `hostFormatList` alias).
      */
-    ImageBatchVarShapeDataStridedHip exportData(hipStream_t stream);
+    ImageBatchVarShapeDataStrided exportData(hipStream_t stream);
 
     /**
      * @brief Build a snapshot and down-cast it to a specific subclass. Throws
@@ -149,22 +168,11 @@ class ImageBatchVarShape {
     Derived exportData(hipStream_t stream);
 
    private:
-    void doSyncDirtySuffix(hipStream_t stream);
     void doUpdateCache() const;
 
     int32_t m_capacity;
-    int32_t m_dirtyStartingFromIndex = 0;
-    bool m_fencePending = false;
-
-    const IAllocator &m_allocator;
+    detail::VarShapeDescriptorTable m_table;  // owns the descriptor buffers, fence, and sync.
     std::vector<Image> m_images;
-
-    ImageBufferStrided *m_devImagesBuffer = nullptr;
-    ImageFormat *m_devFormatsBuffer = nullptr;
-    ImageBufferStrided *m_hostImagesBuffer = nullptr;
-    ImageFormat *m_hostFormatsBuffer = nullptr;
-
-    hipEvent_t m_postFence = nullptr;
 
     mutable std::optional<Size2D> m_cacheMaxSize;
     mutable std::optional<ImageFormat> m_cacheUniqueFormat;
@@ -195,7 +203,7 @@ void ImageBatchVarShape::pushBack(It begin, It end) {
 
 template <typename Derived>
 Derived ImageBatchVarShape::exportData(hipStream_t stream) {
-    ImageBatchVarShapeDataStridedHip data = exportData(stream);
+    ImageBatchVarShapeDataStrided data = exportData(stream);
     auto derived = data.cast<Derived>();
     if (!derived.has_value()) {
         throw std::bad_cast();
