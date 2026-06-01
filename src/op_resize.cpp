@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <unordered_map>
 
 #include "common/validation_helpers.hpp"
-#include "core/detail/casting.hpp"
 #include "core/exception.hpp"
 #include "core/image_batch_var_shape.hpp"
 #include "core/status_type.h"
