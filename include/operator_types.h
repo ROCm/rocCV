@@ -92,11 +92,11 @@ typedef enum eThresholdType {
     THRESH_TOZERO_INV = 0x10,
 } eThresholdType;
 
-// for op_brightness_contrast param handling
+// Used to describe params to the Brightness Contrast operator
 typedef enum eBCType {
-    BC_TYPE_DEFAULT = 0,
-    BC_TYPE_BROADCAST = 1,
-    BC_TYPE_PER = 2
+    BC_TYPE_DEFAULT = 0,      ///< Use default value.
+    BC_TYPE_BROADCAST = 1,    ///< Broadcast single value to all samples.
+    BC_TYPE_PER = 2           ///< Per-sample values.
 } eBCType;
 
 // Column Major
@@ -199,12 +199,22 @@ class BndBoxes {
     std::vector<std::vector<BndBox_t>> m_bndboxesVec;
 };
 
-//TODO add comments
+/**
+ * @brief Wraps parameters to the Brightness Contrast operator for efficient access.
+ *
+ * @tparam DT Data type of the parameter.
+ */
 template <typename DT>
 class BCWrapper {
-    public:
+   public:
+    /**
+     * @brief Construct a new BCWrapper object.
+     *
+     * @param[in] tensor_opt Optional reference to a 1D tensor containing the parameter values.
+     * @param[in] default_val Default value to use (one for all samples) when tensor is not provided.
+     */
     BCWrapper(std::optional<std::reference_wrapper<const Tensor>> tensor_opt,
-                DT default_val) : default_value(default_val) {
+              DT default_val) : default_value(default_val) {
         if (!tensor_opt.has_value()) {
             arg_type = eBCType::BC_TYPE_DEFAULT;
             data = nullptr;
@@ -220,6 +230,13 @@ class BCWrapper {
             data = static_cast<unsigned char*>(tdata.basePtr());
         }
     }
+
+    /**
+     * @brief Retrieves the parameter value for a specific batch index.
+     *
+     * @param n The batch index.
+     * @return The parameter value at the specified batch index.
+     */
     __device__ __host__ const DT at(int64_t n) const {
         switch (arg_type) {
             case eBCType::BC_TYPE_BROADCAST:
@@ -231,13 +248,18 @@ class BCWrapper {
         }
     }
 
-    private:
-        DT default_value;
-        eBCType arg_type;
-        int64_t batch_stride;
-        unsigned char* data;
+   private:
+    DT default_value;
+    eBCType arg_type;
+    int64_t batch_stride;
+    unsigned char* data;
 };
 
+/**
+ * @brief Groups the four brightness/contrast parameter wrappers.
+ *
+ * @tparam DT Data type of the parameters.
+ */
 template <typename DT>
 struct GroupBCWrappers {
     using ValueType = DT;
