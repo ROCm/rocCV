@@ -324,8 +324,6 @@ int main(int argc, char** argv) {
     (void)argv;
     TEST_CASES_BEGIN();
 
-    // todo test against convert to just for fun?
-
     // Test negative operator cases
     TEST_CASE(TestNegativeBrightnessContrast());
 
