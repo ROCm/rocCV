@@ -128,7 +128,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat inFormat,
 
     // Compare data in actual output versus the generated golden reference image
     // Using 1.0E-4 as the error threshold to account for FMA/non-FMA float divergence between CPU and GPU.
-    CompareVectorsNear(result, ref, 1.0E-4); // check this threshold
+    CompareVectorsNear(result, ref, 1.0E-4); // tightest threshold passing
 }
 
 template <typename SRC_DT, typename DEST_DT, typename BC_DT,
@@ -224,6 +224,98 @@ void TestCorrectnessDefaultsAndPer(int batchSize, int width, int height, ImageFo
     CompareVectorsNear(randResult, randRef, 1.0E-4); // check this threshold
 }
 
+void TestNegativeBrightnessContrast() {
+    TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
+    Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+    Tensor validCPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
+
+    TensorShape bc_validOneShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_N), {1});
+
+    BrightnessContrast op;
+
+    {
+        // Test wrong device
+        Tensor bc_validCPUTensor(bc_validOneShape, DataType(eDataType::DATA_TYPE_F32), eDeviceType::CPU);
+
+        EXPECT_EXCEPTION(op(nullptr, validCPUTensor, validGPUTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU), eStatusType::INVALID_OPERATION);
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validCPUTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU), eStatusType::INVALID_COMBINATION);
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, bc_validCPUTensor, bc_validCPUTensor, bc_validCPUTensor, bc_validCPUTensor,
+                            eDeviceType::GPU), eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test unsupported input/output data type
+        Tensor invalidTensor(validGPUTensor.shape(), DataType(eDataType::DATA_TYPE_U32), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU), eStatusType::NOT_IMPLEMENTED);
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, invalidTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU), eStatusType::NOT_IMPLEMENTED);
+    }
+
+    {
+        // Test unsupported input/output layout
+        TensorShape invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
+        Tensor invalidTensor(invalidLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, invalidTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+    }
+
+
+    {
+        // Test input/output shape mismatch
+        Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {2, 2, 2, 2}), DataType(eDataType::DATA_TYPE_U8),
+                             eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, std::nullopt, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU), eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test brightness/contrast datatype mismatch with input/output
+        Tensor bc_validFloatTensor(bc_validOneShape, DataType(eDataType::DATA_TYPE_F32), eDeviceType::GPU);
+        Tensor bc_validDoubleTensor(bc_validOneShape, DataType(eDataType::DATA_TYPE_F64), eDeviceType::GPU);
+        Tensor bc_invalidCharTensor(bc_validOneShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+
+        Tensor validIntTensor(validShape, DataType(eDataType::DATA_TYPE_S32), eDeviceType::GPU);
+        Tensor validCharTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+
+        EXPECT_EXCEPTION(op(nullptr, validCharTensor, validCharTensor, bc_invalidCharTensor, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+
+        EXPECT_EXCEPTION(op(nullptr, validCharTensor, validCharTensor, std::nullopt, bc_validDoubleTensor, std::nullopt, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+
+        EXPECT_EXCEPTION(op(nullptr, validIntTensor, validCharTensor, std::nullopt, std::nullopt, bc_validFloatTensor, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+
+        EXPECT_EXCEPTION(op(nullptr, validCharTensor, validIntTensor, std::nullopt, std::nullopt, std::nullopt, bc_validFloatTensor,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test brightness/contrast bad shape
+        TensorShape bc_mismatchBatchShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_N), {5});
+        TensorShape bc_invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
+        Tensor bc_invalidBatchTensor(bc_mismatchBatchShape, DataType(eDataType::DATA_TYPE_F32), eDeviceType::GPU);
+        Tensor bc_invalidLayoutTensor(bc_invalidLayoutShape, DataType(eDataType::DATA_TYPE_F32), eDeviceType::GPU);
+
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, bc_invalidBatchTensor, std::nullopt, std::nullopt, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, std::nullopt, bc_invalidBatchTensor, std::nullopt, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, std::nullopt, std::nullopt, bc_invalidLayoutTensor, std::nullopt,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, std::nullopt, std::nullopt, std::nullopt, bc_invalidLayoutTensor,
+                            eDeviceType::GPU),  eStatusType::INVALID_COMBINATION);
+    }
+}
+
 
 }  // namespace
 
@@ -232,8 +324,10 @@ int main(int argc, char** argv) {
     (void)argv;
     TEST_CASES_BEGIN();
 
-    // TODO also add negative tests
-    // todo different image sizes?
+    // todo test against convert to just for fun?
+
+    // Test negative operator cases
+    TEST_CASE(TestNegativeBrightnessContrast());
 
     // CPU correctness tests
     // 1 Channel
@@ -257,24 +351,24 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectnessDefaultsAndPer<uchar1, int1, double>(1, 480, 360, FMT_U8, FMT_S32, eDeviceType::CPU)));
 
     // 3 Channels
-    TEST_CASE((TestCorrectness<uchar3, uchar3, float>(1, 360, 480, FMT_RGB8, FMT_RGB8, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<ushort3, ushort3, float>(1, 360, 480, FMT_RGB16, FMT_RGB16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<short3, short3, float>(1, 360, 480, FMT_RGBs16, FMT_RGBs16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<int3, int3, double>(1, 360, 480, FMT_RGBs32, FMT_RGBs32, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float3, float3, float>(1, 360, 480, FMT_RGBf32, FMT_RGBf32, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, uchar3, float>(1, 640, 480, FMT_RGB8, FMT_RGB8, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, ushort3, float>(1, 640, 480, FMT_RGB16, FMT_RGB16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<short3, short3, float>(1, 640, 480, FMT_RGBs16, FMT_RGBs16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<int3, int3, double>(1, 640, 480, FMT_RGBs32, FMT_RGBs32, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, float3, float>(1, 640, 480, FMT_RGBf32, FMT_RGBf32, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
 
-    TEST_CASE((TestCorrectness<uchar3, ushort3, float>(1, 480, 360, FMT_RGB8, FMT_RGB16, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<ushort3, uchar3, float>(1, 480, 360, FMT_RGB16, FMT_RGB8, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<short3, uchar3, float>(1, 480, 360, FMT_RGBs16, FMT_RGB8, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<ushort3, short3, float>(1, 480, 360, FMT_RGB16, FMT_RGBs16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<short3, ushort3, float>(1, 480, 360, FMT_RGBs16, FMT_RGB16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, int3, double>(1, 480, 360, FMT_RGB8, FMT_RGBs32, 1.5, 1.2, 0.1, 100.0, eDataType::DATA_TYPE_F64, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<int3, uchar3, double>(1, 480, 360, FMT_RGBs32, FMT_RGB8, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<uchar3, float3, float>(1, 480, 360, FMT_RGB8, FMT_RGBf32, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float3, uchar3, float>(1, 480, 360, FMT_RGBf32, FMT_RGB8, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, ushort3, float>(1, 480, 640, FMT_RGB8, FMT_RGB16, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, uchar3, float>(1, 480, 640, FMT_RGB16, FMT_RGB8, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<short3, uchar3, float>(1, 480, 640, FMT_RGBs16, FMT_RGB8, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<ushort3, short3, float>(1, 480, 640, FMT_RGB16, FMT_RGBs16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<short3, ushort3, float>(1, 480, 640, FMT_RGBs16, FMT_RGB16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, int3, double>(1, 480, 640, FMT_RGB8, FMT_RGBs32, 1.5, 1.2, 0.1, 100.0, eDataType::DATA_TYPE_F64, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<int3, uchar3, double>(1, 480, 640, FMT_RGBs32, FMT_RGB8, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<uchar3, float3, float>(1, 480, 640, FMT_RGB8, FMT_RGBf32, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float3, uchar3, float>(1, 480, 640, FMT_RGBf32, FMT_RGB8, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
 
-    TEST_CASE((TestCorrectnessDefaultsAndPer<float3, float3, float> (1, 480, 360, FMT_RGBf32, FMT_RGBf32,  eDeviceType::CPU)));
-    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar3, int3, double>(1, 480, 360, FMT_RGB8, FMT_RGBs32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<float3, float3, float> (1, 480, 640, FMT_RGBf32, FMT_RGBf32,  eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar3, int3, double>(1, 480, 640, FMT_RGB8, FMT_RGBs32, eDeviceType::CPU)));
 
     // 4 Channels
     TEST_CASE((TestCorrectness<uchar4, uchar4, float>(1, 360, 480, FMT_RGBA8, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
@@ -338,24 +432,24 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectnessDefaultsAndPer<uchar3, int3, double>(1, 480, 360, FMT_RGB8, FMT_RGBs32, eDeviceType::GPU)));
 
     // 4 Channels
-    TEST_CASE((TestCorrectness<uchar4, uchar4, float>(1, 360, 480, FMT_RGBA8, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort4, ushort4, float>(1, 360, 480, FMT_RGBA16, FMT_RGBA16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<short4, short4, float>(1, 360, 480, FMT_RGBAs16, FMT_RGBAs16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<int4, int4, double>(1, 360, 480, FMT_RGBAs32, FMT_RGBAs32, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float4, float4, float>(1, 360, 480, FMT_RGBAf32, FMT_RGBAf32, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, uchar4, float>(1, 1920, 1080, FMT_RGBA8, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort4, ushort4, float>(1, 1920, 1080, FMT_RGBA16, FMT_RGBA16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<short4, short4, float>(1, 1920, 1080, FMT_RGBAs16, FMT_RGBAs16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<int4, int4, double>(1, 1920, 1080, FMT_RGBAs32, FMT_RGBAs32, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, float4, float>(1, 1920, 1080, FMT_RGBAf32, FMT_RGBAf32, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
 
-    TEST_CASE((TestCorrectness<uchar4, ushort4, float>(1, 480, 360, FMT_RGBA8, FMT_RGBA16, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort4, uchar4, float>(1, 480, 360, FMT_RGBA16, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<short4, uchar4, float>(1, 480, 360, FMT_RGBAs16, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<ushort4, short4, float>(1, 480, 360, FMT_RGBA16, FMT_RGBAs16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<short4, ushort4, float>(1, 480, 360, FMT_RGBAs16, FMT_RGBA16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, int4, double>(1, 480, 360, FMT_RGBA8, FMT_RGBAs32, 1.5, 1.2, 0.1, 100.0, eDataType::DATA_TYPE_F64, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<int4, uchar4, double>(1, 480, 360, FMT_RGBAs32, FMT_RGBA8, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<uchar4, float4, float>(1, 480, 360, FMT_RGBA8, FMT_RGBAf32, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float4, uchar4, float>(1, 480, 360, FMT_RGBAf32, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, ushort4, float>(1, 1080, 1920, FMT_RGBA8, FMT_RGBA16, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort4, uchar4, float>(1, 1080, 1920, FMT_RGBA16, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<short4, uchar4, float>(1, 1080, 1920, FMT_RGBAs16, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<ushort4, short4, float>(1, 1080, 1920, FMT_RGBA16, FMT_RGBAs16, 1.5f, 1.2f, 0.1f, 30000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<short4, ushort4, float>(1, 1080, 1920, FMT_RGBAs16, FMT_RGBA16, 1.5f, 1.2f, 0.1f, 10000.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, int4, double>(1, 1080, 1920, FMT_RGBA8, FMT_RGBAs32, 1.5, 1.2, 0.1, 100.0, eDataType::DATA_TYPE_F64, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<int4, uchar4, double>(1, 1080, 1920, FMT_RGBAs32, FMT_RGBA8, 1.5, 1.2, 0.1, 1000000000.0, eDataType::DATA_TYPE_F64, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<uchar4, float4, float>(1, 1080, 1920, FMT_RGBA8, FMT_RGBAf32, 1.5f, 1.2f, 0.1f, 100.0f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float4, uchar4, float>(1, 1080, 1920, FMT_RGBAf32, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 0.6f, eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
 
-    TEST_CASE((TestCorrectnessDefaultsAndPer<float4, float4, float> (1, 480, 360, FMT_RGBAf32, FMT_RGBAf32,  eDeviceType::GPU)));
-    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar4, int4, double>(1, 480, 360, FMT_RGBA8, FMT_RGBAs32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<float4, float4, float> (1, 3840, 2160, FMT_RGBAf32, FMT_RGBAf32,  eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar4, int4, double>(1, 2160, 3840, FMT_RGBA8, FMT_RGBAs32, eDeviceType::GPU)));
 
     TEST_CASES_END();
 }

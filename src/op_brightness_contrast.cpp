@@ -151,7 +151,7 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
     auto validate_bc_param = [&](const auto& param_opt) {
       if (param_opt.has_value()) {
         const Tensor& param = param_opt->get();
-        CHECK_TENSOR_DATATYPES(param, bc_dtype);
+        CHECK_TENSOR_COMPARISON(param.dtype().etype() == bc_dtype);
         CHECK_TENSOR_LAYOUT(param, TENSOR_LAYOUT_N);
         CHECK_TENSOR_COMPARISON(param.shape(param.layout().batch_index()) == 1 ||
                                 param.shape(param.layout().batch_index()) == input_batch);
