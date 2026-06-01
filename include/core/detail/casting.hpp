@@ -22,10 +22,52 @@
 #pragma once
 
 #include <algorithm>
+#include <cmath>
 
 #include "core/detail/type_traits.hpp"
 
 namespace roccv::detail {
+
+/**
+ * @brief Rounds a floating-point value to the nearest integer using IEEE
+ * half-to-even rounding (the default rounding mode). Matches the semantics of
+ * __float2int_rn on device. Selects single- vs double-precision based on the
+ * argument type to avoid silent precision loss when U is double.
+ */
+template <typename U>
+__device__ __host__ inline U IEEERound(U v) {
+    static_assert(std::is_floating_point_v<U>, "IEEERound requires a floating-point input");
+#ifdef __HIP_DEVICE_COMPILE__
+    if constexpr (std::is_same_v<U, float>) {
+        return rintf(v);
+    } else {
+        return rint(v);
+    }
+#else
+    return std::rint(v);
+#endif
+}
+
+/**
+ * @brief Clamps v to [lo, hi].
+ * @param[in] v The value to clamp.
+ * @param[in] lo The lower bound of the clamp.
+ * @param[in] hi The upper bound of the clamp.
+ * @return The value v clamped to [lo, hi].
+ */
+template <typename U>
+__device__ __host__ inline U FpClamp(U v, U lo, U hi) {
+    static_assert(std::is_floating_point_v<U>, "FpClamp requires a floating-point input");
+#ifdef __HIP_DEVICE_COMPILE__
+    if constexpr (std::is_same_v<U, float>) {
+        return __builtin_amdgcn_fmed3f(v, lo, hi);
+    } else {
+        return fmin(fmax(v, lo), hi);
+    }
+#else
+    return std::clamp(v, lo, hi);
+#endif
+}
 
 /**
  * @brief ScalarSaturateCast is for implementation purposes only. Use SaturateCast directly.
@@ -36,36 +78,55 @@ __device__ __host__ T ScalarSaturateCast(U v) {
     constexpr bool bigToSmall = !smallToBig;
 
     if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U>) {
-        // Any float -> any integral
-        return static_cast<T>(std::clamp<U>(std::round(v), static_cast<U>(std::numeric_limits<T>::min()),
-                                            static_cast<U>(std::numeric_limits<T>::max())));
-    } else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> &&
-                         std::is_unsigned_v<T> && smallToBig) {
-        // Any integral signed -> Any integral unsigned, small -> big or equal
-        return v <= 0 ? 0 : static_cast<T>(v);
-    } else if constexpr (std::is_integral_v<U> && std::is_integral_v<T> &&
-                         ((std::is_signed_v<U> && std::is_signed_v<T>) ||
-                          (std::is_unsigned_v<U> && std::is_unsigned_v<T>)) &&
-                         bigToSmall) {
-        // Any integral signed -> Any integral signed, big -> small
-        // Any integral unsigned -> Any integral unsigned, big -> small
-        return v <= std::numeric_limits<T>::min()
-                   ? std::numeric_limits<T>::min()
-                   : (v >= std::numeric_limits<T>::max() ? std::numeric_limits<T>::max() : static_cast<T>(v));
-    } else if constexpr (std::is_integral_v<U> && std::is_unsigned_v<U> && std::is_integral_v<T> &&
-                         std::is_signed_v<T>) {
-        // Any integral unsigned -> Any integral signed, small -> big or equal
-        return v >= std::numeric_limits<T>::max() ? std::numeric_limits<T>::max() : static_cast<T>(v);
-    } else if constexpr (std::is_integral_v<U> && std::is_signed_v<U> && std::is_integral_v<T> &&
-                         std::is_unsigned_v<T> && bigToSmall) {
-        // Any integral signed -> Any integral unsigned, big -> small
-        return v <= static_cast<U>(std::numeric_limits<T>::min())
-                   ? std::numeric_limits<T>::min()
-                   : (v >= static_cast<U>(std::numeric_limits<T>::max()) ? std::numeric_limits<T>::max()
-                                                                         : static_cast<T>(v));
-    } else {
-        // All other cases fall into this
-        return v;
+        // Float -> integral: clamp to [min, max] then round (IEEE half-to-even).
+        constexpr U minVal = static_cast<U>(std::numeric_limits<T>::lowest());
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+
+        if constexpr (sizeof(T) <= 2) {
+            // 8/16 bit integer cases. These can be represented exactly in floating point.
+            return static_cast<T>(IEEERound(FpClamp(v, minVal, maxVal)));
+        } else {
+            // 32/64 bit integer cases. maxVal may round up to an unrepresentable
+            // value when cast back, so compare against the rounded source.
+            const U rounded = IEEERound(v);
+            return rounded >= maxVal   ? std::numeric_limits<T>::max()
+                   : rounded <= minVal ? std::numeric_limits<T>::min()
+                                       : static_cast<T>(rounded);
+        }
+    }
+
+    else if constexpr (std::is_integral_v<T> && std::is_integral_v<U> && std::is_signed_v<U> && std::is_unsigned_v<T> &&
+                       smallToBig) {
+        // Signed -> unsigned, small to big: clamp negative to 0
+        // Branchless: max(v, 0) handles negative values
+        return static_cast<T>(max(v, U{0}));
+    }
+
+    else if constexpr (std::is_integral_v<U> && std::is_integral_v<T> &&
+                       ((std::is_signed_v<U> && std::is_signed_v<T>) ||
+                        (std::is_unsigned_v<U> && std::is_unsigned_v<T>)) &&
+                       bigToSmall) {
+        // Same signedness, big -> small: clamp to [min, max]
+        constexpr U minVal = static_cast<U>(std::numeric_limits<T>::min());
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+        return static_cast<T>(min(max(v, minVal), maxVal));
+    }
+
+    else if constexpr (std::is_integral_v<U> && std::is_unsigned_v<U> && std::is_integral_v<T> && std::is_signed_v<T>) {
+        // Unsigned -> signed: clamp to max (can't exceed min since unsigned)
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+        return static_cast<T>(min(v, maxVal));
+    }
+
+    else if constexpr (std::is_integral_v<U> && std::is_signed_v<U> && std::is_integral_v<T> && std::is_unsigned_v<T> &&
+                       bigToSmall) {
+        // Signed -> unsigned, big -> small: clamp to [0, max]
+        constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
+        return static_cast<T>(min(max(v, U{0}), maxVal));
+    }
+
+    else {
+        return static_cast<T>(v);
     }
 }
 
@@ -83,18 +144,21 @@ __device__ __host__ T ScalarSaturateCast(U v) {
 template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && (NumElements<T> <= NumElements<U>)>>
 __device__ __host__ T SaturateCast(U v) {
+    using B = BaseType<T>;
     if constexpr (std::is_same_v<T, U>) {
         return v;
+    } else if constexpr (NumElements<T> == 1) {
+        return T{ScalarSaturateCast<B>(GetElement(v, 0))};
+    } else if constexpr (NumElements<T> == 2) {
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)), ScalarSaturateCast<B>(GetElement(v, 1))};
+    } else if constexpr (NumElements<T> == 3) {
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)), ScalarSaturateCast<B>(GetElement(v, 1)),
+                 ScalarSaturateCast<B>(GetElement(v, 2))};
+    } else {
+        static_assert(NumElements<T> == 4, "SaturateCast supports up to 4-element vectors");
+        return T{ScalarSaturateCast<B>(GetElement(v, 0)), ScalarSaturateCast<B>(GetElement(v, 1)),
+                 ScalarSaturateCast<B>(GetElement(v, 2)), ScalarSaturateCast<B>(GetElement(v, 3))};
     }
-
-    T ret{};
-
-    GetElement(ret, 0) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 0));
-    if constexpr (NumElements<T> >= 2) GetElement(ret, 1) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 1));
-    if constexpr (NumElements<T> >= 3) GetElement(ret, 2) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 2));
-    if constexpr (NumElements<T> >= 4) GetElement(ret, 3) = ScalarSaturateCast<BaseType<T>>(GetElement(v, 3));
-
-    return ret;
 }
 
 /**
@@ -109,17 +173,40 @@ __device__ __host__ T ScalarRangeCast(U v) {
     }
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_signed_v<T>) {
-        // Float to signed integers
-        return v >= T{1}    ? std::numeric_limits<T>::max()
-               : v <= T{-1} ? std::numeric_limits<T>::min()
-                            : static_cast<T>(std::round(static_cast<U>(std::numeric_limits<T>::max()) * v));
+        // Float to signed integer. Map [-1, 1] -> [min, max] with IEEE half-to-even rounding.
+        constexpr U scale = static_cast<U>(std::numeric_limits<T>::max());
+
+        if constexpr (sizeof(T) <= 2) {
+            // 8/16 bit signed cases. These can be represented exactly in floating point,
+            // so clamp first then round.
+            return static_cast<T>(IEEERound(FpClamp(v, U{-1}, U{1}) * scale));
+        } else {
+            // 32/64 bit signed cases.
+            return v >= U{1}    ? std::numeric_limits<T>::max()
+                   : v <= U{-1} ? std::numeric_limits<T>::min()
+                                : static_cast<T>(IEEERound(scale * v));
+        }
     }
 
     else if constexpr (std::is_integral_v<T> && std::is_floating_point_v<U> && std::is_unsigned_v<T>) {
         // float to unsigned integers
-        return v >= T{1}   ? std::numeric_limits<T>::max()
-               : v <= T{0} ? 0
-                           : static_cast<T>(lrintf(static_cast<U>(std::numeric_limits<T>::max()) * v));
+        constexpr U scale = static_cast<U>(std::numeric_limits<T>::max());
+
+        if constexpr (sizeof(T) <= 2) {
+            // 8/16 bit integer cases. These can be represented exactly in floating point.
+#ifdef __HIP_DEVICE_COMPILE__
+            if constexpr (std::is_same_v<U, float>) {
+                return static_cast<T>(__float2int_rn(__saturatef(v) * scale));
+            } else {
+                return static_cast<T>(IEEERound(FpClamp(v, U{0}, U{1}) * scale));
+            }
+#else
+            return static_cast<T>(IEEERound(FpClamp(v, U{0}, U{1}) * scale));
+#endif
+        } else {
+            // 32/64 bit integer cases.
+            return v >= U{1} ? std::numeric_limits<T>::max() : v <= U{0} ? T{0} : static_cast<T>(IEEERound(v * scale));
+        }
     }
 
     else if constexpr (std::is_floating_point_v<T> && std::is_integral_v<U> && std::is_signed_v<U>) {
@@ -162,18 +249,21 @@ __device__ __host__ T ScalarRangeCast(U v) {
 template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && NumElements<T> <= NumElements<U>>>
 __device__ __host__ T RangeCast(U v) {
+    using B = BaseType<T>;
     if constexpr (std::is_same_v<T, U>) {
         return v;
+    } else if constexpr (NumElements<T> == 1) {
+        return T{ScalarRangeCast<B>(GetElement(v, 0))};
+    } else if constexpr (NumElements<T> == 2) {
+        return T{ScalarRangeCast<B>(GetElement(v, 0)), ScalarRangeCast<B>(GetElement(v, 1))};
+    } else if constexpr (NumElements<T> == 3) {
+        return T{ScalarRangeCast<B>(GetElement(v, 0)), ScalarRangeCast<B>(GetElement(v, 1)),
+                 ScalarRangeCast<B>(GetElement(v, 2))};
+    } else {
+        static_assert(NumElements<T> == 4, "RangeCast supports up to 4-element vectors");
+        return T{ScalarRangeCast<B>(GetElement(v, 0)), ScalarRangeCast<B>(GetElement(v, 1)),
+                 ScalarRangeCast<B>(GetElement(v, 2)), ScalarRangeCast<B>(GetElement(v, 3))};
     }
-
-    T ret{};
-
-    GetElement(ret, 0) = ScalarRangeCast<BaseType<T>>(GetElement(v, 0));
-    if constexpr (NumElements<T> >= 2) GetElement(ret, 1) = ScalarRangeCast<BaseType<T>>(GetElement(v, 1));
-    if constexpr (NumElements<T> >= 3) GetElement(ret, 2) = ScalarRangeCast<BaseType<T>>(GetElement(v, 2));
-    if constexpr (NumElements<T> >= 4) GetElement(ret, 3) = ScalarRangeCast<BaseType<T>>(GetElement(v, 3));
-
-    return ret;
 }
 
 /**
@@ -187,21 +277,23 @@ __device__ __host__ T RangeCast(U v) {
 template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && NumElements<T> <= NumElements<U>>>
 __device__ __host__ T StaticCast(U v) {
+    using B = BaseType<T>;
     if constexpr (std::is_same_v<T, U>) {
         // Both same type, just return the value.
         return v;
     } else if constexpr (!IsCompound<T> && !IsCompound<U>) {
         // Both scalar values. Reduces to a standard static cast.
         return static_cast<T>(v);
+    } else if constexpr (NumElements<T> == 1) {
+        return T{StaticCast<B>(GetElement(v, 0))};
+    } else if constexpr (NumElements<T> == 2) {
+        return T{StaticCast<B>(GetElement(v, 0)), StaticCast<B>(GetElement(v, 1))};
+    } else if constexpr (NumElements<T> == 3) {
+        return T{StaticCast<B>(GetElement(v, 0)), StaticCast<B>(GetElement(v, 1)), StaticCast<B>(GetElement(v, 2))};
     } else {
-        // Vector types. Perform casting on each element.
-        T ret{};
-        GetElement(ret, 0) = StaticCast<BaseType<T>>(GetElement(v, 0));
-        if constexpr (NumElements<T> >= 2) GetElement(ret, 1) = StaticCast<BaseType<T>>(GetElement(v, 1));
-        if constexpr (NumElements<T> >= 3) GetElement(ret, 2) = StaticCast<BaseType<T>>(GetElement(v, 2));
-        if constexpr (NumElements<T> >= 4) GetElement(ret, 3) = StaticCast<BaseType<T>>(GetElement(v, 3));
-
-        return ret;
+        static_assert(NumElements<T> == 4, "StaticCast supports up to 4-element vectors");
+        return T{StaticCast<B>(GetElement(v, 0)), StaticCast<B>(GetElement(v, 1)), StaticCast<B>(GetElement(v, 2)),
+                 StaticCast<B>(GetElement(v, 3))};
     }
 }
 }  // namespace roccv::detail
