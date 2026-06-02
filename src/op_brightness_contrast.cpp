@@ -32,6 +32,65 @@ THE SOFTWARE.
 #include "kernels/device/brightness_contrast_device.hpp"
 #include "kernels/host/brightness_contrast_host.hpp"
 
+namespace {
+using namespace roccv;
+typedef enum eBCType {
+    BC_TYPE_DEFAULT = 0,    ///< Use default value.
+    BC_TYPE_BROADCAST = 1,  ///< Broadcast single value to all samples.
+    BC_TYPE_PER = 2         ///< Per-sample values.
+} eBCType;
+
+template <typename DT>
+class BCWrapper {
+   public:
+    BCWrapper(std::optional<std::reference_wrapper<const Tensor>> tensor_opt, DT default_val)
+        : default_value(default_val) {
+        if (!tensor_opt.has_value()) {
+            arg_type = eBCType::BC_TYPE_DEFAULT;
+            data = nullptr;
+            batch_stride = -1;
+        } else {
+            const Tensor &tensor = tensor_opt->get();
+            if (tensor.layout() != eTensorLayout::TENSOR_LAYOUT_N) {
+                throw Exception("The given tensor layout is not supported for BCWrapper", eStatusType::NOT_IMPLEMENTED);
+            }
+            arg_type =
+                (tensor.shape(tensor.layout().batch_index()) == 1) ? eBCType::BC_TYPE_BROADCAST : eBCType::BC_TYPE_PER;
+            TensorDataStrided tdata = tensor.exportData<TensorDataStrided>();
+            batch_stride = tdata.stride(tensor.layout().batch_index());
+            data = static_cast<unsigned char *>(tdata.basePtr());
+        }
+    }
+
+    __device__ __host__ const DT at(int64_t n) const {
+        switch (arg_type) {
+            case eBCType::BC_TYPE_BROADCAST:
+                return *(reinterpret_cast<DT *>(data));
+            case eBCType::BC_TYPE_PER:
+                return *(reinterpret_cast<DT *>(data + (batch_stride * n)));
+            default:
+                return default_value;
+        }
+    }
+
+   private:
+    DT default_value;
+    eBCType arg_type;
+    int64_t batch_stride;
+    unsigned char *data;
+};
+
+template <typename DT>
+struct GroupBCWrappers {
+    using ValueType = DT;
+
+    BCWrapper<DT> brightnessWrapper;
+    BCWrapper<DT> contrastWrapper;
+    BCWrapper<DT> brightnessShiftWrapper;
+    BCWrapper<DT> contrastCenterWrapper;
+};
+}  // namespace
+
 namespace roccv {
 
 template <typename BCWrappers, typename SRC_DT, typename DST_DT, int NC>

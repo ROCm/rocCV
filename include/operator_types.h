@@ -91,13 +91,6 @@ typedef enum eThresholdType {
     THRESH_TOZERO_INV = 0x10,
 } eThresholdType;
 
-// Used to describe params to the Brightness Contrast operator
-typedef enum eBCType {
-    BC_TYPE_DEFAULT = 0,    ///< Use default value.
-    BC_TYPE_BROADCAST = 1,  ///< Broadcast single value to all samples.
-    BC_TYPE_PER = 2         ///< Per-sample values.
-} eBCType;
-
 // Column Major
 typedef float PerspectiveTransform[9];
 
@@ -197,77 +190,4 @@ class BndBoxes {
    private:
     std::vector<std::vector<BndBox_t>> m_bndboxesVec;
 };
-
-/**
- * @brief Wraps parameters to the Brightness Contrast operator for efficient access.
- *
- * @tparam DT Data type of the parameter.
- */
-template <typename DT>
-class BCWrapper {
-   public:
-    /**
-     * @brief Construct a new BCWrapper object.
-     *
-     * @param[in] tensor_opt Optional reference to a 1D tensor containing the parameter values.
-     * @param[in] default_val Default value to use (one for all samples) when tensor is not provided.
-     */
-    BCWrapper(std::optional<std::reference_wrapper<const Tensor>> tensor_opt, DT default_val)
-        : default_value(default_val) {
-        if (!tensor_opt.has_value()) {
-            arg_type = eBCType::BC_TYPE_DEFAULT;
-            data = nullptr;
-            batch_stride = -1;
-        } else {
-            const Tensor &tensor = tensor_opt->get();
-            if (tensor.layout() != eTensorLayout::TENSOR_LAYOUT_N) {
-                throw Exception("The given tensor layout is not supported for BCWrapper", eStatusType::NOT_IMPLEMENTED);
-            }
-            arg_type =
-                (tensor.shape(tensor.layout().batch_index()) == 1) ? eBCType::BC_TYPE_BROADCAST : eBCType::BC_TYPE_PER;
-            TensorDataStrided tdata = tensor.exportData<TensorDataStrided>();
-            batch_stride = tdata.stride(tensor.layout().batch_index());
-            data = static_cast<unsigned char *>(tdata.basePtr());
-        }
-    }
-
-    /**
-     * @brief Retrieves the parameter value for a specific batch index.
-     *
-     * @param n The batch index.
-     * @return The parameter value at the specified batch index.
-     */
-    __device__ __host__ const DT at(int64_t n) const {
-        switch (arg_type) {
-            case eBCType::BC_TYPE_BROADCAST:
-                return *(reinterpret_cast<DT *>(data));
-            case eBCType::BC_TYPE_PER:
-                return *(reinterpret_cast<DT *>(data + (batch_stride * n)));
-            default:
-                return default_value;
-        }
-    }
-
-   private:
-    DT default_value;
-    eBCType arg_type;
-    int64_t batch_stride;
-    unsigned char *data;
-};
-
-/**
- * @brief Groups the four brightness/contrast parameter wrappers.
- *
- * @tparam DT Data type of the parameters.
- */
-template <typename DT>
-struct GroupBCWrappers {
-    using ValueType = DT;
-
-    BCWrapper<DT> brightnessWrapper;
-    BCWrapper<DT> contrastWrapper;
-    BCWrapper<DT> brightnessShiftWrapper;
-    BCWrapper<DT> contrastCenterWrapper;
-};
-
 }  // namespace roccv

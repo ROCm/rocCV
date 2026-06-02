@@ -60,6 +60,7 @@ class BrightnessContrast final : public IOperator {
      *       Channels      | Yes
      *       Width         | Yes
      *       Height        | Yes
+     *       Batch         | Yes
      *
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.

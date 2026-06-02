@@ -42,7 +42,7 @@ __global__ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrapp
     const int y = threadIdx.y + blockIdx.y * blockDim.y;
     const int batch = blockIdx.z;
 
-    if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
+    if (x >= output.width() || y >= output.height()) return;
 
     // get the brightness/contrast scalars to apply
     const bc_type brightness = bc_wrappers.brightnessWrapper.at(batch);
