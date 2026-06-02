@@ -386,8 +386,8 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<float1, uchar1, float>(1, 480, 360, FMT_F32, FMT_U8, 1.5f, 1.2f, 0.1f, 0.6f,
                                                       eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
 
-    TEST_CASE((TestCorrectnessDefaultsAndPer<float1, float1, float>(1, 480, 360, FMT_F32, FMT_F32, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar1, int1, double>(1, 480, 360, FMT_U8, FMT_S32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<float1, float1, float>(3, 480, 360, FMT_F32, FMT_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar1, int1, double>(3, 480, 360, FMT_U8, FMT_S32, eDeviceType::CPU)));
 
     // 3 Channels
     TEST_CASE((TestCorrectness<uchar3, uchar3, float>(1, 640, 480, FMT_RGB8, FMT_RGB8, 1.5f, 1.2f, 0.1f, 100.0f,
@@ -421,9 +421,9 @@ int main(int argc, char** argv) {
                                                       eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
 
     TEST_CASE(
-        (TestCorrectnessDefaultsAndPer<float3, float3, float>(1, 480, 640, FMT_RGBf32, FMT_RGBf32, eDeviceType::CPU)));
+        (TestCorrectnessDefaultsAndPer<float3, float3, float>(3, 480, 640, FMT_RGBf32, FMT_RGBf32, eDeviceType::CPU)));
     TEST_CASE(
-        (TestCorrectnessDefaultsAndPer<uchar3, int3, double>(1, 480, 640, FMT_RGB8, FMT_RGBs32, eDeviceType::CPU)));
+        (TestCorrectnessDefaultsAndPer<uchar3, int3, double>(3, 480, 640, FMT_RGB8, FMT_RGBs32, eDeviceType::CPU)));
 
     // 4 Channels
     TEST_CASE((TestCorrectness<uchar4, uchar4, float>(1, 360, 480, FMT_RGBA8, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 100.0f,
@@ -457,9 +457,9 @@ int main(int argc, char** argv) {
                                                       eDataType::DATA_TYPE_F32, eDeviceType::CPU)));
 
     TEST_CASE((
-        TestCorrectnessDefaultsAndPer<float4, float4, float>(1, 480, 360, FMT_RGBAf32, FMT_RGBAf32, eDeviceType::CPU)));
+        TestCorrectnessDefaultsAndPer<float4, float4, float>(3, 480, 360, FMT_RGBAf32, FMT_RGBAf32, eDeviceType::CPU)));
     TEST_CASE(
-        (TestCorrectnessDefaultsAndPer<uchar4, int4, double>(1, 480, 360, FMT_RGBA8, FMT_RGBAs32, eDeviceType::CPU)));
+        (TestCorrectnessDefaultsAndPer<uchar4, int4, double>(3, 480, 360, FMT_RGBA8, FMT_RGBAs32, eDeviceType::CPU)));
 
     // GPU Correctness Tests
     // 1 Channel
@@ -493,8 +493,8 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<float1, uchar1, float>(1, 480, 360, FMT_F32, FMT_U8, 1.5f, 1.2f, 0.1f, 0.6f,
                                                       eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
 
-    TEST_CASE((TestCorrectnessDefaultsAndPer<float1, float1, float>(1, 480, 360, FMT_F32, FMT_F32, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar1, int1, double>(1, 480, 360, FMT_U8, FMT_S32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<float1, float1, float>(3, 480, 360, FMT_F32, FMT_F32, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessDefaultsAndPer<uchar1, int1, double>(3, 480, 360, FMT_U8, FMT_S32, eDeviceType::GPU)));
 
     // 3 Channels
     TEST_CASE((TestCorrectness<uchar3, uchar3, float>(1, 360, 480, FMT_RGB8, FMT_RGB8, 1.5f, 1.2f, 0.1f, 100.0f,
@@ -528,9 +528,9 @@ int main(int argc, char** argv) {
                                                       eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
 
     TEST_CASE(
-        (TestCorrectnessDefaultsAndPer<float3, float3, float>(1, 480, 360, FMT_RGBf32, FMT_RGBf32, eDeviceType::GPU)));
+        (TestCorrectnessDefaultsAndPer<float3, float3, float>(3, 480, 360, FMT_RGBf32, FMT_RGBf32, eDeviceType::GPU)));
     TEST_CASE(
-        (TestCorrectnessDefaultsAndPer<uchar3, int3, double>(1, 480, 360, FMT_RGB8, FMT_RGBs32, eDeviceType::GPU)));
+        (TestCorrectnessDefaultsAndPer<uchar3, int3, double>(3, 480, 360, FMT_RGB8, FMT_RGBs32, eDeviceType::GPU)));
 
     // 4 Channels
     TEST_CASE((TestCorrectness<uchar4, uchar4, float>(1, 1920, 1080, FMT_RGBA8, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 100.0f,
@@ -563,10 +563,10 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<float4, uchar4, float>(1, 1080, 1920, FMT_RGBAf32, FMT_RGBA8, 1.5f, 1.2f, 0.1f, 0.6f,
                                                       eDataType::DATA_TYPE_F32, eDeviceType::GPU)));
 
-    TEST_CASE((TestCorrectnessDefaultsAndPer<float4, float4, float>(1, 3840, 2160, FMT_RGBAf32, FMT_RGBAf32,
+    TEST_CASE((TestCorrectnessDefaultsAndPer<float4, float4, float>(3, 3840, 2160, FMT_RGBAf32, FMT_RGBAf32,
                                                                     eDeviceType::GPU)));
     TEST_CASE(
-        (TestCorrectnessDefaultsAndPer<uchar4, int4, double>(1, 2160, 3840, FMT_RGBA8, FMT_RGBAs32, eDeviceType::GPU)));
+        (TestCorrectnessDefaultsAndPer<uchar4, int4, double>(3, 2160, 3840, FMT_RGBA8, FMT_RGBAs32, eDeviceType::GPU)));
 
     TEST_CASES_END();
 }
