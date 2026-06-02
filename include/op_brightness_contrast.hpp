@@ -38,7 +38,7 @@ class BrightnessContrast final : public IOperator {
      * @brief Construct a new Op Brightness Contrast object. The object can be used
      * to adjust the brightness and contrast of an image.
      * outputs(x,y) = brightnessShift + brightness * (contrastCenter + contrast * (inputs(x,y) - contrastCenter))
-     * 
+     *
      * Limitations:
      *
      * Input:
@@ -64,14 +64,18 @@ class BrightnessContrast final : public IOperator {
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.
      * @param[out] output  Output tensor for storing modified image data.
-     * @param[in] brightness (Optional) Tensor with brightness multipliers. Can contain 1 or N elements where N is the number of input images.
-     * @param[in] contrast (Optional) Tensor with contrast multipliers. Can contain 1 or N elements where N is the number of input images.
-     * @param[in] brightnessShift (Optional) Tensor with brightness shifts. Can contain 1 or N elements where N is the number of input images.
-     * @param[in] contrastCenter (Optional) Tensor with contrast centers. Can contain 1 or N elements where N is the number of input images.
+     * @param[in] brightness (Optional) Tensor with brightness multipliers. Can contain 1 or N elements where N is the
+     * number of input images. Default: 1.0.
+     * @param[in] contrast (Optional) Tensor with contrast multipliers. Can contain 1 or N elements where N is the
+     * number of input images. Default: 1.0.
+     * @param[in] brightnessShift (Optional) Tensor with brightness shifts. Can contain 1 or N elements where N is the
+     * number of input images. Default: 0.0.
+     * @param[in] contrastCenter (Optional) Tensor with contrast centers. Can contain 1 or N elements where N is the
+     * number of input images. Default: midpoint of input data type range.
      * @param[in] device The device to run this operator on. (Default: GPU)
      */
     void operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output,
-                    std::optional<std::reference_wrapper<const Tensor>> brightness, 
+                    std::optional<std::reference_wrapper<const Tensor>> brightness,
                     std::optional<std::reference_wrapper<const Tensor>> contrast,
                     std::optional<std::reference_wrapper<const Tensor>> brightnessShift,
                     std::optional<std::reference_wrapper<const Tensor>> contrastCenter,

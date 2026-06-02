@@ -332,14 +332,14 @@ void FillVectorMask(std::vector<T>& vec, uint32_t seed = 12345) {
 }
 
 /**
-* @brief Fills a vector with random values in a specified range based on a provided seeded.
-*
-* @tparam T The underlying type of the vector data.
-* @param[out] vec The vector to fill with random data.
-* @param[in] min Minimum value (inclusive).
-* @param[in] max Maximum value (inclusive).
-* @param[in] seed A random seed. (Defaults to 12345)
-*/
+ * @brief Fills a vector with random values in a specified range based on a provided seeded.
+ *
+ * @tparam T The underlying type of the vector data.
+ * @param[out] vec The vector to fill with random data.
+ * @param[in] min Minimum value (inclusive).
+ * @param[in] max Maximum value (inclusive).
+ * @param[in] seed A random seed. (Defaults to 12345)
+ */
 template <typename T>
 void FillVectorRange(std::vector<T>& vec, T min, T max, uint32_t seed = 12345) {
     std::mt19937 eng(seed);

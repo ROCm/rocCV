@@ -23,6 +23,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
@@ -46,7 +47,8 @@ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrappers bc_wrap
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
                 work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
-                work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
+                work_type result =
+                    brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
                 output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
             }
         }

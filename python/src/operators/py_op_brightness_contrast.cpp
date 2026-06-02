@@ -24,60 +24,71 @@ THE SOFTWARE.
 
 #include <op_brightness_contrast.hpp>
 
-PyTensor PyOpBrightnessContrast::Execute(PyTensor& input, eDataType dtype, std::optional<std::reference_wrapper<PyTensor>> brightness,
-                            std::optional<std::reference_wrapper<PyTensor>> contrast, std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
-                            std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
-                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
+PyTensor PyOpBrightnessContrast::Execute(PyTensor& input, eDataType dtype,
+                                         std::optional<std::reference_wrapper<PyTensor>> brightness,
+                                         std::optional<std::reference_wrapper<PyTensor>> contrast,
+                                         std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
+                                         std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
+                                         std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     auto inputTensor = input.getTensor();
-    auto brightnessTensor = brightness.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightness.value().get().getTensor())
-                          : std::nullopt;
-    auto contrastTensor = contrast.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrast.value().get().getTensor())
-                          : std::nullopt;
-    auto brightnessShiftTensor = brightnessShift.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightnessShift.value().get().getTensor())
-                          : std::nullopt;
-    auto contrastCenterTensor = contrastCenter.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrastCenter.value().get().getTensor())
-                          : std::nullopt;
+    auto brightnessTensor =
+        brightness.has_value()
+            ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightness.value().get().getTensor())
+            : std::nullopt;
+    auto contrastTensor =
+        contrast.has_value() ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrast.value().get().getTensor())
+                             : std::nullopt;
+    auto brightnessShiftTensor =
+        brightnessShift.has_value()
+            ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightnessShift.value().get().getTensor())
+            : std::nullopt;
+    auto contrastCenterTensor =
+        contrastCenter.has_value()
+            ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrastCenter.value().get().getTensor())
+            : std::nullopt;
 
     auto outputTensor = std::make_shared<roccv::Tensor>(inputTensor->shape(), roccv::DataType(dtype), device);
 
     roccv::BrightnessContrast op;
-    op(hipStream, *inputTensor, *outputTensor, brightnessTensor, contrastTensor, brightnessShiftTensor, contrastCenterTensor, device);
-    return PyTensor(outputTensor);                                        
+    op(hipStream, *inputTensor, *outputTensor, brightnessTensor, contrastTensor, brightnessShiftTensor,
+       contrastCenterTensor, device);
+    return PyTensor(outputTensor);
 }
 
-void PyOpBrightnessContrast::ExecuteInto(PyTensor& output, PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> brightness,
-                            std::optional<std::reference_wrapper<PyTensor>> contrast, std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
-                            std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
-                                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
+void PyOpBrightnessContrast::ExecuteInto(PyTensor& output, PyTensor& input,
+                                         std::optional<std::reference_wrapper<PyTensor>> brightness,
+                                         std::optional<std::reference_wrapper<PyTensor>> contrast,
+                                         std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
+                                         std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
+                                         std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
-    auto brightnessTensor = brightness.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightness.value().get().getTensor())
-                          : std::nullopt;
-    auto contrastTensor = contrast.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrast.value().get().getTensor())
-                          : std::nullopt;
-    auto brightnessShiftTensor = brightnessShift.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightnessShift.value().get().getTensor())
-                          : std::nullopt;
-    auto contrastCenterTensor = contrastCenter.has_value()
-                          ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrastCenter.value().get().getTensor())
-                          : std::nullopt;
+    auto brightnessTensor =
+        brightness.has_value()
+            ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightness.value().get().getTensor())
+            : std::nullopt;
+    auto contrastTensor =
+        contrast.has_value() ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrast.value().get().getTensor())
+                             : std::nullopt;
+    auto brightnessShiftTensor =
+        brightnessShift.has_value()
+            ? std::optional<std::reference_wrapper<roccv::Tensor>>(*brightnessShift.value().get().getTensor())
+            : std::nullopt;
+    auto contrastCenterTensor =
+        contrastCenter.has_value()
+            ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrastCenter.value().get().getTensor())
+            : std::nullopt;
 
     roccv::BrightnessContrast op;
-    op(hipStream, *input.getTensor(), *output.getTensor(), brightnessTensor, contrastTensor, brightnessShiftTensor, contrastCenterTensor, device);
+    op(hipStream, *input.getTensor(), *output.getTensor(), brightnessTensor, contrastTensor, brightnessShiftTensor,
+       contrastCenterTensor, device);
 }
-
 
 void PyOpBrightnessContrast::Export(py::module& m) {
     using namespace py::literals;
-    m.def("brightness_contrast", &PyOpBrightnessContrast::Execute, "src"_a, "dtype"_a,
-            "brightness"_a = py::none(), "contrast"_a = py::none(), "brightness_shift"_a = py::none(), "contrast_center"_a = py::none(),
-            py::kw_only(), "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("brightness_contrast", &PyOpBrightnessContrast::Execute, "src"_a, "dtype"_a, "brightness"_a = py::none(),
+          "contrast"_a = py::none(), "brightness_shift"_a = py::none(), "contrast_center"_a = py::none(), py::kw_only(),
+          "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
             
             Executes the Brightness Contrast operation on the given HIP stream.
 
@@ -87,10 +98,10 @@ void PyOpBrightnessContrast::Export(py::module& m) {
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
                 dtype (eDataType): Datatype of the output tensor.
-                brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default to 1.0.
-                contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default to 1.0.
-                brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default to 0.0.
-                contrast_center (rocpycv.Tensor, optional): Contrast centers. Can contain 1 or N values where N is the number of input images. Default to middle of input type range.
+                brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default: 0.0.
+                contrast_center (rocpycv.Tensor, optional): Contrast centers. Can contain 1 or N values where N is the number of input images. Default: midpoint of input data type range.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 
@@ -98,8 +109,8 @@ void PyOpBrightnessContrast::Export(py::module& m) {
                 rocpycv.Tensor: The output tensor.
         )pbdoc");
     m.def("brightness_contrast_into", &PyOpBrightnessContrast::ExecuteInto, "dst"_a, "src"_a,
-            "brightness"_a = py::none(), "contrast"_a = py::none(), "brightness_shift"_a = py::none(), "contrast_center"_a = py::none(),
-            py::kw_only(), "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+          "brightness"_a = py::none(), "contrast"_a = py::none(), "brightness_shift"_a = py::none(),
+          "contrast_center"_a = py::none(), py::kw_only(), "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
             
             Executes the  Brightness Contrast operation on the given HIP stream.
 
@@ -109,10 +120,10 @@ void PyOpBrightnessContrast::Export(py::module& m) {
             Args:
                 dst (rocpycv.Tensor): The output tensor which results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default to 1.0.
-                contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default to 1.0.
-                brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default to 0.0.
-                contrast_center (rocpycv.Tensor, optional): Contrast centers. Can contain 1 or N values where N is the number of input images. Default to middle of input type range.
+                brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default: 0.0.
+                contrast_center (rocpycv.Tensor, optional): Contrast centers. Can contain 1 or N values where N is the number of input images. Default: midpoint of input data type range.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 

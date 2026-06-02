@@ -39,7 +39,7 @@ def test_op_brightness_contrast(samples, height, width, channels, device, dtype,
     input = generate_tensor(samples, width, height, channels, dtype, device)
     stream = rocpycv.Stream()
 
-    # test (random) passed in params
+    # test with random brightness contrast params
     bc_dtype = rocpycv.eDataType.F64 if (dtype == rocpycv.eDataType.S32 or out_dtype == rocpycv.eDataType.S32) else rocpycv.eDataType.F32
     brightness = generate_tensor_generic([1], rocpycv.eTensorLayout.N, bc_dtype, device)
     contrast = generate_tensor_generic([1], rocpycv.eTensorLayout.N, bc_dtype, device)
@@ -52,7 +52,7 @@ def test_op_brightness_contrast(samples, height, width, channels, device, dtype,
     stream.synchronize()
     compare_tensors(output, output_golden)
 
-    # test defaults
+    # test defaults(no passed in bc params)
     output_golden_default = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, out_dtype, device)
     rocpycv.brightness_contrast_into(output_golden_default, input, stream=stream, device=device)
     output_default = rocpycv.brightness_contrast(input, out_dtype, stream=stream, device=device)

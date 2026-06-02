@@ -33,12 +33,16 @@ namespace py = pybind11;
 class PyOpBrightnessContrast {
    public:
     static void Export(py::module& m);
-    static PyTensor Execute(PyTensor& input, eDataType dtype, std::optional<std::reference_wrapper<PyTensor>> brightness,
-                            std::optional<std::reference_wrapper<PyTensor>> contrast, std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
+    static PyTensor Execute(PyTensor& input, eDataType dtype,
+                            std::optional<std::reference_wrapper<PyTensor>> brightness,
+                            std::optional<std::reference_wrapper<PyTensor>> contrast,
+                            std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
                             std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
-    static void ExecuteInto(PyTensor& output, PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> brightness,
-                            std::optional<std::reference_wrapper<PyTensor>> contrast, std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
+    static void ExecuteInto(PyTensor& output, PyTensor& input,
+                            std::optional<std::reference_wrapper<PyTensor>> brightness,
+                            std::optional<std::reference_wrapper<PyTensor>> contrast,
+                            std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
                             std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
                             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
 };

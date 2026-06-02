@@ -20,15 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include "op_adv_cvt_color.hpp"
 #include "op_bilateral_filter.hpp"
 #include "op_bnd_box.hpp"
 #include "op_brightness_contrast.hpp"
+#include "op_center_crop.hpp"
 #include "op_composite.hpp"
+#include "op_convert_to.hpp"
 #include "op_copy_make_border.hpp"
 #include "op_custom_crop.hpp"
-#include "op_center_crop.hpp"
 #include "op_cvt_color.hpp"
-#include "op_adv_cvt_color.hpp"
 #include "op_flip.hpp"
 #include "op_gamma_contrast.hpp"
 #include "op_histogram.hpp"
@@ -40,4 +41,3 @@ THE SOFTWARE.
 #include "op_thresholding.hpp"
 #include "op_warp_affine.hpp"
 #include "op_warp_perspective.hpp"
-#include "op_convert_to.hpp"
