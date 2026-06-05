@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include "core/util_enums.h"
 #include "tensor_data.hpp"
 #include "tensor_requirements.hpp"
-#include "tensor_storage.hpp"
 
 namespace roccv {
 
@@ -39,6 +38,13 @@ class ImageFormat;
 struct Size2D;
 class TensorShape;
 class TensorLayout;
+class TensorStorage;
+
+/**
+ * @brief Cleanup function invoked with the wrapped TensorData when the last reference to a wrapped Tensor is destroyed.
+ * Provides callers a hook to free externally-allocated memory according to how it was allocated.
+ */
+using TensorDataCleanupFunc = std::function<void(const TensorData &)>;
 
 class Tensor {
    public:
@@ -53,16 +59,6 @@ class Tensor {
      */
     explicit Tensor(const TensorRequirements &reqs);
     explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc);
-
-    /**
-     * @brief Constructs a Tensor object given a list of requirements and the underlying data as a TensorStorage
-     * pointer. This constructor will not automatically allocate data.
-     *
-     * @param[in] reqs An object representing the requirements for this tensor.
-     * @param[in] data A TensorStorage object for the tensor's underlying data.
-     */
-    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
-    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data, const IAllocator &alloc);
 
     /**
      * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device.
@@ -234,16 +230,20 @@ class Tensor {
     static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype);
 
    private:
+    /**
+     * @brief Constructs a Tensor that shares an existing TensorStorage rather than allocating new memory. Used
+     * internally to create views over existing storage (e.g. reshape() and TensorWrapData()).
+     *
+     * @param[in] reqs An object representing the requirements for this tensor.
+     * @param[in] data The shared storage backing this tensor.
+     */
+    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
+
+    friend Tensor TensorWrapData(const TensorData &tensor_data, TensorDataCleanupFunc cleanup);
+
     TensorRequirements m_requirements;      // Tensor metadata
     std::shared_ptr<TensorStorage> m_data;  // Stores raw tensor data
-    const IAllocator &m_allocator;
 };
-
-/**
- * @brief Cleanup function invoked with the wrapped TensorData when the last reference to a wrapped Tensor is destroyed.
- * Provides callers a hook to free externally-allocated memory according to how it was allocated.
- */
-using TensorDataCleanupFunc = std::function<void(const TensorData &)>;
 
 /**
  * @brief Wraps a TensorData object into a Tensor object without taking ownership of the underlying memory.

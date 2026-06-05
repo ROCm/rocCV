@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "core/tensor_layout.hpp"
 #include "core/tensor_requirements.hpp"
 #include "core/tensor_shape.hpp"
+#include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
 #include "operator_types.h"
 
@@ -41,15 +42,13 @@ namespace roccv {
 // Constructor definitions
 Tensor::Tensor(const TensorRequirements& reqs) : Tensor(reqs, GlobalContext().getDefaultAllocator()) {}
 
-Tensor::Tensor(const TensorRequirements& reqs, const IAllocator& alloc) : m_requirements(reqs), m_allocator(alloc) {
+Tensor::Tensor(const TensorRequirements& reqs, const IAllocator& alloc) : m_requirements(reqs) {
     size_t numBytes = reqs.device == eDeviceType::GPU ? reqs.res.deviceMem.bytes : reqs.res.hostMem.bytes;
     m_data = std::make_shared<TensorStorage>(numBytes, reqs.device, alloc);
 }
-Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data)
-    : Tensor(reqs, data, GlobalContext().getDefaultAllocator()) {}
 
-Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data, const IAllocator& alloc)
-    : m_requirements(reqs), m_data(data), m_allocator(alloc) {}
+Tensor::Tensor(const TensorRequirements& reqs, std::shared_ptr<TensorStorage> data)
+    : m_requirements(reqs), m_data(std::move(data)) {}
 
 Tensor::Tensor(const TensorShape& shape, DataType dtype, eDeviceType device)
     : Tensor(shape, dtype, GlobalContext().getDefaultAllocator(), device) {}
@@ -63,10 +62,7 @@ Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType d
 Tensor::Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAllocator& alloc, eDeviceType device)
     : Tensor(CalcRequirements(num_images, image_size, fmt, device), alloc) {}
 
-Tensor::Tensor(Tensor&& other)
-    : m_requirements(std::move(other.m_requirements)),
-      m_data(std::move(other.m_data)),
-      m_allocator(other.m_allocator) {}
+Tensor::Tensor(Tensor&& other) : m_requirements(std::move(other.m_requirements)), m_data(std::move(other.m_data)) {}
 
 // Member definitions
 int Tensor::rank() const { return m_requirements.rank; }
