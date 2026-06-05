@@ -179,7 +179,7 @@ std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape
     return strides;
 }
 
-Tensor TensorWrapData(const TensorData& tensor_data) {
+Tensor TensorWrapData(const TensorData& tensor_data, TensorDataCleanupFunc cleanup) {
     auto tensorDataStrided = tensor_data.cast<TensorDataStrided>();
     if (!tensorDataStrided.has_value()) {
         throw Exception("TensorData could not be cast to TensorDataStrided. Tensors can only wrap strided tensor data.",
@@ -190,11 +190,20 @@ Tensor TensorWrapData(const TensorData& tensor_data) {
     for (int i = 0; i < tensorDataStrided->rank(); i++) {
         strides[i] = tensorDataStrided->stride(i);
     }
-    TensorRequirements reqs = Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(), strides,
-                                                       tensorDataStrided->device());
+    // Note: the device is read from the original tensor_data rather than the casted TensorDataStrided. Casting to the
+    // base TensorDataStrided reconstructs the object and loses the concrete device (defaulting to GPU), so the dynamic
+    // type's device must be used here.
+    TensorRequirements reqs =
+        Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(), strides, tensor_data.device());
 
-    auto data =
-        std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), tensorDataStrided->device(), eOwnership::OWNING);
+    // By default the wrapped data is non-owning (empty cleanup). If a caller-provided cleanup function is given, adapt
+    // it to operate on the raw pointer by capturing a copy of the strided tensor data descriptor.
+    TensorStorageCleanupFunc storageCleanup;
+    if (cleanup) {
+        storageCleanup = [cleanup, data = tensorDataStrided.value()](void*) { cleanup(data); };
+    }
+
+    auto data = std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), std::move(storageCleanup));
     return Tensor(reqs, data);
 }
 

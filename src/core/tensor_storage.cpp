@@ -25,41 +25,28 @@
 #include "core/hip_assert.h"
 
 namespace roccv {
-TensorStorage::TensorStorage(void* data, eDeviceType device, eOwnership ownership)
-    : TensorStorage(data, device, GlobalContext().getDefaultAllocator(), ownership) {}
-
-TensorStorage::TensorStorage(void* data, eDeviceType device, const IAllocator& alloc, eOwnership ownership)
-    : m_device(device), m_ownership(ownership), m_data(data), m_allocator(alloc) {}
+TensorStorage::TensorStorage(void* data, TensorStorageCleanupFunc cleanup)
+    : m_data(data), m_cleanup(std::move(cleanup)) {}
 
 TensorStorage::TensorStorage(size_t bytes, eDeviceType device)
     : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator()) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc)
-    : m_device(device), m_ownership(eOwnership::OWNING), m_allocator(alloc) {
-    switch (m_device) {
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc) {
+    switch (device) {
         case eDeviceType::GPU:
-            m_data = m_allocator.allocHipMem(bytes);
+            m_data = alloc.allocHipMem(bytes);
+            m_cleanup = [&alloc](void* data) { alloc.freeHipMem(data); };
             break;
         case eDeviceType::CPU:
-            m_data = m_allocator.allocHostMem(bytes);
+            m_data = alloc.allocHostMem(bytes);
+            m_cleanup = [&alloc](void* data) { alloc.freeHostMem(data); };
             break;
     }
 }
 
 TensorStorage::~TensorStorage() {
-    if (m_ownership != eOwnership::OWNING) return;
-
-    switch (m_device) {
-        case eDeviceType::GPU:
-            m_allocator.freeHipMem(m_data);
-            break;
-        case eDeviceType::CPU:
-            m_allocator.freeHostMem(m_data);
-            break;
-    }
+    if (m_cleanup) m_cleanup(m_data);
 }
 
 void* TensorStorage::data() const { return m_data; }
-
-eDeviceType TensorStorage::device() const { return m_device; }
 }  // namespace roccv

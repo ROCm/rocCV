@@ -117,13 +117,22 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
         shapeData[i] = dlTensor.shape[i];
     }
 
-    // Create a non-owning roccv::Tensor based on the received data
+    // Create a non-owning roccv::Tensor based on the received data. The lifetime of the underlying memory remains the
+    // responsibility of the DLPack producer; we keep the DLManagedTensor in PyTensor and invoke its deleter on
+    // destruction. TensorWrapData is therefore called without a cleanup function.
     roccv::TensorShape shape(roccv::TensorLayout(layout), shapeData);
+    roccv::DataType dtype(DLTypeToRoccvType(dlTensor.dtype));
     eDeviceType device = DLDeviceToRoccvDevice(dlTensor.device);
-    roccv::TensorRequirements reqs =
-        roccv::Tensor::CalcRequirements(shape, roccv::DataType(DLTypeToRoccvType(dlTensor.dtype)), device);
-    auto data = std::make_shared<roccv::TensorStorage>(dlTensor.data, device, eOwnership::VIEW);
-    auto tensor = std::make_shared<roccv::Tensor>(reqs, data);
+
+    // Build a strided tensor data descriptor over the wrapped buffer. Strides are computed as contiguous to match
+    // historical behavior.
+    roccv::TensorDataStrided::Buffer buffer;
+    buffer.basePtr = dlTensor.data;
+    buffer.strides = roccv::Tensor::CalcStrides(shape, dtype);
+
+    auto tensor = std::make_shared<roccv::Tensor>(
+        device == eDeviceType::GPU ? roccv::TensorWrapData(roccv::TensorDataStridedHip(shape, dtype, buffer))
+                                   : roccv::TensorWrapData(roccv::TensorDataStridedHost(shape, dtype, buffer)));
 
     return std::make_shared<PyTensor>(tensor, dlManagedTensor);
 }

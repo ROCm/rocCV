@@ -22,6 +22,7 @@ THE SOFTWARE.
 #pragma once
 
 #include <array>
+#include <functional>
 #include <memory>
 
 #include "core/data_type.hpp"
@@ -239,11 +240,23 @@ class Tensor {
 };
 
 /**
- * @brief Wraps TensorData object into a Tensor object.
- *
- * @param[in] data The tensor data to wrap.
- * @return The resulting Tensor with the provided TensorData.
+ * @brief Cleanup function invoked with the wrapped TensorData when the last reference to a wrapped Tensor is destroyed.
+ * Provides callers a hook to free externally-allocated memory according to how it was allocated.
  */
-extern Tensor TensorWrapData(const TensorData &tensor_data);
+using TensorDataCleanupFunc = std::function<void(const TensorData &)>;
+
+/**
+ * @brief Wraps a TensorData object into a Tensor object without taking ownership of the underlying memory.
+ *
+ * By default the resulting Tensor is a non-owning view: the wrapped memory is left untouched once the Tensor (and any
+ * views derived from it) goes out of scope. To tie cleanup of the external memory to the Tensor's lifetime, provide a
+ * cleanup function, which is invoked with the wrapped TensorData when the last reference is destroyed.
+ *
+ * @param[in] tensor_data The tensor data to wrap.
+ * @param[in] cleanup An optional cleanup function responsible for freeing the wrapped memory. Defaults to no cleanup
+ * (non-owning view).
+ * @return The resulting Tensor wrapping the provided TensorData.
+ */
+extern Tensor TensorWrapData(const TensorData &tensor_data, TensorDataCleanupFunc cleanup = {});
 
 }  // namespace roccv

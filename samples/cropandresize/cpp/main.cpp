@@ -136,8 +136,12 @@ int main(int argc, char *argv[]) {
     roccv::TensorDataStridedHip inData(roccv::TensorShape{inReqs.shape, inReqs.rank, inReqs.layout},
                                        roccv::DataType{inReqs.dtype}, inBuf);
 
-    // Wrap tensor data in a rocCV tensor for use with the rocCV operators.
-    roccv::Tensor inTensor = roccv::TensorWrapData(inData);
+    // Wrap tensor data in a rocCV tensor for use with the rocCV operators. TensorWrapData does not take ownership of
+    // the wrapped buffer, so a cleanup function is provided to free the memory allocated above once the tensor (and any
+    // views of it) goes out of scope.
+    roccv::Tensor inTensor = roccv::TensorWrapData(inData, [](const roccv::TensorData &data) {
+        CHECK_HIP_ERROR(hipFree(data.cast<roccv::TensorDataStrided>()->basePtr()));
+    });
 
     // tag: Image Loading
     uint8_t *gpuInput = reinterpret_cast<uint8_t *>(inBuf.basePtr);

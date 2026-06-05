@@ -127,6 +127,82 @@ void TestTensorCorrectness() {
 }
 
 /**
+ * @brief Ensures that wrapping external data via TensorWrapData does not take ownership of the underlying buffer.
+ *
+ * The buffer must remain valid and intact after the wrapping Tensor (and any views derived from it) are destroyed.
+ */
+void TestTensorWrapNonOwning() {
+    TensorShape shape({1, 2, 2, 3}, "NHWC");
+    DataType dtype(DATA_TYPE_U8);
+    size_t numElems = shape.size();
+
+    // Test owns this buffer for the entire duration of the test.
+    auto* buffer = new uint8_t[numElems];
+    for (size_t i = 0; i < numElems; i++) {
+        buffer[i] = static_cast<uint8_t>(i);
+    }
+
+    {
+        TensorDataStrided::Buffer buf;
+        buf.basePtr = buffer;
+        buf.strides = Tensor::CalcStrides(shape, dtype);
+        TensorDataStridedHost data(shape, dtype, buf);
+
+        // Wrap with no cleanup function: this must produce a non-owning view.
+        Tensor tensor = TensorWrapData(data);
+        EXPECT_TRUE(tensor.exportData<TensorDataStrided>().basePtr() == buffer);
+
+        // A reshaped view shares the same underlying storage; destroying both must still not free the buffer.
+        Tensor view = tensor.reshape(TensorShape({2, 2, 3}, "HWC"));
+        EXPECT_TRUE(view.exportData<TensorDataStrided>().basePtr() == buffer);
+    }
+
+    // The buffer must still be intact (untouched by tensor destruction).
+    bool intact = true;
+    for (size_t i = 0; i < numElems; i++) {
+        if (buffer[i] != static_cast<uint8_t>(i)) {
+            intact = false;
+            break;
+        }
+    }
+    EXPECT_TRUE(intact);
+
+    // The test still owns the buffer and is responsible for freeing it. A double-free here would indicate the tensor
+    // incorrectly took ownership.
+    delete[] buffer;
+}
+
+/**
+ * @brief Ensures that a cleanup function provided to TensorWrapData is invoked exactly once, when the last reference to
+ * the wrapped data is destroyed.
+ */
+void TestTensorWrapCleanup() {
+    TensorShape shape({1, 2, 2, 3}, "NHWC");
+    DataType dtype(DATA_TYPE_U8);
+
+    auto* buffer = new uint8_t[shape.size()];
+    int cleanupCalls = 0;
+
+    {
+        TensorDataStrided::Buffer buf;
+        buf.basePtr = buffer;
+        buf.strides = Tensor::CalcStrides(shape, dtype);
+        TensorDataStridedHost data(shape, dtype, buf);
+
+        Tensor tensor = TensorWrapData(data, [&cleanupCalls](const TensorData&) { cleanupCalls++; });
+
+        // A view shares the same storage, so the cleanup must not fire until both references are dropped.
+        Tensor view = tensor.reshape(TensorShape({2, 2, 3}, "HWC"));
+        EXPECT_EQ(cleanupCalls, 0);
+    }
+
+    // Both the tensor and its view have gone out of scope: cleanup must have run exactly once.
+    EXPECT_EQ(cleanupCalls, 1);
+
+    delete[] buffer;
+}
+
+/**
  * @brief Tests internal stride calculations on Tensor construction.
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
@@ -155,6 +231,10 @@ int main(int argc, char** argv) {
 
     // Correctness tests
     TEST_CASE(TestTensorCorrectness());
+
+    // Wrapped-data ownership tests
+    TEST_CASE(TestTensorWrapNonOwning());
+    TEST_CASE(TestTensorWrapCleanup());
 
     // Stride calculation tests
     // clang-format off
