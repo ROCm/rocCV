@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <core/image_format.hpp>
 #include <functional>
 #include <string>
+#include <unordered_set>
 
 // X-macro listing every named ImageFormat constant. Each entry is
 // (python_name, FMT_ suffix). This single list drives both the attribute
@@ -63,6 +64,15 @@ THE SOFTWARE.
     ENTRY("RGBAf64", RGBAf64)
 
 namespace {
+
+// Names of the class-level format constants (Format.RGB8, Format.U8, ...). Used
+// to hide them from instance attribute lookup so chains like Format.RGB8.U8 are
+// rejected (see __getattribute__ in Export).
+const std::unordered_set<std::string> kConstantNames = {
+#define ENTRY(pyname, suffix) pyname,
+    ROCCV_FORMAT_LIST(ENTRY)
+#undef ENTRY
+};
 
 // Produces a human-readable name for a format, preferring the named constant it
 // matches (e.g. "rocpycv.Format.RGB8"). Falls back to a structural description
@@ -109,10 +119,26 @@ void PyImageFormat::Export(py::module& m) {
         .def("__hash__", &ImageFormatHash)
         .def("__repr__", &ImageFormatToString);
 
-    // Attach each named format constant as an attribute, e.g. Format.RGB8.
+    // Attach each named format constant as a class attribute, e.g. Format.RGB8.
 #define ENTRY(pyname, suffix) fmt.attr(pyname) = roccv::FMT_##suffix;
     ROCCV_FORMAT_LIST(ENTRY)
 #undef ENTRY
+
+    // The constants above are themselves Format instances and live in the class
+    // dict, so ordinary instance attribute lookup would re-resolve them through
+    // any Format value — enabling nonsensical chains like Format.RGB8.RGB8.U8.
+    // Override __getattribute__ to hide the constant names from instance lookup;
+    // class-level access (Format.RGB8) goes through the metaclass and is
+    // unaffected. This mirrors the instance-isolation that py::enum_ members get.
+    fmt.def("__getattribute__", [](py::handle self, py::str name) -> py::object {
+        if (kConstantNames.count(static_cast<std::string>(name))) {
+            throw py::attribute_error("'rocpycv.Format' object has no attribute '" + static_cast<std::string>(name) +
+                                      "'");
+        }
+        PyObject* result = PyObject_GenericGetAttr(self.ptr(), name.ptr());
+        if (!result) throw py::error_already_set();
+        return py::reinterpret_steal<py::object>(result);
+    });
 }
 
 #undef ROCCV_FORMAT_LIST

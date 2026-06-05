@@ -92,38 +92,47 @@ class ColorRGBA:
         ...
 class Exception(Exception):
     pass
-class Format:
+class _FormatConstants(type):
+    """
+    Metaclass carrying the named Format constants. Declaring them here (rather
+    than on Format itself) makes them accessible on the class object only
+    (Format.RGB8) and not on Format *instances*, so chains like
+    Format.RGB8.RGB8 are correctly rejected by type checkers — mirroring the
+    runtime __getattribute__ guard in the C++ binding.
+    """
+    BGR8: Format  # value = rocpycv.Format.BGR8
+    BGRA8: Format  # value = rocpycv.Format.BGRA8
+    F32: Format  # value = rocpycv.Format.F32
+    F64: Format  # value = rocpycv.Format.F64
+    NONE: Format  # value = rocpycv.Format.NONE
+    RGB16: Format  # value = rocpycv.Format.RGB16
+    RGB32: Format  # value = rocpycv.Format.RGB32
+    RGB8: Format  # value = rocpycv.Format.RGB8
+    RGBA16: Format  # value = rocpycv.Format.RGBA16
+    RGBA32: Format  # value = rocpycv.Format.RGBA32
+    RGBA8: Format  # value = rocpycv.Format.RGBA8
+    RGBAf32: Format  # value = rocpycv.Format.RGBAf32
+    RGBAf64: Format  # value = rocpycv.Format.RGBAf64
+    RGBAs16: Format  # value = rocpycv.Format.RGBAs16
+    RGBAs32: Format  # value = rocpycv.Format.RGBAs32
+    RGBAs8: Format  # value = rocpycv.Format.RGBAs8
+    RGBf32: Format  # value = rocpycv.Format.RGBf32
+    RGBf64: Format  # value = rocpycv.Format.RGBf64
+    RGBs16: Format  # value = rocpycv.Format.RGBs16
+    RGBs32: Format  # value = rocpycv.Format.RGBs32
+    RGBs8: Format  # value = rocpycv.Format.RGBs8
+    S16: Format  # value = rocpycv.Format.S16
+    S32: Format  # value = rocpycv.Format.S32
+    S8: Format  # value = rocpycv.Format.S8
+    U16: Format  # value = rocpycv.Format.U16
+    U32: Format  # value = rocpycv.Format.U32
+    U8: Format  # value = rocpycv.Format.U8
+    _2F32: Format  # value = rocpycv.Format._2F32
+
+class Format(metaclass=_FormatConstants):
     """
     Describes how image pixel data is laid out in memory.
     """
-    BGR8: typing.ClassVar[Format]  # value = rocpycv.Format.BGR8
-    BGRA8: typing.ClassVar[Format]  # value = rocpycv.Format.BGRA8
-    F32: typing.ClassVar[Format]  # value = rocpycv.Format.F32
-    F64: typing.ClassVar[Format]  # value = rocpycv.Format.F64
-    NONE: typing.ClassVar[Format]  # value = rocpycv.Format.NONE
-    RGB16: typing.ClassVar[Format]  # value = rocpycv.Format.RGB16
-    RGB32: typing.ClassVar[Format]  # value = rocpycv.Format.RGB32
-    RGB8: typing.ClassVar[Format]  # value = rocpycv.Format.RGB8
-    RGBA16: typing.ClassVar[Format]  # value = rocpycv.Format.RGBA16
-    RGBA32: typing.ClassVar[Format]  # value = rocpycv.Format.RGBA32
-    RGBA8: typing.ClassVar[Format]  # value = rocpycv.Format.RGBA8
-    RGBAf32: typing.ClassVar[Format]  # value = rocpycv.Format.RGBAf32
-    RGBAf64: typing.ClassVar[Format]  # value = rocpycv.Format.RGBAf64
-    RGBAs16: typing.ClassVar[Format]  # value = rocpycv.Format.RGBAs16
-    RGBAs32: typing.ClassVar[Format]  # value = rocpycv.Format.RGBAs32
-    RGBAs8: typing.ClassVar[Format]  # value = rocpycv.Format.RGBAs8
-    RGBf32: typing.ClassVar[Format]  # value = rocpycv.Format.RGBf32
-    RGBf64: typing.ClassVar[Format]  # value = rocpycv.Format.RGBf64
-    RGBs16: typing.ClassVar[Format]  # value = rocpycv.Format.RGBs16
-    RGBs32: typing.ClassVar[Format]  # value = rocpycv.Format.RGBs32
-    RGBs8: typing.ClassVar[Format]  # value = rocpycv.Format.RGBs8
-    S16: typing.ClassVar[Format]  # value = rocpycv.Format.S16
-    S32: typing.ClassVar[Format]  # value = rocpycv.Format.S32
-    S8: typing.ClassVar[Format]  # value = rocpycv.Format.S8
-    U16: typing.ClassVar[Format]  # value = rocpycv.Format.U16
-    U32: typing.ClassVar[Format]  # value = rocpycv.Format.U32
-    U8: typing.ClassVar[Format]  # value = rocpycv.Format.U8
-    _2F32: typing.ClassVar[Format]  # value = rocpycv.Format._2F32
     def __eq__(self, arg0: Format) -> bool:
         ...
     def __hash__(self) -> int:
