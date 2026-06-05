@@ -31,11 +31,10 @@
 
 using namespace roccv;
 
-// copied over from src/op_brightness_contrast.cpp (in anon. namespace there)
 typedef enum eBCType {
-    BC_TYPE_DEFAULT = 0,    ///< Use default value.
-    BC_TYPE_BROADCAST = 1,  ///< Broadcast single value to all samples.
-    BC_TYPE_PER = 2         ///< Per-sample values.
+    BC_TYPE_DEFAULT = -1,    ///< Use default value. **added to make benchmark design easier
+    BC_TYPE_BROADCAST = 0,  ///< Broadcast single value to all samples.
+    BC_TYPE_PER = 1        ///< Per-sample values.
 } eBCType;
 
 template <eDeviceType DeviceType>

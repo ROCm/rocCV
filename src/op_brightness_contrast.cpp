@@ -35,9 +35,8 @@ THE SOFTWARE.
 namespace {
 using namespace roccv;
 typedef enum eBCType {
-    BC_TYPE_DEFAULT = 0,    ///< Use default value.
-    BC_TYPE_BROADCAST = 1,  ///< Broadcast single value to all samples.
-    BC_TYPE_PER = 2         ///< Per-sample values.
+    BC_TYPE_BROADCAST = 0,  ///< Broadcast single value to all samples.
+    BC_TYPE_PER = 1         ///< Per-sample values.
 } eBCType;
 
 template <typename DT, eBCType BCType>
@@ -45,7 +44,7 @@ class BCWrapper {
    public:
     BCWrapper(std::optional<std::reference_wrapper<const Tensor>> tensor_opt, DT default_val)
         : default_value(default_val), batch_stride(-1), data(nullptr) {
-        if constexpr (BCType == eBCType::BC_TYPE_BROADCAST || BCType == eBCType::BC_TYPE_PER) {
+        if constexpr (BCType == eBCType::BC_TYPE_PER) {
             const Tensor &tensor = tensor_opt->get();
             TensorDataStrided tdata = tensor.exportData<TensorDataStrided>();
             batch_stride = tdata.stride(tensor.layout().batch_index());
@@ -54,9 +53,6 @@ class BCWrapper {
     }
 
     __device__ __host__ const DT at(int64_t n) const {
-        if constexpr (BCType == eBCType::BC_TYPE_BROADCAST) {
-            return *(reinterpret_cast<const DT *>(data));
-        }
         if constexpr (BCType == eBCType::BC_TYPE_PER) {
             return *(reinterpret_cast<const DT *>(data + (batch_stride * n)));
         }
@@ -78,6 +74,17 @@ struct GroupBCWrappers {
     BCWrapper<DT, BS_T> brightnessShiftWrapper;
     BCWrapper<DT, CC_T> contrastCenterWrapper;
 };
+
+template <typename T>
+T read_broadcast_value(const std::optional<std::reference_wrapper<const Tensor>> &tensor_opt, T default_val) {
+    if (tensor_opt.has_value()) {
+        const Tensor &tensor = tensor_opt->get();
+        TensorDataStrided tdata = tensor.exportData<TensorDataStrided>();
+        const unsigned char *data = static_cast<const unsigned char *>(tdata.basePtr());
+        return *(reinterpret_cast<const T *>(data));
+    }
+    return default_val;
+}
 }  // namespace
 
 namespace roccv {
@@ -144,8 +151,8 @@ void dispatch_brightness_contrast_input_dtype(hipStream_t stream, const Tensor &
 }
 
 template <typename BCWrappers>
-void dispatch_bc_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const BCWrappers &bc_wrappers,
-                       eDeviceType device) {
+void dispatch_contrast_center(hipStream_t stream, const Tensor &input, const Tensor &output,
+                              const BCWrappers &bc_wrappers, eDeviceType device) {
     eDataType input_dtype = input.dtype().etype();
 
     // Select kernel dispatcher based on a base input datatype.
@@ -164,13 +171,12 @@ void dispatch_bc_dtype(hipStream_t stream, const Tensor &input, const Tensor &ou
     func(stream, input, output, bc_wrappers, device);
 }
 
-template <eBCType B_T, eBCType C_T, eBCType BS_T, eBCType CC_T>
-void dispatch_contrast_center(hipStream_t stream, const Tensor &input, const Tensor &output,
-                              std::optional<std::reference_wrapper<const Tensor>> brightness,
-                              std::optional<std::reference_wrapper<const Tensor>> contrast,
-                              std::optional<std::reference_wrapper<const Tensor>> brightnessShift,
-                              std::optional<std::reference_wrapper<const Tensor>> contrastCenter, eDataType bc_dtype,
-                              eDeviceType device) {
+template <typename T, eBCType B_T, eBCType C_T, eBCType BS_T>
+void dispatch_brightness_shift(hipStream_t stream, const Tensor &input, const Tensor &output,
+                               BCWrapper<T, B_T> brightnessWrapper, BCWrapper<T, C_T> contrastWrapper,
+                               BCWrapper<T, BS_T> brightnessShiftWrapper,
+                               std::optional<std::reference_wrapper<const Tensor>> contrastCenter,
+                               eBCType contrastCenterType, eDeviceType device) {
     auto compute_cc_default = [&]() -> double {
         switch (input.dtype().etype()) {
             case eDataType::DATA_TYPE_U8:
@@ -187,100 +193,105 @@ void dispatch_contrast_center(hipStream_t stream, const Tensor &input, const Ten
                 return 0.5;
         }
     };
-
-    if (bc_dtype == eDataType::DATA_TYPE_F32) {
-        GroupBCWrappers<float, B_T, C_T, BS_T, CC_T> wrappers{
-            BCWrapper<float, B_T>(brightness, 1.0f), BCWrapper<float, C_T>(contrast, 1.0f),
-            BCWrapper<float, BS_T>(brightnessShift, 0.0f),
-            BCWrapper<float, CC_T>(contrastCenter, static_cast<float>(compute_cc_default()))};
-        dispatch_bc_dtype<GroupBCWrappers<float, B_T, C_T, BS_T, CC_T>>(stream, input, output, wrappers, device);
-    } else if (bc_dtype == eDataType::DATA_TYPE_F64) {
-        GroupBCWrappers<double, B_T, C_T, BS_T, CC_T> wrappers{
-            BCWrapper<double, B_T>(brightness, 1.0), BCWrapper<double, C_T>(contrast, 1.0),
-            BCWrapper<double, BS_T>(brightnessShift, 0.0),
-            BCWrapper<double, CC_T>(contrastCenter, compute_cc_default())};
-        dispatch_bc_dtype<GroupBCWrappers<double, B_T, C_T, BS_T, CC_T>>(stream, input, output, wrappers, device);
-    } else {
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
-    }
-}
-
-template <eBCType B_T, eBCType C_T, eBCType BS_T>
-void dispatch_brightness_shift(hipStream_t stream, const Tensor &input, const Tensor &output,
-                               std::optional<std::reference_wrapper<const Tensor>> brightness,
-                               std::optional<std::reference_wrapper<const Tensor>> contrast,
-                               std::optional<std::reference_wrapper<const Tensor>> brightnessShift,
-                               std::optional<std::reference_wrapper<const Tensor>> contrastCenter,
-                               eBCType contrastCenterType, eDataType bc_dtype, eDeviceType device) {
+    T defaultValue = static_cast<T>(compute_cc_default());
     switch (contrastCenterType) {
-        case BC_TYPE_DEFAULT:
-            dispatch_contrast_center<B_T, C_T, BS_T, BC_TYPE_DEFAULT>(
-                stream, input, output, brightness, contrast, brightnessShift, contrastCenter, bc_dtype, device);
-            break;
         case BC_TYPE_BROADCAST:
-            dispatch_contrast_center<B_T, C_T, BS_T, BC_TYPE_BROADCAST>(
-                stream, input, output, brightness, contrast, brightnessShift, contrastCenter, bc_dtype, device);
+            defaultValue = read_broadcast_value<T>(contrastCenter, defaultValue);
+            dispatch_contrast_center<GroupBCWrappers<T, B_T, C_T, BS_T, BC_TYPE_BROADCAST>>(
+                stream, input, output,
+                GroupBCWrappers<T, B_T, C_T, BS_T, BC_TYPE_BROADCAST>{
+                    brightnessWrapper,
+                    contrastWrapper,
+                    brightnessShiftWrapper,
+                    BCWrapper<T, BC_TYPE_BROADCAST>(contrastCenter, defaultValue),
+                },
+                device);
             break;
         case BC_TYPE_PER:
-            dispatch_contrast_center<B_T, C_T, BS_T, BC_TYPE_PER>(stream, input, output, brightness, contrast,
-                                                                  brightnessShift, contrastCenter, bc_dtype, device);
+            dispatch_contrast_center<GroupBCWrappers<T, B_T, C_T, BS_T, BC_TYPE_PER>>(
+                stream, input, output,
+                GroupBCWrappers<T, B_T, C_T, BS_T, BC_TYPE_PER>{
+                    brightnessWrapper,
+                    contrastWrapper,
+                    brightnessShiftWrapper,
+                    BCWrapper<T, BC_TYPE_PER>(contrastCenter, defaultValue),
+                },
+                device);
             break;
         default:
             throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     }
 }
 
-template <eBCType B_T, eBCType C_T>
+template <typename T, eBCType B_T, eBCType C_T>
 void dispatch_contrast(hipStream_t stream, const Tensor &input, const Tensor &output,
-                       std::optional<std::reference_wrapper<const Tensor>> brightness,
-                       std::optional<std::reference_wrapper<const Tensor>> contrast,
+                       BCWrapper<T, B_T> brightnessWrapper, BCWrapper<T, C_T> contrastWrapper,
                        std::optional<std::reference_wrapper<const Tensor>> brightnessShift,
                        std::optional<std::reference_wrapper<const Tensor>> contrastCenter, eBCType brightnessShiftType,
-                       eBCType contrastCenterType, eDataType bc_dtype, eDeviceType device) {
+                       eBCType contrastCenterType, eDeviceType device) {
+    T defaultValue = static_cast<T>(0.0);
     switch (brightnessShiftType) {
-        case BC_TYPE_DEFAULT:
-            dispatch_brightness_shift<B_T, C_T, BC_TYPE_DEFAULT>(stream, input, output, brightness, contrast,
-                                                                 brightnessShift, contrastCenter, contrastCenterType,
-                                                                 bc_dtype, device);
-            break;
         case BC_TYPE_BROADCAST:
-            dispatch_brightness_shift<B_T, C_T, BC_TYPE_BROADCAST>(stream, input, output, brightness, contrast,
-                                                                   brightnessShift, contrastCenter, contrastCenterType,
-                                                                   bc_dtype, device);
+            defaultValue = read_broadcast_value<T>(brightnessShift, defaultValue);
+            dispatch_brightness_shift<T, B_T, C_T, BC_TYPE_BROADCAST>(
+                stream, input, output, brightnessWrapper, contrastWrapper,
+                BCWrapper<T, BC_TYPE_BROADCAST>(brightnessShift, defaultValue), contrastCenter, contrastCenterType,
+                device);
             break;
         case BC_TYPE_PER:
-            dispatch_brightness_shift<B_T, C_T, BC_TYPE_PER>(stream, input, output, brightness, contrast,
-                                                             brightnessShift, contrastCenter, contrastCenterType,
-                                                             bc_dtype, device);
+            dispatch_brightness_shift<T, B_T, C_T, BC_TYPE_PER>(
+                stream, input, output, brightnessWrapper, contrastWrapper,
+                BCWrapper<T, BC_TYPE_PER>(brightnessShift, defaultValue), contrastCenter, contrastCenterType, device);
             break;
         default:
             throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     }
 }
 
-template <eBCType B_T>
+template <typename T, eBCType B_T>
 void dispatch_brightness(hipStream_t stream, const Tensor &input, const Tensor &output,
-                         std::optional<std::reference_wrapper<const Tensor>> brightness,
+                         BCWrapper<T, B_T> brightnessWrapper,
                          std::optional<std::reference_wrapper<const Tensor>> contrast,
                          std::optional<std::reference_wrapper<const Tensor>> brightnessShift,
                          std::optional<std::reference_wrapper<const Tensor>> contrastCenter, eBCType contrastType,
-                         eBCType brightnessShiftType, eBCType contrastCenterType, eDataType bc_dtype,
-                         eDeviceType device) {
+                         eBCType brightnessShiftType, eBCType contrastCenterType, eDeviceType device) {
+    T defaultValue = static_cast<T>(1.0);
     switch (contrastType) {
-        case BC_TYPE_DEFAULT:
-            dispatch_contrast<B_T, BC_TYPE_DEFAULT>(stream, input, output, brightness, contrast, brightnessShift,
-                                                    contrastCenter, brightnessShiftType, contrastCenterType, bc_dtype,
-                                                    device);
-            break;
         case BC_TYPE_BROADCAST:
-            dispatch_contrast<B_T, BC_TYPE_BROADCAST>(stream, input, output, brightness, contrast, brightnessShift,
-                                                      contrastCenter, brightnessShiftType, contrastCenterType, bc_dtype,
-                                                      device);
+            defaultValue = read_broadcast_value<T>(contrast, defaultValue);
+            dispatch_contrast<T, B_T, BC_TYPE_BROADCAST>(
+                stream, input, output, brightnessWrapper, BCWrapper<T, BC_TYPE_BROADCAST>(contrast, defaultValue),
+                brightnessShift, contrastCenter, brightnessShiftType, contrastCenterType, device);
             break;
         case BC_TYPE_PER:
-            dispatch_contrast<B_T, BC_TYPE_PER>(stream, input, output, brightness, contrast, brightnessShift,
-                                                contrastCenter, brightnessShiftType, contrastCenterType, bc_dtype,
-                                                device);
+            dispatch_contrast<T, B_T, BC_TYPE_PER>(stream, input, output, brightnessWrapper,
+                                                   BCWrapper<T, BC_TYPE_PER>(contrast, defaultValue), brightnessShift,
+                                                   contrastCenter, brightnessShiftType, contrastCenterType, device);
+            break;
+        default:
+            throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    }
+}
+template <typename T>
+void dispatch_bc_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
+                       std::optional<std::reference_wrapper<const Tensor>> brightness,
+                       std::optional<std::reference_wrapper<const Tensor>> contrast,
+                       std::optional<std::reference_wrapper<const Tensor>> brightnessShift,
+                       std::optional<std::reference_wrapper<const Tensor>> contrastCenter, eBCType brightnessType,
+                       eBCType contrastType, eBCType brightnessShiftType, eBCType contrastCenterType,
+                       eDeviceType device) {
+    T defaultValue = static_cast<T>(1.0);
+    switch (brightnessType) {
+        case BC_TYPE_BROADCAST:
+            defaultValue = read_broadcast_value<T>(brightness, defaultValue);
+            dispatch_brightness<T, BC_TYPE_BROADCAST>(
+                stream, input, output, BCWrapper<T, BC_TYPE_BROADCAST>(brightness, defaultValue), contrast,
+                brightnessShift, contrastCenter, contrastType, brightnessShiftType, contrastCenterType, device);
+            break;
+        case BC_TYPE_PER:
+            dispatch_brightness<T, BC_TYPE_PER>(
+                stream, input, output, BCWrapper<T, BC_TYPE_PER>(brightness, defaultValue), contrast, brightnessShift,
+                contrastCenter, contrastType, brightnessShiftType, contrastCenterType, device);
             break;
         default:
             throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
@@ -330,13 +341,11 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
 
     // Determine brightness/contrast etc. types
     auto determine_bc_type = [](const std::optional<std::reference_wrapper<const Tensor>> &tensor_opt) -> eBCType {
-        if (!tensor_opt.has_value()) {
-            return eBCType::BC_TYPE_DEFAULT;
-        } else {
+        if (tensor_opt.has_value()) {
             const Tensor &tensor = tensor_opt->get();
-            return (tensor.shape(tensor.layout().batch_index()) == 1) ? eBCType::BC_TYPE_BROADCAST
-                                                                      : eBCType::BC_TYPE_PER;
+            if (tensor.shape(tensor.layout().batch_index()) != 1) return eBCType::BC_TYPE_PER;
         }
+        return eBCType::BC_TYPE_BROADCAST;
     };
 
     eBCType brightnessType = determine_bc_type(brightness);
@@ -344,22 +353,15 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
     eBCType brightnessShiftType = determine_bc_type(brightnessShift);
     eBCType contrastCenterType = determine_bc_type(contrastCenter);
 
-    // dispatch based on brightness type
-    switch (brightnessType) {
-        case BC_TYPE_DEFAULT:
-            dispatch_brightness<BC_TYPE_DEFAULT>(stream, input, output, brightness, contrast, brightnessShift,
-                                                 contrastCenter, contrastType, brightnessShiftType, contrastCenterType,
-                                                 bc_dtype, device);
+    // first dispatch based on bc_dtype, already known here
+    switch (bc_dtype) {
+        case eDataType::DATA_TYPE_F32:
+            dispatch_bc_dtype<float>(stream, input, output, brightness, contrast, brightnessShift, contrastCenter,
+                                     brightnessType, contrastType, brightnessShiftType, contrastCenterType, device);
             break;
-        case BC_TYPE_BROADCAST:
-            dispatch_brightness<BC_TYPE_BROADCAST>(stream, input, output, brightness, contrast, brightnessShift,
-                                                   contrastCenter, contrastType, brightnessShiftType,
-                                                   contrastCenterType, bc_dtype, device);
-            break;
-        case BC_TYPE_PER:
-            dispatch_brightness<BC_TYPE_PER>(stream, input, output, brightness, contrast, brightnessShift,
-                                             contrastCenter, contrastType, brightnessShiftType, contrastCenterType,
-                                             bc_dtype, device);
+        case eDataType::DATA_TYPE_F64:
+            dispatch_bc_dtype<double>(stream, input, output, brightness, contrast, brightnessShift, contrastCenter,
+                                      brightnessType, contrastType, brightnessShiftType, contrastCenterType, device);
             break;
         default:
             throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
