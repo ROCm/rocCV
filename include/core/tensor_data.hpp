@@ -96,7 +96,12 @@ class TensorData {
             return std::nullopt;
         }
 
-        return std::make_optional<Derived>(m_shape, m_dtype, m_buffer);
+        // Reconstruct the derived view, then carry over the concrete buffer type from the source. The
+        // (shape, dtype, buffer) constructor cannot recover the buffer type for non-leaf targets (e.g.
+        // TensorDataStrided), so it must be propagated explicitly to keep device() accurate.
+        Derived derived(m_shape, m_dtype, m_buffer);
+        derived.m_bufferType = m_bufferType;
+        return derived;
     }
 
     static bool IsCompatibleKind(TensorBufferType bufferType);
@@ -106,7 +111,6 @@ class TensorData {
 
     TensorShape m_shape;
     DataType m_dtype;
-    eDeviceType m_deviceType;
     TensorBufferType m_bufferType;
     TensorBuffer m_buffer;
 };

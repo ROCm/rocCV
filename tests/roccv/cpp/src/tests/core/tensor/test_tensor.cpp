@@ -203,6 +203,45 @@ void TestTensorWrapCleanup() {
 }
 
 /**
+ * @brief Ensures TensorData::cast preserves the concrete device when casting to a non-leaf type.
+ *
+ * Casting to the base TensorDataStrided (as exportData<TensorDataStrided>() does throughout the codebase) must report
+ * the same device as the source tensor, not a hardcoded default.
+ */
+void TestTensorDataCastDevicePropagation() {
+    // Host tensor: exporting/casting to the base strided type must still report CPU.
+    {
+        Tensor tensor(TensorShape({1, 2, 2, 3}, "NHWC"), DataType(DATA_TYPE_U8), eDeviceType::CPU);
+        auto data = tensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.device() == eDeviceType::CPU);
+    }
+
+    // Device tensor: exporting/casting to the base strided type must still report GPU.
+    {
+        Tensor tensor(TensorShape({1, 2, 2, 3}, "NHWC"), DataType(DATA_TYPE_U8), eDeviceType::GPU);
+        auto data = tensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.device() == eDeviceType::GPU);
+    }
+
+    // Direct cast: a host strided descriptor must remain CPU when viewed as the base type, and must refuse a cast to an
+    // incompatible (device) leaf type.
+    {
+        TensorShape shape({1, 2, 2, 3}, "NHWC");
+        DataType dtype(DATA_TYPE_U8);
+        TensorDataStrided::Buffer buf;
+        buf.basePtr = nullptr;
+        buf.strides = Tensor::CalcStrides(shape, dtype);
+        TensorDataStridedHost host(shape, dtype, buf);
+
+        auto asStrided = host.cast<TensorDataStrided>();
+        EXPECT_TRUE(asStrided.has_value());
+        EXPECT_TRUE(asStrided->device() == eDeviceType::CPU);
+
+        EXPECT_FALSE(host.cast<TensorDataStridedHip>().has_value());
+    }
+}
+
+/**
  * @brief Tests internal stride calculations on Tensor construction.
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
@@ -235,6 +274,9 @@ int main(int argc, char** argv) {
     // Wrapped-data ownership tests
     TEST_CASE(TestTensorWrapNonOwning());
     TEST_CASE(TestTensorWrapCleanup());
+
+    // TensorData cast device propagation
+    TEST_CASE(TestTensorDataCastDevicePropagation());
 
     // Stride calculation tests
     // clang-format off

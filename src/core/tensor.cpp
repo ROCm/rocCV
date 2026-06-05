@@ -186,9 +186,6 @@ Tensor TensorWrapData(const TensorData& tensor_data, TensorDataCleanupFunc clean
     for (int i = 0; i < tensorDataStrided->rank(); i++) {
         strides[i] = tensorDataStrided->stride(i);
     }
-    // Note: the device is read from the original tensor_data rather than the casted TensorDataStrided. Casting to the
-    // base TensorDataStrided reconstructs the object and loses the concrete device (defaulting to GPU), so the dynamic
-    // type's device must be used here.
     TensorRequirements reqs =
         Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(), strides, tensor_data.device());
 
