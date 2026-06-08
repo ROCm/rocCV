@@ -80,8 +80,7 @@ T read_broadcast_value(const std::optional<std::reference_wrapper<const Tensor>>
     if (tensor_opt.has_value()) {
         const Tensor &tensor = tensor_opt->get();
         TensorDataStrided tdata = tensor.exportData<TensorDataStrided>();
-        const unsigned char *data = static_cast<const unsigned char *>(tdata.basePtr());
-        return *(reinterpret_cast<const T *>(data));
+        return *static_cast<const T *>(tdata.basePtr());
     }
     return default_val;
 }
@@ -272,6 +271,7 @@ void dispatch_brightness(hipStream_t stream, const Tensor &input, const Tensor &
             throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
     }
 }
+
 template <typename T>
 void dispatch_bc_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
                        std::optional<std::reference_wrapper<const Tensor>> brightness,
@@ -353,7 +353,7 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
     eBCType brightnessShiftType = determine_bc_type(brightnessShift);
     eBCType contrastCenterType = determine_bc_type(contrastCenter);
 
-    // first dispatch based on bc_dtype, already known here
+    // dispatch based on datatype of BC params
     switch (bc_dtype) {
         case eDataType::DATA_TYPE_F32:
             dispatch_bc_dtype<float>(stream, input, output, brightness, contrast, brightnessShift, contrastCenter,
