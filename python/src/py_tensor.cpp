@@ -125,9 +125,10 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
     eDeviceType device = DLDeviceToRoccvDevice(dlTensor.device);
 
     // Build a strided tensor data descriptor over the wrapped buffer. Strides are computed as contiguous to match
-    // historical behavior.
+    // historical behavior. Per the DLPack spec, the first element is located at data + byte_offset, so the offset must
+    // be applied to obtain the true base pointer.
     roccv::TensorDataStrided::Buffer buffer;
-    buffer.basePtr = dlTensor.data;
+    buffer.basePtr = static_cast<void*>(static_cast<uint8_t*>(dlTensor.data) + dlTensor.byte_offset);
     buffer.strides = roccv::Tensor::CalcStrides(shape, dtype);
 
     auto tensor = std::make_shared<roccv::Tensor>(
