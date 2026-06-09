@@ -21,6 +21,8 @@
 
 #include "core/tensor_storage.hpp"
 
+#include <iostream>
+
 #include "core/detail/context.hpp"
 #include "core/hip_assert.h"
 
@@ -45,7 +47,14 @@ TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator&
 }
 
 TensorStorage::~TensorStorage() {
-    if (m_cleanup) m_cleanup(m_data);
+    if (!m_cleanup) return;
+    try {
+        m_cleanup(m_data);
+    } catch (const std::exception& e) {
+        std::cerr << "Warning: TensorStorage cleanup function threw an exception: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Warning: TensorStorage cleanup function threw an unknown exception." << std::endl;
+    }
 }
 
 void* TensorStorage::data() const { return m_data; }
