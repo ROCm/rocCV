@@ -85,7 +85,10 @@ class ImageData {
             return std::nullopt;
         }
 
-        return std::make_optional<Derived>(m_format, m_buffer);
+        Derived result(m_format, m_buffer);
+        result.m_bufferType = m_bufferType;
+        result.m_deviceType = m_deviceType;
+        return result;
     }
 
     static bool IsCompatibleKind(ImageBufferType bufferType);

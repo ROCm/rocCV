@@ -100,7 +100,10 @@ class ImageBatchData {
             return std::nullopt;
         }
 
-        return std::make_optional<Derived>(m_numImages, m_buffer);
+        Derived result(m_numImages, m_buffer);
+        result.m_bufferType = m_bufferType;
+        result.m_deviceType = m_deviceType;
+        return result;
     }
 
     static bool IsCompatibleKind(ImageBatchBufferType bufferType);
