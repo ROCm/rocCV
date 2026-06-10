@@ -60,7 +60,17 @@ void dispatch_gaussian(hipStream_t stream, const Tensor& input, const Tensor& ou
 void Gaussian::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int kernelWidth,
                           int kernelHeight, double sigmaX, double sigmaY, eBorderType borderMode,
                           eDeviceType device) const {
-    // TODO Validate
+
+    // Validate input tensor
+    CHECK_TENSOR_DEVICE(input, device);
+    CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_S32, DATA_TYPE_F32);
+    CHECK_TENSOR_LAYOUT(input, TENSOR_LAYOUT_HWC, TENSOR_LAYOUT_NHWC);
+    CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
+
+    // Validate output tensor
+    CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
+    CHECK_TENSOR_COMPARISON(input.device() == output.device());
+    CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
     // clang-format off
     static const std::unordered_map<
