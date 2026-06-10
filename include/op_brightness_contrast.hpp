@@ -54,7 +54,7 @@ class BrightnessContrast final : public IOperator {
      *
      * Brightness, Contrast, BrightnessShift, ContrastCenter:
      *       Supported TensorLayout(s): [N]
-     *       Supported DataTypes(s)     [F32, F64]
+     *       Supported DataTypes(s):    [F32, F64]
      *
      * Input/Output dependency:
      *

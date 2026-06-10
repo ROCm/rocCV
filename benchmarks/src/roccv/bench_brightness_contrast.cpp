@@ -32,7 +32,7 @@
 using namespace roccv;
 
 typedef enum eBCType {
-    BC_TYPE_DEFAULT = -1,   ///< Use default value. Added enum to help test defaults explicilty
+    BC_TYPE_DEFAULT = -1,   ///< Use default value. Added enum to help test defaults explicitly
     BC_TYPE_BROADCAST = 0,  ///< Broadcast single value to all samples.
     BC_TYPE_PER = 1         ///< Per-sample values.
 } eBCType;
