@@ -24,7 +24,6 @@
 #include <iostream>
 
 #include "core/detail/context.hpp"
-#include "core/hip_assert.h"
 
 namespace roccv {
 TensorStorage::TensorStorage(void* data, TensorStorageCleanupFunc cleanup)
