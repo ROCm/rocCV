@@ -264,6 +264,44 @@ void TestImageBatchDataCast() {
     }
 }
 
+/**
+ * @brief Regression: casting up to an intermediate type
+ * (ImageBatchVarShapeData / ...Strided) must preserve the source's residency
+ * and buffer kind. The intermediate constructors leave both at their base
+ * defaults (GPU / IMAGE_BATCH_BUFFER_NONE), so cast<>() must carry them over
+ * from the source. Otherwise a host batch would silently report
+ * device()==GPU and lose its buffer kind, which then breaks a subsequent
+ * re-cast back down to the leaf type.
+ */
+void TestImageBatchDataCastPreservesResidencyOnUpcast() {
+    auto buf = MakeHomogeneousBuffer();
+
+    // Upcasting a host leaf to either intermediate type must keep CPU
+    // residency.
+    ImageBatchVarShapeDataStridedHost host(2, buf);
+    const ImageBatchData& base = host;
+
+    auto strided = base.cast<ImageBatchVarShapeDataStrided>();
+    EXPECT_EQ(AsInt(strided.has_value()), 1);
+    EXPECT_EQ(AsInt(strided->device()), AsInt(eDeviceType::CPU));
+
+    auto asVar = base.cast<ImageBatchVarShapeData>();
+    EXPECT_EQ(AsInt(asVar.has_value()), 1);
+    EXPECT_EQ(AsInt(asVar->device()), AsInt(eDeviceType::CPU));
+
+    // The buffer kind must survive the upcast too: re-casting the upcasted
+    // value back down to the host leaf must still succeed (it would fail if the
+    // kind had been reset to IMAGE_BATCH_BUFFER_NONE)...
+    const ImageBatchData& stridedBase = strided.value();
+    auto backToHost = stridedBase.cast<ImageBatchVarShapeDataStridedHost>();
+    EXPECT_EQ(AsInt(backToHost.has_value()), 1);
+    EXPECT_EQ(AsInt(backToHost->device()), AsInt(eDeviceType::CPU));
+
+    // ...and must not spuriously match the wrong leaf kind.
+    auto backToHip = stridedBase.cast<ImageBatchVarShapeDataStridedHip>();
+    EXPECT_EQ(AsInt(backToHip.has_value()), 0);
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -278,6 +316,7 @@ int main(int argc, char** argv) {
     TEST_CASE(TestImageBatchVarShapeDataSugarCtor());
     TEST_CASE(TestImageBatchDataIsCompatibleKind());
     TEST_CASE(TestImageBatchDataCast());
+    TEST_CASE(TestImageBatchDataCastPreservesResidencyOnUpcast());
 
     TEST_CASES_END();
 }

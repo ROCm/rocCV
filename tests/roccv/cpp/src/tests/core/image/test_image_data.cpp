@@ -189,6 +189,39 @@ void TestImageDataCast() {
     }
 }
 
+/**
+ * @brief Regression: casting up to an intermediate type (ImageDataStrided)
+ * must preserve the source's residency and buffer kind. The intermediate
+ * constructor leaves both at their base defaults (GPU / IMAGE_BUFFER_NONE), so
+ * cast<>() must carry them over from the source. Otherwise a host image would
+ * silently report device()==GPU and lose its buffer kind, which then breaks a
+ * subsequent re-cast back down to the leaf type.
+ */
+void TestImageDataCastPreservesResidencyOnUpcast() {
+    auto buf = MakeSinglePlaneBuffer(256, 128, 256, FAKE_PTR_A);
+
+    // Upcasting a host leaf to the intermediate strided type must keep CPU
+    // residency (this is the path ImageWrapData takes for host images).
+    ImageDataStridedHost host(FMT_U8, buf);
+    const ImageData& base = host;
+
+    auto strided = base.cast<ImageDataStrided>();
+    EXPECT_EQ(AsInt(strided.has_value()), 1);
+    EXPECT_EQ(AsInt(strided->device()), AsInt(eDeviceType::CPU));
+
+    // The buffer kind must survive the upcast as well: re-casting the upcasted
+    // value back down to the host leaf must still succeed (it would fail if the
+    // kind had been reset to IMAGE_BUFFER_NONE)...
+    const ImageData& stridedBase = strided.value();
+    auto backToHost = stridedBase.cast<ImageDataStridedHost>();
+    EXPECT_EQ(AsInt(backToHost.has_value()), 1);
+    EXPECT_EQ(AsInt(backToHost->device()), AsInt(eDeviceType::CPU));
+
+    // ...and must not spuriously match the wrong leaf kind.
+    auto backToHip = stridedBase.cast<ImageDataStridedHip>();
+    EXPECT_EQ(AsInt(backToHip.has_value()), 0);
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -202,6 +235,7 @@ int main(int argc, char** argv) {
     TEST_CASE(TestImageDataStridedSugarCtor());
     TEST_CASE(TestImageDataIsCompatibleKind());
     TEST_CASE(TestImageDataCast());
+    TEST_CASE(TestImageDataCastPreservesResidencyOnUpcast());
 
     TEST_CASES_END();
 }
