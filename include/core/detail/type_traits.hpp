@@ -20,6 +20,7 @@
  */
 
 #include <hip/hip_runtime.h>
+
 #include <cassert>
 
 #pragma once
@@ -83,6 +84,8 @@ DEFINE_TYPE_TRAITS_0_TO_4(int, signed int);
 DEFINE_TYPE_TRAITS_0_TO_4(short, signed short);
 DEFINE_TYPE_TRAITS_0_TO_4(ushort, unsigned short);
 DEFINE_TYPE_TRAITS_0_TO_4(double, double);
+DEFINE_TYPE_TRAITS_0_TO_4(long, signed long);
+DEFINE_TYPE_TRAITS_0_TO_4(ulong, unsigned long);
 
 /**
  * @brief Returns the number of elements in a HIP vectorized type. For example: uchar3 will return 3, int2 will

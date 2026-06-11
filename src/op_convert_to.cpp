@@ -122,16 +122,10 @@ void ConvertTo::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_CHANNELS(input, 1, 2, 3, 4);
 
     eDataType input_dtype = input.dtype().etype();
-    int64_t channels = input.shape(input.layout().channels_index());
 
     // Validate output tensor
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) == channels);
-    CHECK_TENSOR_COMPARISON(output.layout() == input.layout());
-    if (output.layout().batch_index() != -1) {
-        CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) ==
-                                input.shape(input.layout().batch_index()));
-    }
+    CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
     // Select kernel dispatcher based on a base input datatype.
     // clang-format off
