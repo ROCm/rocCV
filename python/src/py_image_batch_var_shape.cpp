@@ -36,6 +36,10 @@ std::shared_ptr<PyImageBatchVarShape> PyImageBatchVarShape::Create(int32_t capac
 
 std::shared_ptr<PyImageBatchVarShape> PyImageBatchVarShape::WrapExternalBufferVector(std::vector<py::object> buffers,
                                                                                      roccv::ImageFormat format) {
+    if (buffers.empty()) {
+        throw py::value_error("as_images requires a non-empty list of buffers.");
+    }
+
     // Wrap each buffer first so the batch's device can be inferred from the
     // resulting images (they must all share a device).
     std::vector<std::shared_ptr<PyImage>> images;
@@ -44,7 +48,7 @@ std::shared_ptr<PyImageBatchVarShape> PyImageBatchVarShape::WrapExternalBufferVe
         images.push_back(PyImage::WrapExternalBuffer(buffer, format));
     }
 
-    eDeviceType device = images.empty() ? eDeviceType::GPU : images.front()->getDevice();
+    eDeviceType device = images.front()->getDevice();
     auto batch = std::make_shared<PyImageBatchVarShape>(static_cast<int32_t>(images.size()), device);
     batch->pushBackMany(images);
     return batch;
