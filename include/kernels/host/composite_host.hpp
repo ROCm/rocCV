@@ -32,24 +32,28 @@ inline void composite(SrcWrapper foreground, SrcWrapper background, MaskWrapper 
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
 
+#pragma omp parallel for collapse(2) schedule(static)
     for (int batch = 0; batch < output.batches(); batch++) {
-#pragma omp parallel for
         for (int y = 0; y < output.height(); y++) {
+            auto* maskRow = &mask.at(batch, y, 0, 0);
+            auto* fgRow = &foreground.at(batch, y, 0, 0);
+            auto* bgRow = &background.at(batch, y, 0, 0);
+            auto* outRow = &output.at(batch, y, 0, 0);
+
             for (int x = 0; x < output.width(); x++) {
                 // Range cast all input values to float to avoid overflowing values and keep them in the same range.
-                auto maskFactor = RangeCast<float1>(mask.at(batch, y, x, 0));
-                auto fgVal = RangeCast<work_type>(foreground.at(batch, y, x, 0));
-                auto bgVal = RangeCast<work_type>(background.at(batch, y, x, 0));
+                auto maskFactor = RangeCast<float1>(maskRow[x]);
+                auto fgVal = RangeCast<work_type>(fgRow[x]);
+                auto bgVal = RangeCast<work_type>(bgRow[x]);
 
                 work_type result = fgVal * maskFactor.x + (1.0f - maskFactor.x) * bgVal;
 
                 // If number of channels in output is 4, ensure that the last channel (alpha in this case) is always
                 // fully on.
                 if constexpr (NumElements<dst_type> == 4) {
-                    output.at(batch, y, x, 0) =
-                        RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
+                    outRow[x] = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
                 } else {
-                    output.at(batch, y, x, 0) = RangeCast<dst_type>(result);
+                    outRow[x] = RangeCast<dst_type>(result);
                 }
             }
         }
