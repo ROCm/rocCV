@@ -40,7 +40,8 @@ inline void composite(SrcWrapper foreground, SrcWrapper background, MaskWrapper 
             auto* bgRow = &background.at(batch, y, 0, 0);
             auto* outRow = &output.at(batch, y, 0, 0);
 
-            for (int x = 0; x < output.width(); x++) {
+            const int width = static_cast<int>(output.width());
+            for (int x = 0; x < width; x++) {
                 // Range cast all input values to float to avoid overflowing values and keep them in the same range.
                 auto maskFactor = RangeCast<float1>(maskRow[x]);
                 auto fgVal = RangeCast<work_type>(fgRow[x]);
