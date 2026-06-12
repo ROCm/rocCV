@@ -46,7 +46,8 @@ inline void composite(SrcWrapper foreground, SrcWrapper background, MaskWrapper 
                 auto fgVal = RangeCast<work_type>(fgRow[x]);
                 auto bgVal = RangeCast<work_type>(bgRow[x]);
 
-                work_type result = fgVal * maskFactor.x + (1.0f - maskFactor.x) * bgVal;
+                // Lerp in FMA-friendly form: one multiply + one add per channel instead of two multiplies.
+                work_type result = bgVal + (fgVal - bgVal) * maskFactor.x;
 
                 // If number of channels in output is 4, ensure that the last channel (alpha in this case) is always
                 // fully on.
