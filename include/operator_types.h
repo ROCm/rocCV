@@ -25,7 +25,11 @@ THE SOFTWARE.
 #include <hip/hip_vector_types.h>
 #include <stdint.h>
 
+#include <optional>
 #include <vector>
+
+#include "core/exception.hpp"
+#include "core/tensor.hpp"
 
 typedef enum eInterpolationType {
     INTERP_TYPE_NEAREST = 0,
@@ -186,5 +190,4 @@ class BndBoxes {
    private:
     std::vector<std::vector<BndBox_t>> m_bndboxesVec;
 };
-
 }  // namespace roccv

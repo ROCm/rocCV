@@ -23,15 +23,16 @@ THE SOFTWARE.
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "operators/py_op_adv_cvt_color.hpp"
 #include "operators/py_op_bilateral_filter.hpp"
 #include "operators/py_op_bnd_box.hpp"
+#include "operators/py_op_brightness_contrast.hpp"
 #include "operators/py_op_center_crop.hpp"
 #include "operators/py_op_composite.hpp"
 #include "operators/py_op_convert_to.hpp"
 #include "operators/py_op_copy_make_border.hpp"
 #include "operators/py_op_custom_crop.hpp"
 #include "operators/py_op_cvt_color.hpp"
-#include "operators/py_op_adv_cvt_color.hpp"
 #include "operators/py_op_flip.hpp"
 #include "operators/py_op_gamma_contrast.hpp"
 #include "operators/py_op_histogram.hpp"
@@ -75,6 +76,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpCvtColor::Export(m);
     PyOpAdvCvtColor::Export(m);
     PyOpBndBox::Export(m);
+    PyOpBrightnessContrast::Export(m);
     PyOpGammaContrast::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
