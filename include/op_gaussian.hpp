@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "core/tensor.hpp"
 #include "i_operator.hpp"
 #include "operator_types.h"
+#include "core/detail/allocators/default_allocator.hpp"
 
 namespace roccv {
 
@@ -36,11 +37,21 @@ namespace roccv {
  */
 class Gaussian final : public IOperator {
    public:
-   // Stateful constructor to take in max width, max height, max batch size?
+    /**
+     * @brief Constructs a Gaussian object.
+     *
+     */
+    Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight);
+
+    /**
+     * @brief Destroy the Gaussian object
+     *
+     */
+    ~Gaussian();
+
     /**
      * @brief Executes the Gaussian operation on the given HIP stream.
      *
-     * TODO add in formula?
      *
      * Limitations:
      *
@@ -54,8 +65,7 @@ class Gaussian final : public IOperator {
      *                        Channels: [1, 3, 4]
      *       Supported DataType(s):     [U8, U16, S16, S32, F32]
      *
-     * // TODO: kernel must be odd, or not provided (in which case it is calculated from sigma)
-     *
+     * // TODO: clear documentation about when valid, when inferred from sigma, relation to max, etc.
      * Input/Output dependency:
      *
      *       Property      |  Input == Output
@@ -80,5 +90,12 @@ class Gaussian final : public IOperator {
      */
     void operator()(hipStream_t stream, const Tensor& input, Tensor& output, int kernelWidth, int kernelHeight,
                     double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device = eDeviceType::GPU) const;
+
+   private:
+      int32_t m_maxKernelWidth;
+      int32_t m_maxKernelHeight;
+      float  *m_hostKernelMem = nullptr;
+      float  *m_deviceKernelMem = nullptr;
+      DefaultAllocator m_allocator; 
 };
 }  // namespace roccv
