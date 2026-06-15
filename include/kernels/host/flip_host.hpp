@@ -21,27 +21,38 @@
 
 #pragma once
 
+#include <cstring>
+
 #include "operator_types.h"
 
 namespace Kernels::Host {
 template <eAxis FlipType, typename SrcWrapper, typename DstWrapper>
 void flip(SrcWrapper input, DstWrapper output) {
+    // The wrapper's value type bundles all channels into a single element, so flipping is a pure pixel
+    // permutation. Hoisting per-row base pointers out of the inner loop removes the per-pixel stride
+    // multiplies, and specializing on FlipType lets each axis take its fastest path:
+    //   - X (vertical):    each output row is a verbatim copy of a source row -> memcpy.
+    //   - Y/BOTH (mirror): each output row is the horizontal reverse of a source row.
+    using T = typename DstWrapper::ValueType;
+    const int width = static_cast<int>(output.width());
+    const int height = static_cast<int>(output.height());
+
+#pragma omp parallel for collapse(2) schedule(static)
     for (int b = 0; b < output.batches(); b++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
-                int srcX = x;
-                int srcY = y;
-                if constexpr (FlipType == eAxis::Y || FlipType == eAxis::BOTH) {
-                    // Flip along y-axis (horizontally)
-                    srcX = output.width() - x - 1;
-                }
+        for (int y = 0; y < height; y++) {
+            // For an X/BOTH flip the source row is mirrored vertically; otherwise it matches the output row.
+            const int srcY = (FlipType == eAxis::X || FlipType == eAxis::BOTH) ? height - y - 1 : y;
+            const T* __restrict__ inRow = &input.at(b, srcY, 0, 0);
+            T* __restrict__ outRow = &output.at(b, y, 0, 0);
 
-                if constexpr (FlipType == eAxis::X || FlipType == eAxis::BOTH) {
-                    // Flip along x-axis (vertically)
-                    srcY = output.height() - y - 1;
+            if constexpr (FlipType == eAxis::X) {
+                // No horizontal change: copy the contiguous row wholesale.
+                std::memcpy(outRow, inRow, static_cast<size_t>(width) * sizeof(T));
+            } else {
+                // Y or BOTH: mirror the row horizontally.
+                for (int x = 0; x < width; x++) {
+                    outRow[x] = inRow[width - 1 - x];
                 }
-
-                output.at(b, y, x, 0) = input.at(b, srcY, srcX, 0);
             }
         }
     }
