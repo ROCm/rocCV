@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstring>
 
 #include "operator_types.h"
@@ -28,11 +29,6 @@
 namespace Kernels::Host {
 template <eAxis FlipType, typename SrcWrapper, typename DstWrapper>
 void flip(SrcWrapper input, DstWrapper output) {
-    // The wrapper's value type bundles all channels into a single element, so flipping is a pure pixel
-    // permutation. Hoisting per-row base pointers out of the inner loop removes the per-pixel stride
-    // multiplies, and specializing on FlipType lets each axis take its fastest path:
-    //   - X (vertical):    each output row is a verbatim copy of a source row -> memcpy.
-    //   - Y/BOTH (mirror): each output row is the horizontal reverse of a source row.
     using T = typename DstWrapper::ValueType;
     const int width = static_cast<int>(output.width());
     const int height = static_cast<int>(output.height());
