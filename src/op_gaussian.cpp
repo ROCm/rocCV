@@ -23,6 +23,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <cfenv>
+#include <cmath>
 #include <functional>
 
 #include "common/validation_helpers.hpp"
@@ -50,9 +52,8 @@ Gaussian::~Gaussian() {
     }
 }
 
-void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& output, int kernelWidth,
-                          int kernelHeight, double sigmaX, double sigmaY, eBorderType borderMode,
-                          eDeviceType device) const {
+void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& output, int kernelWidth, int kernelHeight,
+                          double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device) const {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_S32, DATA_TYPE_F32);
@@ -64,29 +65,34 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    // Infer sigmaX and kernel
-    eDataType input_dtype = input.dtype().etype();
+    // Validate sigma
+    if (sigmaX <= 0) {
+        throw roccv::Exception("Invalid sigmaX = " + std::to_string(sigmaX) + ": Ensure that sigmaX is positive.",
+                               eStatusType::INVALID_VALUE);
+    }
     if (sigmaY <= 0) {
         sigmaY = sigmaX;
     }
+
+    // Infer kernel size
+    eDataType input_dtype = input.dtype().etype();
+    fesetround(FE_TONEAREST);
     if (kernelWidth <= 0 && sigmaX > 0) {
-        kernelWidth = roccv::detail::SaturateCast<int>(sigmaX * (input_dtype == DATA_TYPE_U8 ? 3 : 4) * 2 + 1) | 1;
+        kernelWidth = static_cast<int>(std::rint(sigmaX * (input_dtype == DATA_TYPE_U8 ? 3 : 4) * 2 + 1)) | 1;
     }
     if (kernelHeight <= 0 && sigmaY > 0) {
-        kernelHeight = roccv::detail::SaturateCast<int>(sigmaY * (input_dtype == DATA_TYPE_U8 ? 3 : 4) * 2 + 1) | 1;
+        kernelHeight = static_cast<int>(std::rint(sigmaY * (input_dtype == DATA_TYPE_U8 ? 3 : 4) * 2 + 1)) | 1;
     }
 
     // Validate kernel size
     if (!(kernelWidth > 0 && kernelWidth % 2 == 1 && kernelWidth <= m_maxKernelWidth && kernelHeight > 0 &&
           kernelHeight % 2 == 1 && kernelHeight <= m_maxKernelHeight)) {
-        throw roccv::Exception("Invalid kernel size = " + std::to_string(kernelWidth) + ", " +
-                                   std::to_string(kernelHeight) +
-                                   ": Ensure that the kernel size is odd and less than the max.",
-                               eStatusType::INVALID_VALUE);
+        throw roccv::Exception(
+            "Invalid kernel size = " + std::to_string(kernelWidth) + ", " + std::to_string(kernelHeight) +
+                ": Ensure that the kernel size is odd and less than the max:" + std::to_string(m_maxKernelWidth) +
+                ", " + std::to_string(m_maxKernelHeight),
+            eStatusType::INVALID_VALUE);
     }
-
-    sigmaX = std::max(sigmaX, 0.0);
-    sigmaY = std::max(sigmaY, 0.0);
 
     // compute the kernel
     int halfW = kernelWidth / 2;

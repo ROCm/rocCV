@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include "core/detail/allocators/default_allocator.hpp"
 #include "core/tensor.hpp"
 #include "i_operator.hpp"
 #include "operator_types.h"
-#include "core/detail/allocators/default_allocator.hpp"
 
 namespace roccv {
 
@@ -92,10 +92,10 @@ class Gaussian final : public IOperator {
                     double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device = eDeviceType::GPU) const;
 
    private:
-      int32_t m_maxKernelWidth;
-      int32_t m_maxKernelHeight;
-      float  *m_hostKernelMem = nullptr;
-      float  *m_deviceKernelMem = nullptr;
-      DefaultAllocator m_allocator; 
+    int32_t m_maxKernelWidth;
+    int32_t m_maxKernelHeight;
+    float* m_hostKernelMem = nullptr;
+    float* m_deviceKernelMem = nullptr;
+    DefaultAllocator m_allocator;
 };
 }  // namespace roccv

@@ -24,14 +24,14 @@ THE SOFTWARE.
 #include <functional>
 #include <unordered_map>
 
-#include "core/exception.hpp"
 #include "core/detail/vector_utils.hpp"
+#include "core/exception.hpp"
 #include "core/tensor.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
-#include "operator_types.h"
 #include "kernels/device/filter2D_device.hpp"
 #include "kernels/host/filter2D_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 
