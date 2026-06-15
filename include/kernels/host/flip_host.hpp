@@ -21,7 +21,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <cstring>
 
 #include "operator_types.h"
