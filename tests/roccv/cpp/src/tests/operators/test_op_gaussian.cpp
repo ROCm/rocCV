@@ -130,7 +130,6 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
     CopyVectorIntoTensor(input, inputData);
 
     // Golden infer ksize if nonpositive
-    fesetround(FE_TONEAREST);
     auto compute_kdim = [&](int kdim, double sigma) {
         int multiplier = (input.dtype().etype() == DATA_TYPE_U8) ? 6 : 8;
         if (kdim <= 0) {
@@ -143,8 +142,11 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
         return kdim;
     };
     double effectiveSigmaY = (sigmaY <= 0) ? sigmaX : sigmaY;
+    const int prev_round = fegetround();
+    fesetround(FE_TONEAREST);
     int effectiveKerWidth = compute_kdim(kernelWidth, sigmaX);
     int effectiveKerHeight = compute_kdim(kernelHeight, effectiveSigmaY);
+    fesetround(prev_round);
 
     hipStream_t stream;
     HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));

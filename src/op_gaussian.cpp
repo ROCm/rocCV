@@ -76,6 +76,7 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
 
     // Infer kernel size
     eDataType input_dtype = input.dtype().etype();
+    const int prev_round = fegetround();
     fesetround(FE_TONEAREST);
     if (kernelWidth <= 0 && sigmaX > 0) {
         kernelWidth = static_cast<int>(std::rint(sigmaX * (input_dtype == DATA_TYPE_U8 ? 3 : 4) * 2 + 1)) | 1;
@@ -83,7 +84,7 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     if (kernelHeight <= 0 && sigmaY > 0) {
         kernelHeight = static_cast<int>(std::rint(sigmaY * (input_dtype == DATA_TYPE_U8 ? 3 : 4) * 2 + 1)) | 1;
     }
-
+    fesetround(prev_round);
     // Validate kernel size
     if (!(kernelWidth > 0 && kernelWidth % 2 == 1 && kernelWidth <= m_maxKernelWidth && kernelHeight > 0 &&
           kernelHeight % 2 == 1 && kernelHeight <= m_maxKernelHeight)) {
