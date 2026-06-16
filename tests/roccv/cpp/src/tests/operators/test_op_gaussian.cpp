@@ -162,7 +162,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
                                                                 effectiveKerHeight, sigmaX, effectiveSigmaY);
 
     // Compare data in actual output versus the generated golden reference image
-    CompareVectorsNear(outputData, ref, 1);  // TODO check on screw, this matches bilateral filter and passes (looser does not)
+    // TODO check on delta, this matches bilateral filter and passes (looser does not)
+    CompareVectorsNear(outputData, ref, 1);
 }
 
 void TestNegativeGaussian() {
@@ -263,7 +264,6 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(2, 20, 20, FMT_RGB8, -1, -1, 1.5, 0, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 3, 3, 1.0, 1.0, eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<ushort3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB16, 3, 3, 1.5, 1, eDeviceType::GPU)));
-    ;
     TEST_CASE((TestCorrectness<short3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGBs16, 0, 3, 1.5, 1.5, eDeviceType::GPU)));
     TEST_CASE(
         (TestCorrectness<short3, BORDER_TYPE_REFLECT101>(2, 20, 20, FMT_RGBs16, 3, 3, 0.5, 0.5, eDeviceType::GPU)));

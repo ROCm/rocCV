@@ -65,7 +65,16 @@ class Gaussian final : public IOperator {
      *                        Channels: [1, 3, 4]
      *       Supported DataType(s):     [U8, U16, S16, S32, F32]
      *
-     * // TODO: clear documentation about when valid, when inferred from sigma, relation to max, etc.
+     * Parameter requirements:
+     *       sigmaX: Must be positive (> 0).
+     *       sigmaY: If non-positive (<= 0) will set to sigmaX.
+     *       kernelWidth: Must be odd and positive, or non-positive (<= 0), in which case it is inferred from sigmaX.
+     *                    Inferred kernel size is calculated as: round(sigmaX × (U8 ? 6 : 8) + 1) | 1
+     *                    Must not exceed m_maxKernelWidth after inference.
+     *       kernelHeight: Must be odd and positive, or non-positive (<= 0) in which case it is inferred from sigmaY.
+     *                     Inferred kernel size is calculated as: round(sigmaY × (U8 ? 6 : 8) + 1) | 1
+     *                     Must not exceed m_maxKernelHeight after inference.
+     *
      * Input/Output dependency:
      *
      *       Property      |  Input == Output

@@ -25,8 +25,8 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include "core/detail/casting.hpp"
-#include "core/detail/vector_utils.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/detail/vector_utils.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 
 namespace Kernels {
