@@ -81,7 +81,7 @@ std::vector<BT> GenerateGoldenGaussian(std::vector<BT>& input, int32_t batchSize
 
                         float dx = x - i;
                         float dy = y - j;
-                        float expWeight = exp(-((dx * dx) / squareSigX + (dy * dy) / squareSigY) / 2);
+                        float expWeight = std::exp(-((dx * dx) / squareSigX + (dy * dy) / squareSigY) / 2);
 
                         denominator += expWeight;
                         numerators += expWeight * workPixel;
