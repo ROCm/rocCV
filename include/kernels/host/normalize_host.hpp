@@ -62,15 +62,6 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
         }
     };
 
-    // When base/scale broadcast across all of N, H and W their value is constant for the whole tensor (the common
-    // per-channel (1,1,1,C) case), so resolve it once up front rather than once per row inside the parallel loop.
-    const bool scaleConstant = scaleBroadcastN && scaleBroadcastH && scaleBroadcastW;
-    const bool baseConstant = baseBroadcastN && baseBroadcastH && baseBroadcastW;
-    work_type tensorScale{};
-    work_type tensorBase{};
-    if (scaleConstant) tensorScale = resolveScale(StaticCast<work_type>(scale.at(0, 0, 0, 0)));
-    if (baseConstant) tensorBase = StaticCast<work_type>(base.at(0, 0, 0, 0));
-
     // Collapse batch and row so work scales even when batch == 1 (HWC); rows are uniform, so schedule statically.
 #pragma omp parallel for collapse(2) schedule(static)
     for (int b = 0; b < batches; b++) {
@@ -80,18 +71,12 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
             const int scaleBatchIdx = scaleBroadcastN ? 0 : b;
             const int scaleHeightIdx = scaleBroadcastH ? 0 : y;
 
-            // Resolve base/scale at the coarsest level they stay constant: reuse the whole-tensor value when fully
-            // broadcast, else resolve once per row when constant across width (hoisting the stddev sqrt).
+            // If base/scale don't vary across the row, resolve them once per row (hoists the stddev sqrt).
             work_type rowScale{};
             work_type rowBase{};
-            if (scaleConstant)
-                rowScale = tensorScale;
-            else if (scaleBroadcastW)
+            if (scaleBroadcastW)
                 rowScale = resolveScale(StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, 0, 0)));
-            if (baseConstant)
-                rowBase = tensorBase;
-            else if (baseBroadcastW)
-                rowBase = StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, 0, 0));
+            if (baseBroadcastW) rowBase = StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, 0, 0));
 
             // Fast path: packed rows with row-constant base/scale become a unit-stride, vectorizable loop.
             if (scaleBroadcastW && baseBroadcastW && input.isContiguous() && output.isContiguous()) {
