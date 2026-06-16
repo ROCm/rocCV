@@ -25,15 +25,15 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include "core/detail/casting.hpp"
-#include "core/detail/vector_utils.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/detail/vector_utils.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
-void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth, int kernelHeight,
-                         int anchorX, int anchorY) {
+void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth, int kernelHeight, int anchorX,
+              int anchorY) {
     using namespace roccv::detail;
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<dst_type>>;
@@ -49,7 +49,8 @@ void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int ker
                     coord.y = y - anchorY + i;
                     for (int j = 0; j < kernelWidth; ++j) {
                         coord.x = x - anchorX + j;
-                        result = result + StaticCast<work_type>(input.at(coord.z, coord.y, coord.x, 0)) * kernel[kernelIndex++];
+                        result = result +
+                                 StaticCast<work_type>(input.at(coord.z, coord.y, coord.x, 0)) * kernel[kernelIndex++];
                     }
                 }
                 output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);

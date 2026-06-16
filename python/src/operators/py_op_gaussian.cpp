@@ -73,8 +73,9 @@ void PyOpGaussian::ExecuteInto(PyTensor& output, PyTensor& input, const std::tup
 
 void PyOpGaussian::Export(py::module& m) {
     using namespace py::literals;
-    m.def("gaussian", &PyOpGaussian::Execute, "src"_a, "kernelSize"_a, "sigma"_a, "borderMode"_a, py::kw_only(),
-          "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("gaussian", &PyOpGaussian::Execute, "src"_a, "kernelSize"_a, "sigma"_a, "borderMode"_a = BORDER_TYPE_CONSTANT,
+          py::kw_only(), "stream"_a = nullptr, "device"_a = eDeviceType::GPU,
+          R"pbdoc(
         
             Executes the Gaussian operation on the given HIP stream.
 
@@ -83,9 +84,9 @@ void PyOpGaussian::Export(py::module& m) {
             
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                kernelSize (Tuple[int, int]): Gaussian kernel width, height. Both kernel width and height must be odd and positive. 
+                kernelSize (Tuple[int, int]): Gaussian kernel width, height. Both kernel width and height must be odd and positive (inference from sigma not supported in Python API).
                 sigma (Tuple[double, double]): Gaussian kernel standard deviation in X,Y directions. Sigma X must be positive. If sigma Y <= 0, it will be set to sigma X.
-                borderMode (rocpycv.eBorderType): The border type to identify the pixel extrapolation method.
+                borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 
@@ -93,9 +94,9 @@ void PyOpGaussian::Export(py::module& m) {
                 rocpycv.Tensor: The output tensor.
           )pbdoc");
 
-    m.def("gaussian_into", &PyOpGaussian::ExecuteInto, "dst"_a, "src"_a, "kernelSize"_a, "sigma"_a, "borderMode"_a,
-          py::kw_only(), "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
-
+    m.def("gaussian_into", &PyOpGaussian::ExecuteInto, "dst"_a, "src"_a, "kernelSize"_a, "sigma"_a,
+          "borderMode"_a = BORDER_TYPE_CONSTANT, py::kw_only(), "stream"_a = nullptr, "device"_a = eDeviceType::GPU,
+          R"pbdoc(
             
             Executes the Gaussian operation on the given HIP stream.
 
@@ -105,9 +106,9 @@ void PyOpGaussian::Export(py::module& m) {
             Args:
                 dst (rocpycv.Tensor): The output tensor which results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                kernelSize (Tuple[int, int]): Gaussian kernel width, height. Both kernel width and height must be odd and positive. 
+                kernelSize (Tuple[int, int]): Gaussian kernel width, height. Both kernel width and height must be odd and positive (inference from sigma not supported in Python API).
                 sigma (Tuple[double, double]): Gaussian kernel standard deviation in X,Y directions. Sigma X must be positive. If sigma Y <= 0, it will be set to sigma X.
-                borderMode (rocpycv.eBorderType): The border type to identify the pixel extrapolation method.
+                borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 

@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
-#include "filter2D.hpp"  // reuse for average and laplace
+#include "filter2D.hpp"
 
 namespace roccv {
 Gaussian::Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight)
