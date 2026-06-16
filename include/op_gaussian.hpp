@@ -98,7 +98,7 @@ class Gaussian final : public IOperator {
      * @param[in] device The device which this operation should run on. (Default: eDeviceType::GPU)
      */
     void operator()(hipStream_t stream, const Tensor& input, Tensor& output, int kernelWidth, int kernelHeight,
-                    double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device = eDeviceType::GPU) const;
+                    double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device = eDeviceType::GPU);
 
    private:
     int32_t m_maxKernelWidth;

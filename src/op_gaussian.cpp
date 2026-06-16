@@ -53,7 +53,7 @@ Gaussian::~Gaussian() {
 }
 
 void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& output, int kernelWidth, int kernelHeight,
-                          double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device) const {
+                          double sigmaX, double sigmaY, eBorderType borderMode, eDeviceType device) {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_S32, DATA_TYPE_F32);
