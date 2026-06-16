@@ -88,19 +88,33 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
                 rowScale = resolveScale(StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, 0, 0)));
             if (baseBroadcastW) rowBase = StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, 0, 0));
 
-            for (int x = 0; x < width; x++) {
-                const work_type scaleVal =
-                    scaleBroadcastW
-                        ? rowScale
-                        : resolveScale(StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, x, 0)));
-                const work_type baseVal =
-                    baseBroadcastW ? rowBase : StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, x, 0));
+            // Fast path: when the input and output rows are densely packed and the per-pixel base/scale are
+            // constant across the row, the inner loop reduces to a unit-stride map over two T arrays. Walking raw
+            // row pointers drops the per-pixel offset arithmetic of at() and gives the compiler a contiguous loop
+            // it can auto-vectorize. Anything else (strided/padded rows, or spatially-varying base/scale) takes the
+            // general stride-correct path below.
+            if (scaleBroadcastW && baseBroadcastW && input.isContiguous() && output.isContiguous()) {
+                const typename SrcWrapper::ValueType* __restrict__ inRow = input.ptr(b, y);
+                result_type* __restrict__ outRow = output.ptr(b, y);
+                for (int x = 0; x < width; x++) {
+                    work_type result = (StaticCast<work_type>(inRow[x]) - rowBase) * rowScale * globalScale + shift;
+                    outRow[x] = SaturateCast<result_type>(result);
+                }
+            } else {
+                for (int x = 0; x < width; x++) {
+                    const work_type scaleVal =
+                        scaleBroadcastW
+                            ? rowScale
+                            : resolveScale(StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, x, 0)));
+                    const work_type baseVal =
+                        baseBroadcastW ? rowBase : StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, x, 0));
 
-                work_type result =
-                    (StaticCast<work_type>(input.at(b, y, x, 0)) - baseVal) * scaleVal * globalScale + shift;
+                    work_type result =
+                        (StaticCast<work_type>(input.at(b, y, x, 0)) - baseVal) * scaleVal * globalScale + shift;
 
-                // Saturate cast value back into the output tensor's value type
-                output.at(b, y, x, 0) = SaturateCast<result_type>(result);
+                    // Saturate cast value back into the output tensor's value type
+                    output.at(b, y, x, 0) = SaturateCast<result_type>(result);
+                }
             }
         }
     }
