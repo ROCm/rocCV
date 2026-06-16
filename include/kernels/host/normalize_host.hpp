@@ -45,9 +45,7 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
     const int height = static_cast<int>(output.height());
     const int width = static_cast<int>(output.width());
 
-    // The base/scale tensors are broadcastable: any of their N/H/W extents may be 1, in which case that index is
-    // shared across the entire corresponding output dimension. Whether a dimension broadcasts is a property of the
-    // tensor shapes, not of the current pixel, so resolve these flags once instead of re-testing them per pixel.
+    // base/scale are broadcastable along any of N/H/W (extent 1 means the index collapses to 0).
     const bool baseBroadcastN = base.batches() == 1;
     const bool baseBroadcastH = base.height() == 1;
     const bool baseBroadcastW = base.width() == 1;
@@ -55,8 +53,7 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
     const bool scaleBroadcastH = scale.height() == 1;
     const bool scaleBroadcastW = scale.width() == 1;
 
-    // Turns a raw scale-tensor sample into the multiplicative scale. When the tensor holds standard deviations we
-    // invert back to a scale, adding epsilon under the root to guard against division by zero.
+    // Convert a scale sample to a multiplier, inverting standard deviations (epsilon guards against /0).
     auto resolveScale = [&](const work_type& s) -> work_type {
         if constexpr (ScaleStddev) {
             return 1.0f / (math::vsqrtf((s * s) + epsilon));
@@ -65,34 +62,23 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
         }
     };
 
-    // Collapse the batch and row loops into one iteration space. Parallelizing over the batch alone leaves all but
-    // one thread idle for single-image (HWC, batch == 1) inputs; collapsing exposes batches * height independent
-    // rows so the work scales regardless of batch size. Each row does an identical amount of work, so static
-    // scheduling partitions the iteration space up front and avoids the bookkeeping of dynamic scheduling. Strides
-    // are honored throughout by going through the wrapper's at() accessor rather than assuming a contiguous layout.
+    // Collapse batch and row so work scales even when batch == 1 (HWC); rows are uniform, so schedule statically.
 #pragma omp parallel for collapse(2) schedule(static)
     for (int b = 0; b < batches; b++) {
         for (int y = 0; y < height; y++) {
-            // Indices into the base/scale tensors only depend on b/y here, so resolve them once per row.
             const int baseBatchIdx = baseBroadcastN ? 0 : b;
             const int baseHeightIdx = baseBroadcastH ? 0 : y;
             const int scaleBatchIdx = scaleBroadcastN ? 0 : b;
             const int scaleHeightIdx = scaleBroadcastH ? 0 : y;
 
-            // When base/scale broadcast across the width, their values are constant for the whole row. Hoist them
-            // out of the x loop so the common per-channel parameter case (shape (1,1,1,C)) computes the base sample
-            // and the (potentially sqrt-heavy) scale exactly once per row instead of once per pixel.
+            // If base/scale don't vary across the row, resolve them once per row (hoists the stddev sqrt).
             work_type rowScale{};
             work_type rowBase{};
             if (scaleBroadcastW)
                 rowScale = resolveScale(StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, 0, 0)));
             if (baseBroadcastW) rowBase = StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, 0, 0));
 
-            // Fast path: when the input and output rows are densely packed and the per-pixel base/scale are
-            // constant across the row, the inner loop reduces to a unit-stride map over two T arrays. Walking raw
-            // row pointers drops the per-pixel offset arithmetic of at() and gives the compiler a contiguous loop
-            // it can auto-vectorize. Anything else (strided/padded rows, or spatially-varying base/scale) takes the
-            // general stride-correct path below.
+            // Fast path: packed rows with row-constant base/scale become a unit-stride, vectorizable loop.
             if (scaleBroadcastW && baseBroadcastW && input.isContiguous() && output.isContiguous()) {
                 const typename SrcWrapper::ValueType* __restrict__ inRow = input.ptr(b, y);
                 result_type* __restrict__ outRow = output.ptr(b, y);
@@ -111,8 +97,6 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
 
                     work_type result =
                         (StaticCast<work_type>(input.at(b, y, x, 0)) - baseVal) * scaleVal * globalScale + shift;
-
-                    // Saturate cast value back into the output tensor's value type
                     output.at(b, y, x, 0) = SaturateCast<result_type>(result);
                 }
             }

@@ -137,18 +137,8 @@ class ImageWrapper {
     }
 
     /**
-     * @brief Returns a typed pointer to the pixel at the given coordinates.
-     *
-     * Unlike at(), which recomputes the full byte offset on every call, this hands back a pointer that callers
-     * can advance directly. When isContiguous() is true the pixels of a row are unit-stride, so a host kernel can
-     * walk the row as a plain T array (e.g. ptr(n, h)[x]) — a form the compiler can auto-vectorize. When it is
-     * false the row is padded/strided and the pointer must instead be advanced by pixelStride() bytes per pixel.
-     *
-     * @param n Batch coordinate.
-     * @param h Height coordinate.
-     * @param w Width coordinate (defaults to the start of the row).
-     * @param c Channel coordinate.
-     * @return A pointer to the underlying data at the given coordinates.
+     * @brief Returns a typed pointer to the pixel at the given coordinates. Defaults to the start of a row, which
+     * (when isContiguous() is true) can be walked as a unit-stride T array, e.g. ptr(n, h)[x].
      */
     __device__ __host__ inline T* ptr(int64_t n, int64_t h, int64_t w = 0, int64_t c = 0) {
         return reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c));
@@ -160,17 +150,12 @@ class ImageWrapper {
 
     /**
      * @brief Number of bytes between consecutive pixels within a row (the width stride).
-     *
-     * @return The width stride, in bytes.
      */
     __device__ __host__ inline int64_t pixelStride() const { return stride.w; }
 
     /**
-     * @brief Reports whether pixels within a row are densely packed, i.e. the width stride equals the element
-     * size. When true a row can be traversed with unit-stride pointer arithmetic (ptr(n, h)[x]) and is a candidate
-     * for SIMD vectorization; when false callers must respect pixelStride() / fall back to at().
-     *
-     * @return True if rows are contiguous in the width dimension.
+     * @brief True when pixels within a row are densely packed (width stride equals the element size), so a row can
+     * be traversed with unit-stride pointer arithmetic; otherwise respect pixelStride() / fall back to at().
      */
     __device__ __host__ inline bool isContiguous() const { return stride.w == static_cast<int64_t>(sizeof(T)); }
 
