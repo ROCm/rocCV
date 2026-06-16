@@ -79,7 +79,7 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
             if (baseBroadcastW) rowBase = StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, 0, 0));
 
             // Fast path: packed rows with row-constant base/scale become a unit-stride, vectorizable loop.
-            if (scaleBroadcastW && baseBroadcastW && input.isContiguous() && output.isContiguous()) {
+            if (scaleBroadcastW && baseBroadcastW && input.isRowContiguous() && output.isRowContiguous()) {
                 const typename SrcWrapper::ValueType* __restrict__ inRow = &input.at(b, y, 0, 0);
                 result_type* __restrict__ outRow = &output.at(b, y, 0, 0);
                 for (int x = 0; x < width; x++) {

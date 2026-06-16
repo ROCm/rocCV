@@ -140,7 +140,7 @@ class ImageWrapper {
      * @brief True when pixels within a row are densely packed (width stride equals the element size), so a row
      * pointer from &at(n, h, 0, 0) can be walked as a unit-stride array; otherwise fall back to at().
      */
-    __device__ __host__ inline bool isContiguous() const { return stride.w == static_cast<int64_t>(sizeof(T)); }
+    __device__ __host__ inline bool isRowContiguous() const { return stride.w == static_cast<int64_t>(sizeof(T)); }
 
     /**
      * @brief Retrives the height of the images.
