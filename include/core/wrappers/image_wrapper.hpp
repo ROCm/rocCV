@@ -133,29 +133,12 @@ class ImageWrapper {
     }
 
     __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
-        return *(reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c)));
+        return const_cast<ImageWrapper*>(this)->at(n, h, w, c);
     }
 
     /**
-     * @brief Returns a typed pointer to the pixel at the given coordinates. Defaults to the start of a row, which
-     * (when isContiguous() is true) can be walked as a unit-stride T array, e.g. ptr(n, h)[x].
-     */
-    __device__ __host__ inline T* ptr(int64_t n, int64_t h, int64_t w = 0, int64_t c = 0) {
-        return reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c));
-    }
-
-    __device__ __host__ inline const T* ptr(int64_t n, int64_t h, int64_t w = 0, int64_t c = 0) const {
-        return reinterpret_cast<const T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c));
-    }
-
-    /**
-     * @brief Number of bytes between consecutive pixels within a row (the width stride).
-     */
-    __device__ __host__ inline int64_t pixelStride() const { return stride.w; }
-
-    /**
-     * @brief True when pixels within a row are densely packed (width stride equals the element size), so a row can
-     * be traversed with unit-stride pointer arithmetic; otherwise respect pixelStride() / fall back to at().
+     * @brief True when pixels within a row are densely packed (width stride equals the element size), so a row
+     * pointer from &at(n, h, 0, 0) can be walked as a unit-stride array; otherwise fall back to at().
      */
     __device__ __host__ inline bool isContiguous() const { return stride.w == static_cast<int64_t>(sizeof(T)); }
 

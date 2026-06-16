@@ -80,8 +80,8 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
 
             // Fast path: packed rows with row-constant base/scale become a unit-stride, vectorizable loop.
             if (scaleBroadcastW && baseBroadcastW && input.isContiguous() && output.isContiguous()) {
-                const typename SrcWrapper::ValueType* __restrict__ inRow = input.ptr(b, y);
-                result_type* __restrict__ outRow = output.ptr(b, y);
+                const typename SrcWrapper::ValueType* __restrict__ inRow = &input.at(b, y, 0, 0);
+                result_type* __restrict__ outRow = &output.at(b, y, 0, 0);
                 for (int x = 0; x < width; x++) {
                     work_type result = (StaticCast<work_type>(inRow[x]) - rowBase) * rowScale * globalScale + shift;
                     outRow[x] = SaturateCast<result_type>(result);
