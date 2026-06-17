@@ -112,6 +112,10 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
         m_hostKernelMem[i] /= sum;
     }
     if (device == eDeviceType::GPU) {
+        if (m_deviceKernelMem == nullptr) {
+            throw roccv::Exception("Device memory not allocated for Gaussian kernel, GPU may not be available.",
+                                   eStatusType::INVALID_OPERATION);
+        }
         HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMem, m_hostKernelMem,
                                               kernelWidth * kernelHeight * sizeof(float), hipMemcpyHostToDevice,
                                               stream));
