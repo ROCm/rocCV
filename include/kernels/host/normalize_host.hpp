@@ -31,7 +31,6 @@
 #include "core/detail/casting.hpp"
 #include "core/detail/math/vectorized_type_math.hpp"
 #include "core/detail/type_traits.hpp"
-#include "core/detail/vector_utils.hpp"
 
 namespace Kernels::Host {
 template <bool ScaleStddev, typename SrcWrapper, typename DstWrapper, typename ScaleWrapper, typename BaseWrapper>
@@ -62,6 +61,11 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
         }
     };
 
+    // Single-sourced per-pixel formula shared by both the contiguous fast path and the strided fallback.
+    auto computePixel = [&](const work_type& in, const work_type& baseVal, const work_type& scaleVal) -> result_type {
+        return SaturateCast<result_type>((in - baseVal) * scaleVal * globalScale + shift);
+    };
+
     // Collapse batch and row so work scales even when batch == 1 (HWC); rows are uniform, so schedule statically.
 #pragma omp parallel for collapse(2) schedule(static)
     for (int b = 0; b < batches; b++) {
@@ -83,8 +87,7 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
                 const typename SrcWrapper::ValueType* __restrict__ inRow = &input.at(b, y, 0, 0);
                 result_type* __restrict__ outRow = &output.at(b, y, 0, 0);
                 for (int x = 0; x < width; x++) {
-                    work_type result = (StaticCast<work_type>(inRow[x]) - rowBase) * rowScale * globalScale + shift;
-                    outRow[x] = SaturateCast<result_type>(result);
+                    outRow[x] = computePixel(StaticCast<work_type>(inRow[x]), rowBase, rowScale);
                 }
             } else {
                 for (int x = 0; x < width; x++) {
@@ -95,9 +98,8 @@ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrappe
                     const work_type baseVal =
                         baseBroadcastW ? rowBase : StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, x, 0));
 
-                    work_type result =
-                        (StaticCast<work_type>(input.at(b, y, x, 0)) - baseVal) * scaleVal * globalScale + shift;
-                    output.at(b, y, x, 0) = SaturateCast<result_type>(result);
+                    output.at(b, y, x, 0) =
+                        computePixel(StaticCast<work_type>(input.at(b, y, x, 0)), baseVal, scaleVal);
                 }
             }
         }
