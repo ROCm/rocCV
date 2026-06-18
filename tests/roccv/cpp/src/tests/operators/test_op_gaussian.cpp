@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include <atomic>
 #include <cfenv>
 #include <cmath>
 #include <core/detail/casting.hpp>
@@ -28,6 +29,7 @@ THE SOFTWARE.
 #include <core/wrappers/border_wrapper.hpp>
 #include <core/wrappers/image_wrapper.hpp>
 #include <op_gaussian.hpp>
+#include <thread>
 
 #include "test_helpers.hpp"
 
@@ -41,7 +43,7 @@ namespace {
  * @brief Golden model for the Gaussian operation.
  *
  * @tparam T Vectorized datatype of the image's pixels.
- * @tparam borderMode Border pixel extrapolation method.
+ * @tparam BorderMode Border pixel extrapolation method.
  * @tparam BT Base type of the image's data.
  * @param[in] input Input tensor containing image data.
  * @param[in] batchSize The number of images in the batch.
@@ -53,11 +55,11 @@ namespace {
  * @param[in] sigmaY Kernel standard deviation in Y direction.
  * @return Vector containing the results of the operation.
  */
-template <typename T, eBorderType borderMode, typename BT = detail::BaseType<T>>
+template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
 std::vector<BT> GenerateGoldenGaussian(std::vector<BT>& input, int32_t batchSize, int32_t width, int32_t height,
                                        int kernelWidth, int kernelHeight, double sigmaX, double sigmaY) {
     std::vector<BT> output(input.size());
-    BorderWrapper<T, borderMode> src(ImageWrapper<T>(input, batchSize, width, height), SetAll<T>(0));
+    BorderWrapper<T, BorderMode> src(ImageWrapper<T>(input, batchSize, width, height), SetAll<T>(0));
     ImageWrapper<T> dst(output, batchSize, width, height);
 
     using namespace roccv::detail;
@@ -98,7 +100,7 @@ std::vector<BT> GenerateGoldenGaussian(std::vector<BT>& input, int32_t batchSize
  * @brief Tests correctness of the Gaussian operator, comparing it against a generated golden result.
  *
  * @tparam T Underlying datatype of the image's pixels.
- * @tparam borderMode Border pixel extrapolation method.
+ * @tparam BorderMode Border pixel extrapolation method.
  * @tparam BT Base type of the image's data.
  * @param[in] batchSize Number of images in the batch.
  * @param[in] width Width of each image in the batch.
@@ -166,6 +168,89 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
     // Compare data in actual output versus the generated golden reference image
     // TODO check on delta, this matches bilateral filter and passes (looser does not)
     CompareVectorsNear(outputData, ref, 1);
+}
+
+/**
+ * @brief Tests correctness of the Gaussian operator when multiple threads concurrently use the same operator.
+ * @tparam T Underlying datatype of the image's pixels.
+ * @tparam BorderMode Border pixel extrapolation method.
+ * @tparam BT Base type of the image's data.
+ * @param[in] batchSize Number of images in the batch.
+ * @param[in] width Width of each image in the batch.
+ * @param[in] height Height of each image in the batch.
+ * @param[in] format Image format.
+ * @param[in] kernelWidth Kernel width.
+ * @param[in] kernelHeight Kernel height.
+ * @param[in] device Device this correctness test should be run on.
+ */
+template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
+void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat format, int kernelWidth,
+                               int kernelHeight, eDeviceType device) {
+    constexpr int NUM_THREADS = 16;
+    constexpr int ITERATIONS_PER_THREAD = 10;
+    constexpr int TOTAL_TESTS = NUM_THREADS * ITERATIONS_PER_THREAD;
+
+    struct ThreadTest {
+        Tensor input;
+        Tensor output;
+        std::vector<BT> inputData;
+        hipStream_t stream;
+        double sigma;
+
+        ThreadTest(int b, int w, int h, ImageFormat fmt, eDeviceType dev, double s)
+            : input(b, {w, h}, fmt, dev), output(b, {w, h}, fmt, dev), inputData(input.shape().size()), sigma(s) {
+            HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+            FillVector(inputData);
+            CopyVectorIntoTensor(input, inputData);
+        }
+
+        ~ThreadTest() { (void)hipStreamDestroy(stream); }
+    };
+
+    std::vector<std::unique_ptr<ThreadTest>> threadTests;
+    threadTests.reserve(TOTAL_TESTS);
+    // each thread has different sigma so different results
+    for (int threadId = 0; threadId < NUM_THREADS; threadId++) {
+        double sigma = 0.25 + threadId * 0.2;
+        for (int iter = 0; iter < ITERATIONS_PER_THREAD; iter++) {
+            threadTests.push_back(std::make_unique<ThreadTest>(batchSize, width, height, format, device, sigma));
+        }
+    }
+
+    Gaussian op(kernelWidth, kernelHeight);  // shared op for all threads
+    std::vector<std::thread> threads;
+    std::atomic<int> nextTestIndex{0};
+
+    auto threadFunc = [&]() {
+        while (true) {
+            int idx = nextTestIndex.fetch_add(1);
+            if (idx >= TOTAL_TESTS) break;
+            ThreadTest* test = threadTests[idx].get();
+            // All threads call the same operator instance concurrently
+            op(test->stream, test->input, test->output, kernelWidth, kernelHeight, test->sigma, test->sigma, BorderMode,
+               device);
+        }
+    };
+
+    for (int i = 0; i < NUM_THREADS; i++) {
+        threads.emplace_back(threadFunc);
+    }
+    for (auto& thread : threads) {
+        thread.join();
+    }
+    for (auto& threadTest : threadTests) {
+        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(threadTest->stream));
+    }
+    for (auto& threadTest : threadTests) {
+        std::vector<BT> outputData(threadTest->output.shape().size());
+        CopyTensorIntoVector(outputData, threadTest->output);
+
+        std::vector<BT> ref =
+            GenerateGoldenGaussian<T, BorderMode>(threadTest->inputData, batchSize, width, height, kernelWidth,
+                                                  kernelHeight, threadTest->sigma, threadTest->sigma);
+
+        CompareVectorsNear(outputData, ref, 1);
+    }
 }
 
 void TestNegativeGaussian() {
@@ -252,6 +337,10 @@ int main(int argc, char** argv) {
 
     // Test negative operator cases
     TEST_CASE(TestNegativeGaussian());
+
+    // Test concurrency on GPU and CPU
+    TEST_CASE((TestCorrectnessConcurrent<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32, 7, 7, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessConcurrent<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32, 7, 7, eDeviceType::CPU)));
 
     // GPU correctness tests
     TEST_CASE((TestCorrectness<uchar1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 3, 3, 1.0, 1.0, eDeviceType::GPU)));

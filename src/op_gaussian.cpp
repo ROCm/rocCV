@@ -41,14 +41,17 @@ Gaussian::Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight)
     hipError_t err = hipGetDeviceCount(&gpuCount);
     if (err == hipSuccess) {
         m_deviceKernelMem = static_cast<float*>(m_allocator.allocHipMem(memSize));
+        HIP_VALIDATE_NO_ERRORS(hipEventCreateWithFlags(&m_completionEvent, hipEventDisableTiming));
     }
 }
 
 Gaussian::~Gaussian() {
     m_allocator.freeHostPinnedMem(m_hostKernelMem);
-
     if (m_deviceKernelMem != nullptr) {
         m_allocator.freeHipMem(m_deviceKernelMem);
+    }
+    if (m_completionEvent != nullptr) {
+        (void)hipEventDestroy(m_completionEvent);
     }
 }
 
@@ -95,6 +98,10 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
             eStatusType::INVALID_VALUE);
     }
 
+    std::lock_guard<std::mutex> lock(m_bufferMutex);
+    if (device == eDeviceType::GPU) {
+        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_completionEvent));
+    }
     // compute the kernel
     int halfW = kernelWidth / 2;
     int halfH = kernelHeight / 2;
@@ -143,6 +150,7 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
 
     if (device == eDeviceType::GPU) {
         func(stream, input, output, m_deviceKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
+        HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
     } else if (device == eDeviceType::CPU) {
         func(stream, input, output, m_hostKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
     }

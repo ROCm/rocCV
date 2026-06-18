@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <mutex>
+
 #include "core/detail/allocators/default_allocator.hpp"
 #include "core/tensor.hpp"
 #include "i_operator.hpp"
@@ -103,8 +105,10 @@ class Gaussian final : public IOperator {
    private:
     int32_t m_maxKernelWidth;
     int32_t m_maxKernelHeight;
+    DefaultAllocator m_allocator;
+    std::mutex m_bufferMutex;
     float* m_hostKernelMem = nullptr;
     float* m_deviceKernelMem = nullptr;
-    DefaultAllocator m_allocator;
+    hipEvent_t m_completionEvent = nullptr;
 };
 }  // namespace roccv
