@@ -58,5 +58,81 @@ __global__ void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kern
     }
     output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
 }
+
+template <typename T, int BLOCK_WIDTH, typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
+__global__ void filter2D_horizontal(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth,
+                                    int anchorX) {
+    using namespace roccv::detail;
+    using work_type = MakeType<float, NumElements<T>>;
+    work_type result = SetAll<work_type>(0);
+
+    const int x = threadIdx.x + blockIdx.x * blockDim.x;
+    const int y = blockIdx.y;
+    const int b = blockIdx.z;
+
+    // smem size is BLOCK_WIDTH + halo on each side
+    extern __shared__ char smem[];
+    T* tile = reinterpret_cast<T*>(smem);
+
+    const int halo = kernelWidth - 1;
+    const int tileWidth = BLOCK_WIDTH + halo;
+
+    // load into shared memory
+    for (int i = threadIdx.x; i < tileWidth; i += blockDim.x) {
+        int srcX = blockIdx.x * BLOCK_WIDTH + i - anchorX;
+        tile[i] = input.at(b, y, srcX, 0);
+    }
+
+    __syncthreads();
+
+    if (x >= output.width()) {
+        return;
+    }
+
+    int tileIdx = threadIdx.x + anchorX;
+    for (int kx = 0; kx < kernelWidth; ++kx) {
+        result = result + StaticCast<work_type>(tile[tileIdx - anchorX + kx]) * kernel[kx];
+    }
+
+    output.at(b, y, x, 0) = SaturateCast<T>(result);
+}
+
+template <typename T, int BLOCK_HEIGHT, typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
+__global__ void filter2D_vertical(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelHeight,
+                                    int anchorY) {
+    using namespace roccv::detail;
+    using work_type = MakeType<float, NumElements<T>>;
+    work_type result = SetAll<work_type>(0);
+
+    const int x = blockIdx.x;
+    const int y = threadIdx.y + blockIdx.y * blockDim.y;
+    const int b = blockIdx.z;
+
+    // smem size is BLOCK_HEIGHT + halo on each side
+    extern __shared__ char smem[];
+    T* tile = reinterpret_cast<T*>(smem);
+
+    const int halo = kernelHeight - 1;
+    const int tileHeight = BLOCK_HEIGHT + halo;
+
+    // load into shared memory
+    for (int i = threadIdx.y; i < tileHeight; i += blockDim.y) {
+        int srcY = blockIdx.y * BLOCK_HEIGHT + i - anchorY;
+        tile[i] = input.at(b, srcY, x, 0);
+    }
+
+    __syncthreads();
+
+    if (y >= output.height()) {
+        return;
+    }
+
+    int tileIdx = threadIdx.y + anchorY;
+    for (int ky = 0; ky < kernelHeight; ++ky) {
+        result = result + StaticCast<work_type>(tile[tileIdx - anchorY + ky]) * kernel[ky];
+    }
+
+    output.at(b, y, x, 0) = SaturateCast<T>(result);
+}
 }  // namespace Device
 }  // namespace Kernels
