@@ -155,6 +155,8 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     int anchorY = -1;
     processAnchor(anchorX, anchorY, kernelWidth, kernelHeight);
 
+    // TODO: MAYBE FIRST DISPATCH ON SEPARABLE VS NOT SEPARABLE, SWITCHING ON KISZE
+
     // clang-format off
     static const std::unordered_map<
     eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, float*, float*, int, int, int, int, eBorderType, eDeviceType)>, 4>>
