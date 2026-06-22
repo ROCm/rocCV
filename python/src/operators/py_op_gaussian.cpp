@@ -37,14 +37,6 @@ PyTensor PyOpGaussian::Execute(PyTensor& input, const std::tuple<int, int>& kern
     int kernelWidth = std::get<0>(kernelSize);
     int kernelHeight = std::get<1>(kernelSize);
 
-    // Validate kernel size
-    if (kernelWidth <= 0 || kernelWidth % 2 == 0) {
-        throw std::invalid_argument("kernelWidth must be odd and positive");
-    }
-    if (kernelHeight <= 0 || kernelHeight % 2 == 0) {
-        throw std::invalid_argument("kernelHeight must be odd and positive");
-    }
-
     roccv::Gaussian op(kernelWidth, kernelHeight);
     op(hipStream, *inputTensor, *outputTensor, kernelWidth, kernelHeight, std::get<0>(sigma), std::get<1>(sigma),
        borderMode, device);
@@ -57,14 +49,6 @@ void PyOpGaussian::ExecuteInto(PyTensor& output, PyTensor& input, const std::tup
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     int kernelWidth = std::get<0>(kernelSize);
     int kernelHeight = std::get<1>(kernelSize);
-
-    // Validate kernel size
-    if (kernelWidth <= 0 || kernelWidth % 2 == 0) {
-        throw std::invalid_argument("kernelWidth must be odd and positive");
-    }
-    if (kernelHeight <= 0 || kernelHeight % 2 == 0) {
-        throw std::invalid_argument("kernelHeight must be odd and positive");
-    }
 
     roccv::Gaussian op(kernelWidth, kernelHeight);
     op(hipStream, *input.getTensor(), *output.getTensor(), kernelWidth, kernelHeight, std::get<0>(sigma),
