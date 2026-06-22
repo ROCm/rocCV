@@ -42,6 +42,8 @@ class Gaussian final : public IOperator {
     /**
      * @brief Constructs a Gaussian object.
      *
+     * @param maxKernelWidth [in] The maximum kernel width that will be used by the operator. Must be positive (> 0).
+     * @param maxKernelHeight [in] The maximum kernel height that will be used by the operator. Must be positive(> 0).
      */
     Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight);
 

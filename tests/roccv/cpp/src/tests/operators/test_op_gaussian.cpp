@@ -300,8 +300,13 @@ void TestNegativeGaussian() {
     }
 
     {
-        // Test bad kernel size and sigma X
-        // Kernel size exceeds max
+        // Test bad op construction (bad max ksize)
+        EXPECT_EXCEPTION(Gaussian opBadW(0, 3), eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(Gaussian opBadH(3, -3), eStatusType::INVALID_VALUE);
+    }
+
+    {
+        // Test bad kernel size (exceeding max) and sigma X
         EXPECT_EXCEPTION(
             op(nullptr, validGPUTensor, validGPUTensor, 3, 5, 1, 1, BORDER_TYPE_CONSTANT, eDeviceType::GPU),
             eStatusType::INVALID_VALUE);

@@ -34,6 +34,17 @@ THE SOFTWARE.
 namespace roccv {
 Gaussian::Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight)
     : m_maxKernelWidth(maxKernelWidth), m_maxKernelHeight(maxKernelHeight) {
+    if (maxKernelWidth <= 0) {
+        throw roccv::Exception(
+            "Invalid maxKernelWidth = " + std::to_string(maxKernelWidth) + ": Ensure that it is positive.",
+            eStatusType::INVALID_VALUE);
+    }
+    if (maxKernelHeight <= 0) {
+        throw roccv::Exception(
+            "Invalid maxKernelHeight = " + std::to_string(maxKernelHeight) + ": Ensure that it is positive.",
+            eStatusType::INVALID_VALUE);
+    }
+
     size_t memSizeH = m_maxKernelWidth * sizeof(float);
     size_t memSizeV = m_maxKernelHeight * sizeof(float);
     m_hostKernelMemH = static_cast<float*>(m_allocator.allocHostPinnedMem(memSizeH));
@@ -142,12 +153,10 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
             throw roccv::Exception("Device memory not allocated for Gaussian kernel, GPU may not be available.",
                                    eStatusType::INVALID_OPERATION);
         }
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMemH, m_hostKernelMemH,
-                                              kernelWidth * sizeof(float), hipMemcpyHostToDevice,
-                                              stream));
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMemV, m_hostKernelMemV,
-                                              kernelHeight * sizeof(float), hipMemcpyHostToDevice,
-                                              stream));
+        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMemH, m_hostKernelMemH, kernelWidth * sizeof(float),
+                                              hipMemcpyHostToDevice, stream));
+        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMemV, m_hostKernelMemV, kernelHeight * sizeof(float),
+                                              hipMemcpyHostToDevice, stream));
     }
 
     // compute the anchor to be center of kernel
@@ -173,10 +182,12 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
 
     if (device == eDeviceType::GPU) {
-        func(stream, input, output, m_deviceKernelMemH, m_deviceKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
+        func(stream, input, output, m_deviceKernelMemH, m_deviceKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY,
+             borderMode, device);
         HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
     } else if (device == eDeviceType::CPU) {
-        func(stream, input, output, m_hostKernelMemH, m_hostKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
+        func(stream, input, output, m_hostKernelMemH, m_hostKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY,
+             borderMode, device);
     }
 }
 }  // namespace roccv
