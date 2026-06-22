@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#include "operators/py_op_average_blur.hpp"
+
 #include <op_average_blur.hpp>
 
 #include "py_helpers.hpp"
