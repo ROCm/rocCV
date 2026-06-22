@@ -83,10 +83,12 @@ class AverageBlur : public IOperator {
      * @param[in] stream The HIP stream to run this operation on.
      * @param[in] input Input tensor.
      * @param[out] output Output tensor.
-     * @param[in] kernelWidth Gaussian kernel width.
-     * @param[in] kernelHeight Gaussian kernel height.
-     * @param[in] anchorX AverageBlur kernel anchor in X direction. Use -1 to indicate center.
-     * @param[in] anchorY AverageBlur kernel anchor in X direction. Use -1 to indicate center.
+     * @param[in] kernelWidth AverageBlur kernel width. Must be positive, odd, and less than m_maxKernelWidth.
+     * @param[in] kernelHeight AverageBlur kernel height. Must be positive, odd, and less than m_maxKernelHeight.
+     * @param[in] anchorX Kernel anchor in X direction. Must be nonnegative and less than kernelWidth, or -1 to indicate
+     * center.
+     * @param[in] anchorY Kernel anchor in Y direction. Must be nonnegative and less than kernelHeight, or -1 to
+     * indicate center.
      * @param[in] borderMode A border type to identify the pixel extrapolation
      * method (e.g. BORDER_TYPE_CONSTANT or BORDER_TYPE_REPLICATE).
      * @param[in] device The device which this operation should run on. (Default: eDeviceType::GPU)
