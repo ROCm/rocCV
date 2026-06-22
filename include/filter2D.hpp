@@ -79,6 +79,7 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
             Kernels::Host::filter2DHorizontal(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
             BorderWrapper<DT, BT> intermWrapperWithBorder(interm, roccv::detail::SetAll<DT>(0));
             Kernels::Host::filter2DVertical(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight, anchorY);
+            break;
         }
         case eDeviceType::GPU: {
             // constants copied from Pavel
@@ -114,6 +115,7 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
                     <<<grid, block, smemSize, stream>>>(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight,
                                                         anchorY);
             }
+            break;
         }
     }
 }
