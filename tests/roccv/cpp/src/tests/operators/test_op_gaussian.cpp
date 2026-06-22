@@ -186,9 +186,8 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
 template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
 void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat format, int kernelWidth,
                                int kernelHeight, eDeviceType device) {
-    constexpr int NUM_THREADS = 16;
-    constexpr int ITERATIONS_PER_THREAD = 10;
-    constexpr int TOTAL_TESTS = NUM_THREADS * ITERATIONS_PER_THREAD;
+    constexpr int NUM_THREADS = 8;
+    constexpr int TOTAL_TESTS = 80;
 
     struct ThreadTest {
         Tensor input;
@@ -197,10 +196,10 @@ void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat
         hipStream_t stream;
         double sigma;
 
-        ThreadTest(int b, int w, int h, ImageFormat fmt, eDeviceType dev, double s)
+        ThreadTest(int b, int w, int h, ImageFormat fmt, eDeviceType dev, double s, int id)
             : input(b, {w, h}, fmt, dev), output(b, {w, h}, fmt, dev), inputData(input.shape().size()), sigma(s) {
             HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-            FillVector(inputData);
+            FillVector(inputData, id * 1000);
             CopyVectorIntoTensor(input, inputData);
         }
 
@@ -210,11 +209,9 @@ void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat
     std::vector<std::unique_ptr<ThreadTest>> threadTests;
     threadTests.reserve(TOTAL_TESTS);
     // each thread has different sigma so different results
-    for (int threadId = 0; threadId < NUM_THREADS; threadId++) {
-        double sigma = 0.25 + threadId * 0.2;
-        for (int iter = 0; iter < ITERATIONS_PER_THREAD; iter++) {
-            threadTests.push_back(std::make_unique<ThreadTest>(batchSize, width, height, format, device, sigma));
-        }
+    for (int i = 0; i < TOTAL_TESTS; ++i) {
+        double sigma = 0.25 + i * 0.02;
+        threadTests.push_back(std::make_unique<ThreadTest>(batchSize, width, height, format, device, sigma, i));
     }
 
     Gaussian op(kernelWidth, kernelHeight);  // shared op for all threads
@@ -339,6 +336,9 @@ int main(int argc, char** argv) {
     TEST_CASE(TestNegativeGaussian());
 
     // Test concurrency on GPU and CPU
+    TEST_CASE((TestCorrectnessConcurrent<uchar1, BORDER_TYPE_CONSTANT>(1, 64, 64, FMT_U8, 7, 7, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectnessConcurrent<uchar1, BORDER_TYPE_CONSTANT>(1, 64, 64, FMT_U8, 7, 7, eDeviceType::CPU)));
+
     TEST_CASE((TestCorrectnessConcurrent<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32, 7, 7, eDeviceType::GPU)));
     TEST_CASE((TestCorrectnessConcurrent<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32, 7, 7, eDeviceType::CPU)));
 

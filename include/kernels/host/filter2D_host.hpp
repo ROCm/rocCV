@@ -58,5 +58,47 @@ void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int ker
         }
     }
 }
+
+template <typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
+void filter2DHorizontal(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth, int anchorX) {
+    using namespace roccv::detail;
+    using dst_type = typename DstWrapper::ValueType;
+    using work_type = MakeType<float, NumElements<dst_type>>;
+
+#pragma omp parallel for
+    for (int batch = 0; batch < output.batches(); batch++) {
+        for (int y = 0; y < output.height(); ++y) {
+            for (int x = 0; x < output.width(); ++x) {
+                work_type result = SetAll<work_type>(0);
+                for (int kx = 0; kx < kernelWidth; ++kx) {
+                    int srcX = x - anchorX + kx;
+                    result = result + StaticCast<work_type>(input.at(batch, y, srcX, 0)) * kernel[kx];
+                }
+                output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
+            }
+        }
+    }
+}
+
+template <typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
+void filter2DVertical(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelHeight, int anchorY) {
+    using namespace roccv::detail;
+    using dst_type = typename DstWrapper::ValueType;
+    using work_type = MakeType<float, NumElements<dst_type>>;
+
+#pragma omp parallel for
+    for (int batch = 0; batch < output.batches(); batch++) {
+        for (int y = 0; y < output.height(); ++y) {
+            for (int x = 0; x < output.width(); ++x) {
+                work_type result = SetAll<work_type>(0);
+                for (int ky = 0; ky < kernelHeight; ++ky) {
+                    int srcY = y - anchorY + ky;
+                    result = result + StaticCast<work_type>(input.at(batch, srcY, x, 0)) * kernel[ky];
+                }
+                output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
+            }
+        }
+    }
+}
 }  // namespace Host
 }  // namespace Kernels

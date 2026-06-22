@@ -34,21 +34,28 @@ THE SOFTWARE.
 namespace roccv {
 Gaussian::Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight)
     : m_maxKernelWidth(maxKernelWidth), m_maxKernelHeight(maxKernelHeight) {
-    size_t memSize = m_maxKernelWidth * m_maxKernelHeight * sizeof(float);
-    m_hostKernelMem = static_cast<float*>(m_allocator.allocHostPinnedMem(memSize));
+    size_t memSizeH = m_maxKernelWidth * sizeof(float);
+    size_t memSizeV = m_maxKernelHeight * sizeof(float);
+    m_hostKernelMemH = static_cast<float*>(m_allocator.allocHostPinnedMem(memSizeH));
+    m_hostKernelMemV = static_cast<float*>(m_allocator.allocHostPinnedMem(memSizeV));
 
     int gpuCount = 0;
     hipError_t err = hipGetDeviceCount(&gpuCount);
     if (err == hipSuccess) {
-        m_deviceKernelMem = static_cast<float*>(m_allocator.allocHipMem(memSize));
+        m_deviceKernelMemH = static_cast<float*>(m_allocator.allocHipMem(memSizeH));
+        m_deviceKernelMemV = static_cast<float*>(m_allocator.allocHipMem(memSizeV));
         HIP_VALIDATE_NO_ERRORS(hipEventCreateWithFlags(&m_completionEvent, hipEventDisableTiming));
     }
 }
 
 Gaussian::~Gaussian() {
-    m_allocator.freeHostPinnedMem(m_hostKernelMem);
-    if (m_deviceKernelMem != nullptr) {
-        m_allocator.freeHipMem(m_deviceKernelMem);
+    m_allocator.freeHostPinnedMem(m_hostKernelMemH);
+    m_allocator.freeHostPinnedMem(m_hostKernelMemV);
+    if (m_deviceKernelMemH != nullptr) {
+        m_allocator.freeHipMem(m_deviceKernelMemH);
+    }
+    if (m_deviceKernelMemV != nullptr) {
+        m_allocator.freeHipMem(m_deviceKernelMemV);
     }
     if (m_completionEvent != nullptr) {
         (void)hipEventDestroy(m_completionEvent);
@@ -102,29 +109,44 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     if (device == eDeviceType::GPU) {
         HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_completionEvent));
     }
-    // compute the kernel
+    // compute the separable 1D kernels
     int halfW = kernelWidth / 2;
     int halfH = kernelHeight / 2;
     float sqSigX = 2.0f * sigmaX * sigmaX;
     float sqSigY = 2.0f * sigmaY * sigmaY;
-    float sum = 0.0f;
+
+    // Compute horizontal 1D kernel
+    float sumH = 0.0f;
+    for (int x = -halfW; x <= halfW; ++x) {
+        float value = exp(-(x * x) / sqSigX);
+        m_hostKernelMemH[x + halfW] = value;
+        sumH += value;
+    }
+    for (int i = 0; i < kernelWidth; i++) {
+        m_hostKernelMemH[i] /= sumH;
+    }
+
+    // Compute vertical 1D kernel
+    float sumV = 0.0f;
     for (int y = -halfH; y <= halfH; ++y) {
-        for (int x = -halfW; x <= halfW; ++x) {
-            float value = exp(-((x * x) / sqSigX + (y * y) / sqSigY));
-            m_hostKernelMem[x + halfW + (y + halfH) * kernelWidth] = value;
-            sum += value;
-        }
+        float value = exp(-(y * y) / sqSigY);
+        m_hostKernelMemV[y + halfH] = value;
+        sumV += value;
     }
-    for (int i = 0; i < kernelWidth * kernelHeight; i++) {
-        m_hostKernelMem[i] /= sum;
+    for (int i = 0; i < kernelHeight; i++) {
+        m_hostKernelMemV[i] /= sumV;
     }
+
     if (device == eDeviceType::GPU) {
-        if (m_deviceKernelMem == nullptr) {
+        if (m_deviceKernelMemH == nullptr || m_deviceKernelMemV == nullptr) {
             throw roccv::Exception("Device memory not allocated for Gaussian kernel, GPU may not be available.",
                                    eStatusType::INVALID_OPERATION);
         }
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMem, m_hostKernelMem,
-                                              kernelWidth * kernelHeight * sizeof(float), hipMemcpyHostToDevice,
+        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMemH, m_hostKernelMemH,
+                                              kernelWidth * sizeof(float), hipMemcpyHostToDevice,
+                                              stream));
+        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(m_deviceKernelMemV, m_hostKernelMemV,
+                                              kernelHeight * sizeof(float), hipMemcpyHostToDevice,
                                               stream));
     }
 
@@ -133,26 +155,28 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     int anchorY = -1;
     processAnchor(anchorX, anchorY, kernelWidth, kernelHeight);
 
+    // TODO: MAYBE FIRST DISPATCH ON SEPARABLE VS NOT SEPARABLE, SWITCHING ON KISZE
+
     // clang-format off
     static const std::unordered_map<
-    eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, float*, int, int, int, int, eBorderType, eDeviceType)>, 4>>
-        funcs = 
+    eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, float*, float*, int, int, int, int, eBorderType, eDeviceType)>, 4>>
+        funcs =
         {
-            {eDataType::DATA_TYPE_U8, {dispatch_filter2D_dtype<uchar1, float*>, 0, dispatch_filter2D_dtype<uchar3, float*>, dispatch_filter2D_dtype<uchar4, float*>}},
-            {eDataType::DATA_TYPE_U16, {dispatch_filter2D_dtype<ushort1, float*>, 0, dispatch_filter2D_dtype<ushort3, float*>, dispatch_filter2D_dtype<ushort4, float*>}},
-            {eDataType::DATA_TYPE_S16, {dispatch_filter2D_dtype<short1, float*>, 0, dispatch_filter2D_dtype<short3, float*>, dispatch_filter2D_dtype<short4, float*>}},
-            {eDataType::DATA_TYPE_S32, {dispatch_filter2D_dtype<int1, float*>, 0, dispatch_filter2D_dtype<int3, float*>, dispatch_filter2D_dtype<int4, float*>}},
-            {eDataType::DATA_TYPE_F32, {dispatch_filter2D_dtype<float1, float*>, 0, dispatch_filter2D_dtype<float3, float*>, dispatch_filter2D_dtype<float4, float*>}},
+            {eDataType::DATA_TYPE_U8, {dispatch_filter2D_dtype_separable<uchar1, float*>, 0, dispatch_filter2D_dtype_separable<uchar3, float*>, dispatch_filter2D_dtype_separable<uchar4, float*>}},
+            {eDataType::DATA_TYPE_U16, {dispatch_filter2D_dtype_separable<ushort1, float*>, 0, dispatch_filter2D_dtype_separable<ushort3, float*>, dispatch_filter2D_dtype_separable<ushort4, float*>}},
+            {eDataType::DATA_TYPE_S16, {dispatch_filter2D_dtype_separable<short1, float*>, 0, dispatch_filter2D_dtype_separable<short3, float*>, dispatch_filter2D_dtype_separable<short4, float*>}},
+            {eDataType::DATA_TYPE_S32, {dispatch_filter2D_dtype_separable<int1, float*>, 0, dispatch_filter2D_dtype_separable<int3, float*>, dispatch_filter2D_dtype_separable<int4, float*>}},
+            {eDataType::DATA_TYPE_F32, {dispatch_filter2D_dtype_separable<float1, float*>, 0, dispatch_filter2D_dtype_separable<float3, float*>, dispatch_filter2D_dtype_separable<float4, float*>}},
         };
     // clang-format on
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
 
     if (device == eDeviceType::GPU) {
-        func(stream, input, output, m_deviceKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
+        func(stream, input, output, m_deviceKernelMemH, m_deviceKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
         HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
     } else if (device == eDeviceType::CPU) {
-        func(stream, input, output, m_hostKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
+        func(stream, input, output, m_hostKernelMemH, m_hostKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY, borderMode, device);
     }
 }
 }  // namespace roccv

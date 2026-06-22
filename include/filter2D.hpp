@@ -65,6 +65,58 @@ void dispatch_filter2D_bordertype(hipStream_t stream, const Tensor& input, const
         }
     }
 }
+template <typename DT, typename KT, eBorderType BT>
+void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernelH,
+                                            KT kernelV, int kernelWidth, int kernelHeight, int anchorX, int anchorY,
+                                            eDeviceType device) {
+    BorderWrapper<DT, BT> inputWrapper(input, roccv::detail::SetAll<DT>(0));
+    ImageWrapper<DT> outputWrapper(output);
+    Tensor interm(output.shape(), output.dtype(), device);
+    ImageWrapper<DT> intermWrapper(interm);
+
+    switch (device) {
+        case device == eDeviceType::CPU: {
+            Kernels::Host::filter2DHorizontal(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
+            BorderWrapper<DT, BT> intermWrapperWithBorder(interm, roccv::detail::SetAll<DT>(0));
+            Kernels::Host::filter2DVertical(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight, anchorY);
+        }
+        case device == eDeviceType::GPU: {
+            // constants copied from Pavel
+            constexpr int BLOCK_WIDTH = 128;
+            constexpr int BLOCK_HEIGHT = 128;
+
+            // horizontal pass
+            {
+                dim3 block(BLOCK_WIDTH, 1);
+                dim3 grid((outputWrapper.width() + BLOCK_WIDTH - 1) / BLOCK_WIDTH, outputWrapper.height(),
+                          outputWrapper.batches());
+
+                int halo = kernelWidth - 1;
+                int tileWidth = BLOCK_WIDTH + halo;
+                size_t smemSize = tileWidth * sizeof(DT);
+
+                Kernels::Device::filter2DHorizontal<DT, BLOCK_WIDTH, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
+                    <<<grid, block, smemSize, stream>>>(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
+            }
+
+            // Vertical pass
+            BorderWrapper<DT, BT> intermWrapperWithBorder(interm, roccv::detail::SetAll<DT>(0));
+            {
+                dim3 block(1, BLOCK_HEIGHT);
+                dim3 grid(outputWrapper.width(), (outputWrapper.height() + BLOCK_HEIGHT - 1) / BLOCK_HEIGHT,
+                          outputWrapper.batches());
+
+                int halo = kernelHeight - 1;
+                int tileHeight = BLOCK_HEIGHT + halo;
+                size_t smemSize = tileHeight * sizeof(DT);
+
+                Kernels::Device::filter2DVertical<DT, BLOCK_HEIGHT, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
+                    <<<grid, block, smemSize, stream>>>(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight,
+                                                        anchorY);
+            }
+        }
+    }
+}
 
 template <typename DT, typename KT>
 void dispatch_filter2D_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernel, int kernelWidth,
@@ -85,5 +137,27 @@ void dispatch_filter2D_dtype(hipStream_t stream, const Tensor& input, const Tens
 
     auto func = funcs.at(borderMode);
     func(stream, input, output, kernel, kernelWidth, kernelHeight, anchorX, anchorY, device);
+}
+
+template <typename DT, typename KT>
+void dispatch_filter2D_dtype_separable(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernelH,
+                                       KT kernelV, int kernelWidth, int kernelHeight, int anchorX, int anchorY,
+                                       eBorderType borderMode, eDeviceType device) {
+    // clang-format off
+    static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, KT, KT, int, int, int, int, eDeviceType)>>
+        funcs = {
+            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,  dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REFLECT101>},
+            {eBorderType::BORDER_TYPE_WRAP,        dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_WRAP>}
+        };
+    // clang-format on
+    if (!funcs.contains(borderMode)) {
+        throw Exception("The given border mode is not supported.", eStatusType::NOT_IMPLEMENTED);
+    }
+
+    auto func = funcs.at(borderMode);
+    func(stream, input, output, kernelH, kernelV, kernelWidth, kernelHeight, anchorX, anchorY, device);
 }
 }  // namespace roccv
