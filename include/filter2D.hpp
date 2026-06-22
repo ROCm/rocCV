@@ -75,12 +75,12 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
     ImageWrapper<DT> intermWrapper(interm);
 
     switch (device) {
-        case device == eDeviceType::CPU: {
+        case eDeviceType::CPU: {
             Kernels::Host::filter2DHorizontal(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
             BorderWrapper<DT, BT> intermWrapperWithBorder(interm, roccv::detail::SetAll<DT>(0));
             Kernels::Host::filter2DVertical(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight, anchorY);
         }
-        case device == eDeviceType::GPU: {
+        case eDeviceType::GPU: {
             // constants copied from Pavel
             constexpr int BLOCK_WIDTH = 128;
             constexpr int BLOCK_HEIGHT = 128;
