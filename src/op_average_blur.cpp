@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "filter2D.hpp"
-#include "op_gaussian.hpp"
+#include "op_average_blur.hpp"
 
 namespace roccv {
 AverageBlur::AverageBlur(int32_t maxKernelWidth, int32_t maxKernelHeight)
