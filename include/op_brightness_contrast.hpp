@@ -51,6 +51,11 @@ class BrightnessContrast final : public IOperator {
      *                        Channels: [1, 2, 3, 4]
      *       Supported DataType(s):     [U8, U16, S16, S32, F32]
      *
+     *
+     * Brightness, Contrast, BrightnessShift, ContrastCenter:
+     *       Supported TensorLayout(s): [N]
+     *       Supported DataTypes(s):    [F32, F64]
+     *
      * Input/Output dependency:
      *
      *       Property      |  Input == Output
@@ -61,6 +66,10 @@ class BrightnessContrast final : public IOperator {
      *       Width         | Yes
      *       Height        | Yes
      *       Batch         | Yes
+     *
+     * Parameter dependencies:
+     *      DataType: F64 when input or output is S32, otherwise F32
+     *      Batch:  1 or N (where N matches input batch size)
      *
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.
