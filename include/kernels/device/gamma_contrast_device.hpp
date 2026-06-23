@@ -43,8 +43,7 @@ __global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma)
     if (y >= output.height() || batch >= output.batches()) return;
 
     ApplyPackedTransform(
-        output, batch, y,
-        [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type srcPixel) -> dst_type {
+        input, output, batch, y, [=] __device__(src_type srcPixel, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
             auto inVal = (RangeCast<work_type>(srcPixel));
             work_type result = math::vpowf(inVal, gamma);
             if constexpr (NumElements<dst_type> == 4) {
@@ -52,8 +51,7 @@ __global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma)
             } else {
                 return RangeCast<dst_type>(result);
             }
-        },
-        input);
+        });
 }
 }  // namespace Device
 }  // namespace Kernels

@@ -32,7 +32,6 @@ template <typename SrcWrapper, typename MaskWrapper, typename DstWrapper>
 __global__ void composite(SrcWrapper foreground, SrcWrapper background, MaskWrapper mask, DstWrapper output) {
     using namespace roccv::detail;  // For RangeCast, NumElements, etc.
     using src_type = typename SrcWrapper::ValueType;
-    using mask_type = typename MaskWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
 
@@ -40,25 +39,21 @@ __global__ void composite(SrcWrapper foreground, SrcWrapper background, MaskWrap
     const int batch = blockIdx.z;
     if (y >= foreground.height() || batch >= output.batches()) return;
 
-    ApplyPackedTransform(
-        output, batch, y,
-        [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type fgPixel, src_type bgPixel,
-                       mask_type maskPixel) -> dst_type {
-            // Range cast all input values to float to avoid overflowing values and keep them in the same range.
-            auto maskFactor = RangeCast<float1>(maskPixel);
-            auto fgVal = RangeCast<work_type>(fgPixel);
-            auto bgVal = RangeCast<work_type>(bgPixel);
+    ApplyPackedGather(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        // Range cast all input values to float to avoid overflowing values and keep them in the same range.
+        auto maskFactor = RangeCast<float1>(mask.at(n, yy, x, 0));
+        auto fgVal = RangeCast<work_type>(foreground.at(n, yy, x, 0));
+        auto bgVal = RangeCast<work_type>(background.at(n, yy, x, 0));
 
-            work_type result = bgVal + maskFactor.x * (fgVal - bgVal);
+        work_type result = bgVal + maskFactor.x * (fgVal - bgVal);
 
-            // If output has 4 channels, ensure the last channel (alpha) is always fully on.
-            if constexpr (NumElements<dst_type> == 4) {
-                return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
-            } else {
-                return RangeCast<dst_type>(result);
-            }
-        },
-        foreground, background, mask);
+        // If output has 4 channels, ensure the last channel (alpha) is always fully on.
+        if constexpr (NumElements<dst_type> == 4) {
+            return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
+        } else {
+            return RangeCast<dst_type>(result);
+        }
+    });
 }
 }  // namespace Device
 }  // namespace Kernels

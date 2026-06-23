@@ -50,13 +50,11 @@ __global__ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrapp
     const bc_type contrastCenter = bc_wrappers.contrastCenterWrapper.at(batch);
 
     ApplyPackedTransform(
-        output, batch, y,
-        [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type srcPixel) -> dst_type {
+        input, output, batch, y, [=] __device__(src_type srcPixel, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
             work_type src_val = StaticCast<work_type>(srcPixel);
             work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
             return SaturateCast<dst_type>(result);
-        },
-        input);
+        });
 }
 }  // namespace Device
 }  // namespace Kernels

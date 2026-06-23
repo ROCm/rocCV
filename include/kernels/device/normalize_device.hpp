@@ -39,7 +39,6 @@ template <bool ScaleStddev, typename SrcWrapper, typename DstWrapper, typename S
 __global__ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale, DstWrapper output, float globalScale,
                           float shift, float epsilon) {
     using namespace roccv::detail;
-    using src_type = typename SrcWrapper::ValueType;
     using work_type = MakeType<float, NumComponents<typename SrcWrapper::ValueType>>;
     using result_type = DstWrapper::ValueType;
 
@@ -51,32 +50,28 @@ __global__ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale
     const int baseBatchIdx = base.batches() == 1 ? 0 : b;
     const int scaleBatchIdx = scale.batches() == 1 ? 0 : b;
 
-    ApplyPackedTransform(
-        output, b, y,
-        [=] __device__(int /*n*/, int yy, int x, src_type srcPixel) -> result_type {
-            const int baseHeightIdx = base.height() == 1 ? 0 : yy;
-            const int baseWidthIdx = base.width() == 1 ? 0 : x;
-            const int scaleHeightIdx = scale.height() == 1 ? 0 : yy;
-            const int scaleWidthIdx = scale.width() == 1 ? 0 : x;
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> result_type {
+        const int baseHeightIdx = base.height() == 1 ? 0 : yy;
+        const int baseWidthIdx = base.width() == 1 ? 0 : x;
+        const int scaleHeightIdx = scale.height() == 1 ? 0 : yy;
+        const int scaleWidthIdx = scale.width() == 1 ? 0 : x;
 
-            work_type scaleVal;
-            work_type s = StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, scaleWidthIdx, 0));
-            if constexpr (ScaleStddev) {
-                // Scale tensor is the standard deviation; invert to a scale with epsilon added to avoid division by
-                // zero.
-                scaleVal = math::vrsqrtf((s * s) + epsilon);
-            } else {
-                // Scale tensor remains normal, calculate assuming the values in the scale tensor are indeed the scale
-                scaleVal = s;
-            }
-            work_type result = (StaticCast<work_type>(srcPixel) -
-                                StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, baseWidthIdx, 0))) *
-                                   scaleVal * globalScale +
-                               shift;
+        work_type scaleVal;
+        work_type s = StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, scaleWidthIdx, 0));
+        if constexpr (ScaleStddev) {
+            // Scale tensor is the standard deviation; invert to a scale with epsilon added to avoid division by zero.
+            scaleVal = math::vrsqrtf((s * s) + epsilon);
+        } else {
+            // Scale tensor remains normal, calculate assuming the values in the scale tensor are indeed the scale
+            scaleVal = s;
+        }
+        work_type result = (StaticCast<work_type>(input.at(n, yy, x, 0)) -
+                            StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, baseWidthIdx, 0))) *
+                               scaleVal * globalScale +
+                           shift;
 
-            // Saturate cast value back into the output tensor's value type
-            return SaturateCast<result_type>(result);
-        },
-        input);
+        // Saturate cast value back into the output tensor's value type
+        return SaturateCast<result_type>(result);
+    });
 }
 }  // namespace Kernels::Device
