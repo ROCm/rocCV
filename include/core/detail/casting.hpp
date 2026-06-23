@@ -23,10 +23,29 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "core/detail/type_traits.hpp"
 
 namespace roccv::detail {
+
+/**
+ * @brief The value of a "fully saturated" channel for type @p T in its native storage scale, as a float.
+ *
+ * For floating-point base types this is 1.0 (rocCV's normalized-float convention); for integral base types it is the
+ * type's maximum representable value (e.g. 255 for unsigned char). This mirrors RangeCast's range convention and is
+ * useful when blend math is done in native (un-normalized) scale but a channel -- such as an opaque alpha -- still
+ * needs to be set fully on before a SaturateCast back to the output type.
+ */
+template <typename T>
+__device__ __host__ constexpr float RangeMax() {
+    using B = BaseType<T>;
+    if constexpr (std::is_floating_point_v<B>) {
+        return 1.0f;
+    } else {
+        return static_cast<float>(std::numeric_limits<B>::max());
+    }
+}
 
 /**
  * @brief Rounds a floating-point value to the nearest integer using IEEE

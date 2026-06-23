@@ -40,18 +40,18 @@ __global__ void composite(SrcWrapper foreground, SrcWrapper background, MaskWrap
     if (y >= foreground.height() || batch >= output.batches()) return;
 
     ApplyPackedGather(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
-        // Range cast all input values to float to avoid overflowing values and keep them in the same range.
+        // The blend is linear, so only the mask needs normalizing; fg/bg stay at native scale (no scaling multiply).
         auto maskFactor = RangeCast<float1>(mask.at(n, yy, x, 0));
-        auto fgVal = RangeCast<work_type>(foreground.at(n, yy, x, 0));
-        auto bgVal = RangeCast<work_type>(background.at(n, yy, x, 0));
+        auto fgVal = StaticCast<work_type>(foreground.at(n, yy, x, 0));
+        auto bgVal = StaticCast<work_type>(background.at(n, yy, x, 0));
 
         work_type result = bgVal + maskFactor.x * (fgVal - bgVal);
 
-        // If output has 4 channels, ensure the last channel (alpha) is always fully on.
+        // For 4-channel output, force the alpha channel fully on.
         if constexpr (NumElements<dst_type> == 4) {
-            return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
+            return SaturateCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, RangeMax<dst_type>()});
         } else {
-            return RangeCast<dst_type>(result);
+            return SaturateCast<dst_type>(result);
         }
     });
 }
