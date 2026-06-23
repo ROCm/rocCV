@@ -35,7 +35,7 @@ __global__ void flip(SrcWrapper input, DstWrapper output) {
     const int b = blockIdx.z;
     if (y >= output.height() || b >= output.batches()) return;
 
-    ApplyPackedRow(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
         int srcX = x;
         int srcY = yy;
         if constexpr (FlipType == eAxis::Y || FlipType == eAxis::BOTH) {

@@ -46,7 +46,7 @@ __global__ void copy_make_border(SrcDesc src, DstDesc dst, int32_t top, int32_t 
     const int b = blockIdx.z;
     if (y >= dst.height() || b >= dst.batches()) return;
 
-    ApplyPackedRow(dst, b, y,
+    ApplyPackedGather(dst, b, y,
                    [=] __device__(int n, int yy, int x) -> dst_type { return src.at(n, yy - top, x - left, 0); });
 }
 }  // namespace Device

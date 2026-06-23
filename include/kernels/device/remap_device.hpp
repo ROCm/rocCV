@@ -40,7 +40,7 @@ __global__ void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int m
     const int b = blockIdx.z;
     if (y >= output.height() || b >= output.batches()) return;
 
-    ApplyPackedRow(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
         float2 dstCoord = make_float2(static_cast<float>(x), static_cast<float>(yy));
 
         float2 mapCoord;

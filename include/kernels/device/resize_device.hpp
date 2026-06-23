@@ -43,7 +43,7 @@ __global__ void resize(SrcWrapper input, DstWrapper output, float scaleX, float 
 
     const float srcY = fmaf(y + 0.5f, scaleY, -0.5f);
 
-    ApplyPackedRow(output, batch, y, [=] __device__(int n, int /*y*/, int x) -> T {
+    ApplyPackedGather(output, batch, y, [=] __device__(int n, int /*y*/, int x) -> T {
         const float srcX = fmaf(x + 0.5f, scaleX, -0.5f);
         return input.at(n, srcY, srcX, 0);
     });

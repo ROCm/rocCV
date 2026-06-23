@@ -44,7 +44,7 @@ __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float del
     const auto z_idx = blockIdx.z;
     if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> T {
+    ApplyPackedGather(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> T {
         T val = Swizzle<S>(input.at(n, yy, x, 0));
         work_type_t valF = StaticCast<work_type_t>(val);
 
@@ -67,7 +67,7 @@ __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float del
     const int z_idx = blockIdx.z;
     if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> T {
+    ApplyPackedGather(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> T {
         T val = input.at(n, yy, x, 0);
         work_type_t valF = StaticCast<work_type_t>(val);
 
@@ -89,7 +89,7 @@ __global__ void reorder(SrcWrapper input, DstWrapper output) {
     const int z_idx = blockIdx.z;
     if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    ApplyPackedRow(output, z_idx, y_idx,
+    ApplyPackedGather(output, z_idx, y_idx,
                    [=] __device__(int n, int yy, int x) -> T { return Swizzle<S>(input.at(n, yy, x, 0)); });
 }
 
@@ -103,7 +103,7 @@ __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     const int z_idx = blockIdx.z;
     if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> out_type_t {
+    ApplyPackedGather(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> out_type_t {
         T inVal = Swizzle<S>(input.at(n, yy, x, 0));
         work_type_t inValF = StaticCast<work_type_t>(inVal);
 

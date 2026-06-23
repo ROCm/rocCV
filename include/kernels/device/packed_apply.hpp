@@ -37,9 +37,10 @@
  * of them can be written with a single wide, aligned store. This removes the sub-word store penalty paid by small pixel
  * types (notably 3-byte uchar3) and amortizes per-thread setup, which is a large win for these memory-bound kernels.
  *
- * Usage: a kernel computes its row/batch indices, bounds-checks them, then calls ApplyPackedRow() with a callable that
- * returns the output pixel for a given (batch, y, x). The grid must be launched with PackedGrid<DstType>() so that each
- * thread's x-index maps to a run of PackWidth<DstType> pixels.
+ * Usage: a kernel computes its row/batch indices, bounds-checks them, then calls ApplyPackedGather() (scattered reads,
+ * packed store) or ApplyPackedTransform() (packed load and store) with a callable that returns the output pixel. The
+ * grid must be launched with PackedGrid<DstType>() so that each thread's x-index maps to a run of PackWidth<DstType>
+ * pixels.
  */
 
 namespace Kernels::Device {
@@ -75,7 +76,48 @@ constexpr uintptr_t PackAlignMask =
     (sizeof(PackVec<T>) == sizeof(uint3) ? sizeof(unsigned int) : sizeof(PackVec<T>)) - 1;
 
 /**
- * @brief Produces a contiguous run of PackWidth<T> output pixels at row (batch, y) and writes them.
+ * @brief Explicit, type-punning-safe pack/unpack primitives.
+ *
+ * These exist so the wide-vector load/store is expressed as a defined byte copy rather than a glvalue access through an
+ * unrelated type. `__builtin_memcpy` of a compile-time-constant size lowers to a single wide transaction while keeping
+ * strict-aliasing intact; `__builtin_assume_aligned` is what lets the compiler widen the access (a bare uchar3* is only
+ * 1-byte aligned and would otherwise emit byte-wise transfers). Callers must still gate these on PackAlignMask<T> — the
+ * builtins fix the type-punning, not the alignment precondition.
+ */
+
+/**
+ * @brief Loads a run of PackWidth<T> contiguous pixels at @p row as one wide PackVec<T> transaction.
+ */
+template <typename T>
+__device__ __forceinline__ PackVec<T> PackLoad(const T* row) {
+    PackVec<T> v;
+    __builtin_memcpy(&v, __builtin_assume_aligned(row, alignof(PackVec<T>)), sizeof(v));
+    return v;
+}
+
+/**
+ * @brief Stores a run of PackWidth<T> pixels to @p dst as one wide PackVec<T> transaction.
+ */
+template <typename T>
+__device__ __forceinline__ void PackStore(T* dst, const T (&pixels)[PackWidth<T>]) {
+    __builtin_memcpy(__builtin_assume_aligned(dst, alignof(PackVec<T>)), &pixels[0], sizeof(pixels));
+}
+
+/**
+ * @brief Extracts pixel @p i from a loaded PackVec<T>. Uses a byte-offset copy, so it is correct even when pixels do
+ * not align to the 32-bit lanes of the pack (e.g. 3-byte uchar3 pixels straddling uint3 lane boundaries).
+ */
+template <typename T>
+__device__ __forceinline__ T UnpackPixel(const PackVec<T>& v, int i) {
+    T out;
+    __builtin_memcpy(&out, reinterpret_cast<const unsigned char*>(&v) + i * sizeof(T), sizeof(T));
+    return out;
+}
+
+/**
+ * @brief Produces a contiguous run of PackWidth<T> output pixels at row (batch, y) and writes them. Use this for
+ * "gather" kernels whose source reads are scattered by interpolation/border math and therefore cannot be widened — only
+ * the store is packed.
  *
  * Each pixel is computed by @p pixelFn(batch, y, x). When the run is fully in bounds, the destination is contiguous in
  * x, and the row is suitably aligned, the run is written with a single PackVec<T> vector store; otherwise it falls back
@@ -86,7 +128,7 @@ constexpr uintptr_t PackAlignMask =
  * @tparam PixelFn Callable with signature `T(int batch, int y, int x)` returning the output pixel.
  */
 template <typename DstWrapper, typename PixelFn>
-__device__ __forceinline__ void ApplyPackedRow(DstWrapper output, int batch, int y, PixelFn pixelFn) {
+__device__ __forceinline__ void ApplyPackedGather(DstWrapper output, int batch, int y, PixelFn pixelFn) {
     using T = typename DstWrapper::ValueType;
     constexpr int NIX = PackWidth<T>;
 
@@ -104,7 +146,7 @@ __device__ __forceinline__ void ApplyPackedRow(DstWrapper output, int batch, int
             T* dstRow = &output.at(batch, y, x0, 0);
             // Alignment/contiguity is identical for every thread writing a given row, so this branch is warp-uniform.
             if (output.isContiguousX() && (reinterpret_cast<uintptr_t>(dstRow) & PackAlignMask<T>) == 0) {
-                *reinterpret_cast<PackVec<T>*>(dstRow) = reinterpret_cast<const PackVec<T>&>(pack);
+                PackStore<T>(dstRow, pack);
             } else {
                 for (int i = 0; i < NIX; i++) output.at(batch, y, x0 + i, 0) = pack[i];
             }
@@ -118,6 +160,76 @@ __device__ __forceinline__ void ApplyPackedRow(DstWrapper output, int batch, int
             const int x = x0 + i;
             if (x >= width) break;
             output.at(batch, y, x, 0) = pixelFn(batch, y, x);
+        }
+    }
+}
+
+/**
+ * @brief Transforms a contiguous run of PackWidth<Dst> pixels at row (batch, y), reading the primary input at the same
+ * coordinates. Use this for "elementwise" kernels where the output pixel is a pure function of the input pixel at the
+ * matching coordinate — both the load and the store can be packed.
+ *
+ * Each output pixel is computed by @p pixelFn(srcPixel, batch, y, x), where srcPixel is the primary input pixel at
+ * (batch, y, x). The callable receives the coordinates as well, so it can still fetch any secondary/broadcast inputs
+ * itself. The source run is widened to a single PackVec<Src> load only when the source pixels are contiguous, aligned,
+ * and the source pack width matches the output run (the common same-pixel-size case); otherwise the source is read per
+ * pixel. The store side follows the same packed/fallback logic as ApplyPackedGather.
+ *
+ * @tparam SrcWrapper Primary input wrapper type (must expose ValueType, at(), and isContiguousX()).
+ * @tparam DstWrapper Output wrapper type (must expose ValueType, width(), at(), and isContiguousX()).
+ * @tparam PixelFn Callable with signature `Dst(Src srcPixel, int batch, int y, int x)` returning the output pixel.
+ */
+template <typename SrcWrapper, typename DstWrapper, typename PixelFn>
+__device__ __forceinline__ void ApplyPackedTransform(SrcWrapper input, DstWrapper output, int batch, int y,
+                                                     PixelFn pixelFn) {
+    using Src = typename SrcWrapper::ValueType;
+    using Dst = typename DstWrapper::ValueType;
+    constexpr int NIX = PackWidth<Dst>;
+
+    const int width = output.width();
+    const int x0 = (blockIdx.x * blockDim.x + threadIdx.x) * NIX;
+    if (x0 >= width) return;
+
+    if (x0 + NIX - 1 < width) {
+        // Fast path: the whole NIX-wide run is in bounds.
+        Src src[NIX];
+
+        // A single wide source load only covers the run when the source pack holds exactly NIX pixels. This holds for
+        // same-pixel-size transforms; type-changing ones (e.g. uchar -> float) fall through to per-pixel reads.
+        constexpr bool kPackedRead = PackEnabled<Src> && (PackWidth<Src> == NIX);
+        if constexpr (kPackedRead) {
+            Src* srcRow = &input.at(batch, y, x0, 0);
+            // Warp-uniform: contiguity/alignment is identical for every thread reading a given row.
+            if (input.isContiguousX() && (reinterpret_cast<uintptr_t>(srcRow) & PackAlignMask<Src>) == 0) {
+                PackVec<Src> v = PackLoad<Src>(srcRow);
+                for (int i = 0; i < NIX; i++) src[i] = UnpackPixel<Src>(v, i);
+            } else {
+                for (int i = 0; i < NIX; i++) src[i] = input.at(batch, y, x0 + i, 0);
+            }
+        } else {
+            for (int i = 0; i < NIX; i++) src[i] = input.at(batch, y, x0 + i, 0);
+        }
+
+        Dst pack[NIX];
+        for (int i = 0; i < NIX; i++) pack[i] = pixelFn(src[i], batch, y, x0 + i);
+
+        if constexpr (PackEnabled<Dst>) {
+            Dst* dstRow = &output.at(batch, y, x0, 0);
+            if (output.isContiguousX() && (reinterpret_cast<uintptr_t>(dstRow) & PackAlignMask<Dst>) == 0) {
+                PackStore<Dst>(dstRow, pack);
+            } else {
+                for (int i = 0; i < NIX; i++) output.at(batch, y, x0 + i, 0) = pack[i];
+            }
+        } else {
+            for (int i = 0; i < NIX; i++) output.at(batch, y, x0 + i, 0) = pack[i];
+        }
+    } else {
+        // Tail: ragged right edge where fewer than NIX pixels remain.
+
+        for (int i = 0; i < NIX; i++) {
+            const int x = x0 + i;
+            if (x >= width) break;
+            output.at(batch, y, x, 0) = pixelFn(input.at(batch, y, x, 0), batch, y, x);
         }
     }
 }

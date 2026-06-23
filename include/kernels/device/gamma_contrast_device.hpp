@@ -42,15 +42,16 @@ __global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma)
     const int batch = blockIdx.z;
     if (y >= output.height() || batch >= output.batches()) return;
 
-    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
-        auto inVal = (RangeCast<work_type>(input.at(n, yy, x, 0)));
-        work_type result = math::vpowf(inVal, gamma);
-        if constexpr (NumElements<dst_type> == 4) {
-            return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
-        } else {
-            return RangeCast<dst_type>(result);
-        }
-    });
+    ApplyPackedTransform(
+        input, output, batch, y, [=] __device__(src_type srcPixel, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+            auto inVal = (RangeCast<work_type>(srcPixel));
+            work_type result = math::vpowf(inVal, gamma);
+            if constexpr (NumElements<dst_type> == 4) {
+                return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
+            } else {
+                return RangeCast<dst_type>(result);
+            }
+        });
 }
 }  // namespace Device
 }  // namespace Kernels

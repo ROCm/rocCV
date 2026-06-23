@@ -39,7 +39,7 @@ __global__ void composite(SrcWrapper foreground, SrcWrapper background, MaskWrap
     const int batch = blockIdx.z;
     if (y >= foreground.height() || batch >= output.batches()) return;
 
-    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
+    ApplyPackedGather(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
         // Range cast all input values to float to avoid overflowing values and keep them in the same range.
         auto maskFactor = RangeCast<float1>(mask.at(n, yy, x, 0));
         auto fgVal = RangeCast<work_type>(foreground.at(n, yy, x, 0));

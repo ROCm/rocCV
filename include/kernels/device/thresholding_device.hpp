@@ -49,8 +49,8 @@ __global__ void binary_generic(SrcWrapper input, DstWrapper output, roccv::Gener
     const double th = thresh.at(z_idx);
     const double mv = maxVal.at(z_idx);
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> dst_type {
-        src_type inputVal = input.at(n, yy, x, 0);
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -76,8 +76,8 @@ __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::G
     const double th = thresh.at(z_idx);
     const double mv = maxVal.at(z_idx);
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> dst_type {
-        src_type inputVal = input.at(n, yy, x, 0);
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -101,8 +101,8 @@ __global__ void trunc_generic(SrcWrapper input, DstWrapper output, roccv::Generi
 
     const double th = thresh.at(z_idx);
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> dst_type {
-        src_type inputVal = input.at(n, yy, x, 0);
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -126,8 +126,8 @@ __global__ void tozero_generic(SrcWrapper input, DstWrapper output, roccv::Gener
 
     const double th = thresh.at(z_idx);
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> dst_type {
-        src_type inputVal = input.at(n, yy, x, 0);
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -151,8 +151,8 @@ __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output, roccv::Ge
 
     const double th = thresh.at(z_idx);
 
-    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> dst_type {
-        src_type inputVal = input.at(n, yy, x, 0);
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));

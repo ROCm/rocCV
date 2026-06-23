@@ -34,6 +34,7 @@ namespace Device {
 template <typename SrcWrapper, typename DstWrapper, typename BCWrappers>
 __global__ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrappers bc_wrappers) {
     using namespace roccv::detail;
+    using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using bc_type = typename BCWrappers::ValueType;
     using work_type = MakeType<bc_type, NumElements<dst_type>>;
@@ -48,11 +49,12 @@ __global__ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrapp
     const bc_type brightnessShift = bc_wrappers.brightnessShiftWrapper.at(batch);
     const bc_type contrastCenter = bc_wrappers.contrastCenterWrapper.at(batch);
 
-    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
-        work_type src_val = StaticCast<work_type>(input.at(n, yy, x, 0));
-        work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
-        return SaturateCast<dst_type>(result);
-    });
+    ApplyPackedTransform(
+        input, output, batch, y, [=] __device__(src_type srcPixel, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+            work_type src_val = StaticCast<work_type>(srcPixel);
+            work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
+            return SaturateCast<dst_type>(result);
+        });
 }
 }  // namespace Device
 }  // namespace Kernels

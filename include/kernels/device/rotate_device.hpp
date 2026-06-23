@@ -34,7 +34,7 @@ __global__ void rotate(SrcWrapper src, DstWrapper dst, MatWrapper affineMat) {
     const int b = blockIdx.z;
     if (y >= dst.height() || b >= dst.batches()) return;
 
-    ApplyPackedRow(dst, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+    ApplyPackedGather(dst, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
         const double xShift = x - affineMat[2];
         const double yShift = yy - affineMat[5];
 

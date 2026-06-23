@@ -37,7 +37,7 @@ __global__ void custom_crop(SrcWrapper input, DstWrapper output, roccv::Box_t cr
     const int b = blockIdx.z;
     if (y >= cropRect.height || b >= output.batches()) return;
 
-    ApplyPackedRow(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
         return input.at(n, yy + cropRect.y, x + cropRect.x, 0);
     });
 }

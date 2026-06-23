@@ -50,7 +50,7 @@ __global__ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale
     const int baseBatchIdx = base.batches() == 1 ? 0 : b;
     const int scaleBatchIdx = scale.batches() == 1 ? 0 : b;
 
-    ApplyPackedRow(output, b, y, [=] __device__(int n, int yy, int x) -> result_type {
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> result_type {
         const int baseHeightIdx = base.height() == 1 ? 0 : yy;
         const int baseWidthIdx = base.width() == 1 ? 0 : x;
         const int scaleHeightIdx = scale.height() == 1 ? 0 : yy;

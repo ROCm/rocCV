@@ -41,7 +41,7 @@ __global__ void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_
     const int batch = blockIdx.z;
     if (y >= output.height() || batch >= output.batches()) return;
 
-    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
+    ApplyPackedGather(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
         work_type src_val = StaticCast<work_type>(input.at(n, yy, x, 0));
         work_type result = alpha * src_val + beta;
         return SaturateCast<dst_type>(result);
