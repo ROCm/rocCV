@@ -29,6 +29,8 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 
+// NOTE: like warp_affine, warp_perspective is gather-read-bound and regresses under the packed vector-write strategy,
+// so it is intentionally kept as a scalar one-output-pixel-per-thread kernel.
 template <typename SrcWrapper, typename DstWrapper, typename Mat>
 __global__ void warp_perspective(SrcWrapper input, DstWrapper output, Mat mat) {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;

@@ -32,6 +32,7 @@
 #include "core/detail/math/vectorized_type_math.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/detail/vector_utils.hpp"
+#include "kernels/device/packed_apply.hpp"
 
 namespace Kernels::Device {
 template <bool ScaleStddev, typename SrcWrapper, typename DstWrapper, typename ScaleWrapper, typename BaseWrapper>
@@ -41,35 +42,36 @@ __global__ void normalize(SrcWrapper input, BaseWrapper base, ScaleWrapper scale
     using work_type = MakeType<float, NumComponents<typename SrcWrapper::ValueType>>;
     using result_type = DstWrapper::ValueType;
 
-    const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
     const int b = blockIdx.z;
+    if (y >= output.height() || b >= output.batches()) return;
 
-    if (x >= output.width() || y >= output.height()) return;
-
+    // Batch-level broadcast indices are constant across the row; resolve them once per thread.
     const int baseBatchIdx = base.batches() == 1 ? 0 : b;
-    const int baseHeightIdx = base.height() == 1 ? 0 : y;
-    const int baseWidthIdx = base.width() == 1 ? 0 : x;
-
     const int scaleBatchIdx = scale.batches() == 1 ? 0 : b;
-    const int scaleHeightIdx = scale.height() == 1 ? 0 : y;
-    const int scaleWidthIdx = scale.width() == 1 ? 0 : x;
 
-    work_type scaleVal;
-    work_type s = StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, scaleWidthIdx, 0));
-    if constexpr (ScaleStddev) {
-        // Scale tensor is the standard deviation, invert back to scale with epsilon added to avoid division by zero.
-        scaleVal = math::vrsqrtf((s * s) + epsilon);
-    } else {
-        // Scale tensor remains normal, calculate assuming the values in the scale tensor are indeed the scale
-        scaleVal = s;
-    }
-    work_type result = (StaticCast<work_type>(input.at(b, y, x, 0)) -
-                        StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, baseWidthIdx, 0))) *
-                           scaleVal * globalScale +
-                       shift;
+    ApplyPackedRow(output, b, y, [=] __device__(int n, int yy, int x) -> result_type {
+        const int baseHeightIdx = base.height() == 1 ? 0 : yy;
+        const int baseWidthIdx = base.width() == 1 ? 0 : x;
+        const int scaleHeightIdx = scale.height() == 1 ? 0 : yy;
+        const int scaleWidthIdx = scale.width() == 1 ? 0 : x;
 
-    // Saturate cast value back into the output tensor's value type
-    output.at(b, y, x, 0) = SaturateCast<result_type>(result);
+        work_type scaleVal;
+        work_type s = StaticCast<work_type>(scale.at(scaleBatchIdx, scaleHeightIdx, scaleWidthIdx, 0));
+        if constexpr (ScaleStddev) {
+            // Scale tensor is the standard deviation; invert to a scale with epsilon added to avoid division by zero.
+            scaleVal = math::vrsqrtf((s * s) + epsilon);
+        } else {
+            // Scale tensor remains normal, calculate assuming the values in the scale tensor are indeed the scale
+            scaleVal = s;
+        }
+        work_type result = (StaticCast<work_type>(input.at(n, yy, x, 0)) -
+                            StaticCast<work_type>(base.at(baseBatchIdx, baseHeightIdx, baseWidthIdx, 0))) *
+                               scaleVal * globalScale +
+                           shift;
+
+        // Saturate cast value back into the output tensor's value type
+        return SaturateCast<result_type>(result);
+    });
 }
 }  // namespace Kernels::Device

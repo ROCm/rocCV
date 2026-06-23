@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <core/detail/swizzling.hpp>
 #include <core/detail/type_traits.hpp>
 
+#include "kernels/device/packed_apply.hpp"
 #include "operator_types.h"
 
 namespace Kernels::Device {
@@ -39,22 +40,21 @@ __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float del
 
     using work_type_t = MakeType<float, NumElements<T>>;
 
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
     const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
     const auto z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    if (x_idx >= output.width() || y_idx >= output.height()) return;
+    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> T {
+        T val = Swizzle<S>(input.at(n, yy, x, 0));
+        work_type_t valF = StaticCast<work_type_t>(val);
 
-    T val = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
-    work_type_t valF = StaticCast<work_type_t>(val);
+        float y = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
+        float cr = (valF.x - y) * 0.877f + delta;
+        float cb = (valF.z - y) * 0.492f + delta;
 
-    float y = valF.x * 0.299f + valF.y * 0.587f + valF.z * 0.114f;
-    float cr = (valF.x - y) * 0.877f + delta;
-    float cb = (valF.z - y) * 0.492f + delta;
-
-    work_type_t out = make_float3(y, cb, cr);
-
-    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<T>(out);
+        work_type_t out = make_float3(y, cb, cr);
+        return SaturateCast<T>(out);
+    });
 }
 
 template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
@@ -63,35 +63,34 @@ __global__ void yuv_to_rgb_or_bgr(SrcWrapper input, DstWrapper output, float del
     using namespace roccv::detail;
     using work_type_t = MakeType<float, NumElements<T>>;
 
-    const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    if (x_idx >= output.width() || y_idx >= output.height()) return;
+    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> T {
+        T val = input.at(n, yy, x, 0);
+        work_type_t valF = StaticCast<work_type_t>(val);
 
-    T val = input.at(z_idx, y_idx, x_idx, 0);
-    work_type_t valF = StaticCast<work_type_t>(val);
+        // Convert from YUV to RGB
+        work_type_t rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
+                                      valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
+                                      valF.x + (valF.y - delta) * 2.032f);                               // B
 
-    // Convert from YUV to RGB
-    work_type_t rgb = make_float3(valF.x + (valF.z - delta) * 1.140f,                                // R
-                                  valF.x + (valF.y - delta) * -0.395f + (valF.z - delta) * -0.581f,  // G
-                                  valF.x + (valF.y - delta) * 2.032f);                               // B
-
-    // Saturate cast to type T (this clamps to proper ranges)
-    output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(SaturateCast<T>(rgb));
+        // Saturate cast to type T (this clamps to proper ranges)
+        return Swizzle<S>(SaturateCast<T>(rgb));
+    });
 }
 
 template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
 __global__ void reorder(SrcWrapper input, DstWrapper output) {
     using namespace roccv::detail;
 
-    const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    if (x_idx >= output.width() || y_idx >= output.height()) return;
-
-    output.at(z_idx, y_idx, x_idx, 0) = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
+    ApplyPackedRow(output, z_idx, y_idx,
+                   [=] __device__(int n, int yy, int x) -> T { return Swizzle<S>(input.at(n, yy, x, 0)); });
 }
 
 template <typename T, roccv::eSwizzle S, typename SrcWrapper, typename DstWrapper>
@@ -100,18 +99,17 @@ __global__ void rgb_or_bgr_to_grayscale(SrcWrapper input, DstWrapper output) {
     using work_type_t = MakeType<float, NumElements<T>>;
     using out_type_t = MakeType<BaseType<T>, 1>;  // Output must be single channel grayscale
 
-    const int x_idx = threadIdx.x + blockDim.x * blockIdx.x;
     const int y_idx = threadIdx.y + blockDim.y * blockIdx.y;
     const int z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    if (x_idx >= output.width() || y_idx >= output.height()) return;
+    ApplyPackedRow(output, z_idx, y_idx, [=] __device__(int n, int yy, int x) -> out_type_t {
+        T inVal = Swizzle<S>(input.at(n, yy, x, 0));
+        work_type_t inValF = StaticCast<work_type_t>(inVal);
 
-    T inVal = Swizzle<S>(input.at(z_idx, y_idx, x_idx, 0));
-    work_type_t inValF = StaticCast<work_type_t>(inVal);
-
-    // Calculate luminance
-    float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
-
-    output.at(z_idx, y_idx, x_idx, 0) = SaturateCast<out_type_t>(y);
+        // Calculate luminance
+        float y = inValF.x * 0.299f + inValF.y * 0.587f + inValF.z * 0.114f;
+        return SaturateCast<out_type_t>(y);
+    });
 }
 }  // namespace Kernels::Device

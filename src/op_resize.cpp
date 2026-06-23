@@ -45,14 +45,11 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            // Each thread emits a run of NIX output pixels along x for a single coalesced vector write.
-            constexpr int NIX = Kernels::Device::ResizeNIX<T>;
-            using DstPack = Kernels::Device::ResizePack<T>;
+            // Each thread emits a run of PackWidth<T> output pixels along x for a single coalesced vector write.
             dim3 block(64, 8);
-            dim3 grid((outputWrapper.width() + block.x * NIX - 1) / (block.x * NIX),
-                      (outputWrapper.height() + block.y - 1) / block.y, outputWrapper.batches());
-            Kernels::Device::resize<NIX, DstPack>
-                <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
+            dim3 grid = Kernels::Device::PackedGrid<T>(outputWrapper.width(), outputWrapper.height(),
+                                                       outputWrapper.batches(), block);
+            Kernels::Device::resize<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
             break;
         }
 

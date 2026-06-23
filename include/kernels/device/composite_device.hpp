@@ -24,6 +24,7 @@
 #include <hip/hip_runtime.h>
 
 #include "core/detail/casting.hpp"
+#include "kernels/device/packed_apply.hpp"
 
 namespace Kernels {
 namespace Device {
@@ -34,25 +35,25 @@ __global__ void composite(SrcWrapper foreground, SrcWrapper background, MaskWrap
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
 
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     const int batch = blockIdx.z;
+    if (y >= foreground.height() || batch >= output.batches()) return;
 
-    if (x >= foreground.width() || y >= foreground.height()) return;
+    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        // Range cast all input values to float to avoid overflowing values and keep them in the same range.
+        auto maskFactor = RangeCast<float1>(mask.at(n, yy, x, 0));
+        auto fgVal = RangeCast<work_type>(foreground.at(n, yy, x, 0));
+        auto bgVal = RangeCast<work_type>(background.at(n, yy, x, 0));
 
-    // Range cast all input values to float to avoid overflowing values and keep them in the same range.
-    auto maskFactor = RangeCast<float1>(mask.at(batch, y, x, 0));
-    auto fgVal = RangeCast<work_type>(foreground.at(batch, y, x, 0));
-    auto bgVal = RangeCast<work_type>(background.at(batch, y, x, 0));
+        work_type result = bgVal + maskFactor.x * (fgVal - bgVal);
 
-    work_type result = bgVal + maskFactor.x * (fgVal - bgVal);
-
-    // If number of channels in output is 4, ensure that the last channel (alpha in this case) is always fully on.
-    if constexpr (NumElements<dst_type> == 4) {
-        output.at(batch, y, x, 0) = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
-    } else {
-        output.at(batch, y, x, 0) = RangeCast<dst_type>(result);
-    }
+        // If output has 4 channels, ensure the last channel (alpha) is always fully on.
+        if constexpr (NumElements<dst_type> == 4) {
+            return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, 1.0f});
+        } else {
+            return RangeCast<dst_type>(result);
+        }
+    });
 }
 }  // namespace Device
 }  // namespace Kernels

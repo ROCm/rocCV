@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
+#include "kernels/device/packed_apply.hpp"
 
 namespace Kernels {
 namespace Device {
@@ -36,15 +37,15 @@ __global__ void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<DT_AB, NumElements<dst_type>>;
 
-    const int x = threadIdx.x + blockIdx.x * blockDim.x;
     const int y = threadIdx.y + blockIdx.y * blockDim.y;
     const int batch = blockIdx.z;
+    if (y >= output.height() || batch >= output.batches()) return;
 
-    if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
-
-    work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
-    work_type result = alpha * src_val + beta;
-    output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
+    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        work_type src_val = StaticCast<work_type>(input.at(n, yy, x, 0));
+        work_type result = alpha * src_val + beta;
+        return SaturateCast<dst_type>(result);
+    });
 }
 }  // namespace Device
 }  // namespace Kernels

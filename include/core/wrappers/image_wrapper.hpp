@@ -137,6 +137,14 @@ class ImageWrapper {
     }
 
     /**
+     * @brief Whether consecutive pixels along x are contiguous in memory (i.e. the width stride equals one whole
+     * pixel). True for interleaved layouts; lets callers safely issue a wide store across a run of pixels.
+     *
+     * @return True if pixels along the width axis are tightly packed.
+     */
+    __device__ __host__ inline bool isContiguousX() const { return stride.w == static_cast<int64_t>(sizeof(T)); }
+
+    /**
      * @brief Retrives the height of the images.
      *
      * @return Image height.

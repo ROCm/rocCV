@@ -23,6 +23,8 @@
 
 #include <hip/hip_runtime.h>
 
+#include "kernels/device/packed_apply.hpp"
+
 namespace Kernels {
 namespace Device {
 /**
@@ -38,13 +40,14 @@ namespace Device {
  */
 template <typename SrcDesc, typename DstDesc>
 __global__ void copy_make_border(SrcDesc src, DstDesc dst, int32_t top, int32_t left) {
-    int x = blockIdx.x * blockDim.x + threadIdx.x;
-    int y = blockIdx.y * blockDim.y + threadIdx.y;
-    int b = blockIdx.z;
+    using dst_type = typename DstDesc::ValueType;
 
-    if (x >= dst.width() || y >= dst.height() || b >= dst.batches()) return;
+    const int y = blockIdx.y * blockDim.y + threadIdx.y;
+    const int b = blockIdx.z;
+    if (y >= dst.height() || b >= dst.batches()) return;
 
-    dst.at(b, y, x, 0) = src.at(b, y - top, x - left, 0);
+    ApplyPackedRow(dst, b, y,
+                   [=] __device__(int n, int yy, int x) -> dst_type { return src.at(n, yy - top, x - left, 0); });
 }
 }  // namespace Device
 }  // namespace Kernels

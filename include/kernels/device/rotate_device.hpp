@@ -23,21 +23,25 @@
 
 #include <hip/hip_runtime.h>
 
+#include "kernels/device/packed_apply.hpp"
+
 namespace Kernels::Device {
 template <typename SrcWrapper, typename DstWrapper, typename MatWrapper>
 __global__ void rotate(SrcWrapper src, DstWrapper dst, MatWrapper affineMat) {
-    const int x = blockDim.x * blockIdx.x + threadIdx.x;
+    using dst_type = typename DstWrapper::ValueType;
+
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
     const int b = blockIdx.z;
+    if (y >= dst.height() || b >= dst.batches()) return;
 
-    if (x >= dst.width() || y >= dst.height()) return;
+    ApplyPackedRow(dst, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        const double xShift = x - affineMat[2];
+        const double yShift = yy - affineMat[5];
 
-    const double xShift = x - affineMat[2];
-    const double yShift = y - affineMat[5];
+        const float srcX = static_cast<float>(xShift * affineMat[0] + yShift * -affineMat[1]);
+        const float srcY = static_cast<float>(xShift * -affineMat[3] + yShift * affineMat[4]);
 
-    const float srcX = static_cast<float>(xShift * affineMat[0] + yShift * -affineMat[1]);
-    const float srcY = static_cast<float>(xShift * -affineMat[3] + yShift * affineMat[4]);
-
-    dst.at(b, y, x, 0) = src.at(b, srcY, srcX, 0);
+        return src.at(n, srcY, srcX, 0);
+    });
 }
 }  // namespace Kernels::Device

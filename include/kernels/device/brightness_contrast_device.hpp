@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
+#include "kernels/device/packed_apply.hpp"
 
 namespace Kernels {
 namespace Device {
@@ -37,22 +38,21 @@ __global__ void brightness_contrast(SrcWrapper input, DstWrapper output, BCWrapp
     using bc_type = typename BCWrappers::ValueType;
     using work_type = MakeType<bc_type, NumElements<dst_type>>;
 
-    // get the pixel coords (=thread)
-    const int x = threadIdx.x + blockIdx.x * blockDim.x;
     const int y = threadIdx.y + blockIdx.y * blockDim.y;
     const int batch = blockIdx.z;
+    if (y >= output.height() || batch >= output.batches()) return;
 
-    if (x >= output.width() || y >= output.height()) return;
-
-    // get the brightness/contrast scalars to apply
+    // The brightness/contrast scalars depend only on the batch, so fetch them once per thread (outside the x-run).
     const bc_type brightness = bc_wrappers.brightnessWrapper.at(batch);
     const bc_type contrast = bc_wrappers.contrastWrapper.at(batch);
     const bc_type brightnessShift = bc_wrappers.brightnessShiftWrapper.at(batch);
     const bc_type contrastCenter = bc_wrappers.contrastCenterWrapper.at(batch);
 
-    work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
-    work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
-    output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
+    ApplyPackedRow(output, batch, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        work_type src_val = StaticCast<work_type>(input.at(n, yy, x, 0));
+        work_type result = brightnessShift + brightness * (contrastCenter + contrast * (src_val - contrastCenter));
+        return SaturateCast<dst_type>(result);
+    });
 }
 }  // namespace Device
 }  // namespace Kernels

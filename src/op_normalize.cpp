@@ -49,9 +49,9 @@ void dispatch_normalize_stddev(hipStream_t stream, const Tensor& input, const Te
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(32, 8);
-            dim3 grid((outputWrap.width() + block.x - 1) / block.x, (outputWrap.height() + block.y - 1) / block.y,
-                      outputWrap.batches());
+            dim3 block = Kernels::Device::PackedBlock();
+            dim3 grid =
+                Kernels::Device::PackedGrid<T>(outputWrap.width(), outputWrap.height(), outputWrap.batches(), block);
             Kernels::Device::normalize<ScaleStddev>
                 <<<grid, block, 0, stream>>>(inputWrap, baseWrap, scaleWrap, outputWrap, global_scale, shift, epsilon);
             break;
@@ -112,7 +112,8 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
     // TODO: Need to support scalar base/scale tensors at some point. Will require some extra handling on the kernel
     // level. Once in place, this check can be removed.
     CHECK_TENSOR_COMPARISON(base.shape(base.layout().channels_index()) == input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) == input.shape(input.layout().channels_index()));
+    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) ==
+                            input.shape(input.layout().channels_index()));
 
     // Create kernel dispatching table based on input/output datatype and number of channels.
     // clang-format off

@@ -29,6 +29,9 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 
+// NOTE: warp_affine is gather-read-bound (arbitrary affine source coordinates have no row locality), so the packed
+// vector-write strategy used by the elementwise/resize kernels regresses it (serialized per-thread gathers + register
+// pressure collapse occupancy). It is intentionally left as a scalar one-output-pixel-per-thread kernel.
 template <typename SrcWrapper, typename DstWrapper, typename Mat>
 __global__ void warp_affine(SrcWrapper input, DstWrapper output, Mat mat) {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
