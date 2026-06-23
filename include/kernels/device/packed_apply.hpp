@@ -97,7 +97,7 @@ __device__ __forceinline__ void ApplyPackedRow(DstWrapper output, int batch, int
     if (x0 + NIX - 1 < width) {
         // Fast path: the whole NIX-wide run is in bounds.
         T pack[NIX];
-#pragma unroll
+
         for (int i = 0; i < NIX; i++) pack[i] = pixelFn(batch, y, x0 + i);
 
         if constexpr (PackEnabled<T>) {
@@ -106,16 +106,14 @@ __device__ __forceinline__ void ApplyPackedRow(DstWrapper output, int batch, int
             if (output.isContiguousX() && (reinterpret_cast<uintptr_t>(dstRow) & PackAlignMask<T>) == 0) {
                 *reinterpret_cast<PackVec<T>*>(dstRow) = reinterpret_cast<const PackVec<T>&>(pack);
             } else {
-#pragma unroll
                 for (int i = 0; i < NIX; i++) output.at(batch, y, x0 + i, 0) = pack[i];
             }
         } else {
-#pragma unroll
             for (int i = 0; i < NIX; i++) output.at(batch, y, x0 + i, 0) = pack[i];
         }
     } else {
         // Tail: ragged right edge where fewer than NIX pixels remain.
-#pragma unroll
+
         for (int i = 0; i < NIX; i++) {
             const int x = x0 + i;
             if (x >= width) break;
