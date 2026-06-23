@@ -21,6 +21,8 @@
 
 #include "op_composite.hpp"
 
+#include <functional>
+
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/composite_device.hpp"
@@ -55,37 +57,42 @@ void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, c
 template <typename SrcType, typename DstType>
 void dispatch_composite_dsttype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
                                 const Tensor& mask, const Tensor& output, eDeviceType device) {
-    // Mask is validated upstream to be single-channel U8 or F32.
-    switch (mask.dtype().etype()) {
-        case eDataType::DATA_TYPE_U8:
-            dispatch_composite_masktype<SrcType, DstType, uchar1>(stream, foreground, background, mask, output, device);
-            break;
-        case eDataType::DATA_TYPE_F32:
-            dispatch_composite_masktype<SrcType, DstType, float1>(stream, foreground, background, mask, output, device);
-            break;
-        default:
-            throw Exception("Operator does not support the given datatype for the mask tensor.",
-                            eStatusType::NOT_IMPLEMENTED);
+    // clang-format off
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8, {dispatch_composite_masktype<SrcType, DstType, uchar1>, 0, 0, 0}},
+            {eDataType::DATA_TYPE_F32, {dispatch_composite_masktype<SrcType, DstType, float1>, 0, 0, 0}}
+        };
+    // clang-format on
+
+    if (!funcs.contains(mask.dtype().etype())) {
+        throw Exception("Operator does not support the given datatype for the mask tensor.",
+                        eStatusType::NOT_IMPLEMENTED);
     }
+
+    auto func = funcs.at(mask.dtype().etype())[mask.shape(mask.layout().channels_index()) - 1];
+    if (func == 0) {
+        throw Exception("Operator does not support the given channel count for the mask tensor.",
+                        eStatusType::NOT_IMPLEMENTED);
+    }
+
+    func(stream, foreground, background, mask, output, device);
 }
 
 template <typename SrcType>
 void dispatch_composite_srctype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
                                 const Tensor& mask, const Tensor& output, eDeviceType device) {
-    // Output is validated upstream to be U8 or F32 with 3 or 4 channels.
-    const eDataType dtype = output.dtype().etype();
-    const int64_t channels = output.shape(output.layout().channels_index());
+    // clang-format off
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8,  {0, 0, dispatch_composite_dsttype<SrcType, uchar3>, dispatch_composite_dsttype<SrcType, uchar4>}},
+            {eDataType::DATA_TYPE_F32, {0, 0, dispatch_composite_dsttype<SrcType, float3>, dispatch_composite_dsttype<SrcType, float4>}}
+        };
+    // clang-format on
 
-    if (dtype == eDataType::DATA_TYPE_U8 && channels == 3)
-        dispatch_composite_dsttype<SrcType, uchar3>(stream, foreground, background, mask, output, device);
-    else if (dtype == eDataType::DATA_TYPE_U8 && channels == 4)
-        dispatch_composite_dsttype<SrcType, uchar4>(stream, foreground, background, mask, output, device);
-    else if (dtype == eDataType::DATA_TYPE_F32 && channels == 3)
-        dispatch_composite_dsttype<SrcType, float3>(stream, foreground, background, mask, output, device);
-    else if (dtype == eDataType::DATA_TYPE_F32 && channels == 4)
-        dispatch_composite_dsttype<SrcType, float4>(stream, foreground, background, mask, output, device);
-    else
-        throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    auto func = funcs.at(output.dtype().etype())[output.shape(output.layout().channels_index()) - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    func(stream, foreground, background, mask, output, device);
 }
 
 void Composite::operator()(hipStream_t stream, const Tensor& foreground, const Tensor& background, const Tensor& mask,
@@ -136,16 +143,16 @@ void Composite::operator()(hipStream_t stream, const Tensor& foreground, const T
 
     CHECK_TENSOR_CHANNELS(output, 3, 4);
 
-    // Foreground/background are validated upstream to be 3-channel U8 or F32.
-    switch (foreground.dtype().etype()) {
-        case eDataType::DATA_TYPE_U8:
-            dispatch_composite_srctype<uchar3>(stream, foreground, background, mask, output, device);
-            break;
-        case eDataType::DATA_TYPE_F32:
-            dispatch_composite_srctype<float3>(stream, foreground, background, mask, output, device);
-            break;
-        default:
-            throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
-    }
+    // clang-format off
+    static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
+        funcs = {
+            {eDataType::DATA_TYPE_U8,  {0, 0, dispatch_composite_srctype<uchar3>, 0}},
+            {eDataType::DATA_TYPE_F32, {0, 0, dispatch_composite_srctype<float3>, 0}}
+        };
+    // clang-format on
+
+    auto func = funcs.at(foreground.dtype().etype())[foreground.shape(output.layout().channels_index()) - 1];
+    if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
+    func(stream, foreground, background, mask, output, device);
 }
 };  // namespace roccv
