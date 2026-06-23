@@ -23,8 +23,11 @@
 
 #include <hip/hip_runtime.h>
 
+#include <array>
 #include <cstdint>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 #include "core/detail/type_traits.hpp"
 
@@ -164,25 +167,65 @@ __device__ __forceinline__ void ApplyPackedGather(DstWrapper output, int batch, 
     }
 }
 
+namespace detail {
+
 /**
- * @brief Transforms a contiguous run of PackWidth<Dst> pixels at row (batch, y), reading the primary input at the same
- * coordinates. Use this for "elementwise" kernels where the output pixel is a pure function of the input pixel at the
- * matching coordinate — both the load and the store can be packed.
- *
- * Each output pixel is computed by @p pixelFn(srcPixel, batch, y, x), where srcPixel is the primary input pixel at
- * (batch, y, x). The callable receives the coordinates as well, so it can still fetch any secondary/broadcast inputs
- * itself. The source run is widened to a single PackVec<Src> load only when the source pixels are contiguous, aligned,
- * and the source pack width matches the output run (the common same-pixel-size case); otherwise the source is read per
- * pixel. The store side follows the same packed/fallback logic as ApplyPackedGather.
- *
- * @tparam SrcWrapper Primary input wrapper type (must expose ValueType, at(), and isContiguousX()).
- * @tparam DstWrapper Output wrapper type (must expose ValueType, width(), at(), and isContiguousX()).
- * @tparam PixelFn Callable with signature `Dst(Src srcPixel, int batch, int y, int x)` returning the output pixel.
+ * @brief Reads a run of NIX consecutive pixels from one input wrapper at (batch, y, x0 .. x0+NIX-1). The load is
+ * widened to a single PackVec<Src> transaction when the input's pack width matches the run and the row is contiguous
+ * and aligned; otherwise each pixel is read individually. Inputs whose pack width does not match NIX (e.g. a
+ * type-changing or differently-shaped input) always take the per-pixel path.
  */
-template <typename SrcWrapper, typename DstWrapper, typename PixelFn>
-__device__ __forceinline__ void ApplyPackedTransform(SrcWrapper input, DstWrapper output, int batch, int y,
-                                                     PixelFn pixelFn) {
+template <int NIX, typename SrcWrapper>
+__device__ __forceinline__ std::array<typename SrcWrapper::ValueType, NIX> ReadPackedRun(SrcWrapper input, int batch,
+                                                                                         int y, int x0) {
     using Src = typename SrcWrapper::ValueType;
+    std::array<Src, NIX> run;
+
+    constexpr bool kPackedRead = PackEnabled<Src> && (PackWidth<Src> == NIX);
+    if constexpr (kPackedRead) {
+        Src* srcRow = &input.at(batch, y, x0, 0);
+        // Warp-uniform: contiguity/alignment is identical for every thread reading a given row.
+        if (input.isContiguousX() && (reinterpret_cast<uintptr_t>(srcRow) & PackAlignMask<Src>) == 0) {
+            PackVec<Src> v = PackLoad<Src>(srcRow);
+            for (int i = 0; i < NIX; i++) run[i] = UnpackPixel<Src>(v, i);
+        } else {
+            for (int i = 0; i < NIX; i++) run[i] = input.at(batch, y, x0 + i, 0);
+        }
+    } else {
+        for (int i = 0; i < NIX; i++) run[i] = input.at(batch, y, x0 + i, 0);
+    }
+    return run;
+}
+
+/**
+ * @brief Invokes pixelFn(batch, y, x, run0[i], run1[i], ...) by expanding the tuple of per-input runs at element i.
+ */
+template <typename PixelFn, typename Runs, std::size_t... Is>
+__device__ __forceinline__ auto InvokeAtIndex(PixelFn& pixelFn, int batch, int y, int x, int i, Runs& runs,
+                                              std::index_sequence<Is...>) {
+    return pixelFn(batch, y, x, std::get<Is>(runs)[i]...);
+}
+
+}  // namespace detail
+
+/**
+ * @brief Transforms a contiguous run of PackWidth<Dst> pixels at row (batch, y), reading one or more inputs at the same
+ * coordinates. Use this for "elementwise" kernels where the output pixel is a pure function of the input pixel(s) at
+ * the matching coordinate — both the loads and the store can be packed.
+ *
+ * Each output pixel is computed by @p pixelFn(batch, y, x, p0, p1, ...), where pN is the pixel from the Nth input at
+ * (batch, y, x). The callable receives the coordinates as well, so it can still fetch any secondary/broadcast inputs
+ * (which are not contiguous along x) itself. Each input is independently widened to a single PackVec load only when its
+ * pixels are contiguous, aligned, and its pack width matches the output run (the common same-pixel-size case);
+ * otherwise that input is read per pixel. The store side follows the same packed/fallback logic as ApplyPackedGather.
+ *
+ * @tparam DstWrapper Output wrapper type (must expose ValueType, width(), at(), and isContiguousX()).
+ * @tparam PixelFn Callable `Dst(int batch, int y, int x, Src0 p0, Src1 p1, ...)` returning the output pixel.
+ * @tparam SrcWrappers Input wrapper types (each must expose ValueType, at(), and isContiguousX()).
+ */
+template <typename DstWrapper, typename PixelFn, typename... SrcWrappers>
+__device__ __forceinline__ void ApplyPackedTransform(DstWrapper output, int batch, int y, PixelFn pixelFn,
+                                                     SrcWrappers... inputs) {
     using Dst = typename DstWrapper::ValueType;
     constexpr int NIX = PackWidth<Dst>;
 
@@ -191,27 +234,14 @@ __device__ __forceinline__ void ApplyPackedTransform(SrcWrapper input, DstWrappe
     if (x0 >= width) return;
 
     if (x0 + NIX - 1 < width) {
-        // Fast path: the whole NIX-wide run is in bounds.
-        Src src[NIX];
-
-        // A single wide source load only covers the run when the source pack holds exactly NIX pixels. This holds for
-        // same-pixel-size transforms; type-changing ones (e.g. uchar -> float) fall through to per-pixel reads.
-        constexpr bool kPackedRead = PackEnabled<Src> && (PackWidth<Src> == NIX);
-        if constexpr (kPackedRead) {
-            Src* srcRow = &input.at(batch, y, x0, 0);
-            // Warp-uniform: contiguity/alignment is identical for every thread reading a given row.
-            if (input.isContiguousX() && (reinterpret_cast<uintptr_t>(srcRow) & PackAlignMask<Src>) == 0) {
-                PackVec<Src> v = PackLoad<Src>(srcRow);
-                for (int i = 0; i < NIX; i++) src[i] = UnpackPixel<Src>(v, i);
-            } else {
-                for (int i = 0; i < NIX; i++) src[i] = input.at(batch, y, x0 + i, 0);
-            }
-        } else {
-            for (int i = 0; i < NIX; i++) src[i] = input.at(batch, y, x0 + i, 0);
-        }
+        // Fast path: read each input's NIX-wide run (packed per-input where possible), compute, then packed-store.
+        auto runs = std::make_tuple(detail::ReadPackedRun<NIX>(inputs, batch, y, x0)...);
 
         Dst pack[NIX];
-        for (int i = 0; i < NIX; i++) pack[i] = pixelFn(src[i], batch, y, x0 + i);
+        for (int i = 0; i < NIX; i++) {
+            pack[i] =
+                detail::InvokeAtIndex(pixelFn, batch, y, x0 + i, i, runs, std::index_sequence_for<SrcWrappers...>{});
+        }
 
         if constexpr (PackEnabled<Dst>) {
             Dst* dstRow = &output.at(batch, y, x0, 0);
@@ -229,7 +259,7 @@ __device__ __forceinline__ void ApplyPackedTransform(SrcWrapper input, DstWrappe
         for (int i = 0; i < NIX; i++) {
             const int x = x0 + i;
             if (x >= width) break;
-            output.at(batch, y, x, 0) = pixelFn(input.at(batch, y, x, 0), batch, y, x);
+            output.at(batch, y, x, 0) = pixelFn(batch, y, x, inputs.at(batch, y, x, 0)...);
         }
     }
 }

@@ -49,8 +49,8 @@ __global__ void binary_generic(SrcWrapper input, DstWrapper output, roccv::Gener
     const double th = thresh.at(z_idx);
     const double mv = maxVal.at(z_idx);
 
-    ApplyPackedTransform(input, output, z_idx, y_idx,
-                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+    ApplyPackedTransform(output, z_idx, y_idx,
+                         [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type inputVal) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -58,7 +58,7 @@ __global__ void binary_generic(SrcWrapper input, DstWrapper output, roccv::Gener
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
         return outputVal;
-    });
+    }, input);
 }
 
 template <typename SrcWrapper, typename DstWrapper>
@@ -76,8 +76,8 @@ __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::G
     const double th = thresh.at(z_idx);
     const double mv = maxVal.at(z_idx);
 
-    ApplyPackedTransform(input, output, z_idx, y_idx,
-                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+    ApplyPackedTransform(output, z_idx, y_idx,
+                         [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type inputVal) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -85,7 +85,7 @@ __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::G
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
         return outputVal;
-    });
+    }, input);
 }
 
 template <typename SrcWrapper, typename DstWrapper>
@@ -101,8 +101,8 @@ __global__ void trunc_generic(SrcWrapper input, DstWrapper output, roccv::Generi
 
     const double th = thresh.at(z_idx);
 
-    ApplyPackedTransform(input, output, z_idx, y_idx,
-                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+    ApplyPackedTransform(output, z_idx, y_idx,
+                         [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type inputVal) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -110,7 +110,7 @@ __global__ void trunc_generic(SrcWrapper input, DstWrapper output, roccv::Generi
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
         return outputVal;
-    });
+    }, input);
 }
 
 template <typename SrcWrapper, typename DstWrapper>
@@ -126,8 +126,8 @@ __global__ void tozero_generic(SrcWrapper input, DstWrapper output, roccv::Gener
 
     const double th = thresh.at(z_idx);
 
-    ApplyPackedTransform(input, output, z_idx, y_idx,
-                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+    ApplyPackedTransform(output, z_idx, y_idx,
+                         [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type inputVal) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -135,7 +135,7 @@ __global__ void tozero_generic(SrcWrapper input, DstWrapper output, roccv::Gener
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
         return outputVal;
-    });
+    }, input);
 }
 
 template <typename SrcWrapper, typename DstWrapper>
@@ -151,8 +151,8 @@ __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output, roccv::Ge
 
     const double th = thresh.at(z_idx);
 
-    ApplyPackedTransform(input, output, z_idx, y_idx,
-                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+    ApplyPackedTransform(output, z_idx, y_idx,
+                         [=] __device__(int /*n*/, int /*yy*/, int /*x*/, src_type inputVal) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
@@ -160,7 +160,7 @@ __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output, roccv::Ge
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
         return outputVal;
-    });
+    }, input);
 }
 }  // namespace Device
 }  // namespace Kernels
