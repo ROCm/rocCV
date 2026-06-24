@@ -45,21 +45,28 @@ AverageBlur::AverageBlur(int32_t maxKernelWidth, int32_t maxKernelHeight)
             eStatusType::INVALID_VALUE);
     }
 
+    //size_t memSize = m_maxKernelHeight * m_maxKernelWidth* sizeof(float);
+    //m_hostKernelMem = static_cast<float*>(m_allocator.allocHostPinnedMem(memSize));
+    ///*
     size_t memSizeH = m_maxKernelWidth * sizeof(float);
     size_t memSizeV = m_maxKernelHeight * sizeof(float);
     m_hostKernelMemH = static_cast<float*>(m_allocator.allocHostPinnedMem(memSizeH));
     m_hostKernelMemV = static_cast<float*>(m_allocator.allocHostPinnedMem(memSizeV));
-
+    //*/
     int gpuCount = 0;
     hipError_t err = hipGetDeviceCount(&gpuCount);
     if (err == hipSuccess) {
+        //m_deviceKernelMem = static_cast<float*>(m_allocator.allocHipMem(memSize));
+        ///*
         m_deviceKernelMemH = static_cast<float*>(m_allocator.allocHipMem(memSizeH));
         m_deviceKernelMemV = static_cast<float*>(m_allocator.allocHipMem(memSizeV));
+        //*/
         HIP_VALIDATE_NO_ERRORS(hipEventCreateWithFlags(&m_completionEvent, hipEventDisableTiming));
     }
 }
 
 AverageBlur::~AverageBlur() {
+    ///*
     m_allocator.freeHostPinnedMem(m_hostKernelMemH);
     m_allocator.freeHostPinnedMem(m_hostKernelMemV);
     if (m_deviceKernelMemH != nullptr) {
@@ -68,6 +75,7 @@ AverageBlur::~AverageBlur() {
     if (m_deviceKernelMemV != nullptr) {
         m_allocator.freeHipMem(m_deviceKernelMemV);
     }
+    //*/
     if (m_completionEvent != nullptr) {
         (void)hipEventDestroy(m_completionEvent);
     }
