@@ -36,9 +36,9 @@ template <typename SrcWrapper, typename DstWrapper>
 __global__ void binary_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
                                roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int32_t z_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
@@ -62,9 +62,9 @@ template <typename SrcWrapper, typename DstWrapper>
 __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
                                    roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int32_t z_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
@@ -87,9 +87,9 @@ __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::G
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void trunc_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int32_t z_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
@@ -111,9 +111,9 @@ __global__ void trunc_generic(SrcWrapper input, DstWrapper output, roccv::Generi
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void tozero_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int32_t z_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
@@ -135,9 +135,9 @@ __global__ void tozero_generic(SrcWrapper input, DstWrapper output, roccv::Gener
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int32_t z_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;

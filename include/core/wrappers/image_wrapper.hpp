@@ -62,11 +62,13 @@ class ImageWrapper {
 
         // Handle HWC/CHW layout, which doesn't have shapes/strides for the batch dimension. We set the batch shape to 1
         // and the strides to 0.
-        int64_t num_batches = indexes.n == -1 ? 1 : tensor.shape(indexes.n);
-        int64_t batch_stride = indexes.n == -1 ? 0 : tdata.stride(indexes.n);
+        int32_t num_batches = indexes.n == -1 ? 1 : static_cast<int32_t>(tensor.shape(indexes.n));
+        int32_t batch_stride = indexes.n == -1 ? 0 : static_cast<int32_t>(tdata.stride(indexes.n));
 
-        shape = {num_batches, tdata.shape(indexes.h), tdata.shape(indexes.w), tdata.shape(indexes.c)};
-        stride = {batch_stride, tdata.stride(indexes.h), tdata.stride(indexes.w), tdata.stride(indexes.c)};
+        shape = {num_batches, static_cast<int32_t>(tdata.shape(indexes.h)), static_cast<int32_t>(tdata.shape(indexes.w)),
+                 static_cast<int32_t>(tdata.shape(indexes.c))};
+        stride = {batch_stride, static_cast<int32_t>(tdata.stride(indexes.h)), static_cast<int32_t>(tdata.stride(indexes.w)),
+                  static_cast<int32_t>(tdata.stride(indexes.c))};
         data = static_cast<unsigned char*>(tdata.basePtr());
     }
 
@@ -128,11 +130,11 @@ class ImageWrapper {
      * @param c Channel coordinates.
      * @return A reference to the underlying data at given coordinates.
      */
-    __device__ __host__ T& at(int64_t n, int64_t h, int64_t w, int64_t c) {
+    __device__ __host__ T& at(int32_t n, int32_t h, int32_t w, int32_t c) {
         return *(reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c)));
     }
 
-    __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
+    __device__ __host__ const T at(int32_t n, int32_t h, int32_t w, int32_t c) const {
         return *(reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c)));
     }
 
@@ -141,32 +143,32 @@ class ImageWrapper {
      *
      * @return Image height.
      */
-    __device__ __host__ inline int64_t height() const { return shape.h; }
+    __device__ __host__ inline int32_t height() const { return shape.h; }
 
     /**
      * @brief Retrieves the width of the image.
      *
      * @return Image width.
      */
-    __device__ __host__ inline int64_t width() const { return shape.w; }
+    __device__ __host__ inline int32_t width() const { return shape.w; }
 
     /**
      * @brief Retrieves the number of batches in the image tensor.
      *
      * @return Number of batches.
      */
-    __device__ __host__ inline int64_t batches() const { return shape.n; }
+    __device__ __host__ inline int32_t batches() const { return shape.n; }
 
     /**
      * @brief Retries the number of channels in the image.
      *
      * @return Image channels.
      */
-    __device__ __host__ inline int64_t channels() const { return shape.c; }
+    __device__ __host__ inline int32_t channels() const { return shape.c; }
 
    private:
     struct ImageShape {
-        int64_t n, h, w, c;
+        int32_t n, h, w, c;
     };
 
     ImageShape shape;

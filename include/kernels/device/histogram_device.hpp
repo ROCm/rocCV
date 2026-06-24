@@ -34,10 +34,10 @@ __global__ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T
     extern __shared__ __align__(sizeof(T)) unsigned char smem[];
     T *local_histogram = reinterpret_cast<T *>(smem);
 
-    const auto z_idx = blockIdx.z;
-    const auto gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const auto x_idx = gid % input.width();
-    const auto y_idx = gid / input.width();
+    const int32_t z_idx = blockIdx.z;
+    const int32_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+    const int32_t x_idx = gid % input.width();
+    const int32_t y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
@@ -64,10 +64,10 @@ __global__ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::Gene
     extern __shared__ __align__(sizeof(T)) unsigned char smem[];
     T *local_histogram = reinterpret_cast<T *>(smem);
 
-    const auto z_idx = blockIdx.z;
-    const auto gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const auto x_idx = gid % input.width();
-    const auto y_idx = gid / input.width();
+    const int32_t z_idx = blockIdx.z;
+    const int32_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+    const int32_t x_idx = gid % input.width();
+    const int32_t y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index

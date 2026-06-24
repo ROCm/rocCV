@@ -117,7 +117,7 @@ class BorderWrapper {
     /**
      * @brief Sample the underlying image with no border logic. Caller must ensure coordinates are in-range.
      */
-    __device__ __host__ inline const T at_inbounds(int64_t n, int64_t h, int64_t w, int64_t c) const {
+    __device__ __host__ inline const T at_inbounds(int32_t n, int32_t h, int32_t w, int32_t c) const {
         return m_desc.at(n, h, w, c);
     }
 
@@ -131,7 +131,7 @@ class BorderWrapper {
      * @param c The channel index.
      * @return A reference to the underlying data or a fallback border value of type T.
      */
-    __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
+    __device__ __host__ const T at(int32_t n, int32_t h, int32_t w, int32_t c) const {
         // Constant border type implementation. This is a special case which doesn't remap values, but rather returns
         // the provided constant value.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_CONSTANT) {
@@ -150,35 +150,35 @@ class BorderWrapper {
         }
 
         // Otherwise, do some additional calculations to map the provided x and y coordinates to be within bounds.
-        int64_t x = w, y = h;
-        int64_t imgWidth = width(), imgHeight = height();
+        int32_t x = w, y = h;
+        int32_t imgWidth = width(), imgHeight = height();
 
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
             if (w < 0 || w >= imgWidth) {
-                x = detail::reflect_border_coord_i64(w, imgWidth);
+                x = detail::reflect_border_coord_i32(w, imgWidth);
             }
             if (h < 0 || h >= imgHeight) {
-                y = detail::reflect_border_coord_i64(h, imgHeight);
+                y = detail::reflect_border_coord_i32(h, imgHeight);
             }
         }
 
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT101) {
-            x = detail::reflect101_border_coord_i64(w, imgWidth);
-            y = detail::reflect101_border_coord_i64(h, imgHeight);
+            x = detail::reflect101_border_coord_i32(w, imgWidth);
+            y = detail::reflect101_border_coord_i32(h, imgHeight);
         }
 
         // Replicate: clamp to edge. Equivalent to per-axis OOB snap; min/max maps cleanly to GPU integer ops.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            x = detail::clamp_i64(w, 0, imgWidth - 1);
-            y = detail::clamp_i64(h, 0, imgHeight - 1);
+            x = detail::clamp_i32(w, 0, imgWidth - 1);
+            y = detail::clamp_i32(h, 0, imgHeight - 1);
         }
 
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
-            x = detail::euclid_mod_i64_fast(w, imgWidth);
-            y = detail::euclid_mod_i64_fast(h, imgHeight);
+            x = detail::euclid_mod_i32(w, imgWidth);
+            y = detail::euclid_mod_i32(h, imgHeight);
         }
 
         return m_desc.at(n, y, x, c);
@@ -189,28 +189,28 @@ class BorderWrapper {
      *
      * @return Image height.
      */
-    __device__ __host__ inline int64_t height() const { return m_desc.height(); }
+    __device__ __host__ inline int32_t height() const { return m_desc.height(); }
 
     /**
      * @brief Retrieves the width of the image.
      *
      * @return Image width.
      */
-    __device__ __host__ inline int64_t width() const { return m_desc.width(); }
+    __device__ __host__ inline int32_t width() const { return m_desc.width(); }
 
     /**
      * @brief Retrieves the number of batches in the image tensor.
      *
      * @return Number of batches.
      */
-    __device__ __host__ inline int64_t batches() const { return m_desc.batches(); }
+    __device__ __host__ inline int32_t batches() const { return m_desc.batches(); }
 
     /**
      * @brief Retrieves the number of channels in the image.
      *
      * @return Image channels.
      */
-    __device__ __host__ inline int64_t channels() const { return m_desc.channels(); }
+    __device__ __host__ inline int32_t channels() const { return m_desc.channels(); }
 
    private:
     ImageWrapper<T> m_desc;

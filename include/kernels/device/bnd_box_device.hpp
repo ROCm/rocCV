@@ -39,9 +39,9 @@ __global__ void bndbox_kernel(SrcWrapper input, DstWrapper output, const Rect_t 
     // Working type for internal pixel format, which has 4 channels.
     using WorkType = detail::MakeType<BT, 4>;
 
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto b_idx = blockIdx.z;
+    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int32_t b_idx = blockIdx.z;
 
     if (x_idx >= width || y_idx >= height || b_idx >= batch) {
         return;
