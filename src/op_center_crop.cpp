@@ -23,6 +23,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "op_custom_crop.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, Size2D cropSize,

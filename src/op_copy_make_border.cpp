@@ -29,6 +29,7 @@
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/copy_make_border_device.hpp"
 #include "kernels/host/copy_make_border_host.hpp"
+
 namespace roccv {
 
 /**

@@ -35,7 +35,6 @@ namespace roccv {
 template <typename T, eBorderType B, eInterpolationType I>
 void dispatch_warp_perspective_interp(hipStream_t stream, const Tensor &input, const Tensor &output,
                                       const PerspectiveTransform transMatrix, T borderValue, eDeviceType device) {
-
     ArrayWrapper<float, 9> transform(transMatrix);
     ImageWrapper<T> outputWrapper(output);
     InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);

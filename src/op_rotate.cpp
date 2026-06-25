@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/rotate_device.hpp"
 #include "kernels/host/rotate_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 void GetRotationMatrix(double angleDeg, double2 shift, double *mat) {
