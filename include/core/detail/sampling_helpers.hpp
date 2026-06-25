@@ -110,6 +110,23 @@ __device__ __host__ __forceinline__ int64_t clamp_i64(int64_t v, int64_t lo, int
 }
 
 /**
+ * @brief Clamp a signed integer to a closed interval (templated version).
+ * @tparam IndexT Index type (int32_t or int64_t).
+ * @param v Value to clamp.
+ * @param lo Lower bound (inclusive).
+ * @param hi Upper bound (inclusive); must satisfy @p lo <= @p hi.
+ * @return @p v restricted to the inclusive interval between @p lo and @p hi.
+ */
+template<typename IndexT>
+__device__ __host__ __forceinline__ IndexT clamp(IndexT v, IndexT lo, IndexT hi) {
+    if constexpr (std::is_same_v<IndexT, int32_t>) {
+        return clamp_i32(v, lo, hi);
+    } else {
+        return clamp_i64(v, lo, hi);
+    }
+}
+
+/**
  * @brief Euclidean (non-negative) modulo for 32-bit operands.
  * @param a Dividend.
  * @param modulus Strictly positive modulus.
@@ -161,12 +178,12 @@ __device__ __host__ inline int64_t euclid_mod_i64_fast(int64_t a, int64_t modulu
  * @tparam IndexT Index type (int32_t or int64_t).
  * @param x Source coordinate in pixels.
  * @return Largest IndexT not greater than @p x (i.e. floor), suitable as the left/top neighbor index for bilinear/cubic.
- * @note On device, uses a floor intrinsic; on host uses @c floorf().
+ * @note On device, uses a floor intrinsic compatible with HIP @c __float2ll_rd lowering; on host uses @c floorf().
  */
 template<typename IndexT>
 __device__ __host__ __forceinline__ IndexT interp_floor(float x) {
 #if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    return static_cast<IndexT>(__builtin_elementwise_floor(x));
+    return static_cast<IndexT>(static_cast<long long>(__builtin_elementwise_floor(x)));
 #else
     return static_cast<IndexT>(floorf(x));
 #endif
@@ -184,61 +201,6 @@ __device__ __host__ __forceinline__ IndexT interp_nearest(float x) {
         return static_cast<int32_t>(std::lroundf(x));
     } else {
         return static_cast<int64_t>(std::llroundf(x));
-    }
-}
-
-/**
- * @brief Convert a subpixel coordinate to the 32-bit integer grid index below @p x (floor).
- * @param x Source coordinate in pixels.
- * @return Largest int32 not greater than @p x (i.e. floor), suitable as the left/top neighbor index for bilinear/cubic.
- * @note On device, uses a floor intrinsic; on host uses @c floorf().
- */
-__device__ __host__ __forceinline__ int32_t interp_floor_i32(float x) {
-    return interp_floor<int32_t>(x);
-}
-
-/**
- * @brief Convert a subpixel coordinate to the integer grid index below @p x (floor).
- * @param x Source coordinate in pixels.
- * @return Largest int64 not greater than @p x (i.e. floor), suitable as the left/top neighbor index for bilinear/cubic.
- * @note On device, uses a floor intrinsic compatible with HIP @c __float2ll_rd lowering; on host uses @c floorf().
- */
-__device__ __host__ __forceinline__ int64_t interp_floor_i64(float x) {
-    return interp_floor<int64_t>(x);
-}
-
-/**
- * @brief Nearest-neighbor rounding of a subpixel coordinate to a 32-bit integer index.
- * @param x Source coordinate in pixels.
- * @return Integer closest to @p x, with half values rounded away from zero (same convention as @c std::lroundf()).
- */
-__device__ __host__ __forceinline__ int32_t interp_nearest_i32(float x) {
-    return interp_nearest<int32_t>(x);
-}
-
-/**
- * @brief Nearest-neighbor rounding of a subpixel coordinate to an integer index.
- * @param x Source coordinate in pixels.
- * @return Integer closest to @p x, with half values rounded away from zero (same convention as @c std::llroundf()).
- */
-__device__ __host__ __forceinline__ int64_t interp_nearest_i64(float x) {
-    return interp_nearest<int64_t>(x);
-}
-
-/**
- * @brief Clamp a signed integer to a closed interval (templated version).
- * @tparam IndexT Index type (int32_t or int64_t).
- * @param v Value to clamp.
- * @param lo Lower bound (inclusive).
- * @param hi Upper bound (inclusive); must satisfy @p lo <= @p hi.
- * @return @p v restricted to the inclusive interval between @p lo and @p hi.
- */
-template<typename IndexT>
-__device__ __host__ __forceinline__ IndexT clamp(IndexT v, IndexT lo, IndexT hi) {
-    if constexpr (std::is_same_v<IndexT, int32_t>) {
-        return clamp_i32(v, lo, hi);
-    } else {
-        return clamp_i64(v, lo, hi);
     }
 }
 }  // namespace detail
