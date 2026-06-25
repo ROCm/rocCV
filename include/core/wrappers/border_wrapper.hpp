@@ -201,8 +201,8 @@ class BorderWrapper {
                 x = detail::euclid_mod_i32(w, imgWidth);
                 y = detail::euclid_mod_i32(h, imgHeight);
             } else {
-                x = detail::euclid_mod_i64(w, imgWidth);
-                y = detail::euclid_mod_i64(h, imgHeight);
+                x = detail::euclid_mod_i64_fast(w, imgWidth);
+                y = detail::euclid_mod_i64_fast(h, imgHeight);
             }
         }
 
