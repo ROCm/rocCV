@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "core/detail/math/math.hpp"
 #include "kernels/device/warp_affine_device.hpp"
 #include "kernels/host/warp_affine_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 template <typename T, eBorderType B, eInterpolationType I>
@@ -117,6 +118,10 @@ void WarpAffine::operator()(hipStream_t stream, const Tensor &input, const Tenso
     if (output.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) ==
                                 input.shape(input.layout().batch_index()));
+    }
+
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
     }
 
     PerspectiveTransform full{};

@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/histogram_device.hpp"
 #include "kernels/host/histogram_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 Histogram::Histogram() {}
@@ -139,6 +140,10 @@ void Histogram::operator()(hipStream_t stream, const Tensor& input,
     // Ensure all tensors are using supported layouts.
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(histogram, eTensorLayout::TENSOR_LAYOUT_HWC);
+
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(histogram)) {
+        throw Exception("Input or histogram tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
 
     // Create kernel dispatching table based on histogram datatype.
     // clang-format off

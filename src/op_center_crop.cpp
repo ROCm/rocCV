@@ -27,6 +27,10 @@ THE SOFTWARE.
 namespace roccv {
 void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, Size2D cropSize,
                             eDeviceType device) const {
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
+
     auto i_height = input.shape()[input.shape().layout().height_index()];
     auto i_width = input.shape()[input.shape().layout().width_index()];
 

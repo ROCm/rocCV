@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bilateral_filter_device.hpp"
 #include "kernels/host/bilateral_filter_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 BilateralFilter::BilateralFilter() {}
@@ -156,6 +157,10 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
+    
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<

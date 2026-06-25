@@ -158,16 +158,43 @@ __device__ __host__ inline int64_t euclid_mod_i64_fast(int64_t a, int64_t modulu
 
 /**
  * @brief Convert a subpixel coordinate to the integer grid index below @p x (floor).
+ * @tparam IndexT Index type (int32_t or int64_t).
+ * @param x Source coordinate in pixels.
+ * @return Largest IndexT not greater than @p x (i.e. floor), suitable as the left/top neighbor index for bilinear/cubic.
+ * @note On device, uses a floor intrinsic; on host uses @c floorf().
+ */
+template<typename IndexT>
+__device__ __host__ __forceinline__ IndexT interp_floor(float x) {
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    return static_cast<IndexT>(__builtin_elementwise_floor(x));
+#else
+    return static_cast<IndexT>(floorf(x));
+#endif
+}
+
+/**
+ * @brief Nearest-neighbor rounding of a subpixel coordinate to an integer index.
+ * @tparam IndexT Index type (int32_t or int64_t).
+ * @param x Source coordinate in pixels.
+ * @return Integer closest to @p x, with half values rounded away from zero.
+ */
+template<typename IndexT>
+__device__ __host__ __forceinline__ IndexT interp_nearest(float x) {
+    if constexpr (std::is_same_v<IndexT, int32_t>) {
+        return static_cast<int32_t>(std::lroundf(x));
+    } else {
+        return static_cast<int64_t>(std::llroundf(x));
+    }
+}
+
+/**
+ * @brief Convert a subpixel coordinate to the 32-bit integer grid index below @p x (floor).
  * @param x Source coordinate in pixels.
  * @return Largest int32 not greater than @p x (i.e. floor), suitable as the left/top neighbor index for bilinear/cubic.
  * @note On device, uses a floor intrinsic; on host uses @c floorf().
  */
 __device__ __host__ __forceinline__ int32_t interp_floor_i32(float x) {
-#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    return static_cast<int32_t>(__builtin_elementwise_floor(x));
-#else
-    return static_cast<int32_t>(floorf(x));
-#endif
+    return interp_floor<int32_t>(x);
 }
 
 /**
@@ -177,20 +204,16 @@ __device__ __host__ __forceinline__ int32_t interp_floor_i32(float x) {
  * @note On device, uses a floor intrinsic compatible with HIP @c __float2ll_rd lowering; on host uses @c floorf().
  */
 __device__ __host__ __forceinline__ int64_t interp_floor_i64(float x) {
-#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    return static_cast<int64_t>(static_cast<long long>(__builtin_elementwise_floor(x)));
-#else
-    return static_cast<int64_t>(floorf(x));
-#endif
+    return interp_floor<int64_t>(x);
 }
 
 /**
- * @brief Nearest-neighbor rounding of a subpixel coordinate to an integer index.
+ * @brief Nearest-neighbor rounding of a subpixel coordinate to a 32-bit integer index.
  * @param x Source coordinate in pixels.
  * @return Integer closest to @p x, with half values rounded away from zero (same convention as @c std::lroundf()).
  */
 __device__ __host__ __forceinline__ int32_t interp_nearest_i32(float x) {
-    return static_cast<int32_t>(std::lroundf(x));
+    return interp_nearest<int32_t>(x);
 }
 
 /**
@@ -199,40 +222,24 @@ __device__ __host__ __forceinline__ int32_t interp_nearest_i32(float x) {
  * @return Integer closest to @p x, with half values rounded away from zero (same convention as @c std::llroundf()).
  */
 __device__ __host__ __forceinline__ int64_t interp_nearest_i64(float x) {
-    return static_cast<int64_t>(std::llroundf(x));
+    return interp_nearest<int64_t>(x);
 }
 
 /**
- * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT (edge pixels duplicated; not @c BORDER_REFLECT101).
- * @param coord Possibly out-of-bounds coordinate along the axis (width or height index space).
- * @param extent Positive extent of the axis (number of samples, e.g. image width or height).
- * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
- * @note Period is <tt>2 * extent</tt>. Implementation uses Euclidean modulo then
- *       <tt>min(val, 2*extent - 1 - val)</tt>.
+ * @brief Clamp a signed integer to a closed interval (templated version).
+ * @tparam IndexT Index type (int32_t or int64_t).
+ * @param v Value to clamp.
+ * @param lo Lower bound (inclusive).
+ * @param hi Upper bound (inclusive); must satisfy @p lo <= @p hi.
+ * @return @p v restricted to the inclusive interval between @p lo and @p hi.
  */
-__device__ __host__ inline int32_t reflect_border_coord_i32(int32_t coord, int32_t extent) {
-    const int32_t scale = extent * 2;
-    int32_t val = euclid_mod_i32(coord, scale);
-    const int32_t inv = scale - 1 - val;
-    return min_i32(val, inv);
-}
-
-/**
- * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT101 (endpoints are not repeated in the reflection).
- * @param coord Possibly out-of-bounds coordinate along the axis.
- * @param extent Positive extent of the axis (number of samples). If @p extent is at most 1, returns @c 0.
- * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
- * @note Period is <tt>2 * extent - 2</tt> when @p extent is greater than 1.
- */
-__device__ __host__ inline int32_t reflect101_border_coord_i32(int32_t coord, int32_t extent) {
-    if (extent <= 1) {
-        return 0;
+template<typename IndexT>
+__device__ __host__ __forceinline__ IndexT clamp(IndexT v, IndexT lo, IndexT hi) {
+    if constexpr (std::is_same_v<IndexT, int32_t>) {
+        return clamp_i32(v, lo, hi);
+    } else {
+        return clamp_i64(v, lo, hi);
     }
-    const int32_t scale = 2 * extent - 2;
-    const int32_t v = euclid_mod_i32(coord, scale);
-    const int32_t inner = (extent - 1) - v;
-    return (extent - 1) - abs_i32(inner);
 }
-
 }  // namespace detail
 }  // namespace roccv

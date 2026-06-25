@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/custom_crop_device.hpp"
 #include "kernels/host/custom_crop_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 
@@ -77,6 +78,10 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) >= (cropRect.x + cropRect.width));
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) >= (cropRect.y + cropRect.height));
 
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
+    
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<

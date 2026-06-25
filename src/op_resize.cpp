@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/resize_device.hpp"
 #include "kernels/host/resize_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 
@@ -94,6 +95,11 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     if (input.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
                                 output.shape(output.layout().batch_index()));
+    }
+
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output) ||
+                  hasDimExceedingInt32(input) || hasDimExceedingInt32(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
     }
 
     // clang-format off

@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "core/detail/type_traits.hpp"
 #include "kernels/device/convert_to_device.hpp"
 #include "kernels/host/convert_to_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 
@@ -127,6 +128,10 @@ void ConvertTo::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
+    
     // Select kernel dispatcher based on a base input datatype.
     // clang-format off
     static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>>

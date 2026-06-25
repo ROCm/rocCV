@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/cvt_color_device.hpp"
 #include "kernels/host/cvt_color_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 CvtColor::CvtColor() {}
@@ -72,6 +73,10 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
         CHECK_TENSOR_CHANNELS(output, 3);
     }
 
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
+    
     // Launch kernel
 
     int64_t width = input.shape(input.layout().width_index());

@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/brightness_contrast_device.hpp"
 #include "kernels/host/brightness_contrast_host.hpp"
+#include "operator_types.h"
 
 namespace {
 using namespace roccv;
@@ -334,6 +335,10 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
     CHECK_TENSOR_DATATYPES(output, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_S16, DATA_TYPE_S32, DATA_TYPE_F32);
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
+
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
 
     // Validate brightness/contrast params
     eDataType input_dtype = input.dtype().etype();

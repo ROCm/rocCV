@@ -142,6 +142,14 @@ class Tensor {
     TensorLayout layout() const;
 
     /**
+     * @brief Returns the stride at a given dimension.
+     *
+     * @param[in] d The index of the dimension.
+     * @return The stride in bytes for the specified dimension.
+     */
+    int64_t stride(int d) const;
+
+    /**
      * @brief Exports the tensor data of the tensor
      *
      * @return Tensor data of the tensor

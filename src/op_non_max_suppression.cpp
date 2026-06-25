@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "core/hip_assert.h"
 #include "kernels/device/non_max_suppression_device.hpp"
 #include "kernels/host/non_max_suppression_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
@@ -92,6 +93,10 @@ void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, 
 
     CHECK_TENSOR_COMPARISON(scores.shape(1) == numBoxes);
     CHECK_TENSOR_COMPARISON(scores.shape(0) == numBatches);
+    
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
+    }
 
     // Create tensor views to conform to the expected data types of the NMS kernel. These shapes should be validated,
     // but typically involve going from non-vectorized to vectorized shapes. These shapes should be validated
