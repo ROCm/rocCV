@@ -112,7 +112,8 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
     // TODO: Need to support scalar base/scale tensors at some point. Will require some extra handling on the kernel
     // level. Once in place, this check can be removed.
     CHECK_TENSOR_COMPARISON(base.shape(base.layout().channels_index()) == input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) == input.shape(input.layout().channels_index()));
+    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) ==
+                            input.shape(input.layout().channels_index()));
 
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);

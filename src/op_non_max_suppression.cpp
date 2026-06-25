@@ -92,7 +92,7 @@ void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, 
 
     CHECK_TENSOR_COMPARISON(scores.shape(1) == numBoxes);
     CHECK_TENSOR_COMPARISON(scores.shape(0) == numBatches);
-    
+
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);
 

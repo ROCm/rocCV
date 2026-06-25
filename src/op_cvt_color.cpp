@@ -37,8 +37,8 @@ CvtColor::CvtColor() {}
 CvtColor::~CvtColor() {}
 
 template <typename IndexT>
-void dispatch_cvt_color_itype(hipStream_t stream, const Tensor &input, Tensor &output, eColorConversionCode conversionCode,
-                          eDeviceType device) {
+void dispatch_cvt_color_itype(hipStream_t stream, const Tensor &input, Tensor &output,
+                              eColorConversionCode conversionCode, eDeviceType device) {
     // Launch kernel
 
     int64_t width = input.shape(input.layout().width_index());
@@ -53,19 +53,19 @@ void dispatch_cvt_color_itype(hipStream_t stream, const Tensor &input, Tensor &o
 
         switch (conversionCode) {
             case eColorConversionCode::COLOR_BGR2GRAY:
-                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar1, IndexT>(output));
+                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar1, IndexT>(output));
                 break;
 
             case eColorConversionCode::COLOR_RGB2GRAY:
-                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar1, IndexT>(output));
+                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar1, IndexT>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2RGB:
             case eColorConversionCode::COLOR_RGB2BGR:
-                Kernels::Device::reorder<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output));
+                Kernels::Device::reorder<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2YUV:

@@ -29,7 +29,7 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 
-template<typename T, typename SrcWrapper>
+template <typename T, typename SrcWrapper>
 __global__ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram) {
     extern __shared__ __align__(sizeof(T)) unsigned char smem[];
     T *local_histogram = reinterpret_cast<T *>(smem);
@@ -78,9 +78,7 @@ __global__ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::Gene
 
     if (gid < input.height() * input.width()) {
         if (mask.at(z_idx, y_idx, x_idx, 0) != 0) {
-            atomicAdd(
-                &local_histogram[input.at(z_idx, y_idx, x_idx, 0).x],
-                1);
+            atomicAdd(&local_histogram[input.at(z_idx, y_idx, x_idx, 0).x], 1);
         }
     }
     __syncthreads();  // wait for all of the threads in this block to finish

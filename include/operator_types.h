@@ -113,7 +113,7 @@ namespace roccv {
  * @param tensor The tensor to check.
  * @return True if the maximum addressable byte offset exceeds int32_t range, false otherwise.
  */
-inline bool needsInt64Wrapper(const Tensor& tensor) {
+inline bool needsInt64Wrapper(const Tensor &tensor) {
     int batch_idx = tensor.layout().batch_index();
     if (batch_idx == -1) {
         // HWC/CHW layout - check height dimension instead
@@ -132,7 +132,7 @@ inline bool needsInt64Wrapper(const Tensor& tensor) {
  * @param tensor The tensor to check.
  * @return True if any dimension value exceeds int32_t::max, false otherwise.
  */
-inline bool hasDimExceedingInt32(const Tensor& tensor) {
+inline bool hasDimExceedingInt32(const Tensor &tensor) {
     for (int i = 0; i < tensor.rank(); ++i) {
         if (tensor.shape(i) > std::numeric_limits<int32_t>::max()) {
             return true;

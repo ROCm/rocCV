@@ -117,7 +117,7 @@ __device__ __host__ __forceinline__ int64_t clamp_i64(int64_t v, int64_t lo, int
  * @param hi Upper bound (inclusive); must satisfy @p lo <= @p hi.
  * @return @p v restricted to the inclusive interval between @p lo and @p hi.
  */
-template<typename IndexT>
+template <typename IndexT>
 __device__ __host__ __forceinline__ IndexT clamp(IndexT v, IndexT lo, IndexT hi) {
     if constexpr (std::is_same_v<IndexT, int32_t>) {
         return clamp_i32(v, lo, hi);
@@ -177,10 +177,11 @@ __device__ __host__ inline int64_t euclid_mod_i64_fast(int64_t a, int64_t modulu
  * @brief Convert a subpixel coordinate to the integer grid index below @p x (floor).
  * @tparam IndexT Index type (int32_t or int64_t).
  * @param x Source coordinate in pixels.
- * @return Largest IndexT not greater than @p x (i.e. floor), suitable as the left/top neighbor index for bilinear/cubic.
+ * @return Largest IndexT not greater than @p x (i.e. floor), suitable as the left/top neighbor index for
+ * bilinear/cubic.
  * @note On device, uses a floor intrinsic compatible with HIP @c __float2ll_rd lowering; on host uses @c floorf().
  */
-template<typename IndexT>
+template <typename IndexT>
 __device__ __host__ __forceinline__ IndexT interp_floor(float x) {
 #if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
     return static_cast<IndexT>(static_cast<long long>(__builtin_elementwise_floor(x)));
@@ -195,7 +196,7 @@ __device__ __host__ __forceinline__ IndexT interp_floor(float x) {
  * @param x Source coordinate in pixels.
  * @return Integer closest to @p x, with half values rounded away from zero.
  */
-template<typename IndexT>
+template <typename IndexT>
 __device__ __host__ __forceinline__ IndexT interp_nearest(float x) {
     if constexpr (std::is_same_v<IndexT, int32_t>) {
         return static_cast<int32_t>(std::lroundf(x));

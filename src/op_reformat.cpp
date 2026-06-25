@@ -79,8 +79,7 @@ void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor&
 }
 }  // namespace
 
-void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                          eDeviceType device) const {
+void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) const {
     // clang-format off
 
     // Validate the input and output tensors

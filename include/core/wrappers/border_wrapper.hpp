@@ -39,7 +39,7 @@ namespace detail {
  *       separate branch on @p extent alone. For int64_t on device, a 32-bit remainder path is used when @p extent
  *       and @p coord are in a safe range.
  */
-template<typename IndexT>
+template <typename IndexT>
 __device__ __host__ inline IndexT reflect_border_coord(IndexT coord, IndexT extent) {
     if constexpr (std::is_same_v<IndexT, int32_t>) {
         const int32_t scale = extent * 2;
@@ -75,7 +75,7 @@ __device__ __host__ inline IndexT reflect_border_coord(IndexT coord, IndexT exte
  *       <tt>(extent - 1) - abs((extent - 1) - v)</tt>. For int64_t on device, a 32-bit path applies when values
  *       fit a fixed bound.
  */
-template<typename IndexT>
+template <typename IndexT>
 __device__ __host__ inline IndexT reflect101_border_coord(IndexT coord, IndexT extent) {
     if (extent <= 1) {
         return 0;

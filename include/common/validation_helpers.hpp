@@ -24,8 +24,8 @@ THE SOFTWARE.
 #include <algorithm>
 #include <vector>
 
-#include "operator_types.h"
 #include "core/tensor.hpp"
+#include "operator_types.h"
 
 /**
  * @brief Validates whether a tensor is located on a specified device.
@@ -90,8 +90,7 @@ THE SOFTWARE.
  * @brief Validates that a tensor can be indexed with int32_t wrappers.
  *
  */
-#define CHECK_TENSOR_INT32_INDEXING(tensor)                                                     \
-    if (needsInt64Wrapper(tensor)) {                                                            \
-        throw roccv::Exception("Tensor dimensions exceed int32_t indexing limits",             \
-                               eStatusType::INVALID_OPERATION);                                 \
+#define CHECK_TENSOR_INT32_INDEXING(tensor)                                                                         \
+    if (needsInt64Wrapper(tensor)) {                                                                                \
+        throw roccv::Exception("Tensor dimensions exceed int32_t indexing limits", eStatusType::INVALID_OPERATION); \
     }

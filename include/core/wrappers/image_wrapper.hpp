@@ -68,8 +68,8 @@ class ImageWrapper {
 
         shape = {num_batches, static_cast<IndexT>(tdata.shape(indexes.h)), static_cast<IndexT>(tdata.shape(indexes.w)),
                  static_cast<IndexT>(tdata.shape(indexes.c))};
-        stride = {batch_stride, static_cast<IndexT>(tdata.stride(indexes.h)), static_cast<IndexT>(tdata.stride(indexes.w)),
-                  static_cast<IndexT>(tdata.stride(indexes.c))};
+        stride = {batch_stride, static_cast<IndexT>(tdata.stride(indexes.h)),
+                  static_cast<IndexT>(tdata.stride(indexes.w)), static_cast<IndexT>(tdata.stride(indexes.c))};
         data = static_cast<unsigned char*>(tdata.basePtr());
     }
 

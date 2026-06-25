@@ -79,7 +79,7 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
 
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);
-    
+
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<

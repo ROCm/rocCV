@@ -70,8 +70,8 @@ void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& 
     }
 
     // Dispatch proper kernel based on provided flip type.
-    std::unordered_map<eAxis, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,
-                                                 eDeviceType device)>>
+    std::unordered_map<
+        eAxis, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device)>>
         funcs = {{eAxis::X, dispatch_flip_axis<T, eAxis::X>},
                  {eAxis::Y, dispatch_flip_axis<T, eAxis::Y>},
                  {eAxis::BOTH, dispatch_flip_axis<T, eAxis::BOTH>}};
