@@ -27,6 +27,13 @@
             "width": 1920,
             "runs": 25,
             "warmup_runs": 10
+        },
+        {
+            "samples": 128,
+            "height": 1080,
+            "width": 1920,
+            "runs": 25,
+            "warmup_runs": 10
         }
     ]
 }
