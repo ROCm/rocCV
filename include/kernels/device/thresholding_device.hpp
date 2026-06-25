@@ -36,9 +36,9 @@ template <typename SrcWrapper, typename DstWrapper>
 __global__ void binary_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
                                roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
-    const int32_t x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const int32_t y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const int32_t z_idx = threadIdx.z + blockIdx.z * blockDim.z;
+    const int x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int z_idx = threadIdx.z + blockIdx.z * blockDim.z;
 
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;

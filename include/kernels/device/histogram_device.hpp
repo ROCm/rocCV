@@ -34,10 +34,10 @@ __global__ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T
     extern __shared__ __align__(sizeof(T)) unsigned char smem[];
     T *local_histogram = reinterpret_cast<T *>(smem);
 
-    const int32_t z_idx = blockIdx.z;
-    const int32_t gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const int32_t x_idx = gid % input.width();
-    const int32_t y_idx = gid / input.width();
+    const int z_idx = blockIdx.z;
+    const int gid = blockIdx.x * blockDim.x + threadIdx.x;
+    const int x_idx = gid % input.width();
+    const int y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
