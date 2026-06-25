@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/common/adv_cvt_color_coefficients.hpp"
-#include "operator_types.h"
 #include "kernels/device/adv_cvt_color_device.hpp"
 #include "kernels/host/adv_cvt_color_host.hpp"
 
@@ -176,9 +175,8 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
         CHECK_TENSOR_COMPARISON(outHeight == (inHeight * 3) / 2);
     }
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     Kernels::AdvCvtColorCoefficients coeff = GetCoefficients(colorSpec);
     const bool bgr = IsBGRCode(conversionCode);

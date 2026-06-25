@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/gamma_contrast_device.hpp"
 #include "kernels/host/gamma_contrast_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 
@@ -82,9 +81,8 @@ void GammaContrast::operator()(hipStream_t stream, const Tensor &input, const Te
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) == input.shape(input.layout().height_index()));
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == input.shape(input.layout().batch_index()));
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off

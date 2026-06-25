@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/rotate_device.hpp"
 #include "kernels/host/rotate_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 void GetRotationMatrix(double angleDeg, double2 shift, double *mat) {
@@ -108,9 +107,8 @@ void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // clang-format off
     static const std::unordered_map<

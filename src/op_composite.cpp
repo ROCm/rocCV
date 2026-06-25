@@ -27,7 +27,6 @@
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/composite_device.hpp"
 #include "kernels/host/composite_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 
@@ -144,10 +143,10 @@ void Composite::operator()(hipStream_t stream, const Tensor& foreground, const T
 
     CHECK_TENSOR_CHANNELS(output, 3, 4);
 
-    if (needsInt64Wrapper(foreground) || needsInt64Wrapper(background) || needsInt64Wrapper(mask) ||
-        needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(foreground);
+    CHECK_TENSOR_INT32_INDEXING(background);
+    CHECK_TENSOR_INT32_INDEXING(mask);
+    CHECK_TENSOR_INT32_INDEXING(output);
     // clang-format off
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, eDeviceType)>, 4>>
         funcs = {

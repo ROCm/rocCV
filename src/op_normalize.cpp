@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/normalize_device.hpp"
 #include "kernels/host/normalize_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 
@@ -115,9 +114,8 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
     CHECK_TENSOR_COMPARISON(base.shape(base.layout().channels_index()) == input.shape(input.layout().channels_index()));
     CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) == input.shape(input.layout().channels_index()));
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
     // Create kernel dispatching table based on input/output datatype and number of channels.
     // clang-format off
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float, uint32_t, eDeviceType)>, 4>>

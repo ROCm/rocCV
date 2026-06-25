@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/reformat_device.hpp"
 #include "kernels/host/reformat_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 
@@ -108,9 +107,8 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     CHECK_TENSOR_COMPARISON(inputShape["W"] == outputShape["W"]);
     CHECK_TENSOR_COMPARISON(inputShape["H"] == outputShape["H"]);
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // Select kernel dispatcher based on the input and output datatypes.
     static const std::unordered_map<eDataType, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,

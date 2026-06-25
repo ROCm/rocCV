@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/remap_device.hpp"
 #include "kernels/host/remap_host.hpp"
-#include "operator_types.h"
 
 using namespace roccv::detail;
 namespace roccv {
@@ -206,9 +205,8 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_CHANNELS(map, 2);
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     eDataType dtype = input.dtype().etype();
     int64_t channels = input.shape(input.layout().channels_index());

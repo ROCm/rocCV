@@ -78,11 +78,12 @@ class InterpolationWrapper {
      * @brief Retrieves an interpolated value at given image batch coordinates.
      *
      * @param n Batch index.
-     * @param h Height coordinates.
-     * @param w Width coordinates.
+     * @param h Height coordinates (sub-pixel, floating point).
+     * @param w Width coordinates (sub-pixel, floating point).
+     * @param c Channel index.
      * @return An interpolated value.
      */
-    inline __device__ __host__ const T at(IndexT n, IndexT h, IndexT w, IndexT c) const {
+    inline __device__ __host__ const T at(IndexT n, float h, float w, IndexT c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
             return m_desc.at(n, detail::interp_nearest<IndexT>(h), detail::interp_nearest<IndexT>(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {

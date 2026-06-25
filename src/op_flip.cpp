@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/flip_device.hpp"
 #include "kernels/host/flip_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 
@@ -94,9 +93,8 @@ void Flip::operator()(hipStream_t stream, const Tensor& input, const Tensor& out
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // clang-format off
     static const std::unordered_map<

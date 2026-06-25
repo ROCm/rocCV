@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <algorithm>
 #include <vector>
 
+#include "operator_types.h"
 #include "core/tensor.hpp"
 
 /**
@@ -84,3 +85,13 @@ THE SOFTWARE.
             throw roccv::Exception("Unsupported channel count: " #tensor, eStatusType::INVALID_COMBINATION); \
         }                                                                                                    \
     } while (0);
+
+/**
+ * @brief Validates that a tensor can be indexed with int32_t wrappers.
+ *
+ */
+#define CHECK_TENSOR_INT32_INDEXING(tensor)                                                     \
+    if (needsInt64Wrapper(tensor)) {                                                            \
+        throw roccv::Exception("Tensor dimensions exceed int32_t indexing limits",             \
+                               eStatusType::INVALID_OPERATION);                                 \
+    }

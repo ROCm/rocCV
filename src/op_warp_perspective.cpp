@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include "core/detail/type_traits.hpp"
 #include "kernels/device/warp_perspective_device.hpp"
 #include "kernels/host/warp_perspective_host.hpp"
-#include "operator_types.h"
 
 namespace roccv {
 template <typename T, eBorderType B, eInterpolationType I>
@@ -127,9 +126,8 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
                                 input.shape(input.layout().batch_index()));
     }
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     PerspectiveTransform invertedTransform;
 

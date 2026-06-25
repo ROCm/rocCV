@@ -97,8 +97,9 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
                                 output.shape(output.layout().batch_index()));
     }
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output) ||
-                  hasDimExceedingInt32(input) || hasDimExceedingInt32(output)) {
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+    if (hasDimExceedingInt32(input) || hasDimExceedingInt32(output)) {
         throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
     }
 

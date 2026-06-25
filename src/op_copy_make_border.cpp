@@ -29,8 +29,6 @@
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/copy_make_border_device.hpp"
 #include "kernels/host/copy_make_border_host.hpp"
-#include "operator_types.h"
-
 namespace roccv {
 
 /**
@@ -105,9 +103,8 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) ==
                             input.shape(input.layout().channels_index()));
 
-    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
-        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
-    }
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // clang-format off
     // Maps kernel dispatchers according to the underlying data type and number of channels.
