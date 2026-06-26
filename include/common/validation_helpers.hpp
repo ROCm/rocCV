@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <vector>
 
 #include "core/tensor.hpp"
-#include "operator_types.h"
 
 /**
  * @brief Validates whether a tensor is located on a specified device.
@@ -85,6 +84,38 @@ THE SOFTWARE.
             throw roccv::Exception("Unsupported channel count: " #tensor, eStatusType::INVALID_COMBINATION); \
         }                                                                                                    \
     } while (0);
+
+/**
+ * @brief Check if a tensor requires int64_t for wrapper indexing based on batch byte stride.
+ *
+ * @param tensor The tensor to check.
+ * @return True if the maximum addressable byte offset exceeds int32_t range, false otherwise.
+ */
+inline bool needsInt64Wrapper(const roccv::Tensor &tensor) {
+    int batch_idx = tensor.layout().batch_index();
+    if (batch_idx == -1) {
+        int h_idx = tensor.layout().height_index();
+        int64_t maxStride = tensor.stride(h_idx) * tensor.shape(h_idx);
+        return maxStride > std::numeric_limits<int32_t>::max();
+    }
+    int64_t maxStride = tensor.stride(batch_idx) * tensor.shape(batch_idx);
+    return maxStride > std::numeric_limits<int32_t>::max();
+}
+
+/**
+ * @brief Check if any tensor dimension exceeds int32_t range.
+ *
+ * @param tensor The tensor to check.
+ * @return True if any dimension value exceeds int32_t::max, false otherwise.
+ */
+inline bool hasDimExceedingInt32(const roccv::Tensor &tensor) {
+    for (int i = 0; i < tensor.rank(); ++i) {
+        if (tensor.shape(i) > std::numeric_limits<int32_t>::max()) {
+            return true;
+        }
+    }
+    return false;
+}
 
 /**
  * @brief Validates that a tensor can be indexed with int32_t wrappers.
