@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,24 +20,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "op_adv_cvt_color.hpp"
-#include "op_bilateral_filter.hpp"
-#include "op_bnd_box.hpp"
-#include "op_brightness_contrast.hpp"
-#include "op_center_crop.hpp"
-#include "op_composite.hpp"
-#include "op_convert_to.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_custom_crop.hpp"
-#include "op_cvt_color.hpp"
-#include "op_flip.hpp"
-#include "op_gamma_contrast.hpp"
-#include "op_histogram.hpp"
-#include "op_non_max_suppression.hpp"
-#include "op_normalize.hpp"
-#include "op_remap.hpp"
-#include "op_resize.hpp"
-#include "op_rotate.hpp"
-#include "op_thresholding.hpp"
-#include "op_warp_affine.hpp"
-#include "op_warp_perspective.hpp"
+#pragma once
+
+#include <hip/hip_runtime.h>
+
+#include "core/wrappers/interpolation_wrapper.hpp"
+
+namespace Kernels {
+namespace Device {
+
+template <typename SrcWrapper, typename DstWrapper, typename Mat>
+__global__ void warp_affine(SrcWrapper input, DstWrapper output, Mat mat) {
+    const int x = blockDim.x * blockIdx.x + threadIdx.x;
+    const int y = blockDim.y * blockIdx.y + threadIdx.y;
+    const int b = blockIdx.z;
+
+    if (x >= output.width() || y >= output.height()) return;
+
+    const float ox = mat[0] * static_cast<float>(x) + mat[1] * static_cast<float>(y) + mat[2];
+    const float oy = mat[3] * static_cast<float>(x) + mat[4] * static_cast<float>(y) + mat[5];
+    output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
+}
+}  // namespace Device
+}  // namespace Kernels

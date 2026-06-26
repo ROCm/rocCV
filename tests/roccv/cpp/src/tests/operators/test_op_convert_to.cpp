@@ -112,12 +112,71 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat inFormat,
     CompareVectorsNear(result, ref, 1.0E-4);
 }
 
+void TestNegativeConvertTo() {
+    TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
+    Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+    Tensor validCPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::CPU);
+    ConvertTo op;
+
+    {
+        // Test output tensor on CPU for GPU operation
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validCPUTensor, 1.0, 0.0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test input tensor on CPU for GPU operation
+        EXPECT_EXCEPTION(op(nullptr, validCPUTensor, validGPUTensor, 1.0, 0.0, eDeviceType::GPU),
+                         eStatusType::INVALID_OPERATION);
+    }
+
+    {
+        // Test unsupported layout
+        TensorShape invalidLayoutShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NC), {1, 1});
+        Tensor invalidTensor(invalidLayoutShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 1.0, 0.0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test unsupported data type
+        Tensor invalidTensor(validGPUTensor.shape(), DataType(eDataType::DATA_TYPE_U32), eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 1.0, 0.0, eDeviceType::GPU), eStatusType::NOT_IMPLEMENTED);
+    }
+
+    {
+        // Test input/output channel mismatch
+        Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {1, 1, 1, 2}), DataType(eDataType::DATA_TYPE_U8),
+                             eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 1.0, 0.0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test input/output width/height mismatch
+        Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {1, 2, 2, 1}), DataType(eDataType::DATA_TYPE_U8),
+                             eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 1.0, 0.0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+
+    {
+        // Test input/output batch mismatch
+        Tensor invalidTensor(TensorShape(validGPUTensor.layout(), {2, 1, 1, 1}), DataType(eDataType::DATA_TYPE_U8),
+                             eDeviceType::GPU);
+        EXPECT_EXCEPTION(op(nullptr, invalidTensor, validGPUTensor, 1.0, 0.0, eDeviceType::GPU),
+                         eStatusType::INVALID_COMBINATION);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
+
+    TEST_CASE(TestNegativeConvertTo());
 
     // CPU correctness tests
     // 1 Channel
