@@ -217,7 +217,7 @@ MemAlignment ComputeMemAlignment(eDeviceType device, const DataType& dtype, cons
 
 // Constructor definitions
 Tensor::Tensor(const Tensor::Requirements& reqs, const IAllocator& alloc) : m_requirements(reqs) {
-    m_data = std::make_shared<TensorStorage>(this->dataSize(), reqs.device, alloc);
+    m_data = std::make_shared<TensorStorage>(this->dataSize(), reqs.device, alloc, m_requirements.alignBytes);
 }
 
 Tensor::Tensor(const Tensor::Requirements& reqs, std::shared_ptr<TensorStorage> data)

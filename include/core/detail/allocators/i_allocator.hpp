@@ -38,7 +38,7 @@ class IAllocator {
     virtual void* allocHostPinnedMem(size_t size) const = 0;
     virtual void freeHostPinnedMem(void* ptr) const noexcept = 0;
 
-    virtual void* allocHipMem(size_t size) const = 0;
+    virtual void* allocHipMem(size_t size, int32_t alignment = 0) const = 0;
     virtual void freeHipMem(void* ptr) const noexcept = 0;
 
     virtual ~IAllocator() = default;
