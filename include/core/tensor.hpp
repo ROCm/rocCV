@@ -31,13 +31,13 @@ THE SOFTWARE.
 #include "core/detail/context.hpp"
 #include "core/image_format.hpp"
 #include "core/mem_alignment.hpp"
+#include "core/size.hpp"
 #include "core/tensor_data.hpp"
 #include "core/tensor_layout.hpp"
 #include "core/tensor_requirements.hpp"
 #include "core/tensor_shape.hpp"
 #include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
-#include "operator_types.h"
 
 namespace roccv {
 
