@@ -80,51 +80,12 @@ std::shared_ptr<PyTensor> PyTensor::copyTo(eDeviceType device) {
     std::shared_ptr<roccv::Tensor> copiedTensor =
         std::make_shared<roccv::Tensor>(m_tensor->shape(), m_tensor->dtype(), device);
 
-    auto dstTensorData = copiedTensor->exportData<roccv::TensorDataStrided>();
-    auto srcTensorData = m_tensor->exportData<roccv::TensorDataStrided>();
-
     // The source and destination tensors share the same logical shape but may have different padding (row alignment
-    // differs per device, and externally-wrapped tensors may be fully packed). A flat copy of the packed byte count
-    // would scatter data incorrectly across a padded buffer, so the copy is performed row-by-row using each tensor's
-    // own pitch to account for padding.
-    const int rank = m_tensor->rank();
-    const size_t dtypeSize = m_tensor->dtype().size();
-
-    // Find the outermost dimension at which either tensor is padded. Everything below this dimension forms a single
-    // contiguous row that is copied at once; the padded dimension supplies each tensor's pitch.
-    int paddedDim = 0;
-    for (int i = 0; i < rank - 1; ++i) {
-        const bool srcPadded = srcTensorData.stride(i) != m_tensor->shape(i + 1) * srcTensorData.stride(i + 1);
-        const bool dstPadded = dstTensorData.stride(i) != copiedTensor->shape(i + 1) * dstTensorData.stride(i + 1);
-        if (srcPadded || dstPadded) {
-            paddedDim = i;
-            break;
-        }
-    }
-
-    // Contiguous row width in bytes (product of all dimensions after the padded dimension).
-    size_t rowWidth = dtypeSize;
-    for (int i = paddedDim + 1; i < rank; ++i) {
-        rowWidth *= static_cast<size_t>(m_tensor->shape(i));
-    }
-
-    // Number of rows to copy (product of all dimensions up to and including the padded dimension).
-    size_t numRows = 1;
-    for (int i = 0; i <= paddedDim; ++i) {
-        numRows *= static_cast<size_t>(m_tensor->shape(i));
-    }
-
-    const size_t srcPitch = static_cast<size_t>(srcTensorData.stride(paddedDim));
-    const size_t dstPitch = static_cast<size_t>(dstTensorData.stride(paddedDim));
-
-    const std::map<std::pair<eDeviceType, eDeviceType>, hipMemcpyKind> devicePairToMemcpyKind = {
-        {{eDeviceType::CPU, eDeviceType::CPU}, hipMemcpyHostToHost},
-        {{eDeviceType::CPU, eDeviceType::GPU}, hipMemcpyHostToDevice},
-        {{eDeviceType::GPU, eDeviceType::CPU}, hipMemcpyDeviceToHost},
-        {{eDeviceType::GPU, eDeviceType::GPU}, hipMemcpyDeviceToDevice}};
-
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy2D(dstTensorData.basePtr(), dstPitch, srcTensorData.basePtr(), srcPitch, rowWidth,
-                                       numRows, devicePairToMemcpyKind.at({m_tensor->device(), device})));
+    // differs per device, and externally-wrapped tensors may be fully packed). Tensor::copyToAsync performs the
+    // copy row-by-row using each tensor's own pitch to account for this. Synchronize so the returned tensor is
+    // immediately usable from Python.
+    m_tensor->copyToAsync(*copiedTensor);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 
     return std::make_shared<PyTensor>(copiedTensor);
 }

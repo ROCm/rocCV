@@ -257,6 +257,16 @@ class Tensor {
     void copyToHostAsync(void *dst, hipStream_t stream = nullptr) const;
 
     /**
+     * @brief Copies this tensor's data into another tensor, accounting for differing row padding between the two
+     * tensors. Both tensors must have the same shape and element size, but may reside on different devices and use
+     * different row alignments. This is a non-blocking operation.
+     *
+     * @param[out] dst The destination tensor.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyToAsync(const Tensor &dst, hipStream_t stream = nullptr) const;
+
+    /**
      * @brief Calculates tensor requirements using the default memory alignment strategy.
      *
      * @param[in] shape The desired shape of the tensor.
@@ -333,6 +343,23 @@ class Tensor {
                                                                   int32_t rowAlign);
 
    private:
+    /**
+     * @brief Performs a padding-aware, stream-ordered 2D copy between a source and destination buffer that share
+     * this tensor's shape but may use different row pitches. Backs the host and tensor-to-tensor copy methods.
+     *
+     * @param[out] dstData Destination base pointer.
+     * @param[in] dstStrides Byte-wise strides of the destination layout.
+     * @param[in] dstDevice Device the destination resides on.
+     * @param[in] srcData Source base pointer.
+     * @param[in] srcStrides Byte-wise strides of the source layout.
+     * @param[in] srcDevice Device the source resides on.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyPitchedAsync(void *dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &dstStrides,
+                          eDeviceType dstDevice, const void *srcData,
+                          const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &srcStrides, eDeviceType srcDevice,
+                          hipStream_t stream) const;
+
     TensorRequirements m_requirements;      // Tensor metadata
     std::shared_ptr<TensorStorage> m_data;  // Stores raw tensor data
 };

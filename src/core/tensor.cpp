@@ -131,29 +131,45 @@ static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& 
 }
 
 /**
- * @brief Computes copy parameters for host-tensor copy.
- * @return (row_width_bytes, num_rows, tensor_pitch). If contiguous, returns (total_size, 1, total_size).
+ * @brief Finds the outermost dimension at which either of the provided byte-stride layouts is padded.
+ *
+ * A dimension is considered padded when its stride exceeds the tightly-packed stride implied by the inner
+ * dimensions. The source and destination of a copy may pad differently, so the first dimension at which *either*
+ * is padded is returned, ensuring everything below it forms a single contiguous row shared by both layouts.
+ * Returns 0 if neither layout is padded.
+ *
+ * @param[in] rank The rank of the tensor.
+ * @param[in] shape The shape of the tensor.
+ * @param[in] a The first byte-stride layout to inspect.
+ * @param[in] b The second byte-stride layout to inspect.
+ * @return The index of the outermost padded dimension.
  */
-static std::tuple<size_t, size_t, size_t> ComputeCopyParams(int rank,
-                                                            const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
-                                                            const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& strides,
-                                                            size_t dtypeSize, bool contiguous) {
-    if (contiguous) {
-        size_t totalSize = dtypeSize;
-        for (int i = 0; i < rank; ++i) {
-            totalSize *= static_cast<size_t>(shape[i]);
-        }
-        return {totalSize, 1, totalSize};
-    }
-
-    int paddedDim = 0;
-    for (int i = 0; i < rank - 1; i++) {
-        if (strides[i] != shape[i + 1] * strides[i + 1]) {
-            paddedDim = i;
-            break;
+static int FindPaddedDim(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                         const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& a,
+                         const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& b) {
+    for (int i = 0; i < rank - 1; ++i) {
+        if (a[i] != shape[i + 1] * a[i + 1] || b[i] != shape[i + 1] * b[i + 1]) {
+            return i;
         }
     }
+    return 0;
+}
 
+/**
+ * @brief Computes the contiguous row width (in bytes) and row count for a pitched 2D copy split at paddedDim.
+ *
+ * Everything strictly below paddedDim forms a single contiguous row; everything up to and including paddedDim
+ * counts towards the number of rows. The per-tensor pitch is supplied separately by the caller via its stride at
+ * paddedDim.
+ *
+ * @param[in] rank The rank of the tensor.
+ * @param[in] shape The shape of the tensor.
+ * @param[in] paddedDim The dimension at which the copy is split into rows.
+ * @param[in] dtypeSize The size of a single element in bytes.
+ * @return A pair containing (row_width_bytes, num_rows).
+ */
+static std::pair<size_t, size_t> ComputeRowExtents(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                                                   int paddedDim, size_t dtypeSize) {
     size_t rowWidth = dtypeSize;
     for (int i = paddedDim + 1; i < rank; ++i) {
         rowWidth *= static_cast<size_t>(shape[i]);
@@ -164,8 +180,19 @@ static std::tuple<size_t, size_t, size_t> ComputeCopyParams(int rank,
         numRows *= static_cast<size_t>(shape[i]);
     }
 
-    size_t tensorPitch = static_cast<size_t>(strides[paddedDim]);
-    return {rowWidth, numRows, tensorPitch};
+    return {rowWidth, numRows};
+}
+
+/**
+ * @brief Selects the appropriate hipMemcpyKind for a copy between two devices.
+ */
+static hipMemcpyKind MemcpyKindFor(eDeviceType src, eDeviceType dst) {
+    const bool srcGpu = (src == eDeviceType::GPU);
+    const bool dstGpu = (dst == eDeviceType::GPU);
+    if (srcGpu && dstGpu) return hipMemcpyDeviceToDevice;
+    if (srcGpu && !dstGpu) return hipMemcpyDeviceToHost;
+    if (!srcGpu && dstGpu) return hipMemcpyHostToDevice;
+    return hipMemcpyHostToHost;
 }
 
 /**
@@ -330,26 +357,44 @@ size_t Tensor::dataSize() const { return m_requirements.strides[0] * m_requireme
 
 bool Tensor::isContiguous() const { return dataSize() == shape().size() * dtype().size(); }
 
+void Tensor::copyPitchedAsync(void* dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& dstStrides,
+                              eDeviceType dstDevice, const void* srcData,
+                              const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& srcStrides, eDeviceType srcDevice,
+                              hipStream_t stream) const {
+    // Split at the outermost dimension where either layout is padded so that the contiguous row width and row count
+    // are common to both; each side then supplies its own pitch via its stride at that dimension.
+    const int paddedDim = FindPaddedDim(m_requirements.rank, m_requirements.shape, srcStrides, dstStrides);
+    auto [rowWidth, numRows] = ComputeRowExtents(m_requirements.rank, m_requirements.shape, paddedDim, dtype().size());
+
+    const size_t srcPitch = static_cast<size_t>(srcStrides[paddedDim]);
+    const size_t dstPitch = static_cast<size_t>(dstStrides[paddedDim]);
+    hipMemcpyKind kind = MemcpyKindFor(srcDevice, dstDevice);
+
+    HIP_VALIDATE_NO_ERRORS(hipMemcpy2DAsync(dstData, dstPitch, srcData, srcPitch, rowWidth, numRows, kind, stream));
+}
+
 void Tensor::copyFromHostAsync(const void* src, hipStream_t stream) const {
-    auto [rowWidth, numRows, tensorPitch] = ComputeCopyParams(m_requirements.rank, m_requirements.shape,
-                                                              m_requirements.strides, dtype().size(), isContiguous());
-
-    const size_t srcPitch = rowWidth;
-    hipMemcpyKind kind = (device() == eDeviceType::GPU) ? hipMemcpyHostToDevice : hipMemcpyHostToHost;
-
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpy2DAsync(m_data->data(), tensorPitch, src, srcPitch, rowWidth, numRows, kind, stream));
+    // The host buffer is contiguous; represent it with packed strides so only the tensor's padding matters.
+    const auto hostStrides = CalcStrides(shape(), dtype(), 0);
+    copyPitchedAsync(m_data->data(), m_requirements.strides, device(), src, hostStrides, eDeviceType::CPU, stream);
 }
 
 void Tensor::copyToHostAsync(void* dst, hipStream_t stream) const {
-    auto [rowWidth, numRows, tensorPitch] = ComputeCopyParams(m_requirements.rank, m_requirements.shape,
-                                                              m_requirements.strides, dtype().size(), isContiguous());
+    // The host buffer is contiguous; represent it with packed strides so only the tensor's padding matters.
+    const auto hostStrides = CalcStrides(shape(), dtype(), 0);
+    copyPitchedAsync(dst, hostStrides, eDeviceType::CPU, m_data->data(), m_requirements.strides, device(), stream);
+}
 
-    const size_t dstPitch = rowWidth;
-    hipMemcpyKind kind = (device() == eDeviceType::GPU) ? hipMemcpyDeviceToHost : hipMemcpyHostToHost;
+void Tensor::copyToAsync(const Tensor& dst, hipStream_t stream) const {
+    // Source and destination must describe the same logical data; only their padding (row pitch) may differ.
+    if (rank() != dst.rank() || m_requirements.shape != dst.m_requirements.shape ||
+        dtype().size() != dst.dtype().size()) {
+        throw Exception("Source and destination tensors must have the same shape and element size for a copy.",
+                        eStatusType::INVALID_VALUE);
+    }
 
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpy2DAsync(dst, dstPitch, m_data->data(), tensorPitch, rowWidth, numRows, kind, stream));
+    copyPitchedAsync(dst.m_data->data(), dst.m_requirements.strides, dst.device(), m_data->data(),
+                     m_requirements.strides, device(), stream);
 }
 
 Tensor::Requirements Tensor::CalcRequirements(const TensorShape& shape, const DataType& dtype, eDeviceType device) {
