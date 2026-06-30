@@ -101,14 +101,10 @@ class AverageBlur : public IOperator {
     int32_t m_maxKernelHeight;
     DefaultAllocator m_allocator;
     std::mutex m_bufferMutex;
-    //float* m_hostKernelMem = nullptr;
-    //float* m_deviceKernelMem = nullptr;
-    ///*
     float* m_hostKernelMemH = nullptr;
     float* m_hostKernelMemV = nullptr;
     float* m_deviceKernelMemH = nullptr;
     float* m_deviceKernelMemV = nullptr;
-    //*/
     hipEvent_t m_completionEvent = nullptr;
 };
 }  // namespace roccv
