@@ -61,7 +61,7 @@ class CountingAllocator : public IAllocator {
     mutable int pinnedFrees = 0;
     mutable size_t lastAllocBytes = 0;
 
-    void* allocHipMem(size_t size) const override {
+    void* allocHipMem(size_t size, int32_t /*alignment*/ = 0) const override {
         ++hipAllocs;
         lastAllocBytes = size;
         return std::malloc(size);
