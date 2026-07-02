@@ -21,6 +21,7 @@
 
 #include <hip/hip_runtime.h>
 
+#include <algorithm>
 #include <core/tensor.hpp>
 #include <core/utils.hpp>
 
@@ -30,6 +31,32 @@ using namespace roccv;
 using namespace roccv::tests;
 
 namespace {
+
+/**
+ * @brief Independent golden-model reimplementation of the library's first-packed-dimension rule.
+ *
+ * This is intentionally a separate copy of the logic found in the library (src/core/tensor.cpp). Keeping the oracle
+ * decoupled from the implementation is what allows this test to catch regressions: if the two ever diverge, the
+ * stride-calculation test below will fail. Do NOT replace this with a call into the library.
+ *
+ * In most cases the first packed dimension is the last dimension. However, for layouts ending in WC the first packed
+ * dimension is the second-to-last dimension.
+ *
+ * @param[in] layout The tensor layout to get the first packed dimension for.
+ * @return The index of the first packed dimension in the given tensor layout.
+ */
+int GetFirstPackedDimension(const TensorLayout& layout) {
+    const int rank = layout.rank();
+    switch (layout.elayout()) {
+        case eTensorLayout::TENSOR_LAYOUT_NHWC:
+        case eTensorLayout::TENSOR_LAYOUT_LNHWC:
+        case eTensorLayout::TENSOR_LAYOUT_HWC:
+        case eTensorLayout::TENSOR_LAYOUT_NWC:
+            return std::max(0, rank - 2);
+        default:
+            return rank - 1;
+    }
+}
 
 /**
  * @brief Golden model for calculating strides given a TensorShape and a datatype.
@@ -42,12 +69,15 @@ namespace {
 std::vector<int64_t> CalculateStrides(const TensorShape& shape, const DataType& dtype, int32_t rowAlign) {
     std::vector<int64_t> strides(shape.layout().rank());
 
+    const int firstPackedDim = GetFirstPackedDimension(shape.layout());
+
     // Strides are calculated byte-wise. Therefore, the highest dimension will refer to the stride between singular
     // elements (which, in turn, is the number of bytes per said element).
     strides[shape.layout().rank() - 1] = dtype.size();
     for (int i = shape.layout().rank() - 2; i >= 0; --i) {
-        // Use the row alignment for the height dimension.
-        if (i == shape.layout().height_index()) {
+        // The stride of the dimension preceding the first packed dimension is padded to the next multiple of the row
+        // alignment.
+        if (i == firstPackedDim - 1) {
             strides[i] = detail::AlignUp(strides[i + 1] * shape[i + 1], rowAlign);
         } else {
             strides[i] = strides[i + 1] * shape[i + 1];
