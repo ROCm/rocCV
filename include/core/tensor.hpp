@@ -21,24 +21,25 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include <hip/hip_runtime.h>
+
 #include <array>
 #include <functional>
 #include <memory>
 
 #include "core/data_type.hpp"
 #include "core/detail/allocators/i_allocator.hpp"
+#include "core/detail/context.hpp"
+#include "core/image_format.hpp"
+#include "core/mem_alignment.hpp"
+#include "core/size.hpp"
+#include "core/tensor_data.hpp"
 #include "core/tensor_layout.hpp"
+#include "core/tensor_requirements.hpp"
+#include "core/tensor_shape.hpp"
+#include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
-#include "tensor_data.hpp"
-#include "tensor_requirements.hpp"
-
 namespace roccv {
-
-class ImageFormat;
-struct Size2D;
-class TensorShape;
-class TensorLayout;
-class TensorStorage;
 
 /**
  * @brief Cleanup function invoked with the wrapped TensorData when the last reference to a wrapped Tensor is destroyed.
@@ -57,23 +58,35 @@ class Tensor {
      *
      * @param[in] reqs An object representing the requirements for this tensor.
      */
-    explicit Tensor(const TensorRequirements &reqs);
-    explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc);
+    explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc = GlobalContext().getDefaultAllocator());
 
     /**
-     * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device.
+     * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device. Uses
+     * the default memory alignment and allocation strategy.
      *
      * @param[in] shape The shape describing the tensor.
      * @param[in] dtype The underlying datatype of the tensor.
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(const TensorShape &shape, DataType dtype, eDeviceType device = eDeviceType::GPU);
-    explicit Tensor(const TensorShape &shape, DataType dtype, const IAllocator &alloc,
+
+    /**
+     * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device. Uses a
+     * user-specified memory alignment and allocation strategy.
+     *
+     * @param[in] shape The shape describing the tensor.
+     * @param[in] dtype The underlying datatype of the tensor.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] alloc The allocation strategy. (Default: DefaultAllocator)
+     * @param[in] device The device the tensor should be allocated on.
+     */
+    explicit Tensor(const TensorShape &shape, DataType dtype, const MemAlignment &bufAlign,
+                    const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the
-     * specified device.
+     * specified device. Uses the default memory alignment and allocation strategy.
      *
      * @param[in] num_images The number of images in the batch.
      * @param[in] image_size The size for images in the batch.
@@ -81,7 +94,20 @@ class Tensor {
      * @param[in] device The device the tensor should be allocated on.
      */
     explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, eDeviceType device = eDeviceType::GPU);
-    explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, const IAllocator &alloc,
+
+    /**
+     * @brief Constructs a tensor using image-based requirements and allocates the appropriate amount of memory on the
+     * specified device. Uses user-provided memory alignment and allocation strategies.
+     *
+     * @param[in] num_images The number of images in the batch.
+     * @param[in] image_size The size for images in the batch.
+     * @param[in] fmt The format of the underlying image data.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] alloc The allocation strategy. (Default: DefaultAllocator)
+     * @param[in] device The device the tensor should be allocated on.
+     */
+    explicit Tensor(int num_images, Size2D image_size, ImageFormat fmt, const MemAlignment &bufAlign,
+                    const IAllocator &alloc = GlobalContext().getDefaultAllocator(),
                     eDeviceType device = eDeviceType::GPU);
 
     Tensor(const Tensor &other) = delete;
@@ -163,28 +189,82 @@ class Tensor {
     }
 
     /**
-     * @brief Creates a view of this tensor with a new shape and layout
+     * @brief Creates a view of this tensor with a new shape and layout, keeping the same data type.
      *
-     * @param[in] new_shape the new shape of the tensor
-     * @return Tensor
+     * @param[in] newShape The new shape of the tensor.
+     * @return A new tensor view with the given shape.
      */
-    Tensor reshape(const TensorShape &new_shape) const;
+    Tensor reshape(const TensorShape &newShape) const;
 
     /**
-     * @brief Creates a vew of this tensor with a new shape, layout, and data type. The number of bytes allocated must
-     * match the original tensor.
+     * @brief Creates a view of this tensor with a new data type and shape.
      *
-     * @param new_shape The new tensor shape.
-     * @param new_dtype The new data type of the underlying tensor data.
-     * @return Tensor
+     * Reinterprets the tensor's underlying bytes with the given data type and shape. The total byte count
+     * (elements * dtype size) must match between the original and new view. Non-contiguous (padded) tensors
+     * are supported as long as the reshape is compatible with the stride structure.
+     *
+     * @param[in] newDtype The new data type of the tensor elements.
+     * @param[in] newShape The new shape of the tensor.
+     * @return A new tensor view with the given data type and shape.
      */
-    Tensor reshape(const TensorShape &new_shape, const DataType &new_dtype) const;
+    Tensor reshape(const DataType &newDtype, const TensorShape &newShape) const;
 
+    /**
+     * @brief Performs a shallow copy of the tensor (creates a view).
+     *
+     * This assignment operator copies the tensor's metadata and data handle,
+     * resulting in a new tensor object that shares the same underlying data
+     * with the original tensor. No deep copy of the data is performed.
+     *
+     * @param other The tensor to assign from.
+     * @return Reference to this tensor.
+     */
     Tensor &operator=(const Tensor &other);
 
     /**
-     * @brief Calculates tensor requirements. This essentially wraps the
-     * provided parameters into a TensorRequirements object.
+     * @brief Returns the total number of bytes being used to store the raw tensor data.
+     *
+     * @return Total number of bytes being used to store the raw tensor data.
+     */
+    size_t dataSize() const;
+
+    /**
+     * @brief Returns true if the tensor is contiguous in memory, meaning there is no padding present in the tensor.
+     *
+     * @return True if the tensor is contiguous in memory, false otherwise.
+     */
+    bool isContiguous() const;
+
+    /**
+     * @brief Copies data from a host pointer to the tensor. Host memory must be contiguous. This is a non-blocking
+     * operation.
+     *
+     * @param[in] src The source host pointer.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyFromHostAsync(const void *src, hipStream_t stream = nullptr) const;
+
+    /**
+     * @brief Copies data from the tensor to a host pointer. Host memory will be contiguous. This is a non-blocking
+     * operation.
+     *
+     * @param[out] dst The destination host pointer. Must be preallocated to the correct size.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyToHostAsync(void *dst, hipStream_t stream = nullptr) const;
+
+    /**
+     * @brief Copies this tensor's data into another tensor, accounting for differing row padding between the two
+     * tensors. Both tensors must have the same shape and element size, but may reside on different devices and use
+     * different row alignments. This is a non-blocking operation.
+     *
+     * @param[out] dst The destination tensor.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyToAsync(const Tensor &dst, hipStream_t stream = nullptr) const;
+
+    /**
+     * @brief Calculates tensor requirements using the default memory alignment strategy.
      *
      * @param[in] shape The desired shape of the tensor.
      * @param[in] dtype The desired data type of the tensor's raw data.
@@ -196,38 +276,68 @@ class Tensor {
                                          eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Calculates tensor requirements.
+     * @brief Calculates tensor requirements with a user-provided memory alignment strategy.
+     *
+     * @param[in] shape The desired shape of the tensor.
+     * @param[in] dtype The desired data type of the tensor's raw data.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] device The device the tensor data should belong to.
+     * @return A TensorRequirements object representing this tensor's
+     * requirements.
+     */
+    static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype, const MemAlignment &bufAlign,
+                                         const eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates tensor requirements with user-provided strides.
      *
      * @param[in] shape The shape describing the tensor.
      * @param[in] dtype The type of the tensor's data.
      * @param[in] strides The tensor's strides.
+     * @param[in] baseAlign The base address alignment.
      * @param[in] device The device the tensor data belongs on. (Default: GPU)
      * @return Tensor requirements.
      */
     static Requirements CalcRequirements(const TensorShape &shape, const DataType &dtype,
-                                         std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides,
+                                         const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides, int32_t baseAlign,
                                          eDeviceType device = eDeviceType::GPU);
 
     /**
-     * @brief Calculates tensor requirements using image-based parameters.
+     * @brief Calculates tensor requirements using image-based parameters. This will use a default memory alignment
+     * strategy.
      *
      * @param[in] num_images The number of images in the batch.
      * @param[in] image_size The size for images in the batch.
      * @param[in] fmt The format of the underlying image data.
      * @param[in] device The device the tensor data should belong to.
-     * @return A TensorRequirements object representing the tensor's requirements.
+     * @return A Tensor::Requirements object representing the tensor's requirements.
      */
     static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
                                          eDeviceType device = eDeviceType::GPU);
+
+    /**
+     * @brief Calculates tensor requirements using image-based parameters and a specified memory alignment.
+     *
+     * @param[in] num_images The number of images in the batch.
+     * @param[in] image_size The size of images in the batch.
+     * @param[in] fmt The format of the underling image data.
+     * @param[in] bufAlign Specification for memory alignment.
+     * @param[in] device The device the tensor is to be allocated on.
+     * @return A Tensor::Requirements object representing this tensor's requirements.
+     */
+    static Requirements CalcRequirements(int num_images, Size2D image_size, ImageFormat fmt,
+                                         const MemAlignment &bufAlign, eDeviceType device = eDeviceType::GPU);
 
     /**
      * @brief Calculates strides required for a tensor.
      *
      * @param shape The tensor shape.
      * @param dtype The datatype of the tensor.
+     * @param rowAlign The row alignment to use. Setting to 0 will ensure contiguous memory usage.
      * @return An array containing strides for the given parameters.
      */
-    static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype);
+    static std::array<int64_t, ROCCV_TENSOR_MAX_RANK> CalcStrides(const TensorShape &shape, const DataType &dtype,
+                                                                  int32_t rowAlign);
 
    private:
     /**
@@ -240,6 +350,23 @@ class Tensor {
     explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
 
     friend Tensor TensorWrapData(const TensorData &tensor_data, TensorDataCleanupFunc cleanup);
+
+    /**
+     * @brief Performs a padding-aware, stream-ordered 2D copy between a source and destination buffer that share
+     * this tensor's shape but may use different row pitches. Backs the host and tensor-to-tensor copy methods.
+     *
+     * @param[out] dstData Destination base pointer.
+     * @param[in] dstStrides Byte-wise strides of the destination layout.
+     * @param[in] dstDevice Device the destination resides on.
+     * @param[in] srcData Source base pointer.
+     * @param[in] srcStrides Byte-wise strides of the source layout.
+     * @param[in] srcDevice Device the source resides on.
+     * @param[in] stream The stream to use for the copy.
+     */
+    void copyPitchedAsync(void *dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &dstStrides,
+                          eDeviceType dstDevice, const void *srcData,
+                          const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &srcStrides, eDeviceType srcDevice,
+                          hipStream_t stream) const;
 
     TensorRequirements m_requirements;      // Tensor metadata
     std::shared_ptr<TensorStorage> m_data;  // Stores raw tensor data

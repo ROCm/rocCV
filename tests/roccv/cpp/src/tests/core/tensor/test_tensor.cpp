@@ -19,7 +19,11 @@
  * THE SOFTWARE.
  */
 
+#include <hip/hip_runtime.h>
+
+#include <algorithm>
 #include <core/tensor.hpp>
+#include <core/utils.hpp>
 
 #include "test_helpers.hpp"
 
@@ -29,20 +33,55 @@ using namespace roccv::tests;
 namespace {
 
 /**
+ * @brief Independent golden-model reimplementation of the library's first-packed-dimension rule.
+ *
+ * This is intentionally a separate copy of the logic found in the library (src/core/tensor.cpp). Keeping the oracle
+ * decoupled from the implementation is what allows this test to catch regressions: if the two ever diverge, the
+ * stride-calculation test below will fail. Do NOT replace this with a call into the library.
+ *
+ * In most cases the first packed dimension is the last dimension. However, for layouts ending in WC the first packed
+ * dimension is the second-to-last dimension.
+ *
+ * @param[in] layout The tensor layout to get the first packed dimension for.
+ * @return The index of the first packed dimension in the given tensor layout.
+ */
+int GetFirstPackedDimension(const TensorLayout& layout) {
+    const int rank = layout.rank();
+    switch (layout.elayout()) {
+        case eTensorLayout::TENSOR_LAYOUT_NHWC:
+        case eTensorLayout::TENSOR_LAYOUT_LNHWC:
+        case eTensorLayout::TENSOR_LAYOUT_HWC:
+        case eTensorLayout::TENSOR_LAYOUT_NWC:
+            return std::max(0, rank - 2);
+        default:
+            return rank - 1;
+    }
+}
+
+/**
  * @brief Golden model for calculating strides given a TensorShape and a datatype.
  *
  * @param shape The tensor's shape.
  * @param dtype The datatype of the tensor.
+ * @param rowAlign The row alignment to use. Setting to 0 will ensure contiguous memory usage.
  * @return A list of strides for each dimension of the given shape.
  */
-std::vector<int64_t> CalculateStrides(const TensorShape& shape, const DataType& dtype) {
+std::vector<int64_t> CalculateStrides(const TensorShape& shape, const DataType& dtype, int32_t rowAlign) {
     std::vector<int64_t> strides(shape.layout().rank());
+
+    const int firstPackedDim = GetFirstPackedDimension(shape.layout());
 
     // Strides are calculated byte-wise. Therefore, the highest dimension will refer to the stride between singular
     // elements (which, in turn, is the number of bytes per said element).
     strides[shape.layout().rank() - 1] = dtype.size();
     for (int i = shape.layout().rank() - 2; i >= 0; --i) {
-        strides[i] = strides[i + 1] * shape[i + 1];
+        // The stride of the dimension preceding the first packed dimension is padded to the next multiple of the row
+        // alignment.
+        if (i == firstPackedDim - 1) {
+            strides[i] = detail::AlignUp(strides[i + 1] * shape[i + 1], rowAlign);
+        } else {
+            strides[i] = strides[i + 1] * shape[i + 1];
+        }
     }
     return strides;
 }
@@ -61,19 +100,27 @@ void TestNegativeTensorShape() {
 }
 
 /**
- * @brief Negative tests related to the Tensor object.
+ * @brief Negative tests related to Tensor reshape.
  *
  */
-void TestNegativeTensor() {
-    {
-        // Should not be able to reshape tensor into another view with a differing number of elements
-        Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
-        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 2}, "NHWC")), eStatusType::INVALID_VALUE);
+void TestNegativeTensorReshape() {
+    Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
+    EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 4}, "NHWC")), eStatusType::INVALID_VALUE);
+}
 
-        // Should not be able to reshape tensor into another view which would result in a different number of bytes in
-        // the underlying memory.
-        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC"), DataType(DATA_TYPE_S16)),
-                         eStatusType::INVALID_VALUE);
+/**
+ * @brief Negative tests for the Tensor class, verifying error handling in invalid scenarios.
+ *
+ * These tests confirm that the Tensor class appropriately throws exceptions when:
+ *   1. Attempting to reshape a non-contiguous tensor.
+ *
+ * In both cases, the expected behavior is to throw an exception of type eStatusType::INVALID_VALUE.
+ */
+void TestNegativeTensor() {
+    // Test reshaping a tensor with mismatching number of elements
+    {
+        Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
+        EXPECT_EXCEPTION(tensor.reshape(TensorShape({1, 1, 2, 4}, "NHWC")), eStatusType::INVALID_VALUE);
     }
 }
 
@@ -95,15 +142,14 @@ void TestTensorCorrectness() {
         EXPECT_EQ(tensor.shape().size(), 4 * 720 * 480 * 3);
         EXPECT_EQ(tensor.dtype().size(), 1);
     }
+}
 
-    // Tensor reshape: Change layout
+void TestTensorReshapeCorrectness() {
     {
-        // Reshape tensor from NHWC -> HWC layout
-        Tensor tensor(1, {720, 480}, FMT_RGB8);
-        Tensor reshapedTensor = tensor.reshape(TensorShape({720, 480, 3}, "HWC"));
-        EXPECT_EQ(reshapedTensor.rank(), 3);
-        EXPECT_NE(reshapedTensor.rank(), tensor.rank());
+        Tensor tensor(TensorShape({1, 2, 3}, "HWC"), DataType(DATA_TYPE_U8));
+        Tensor reshapedTensor = tensor.reshape(TensorShape({1, 1, 2, 3}, "NHWC"));
         EXPECT_EQ(reshapedTensor.shape().size(), tensor.shape().size());
+        EXPECT_EQ(reshapedTensor.rank(), 4);
 
         // Ensure they are sharing the same underlying data
         auto data = tensor.exportData<TensorDataStrided>();
@@ -114,7 +160,7 @@ void TestTensorCorrectness() {
     // Tensor reshape: Change layout and datatype
     {
         Tensor tensor(TensorShape({1, 5, 4}, "NWC"), DataType(DATA_TYPE_S16));
-        Tensor reshapedTensor = tensor.reshape(TensorShape({1, 5}, "NW"), DataType(DATA_TYPE_4S16));
+        Tensor reshapedTensor = tensor.reshape(DataType(DATA_TYPE_4S16), TensorShape({1, 5}, "NW"));
         EXPECT_NE(reshapedTensor.shape().size(), tensor.shape().size());
         EXPECT_NE(reshapedTensor.rank(), tensor.rank());
         EXPECT_EQ(reshapedTensor.rank(), 2);
@@ -145,7 +191,7 @@ void TestTensorWrapNonOwning() {
     {
         TensorDataStrided::Buffer buf;
         buf.basePtr = buffer;
-        buf.strides = Tensor::CalcStrides(shape, dtype);
+        buf.strides = Tensor::CalcStrides(shape, dtype, 0);
         TensorDataStridedHost data(shape, dtype, buf);
 
         // Wrap with no cleanup function: this must produce a non-owning view.
@@ -186,7 +232,7 @@ void TestTensorWrapCleanup() {
     {
         TensorDataStrided::Buffer buf;
         buf.basePtr = buffer;
-        buf.strides = Tensor::CalcStrides(shape, dtype);
+        buf.strides = Tensor::CalcStrides(shape, dtype, 0);
         TensorDataStridedHost data(shape, dtype, buf);
 
         Tensor tensor = TensorWrapData(data, [&cleanupCalls](const TensorData&) { cleanupCalls++; });
@@ -230,7 +276,7 @@ void TestTensorDataCastDevicePropagation() {
         DataType dtype(DATA_TYPE_U8);
         TensorDataStrided::Buffer buf;
         buf.basePtr = nullptr;
-        buf.strides = Tensor::CalcStrides(shape, dtype);
+        buf.strides = Tensor::CalcStrides(shape, dtype, 0);
         TensorDataStridedHost host(shape, dtype, buf);
 
         auto asStrided = host.cast<TensorDataStrided>();
@@ -242,11 +288,43 @@ void TestTensorDataCastDevicePropagation() {
 }
 
 /**
+ * @brief Tests the correctness of the copyFromHost and copyToHost methods.
+ *
+ */
+void TestTensorCopyCorrectness() {
+    Tensor tensor(2, {10, 10}, FMT_RGB8, eDeviceType::GPU);
+    const size_t hostDataSize = tensor.shape().size() * tensor.dtype().size();
+    std::vector<uint8_t> inputDataHost(hostDataSize);
+    for (size_t i = 0; i < inputDataHost.size(); i++) {
+        inputDataHost[i] = static_cast<uint8_t>(i % 256);
+    }
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    tensor.copyFromHostAsync(inputDataHost.data(), stream);
+    std::vector<uint8_t> outputDataHost(hostDataSize);
+    tensor.copyToHostAsync(outputDataHost.data(), stream);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    EXPECT_VECTOR_EQ(inputDataHost, outputDataHost);
+}
+
+/**
  * @brief Tests internal stride calculations on Tensor construction.
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
-    Tensor tensor(shape, dtype);
-    std::vector<int64_t> expectedStrides = CalculateStrides(shape, dtype);
+    Tensor tensor(shape, dtype, eDeviceType::GPU);
+
+    // Get row alignment from device attributes
+    int dev;
+    HIP_VALIDATE_NO_ERRORS(hipGetDevice(&dev));
+    int rowAlign;
+    HIP_VALIDATE_NO_ERRORS(hipDeviceGetAttribute(&rowAlign, hipDeviceAttributeTexturePitchAlignment, dev));
+
+    std::vector<int64_t> expectedStrides = CalculateStrides(shape, dtype, rowAlign);
     std::vector<int64_t> actualStrides(tensor.rank());
     auto data = tensor.exportData<TensorDataStrided>();
 
@@ -267,9 +345,12 @@ int main(int argc, char** argv) {
     // Negative tests
     TEST_CASE(TestNegativeTensorShape());
     TEST_CASE(TestNegativeTensor());
+    TEST_CASE(TestNegativeTensorReshape());
 
     // Correctness tests
     TEST_CASE(TestTensorCorrectness());
+    TEST_CASE(TestTensorReshapeCorrectness());
+    TEST_CASE(TestTensorCopyCorrectness());
 
     // Wrapped-data ownership tests
     TEST_CASE(TestTensorWrapNonOwning());

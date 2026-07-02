@@ -25,11 +25,7 @@ THE SOFTWARE.
 #include <hip/hip_vector_types.h>
 #include <stdint.h>
 
-#include <optional>
 #include <vector>
-
-#include "core/exception.hpp"
-#include "core/tensor.hpp"
 
 typedef enum eInterpolationType {
     INTERP_TYPE_NEAREST = 0,
@@ -38,11 +34,11 @@ typedef enum eInterpolationType {
 } eInterpolationType;
 
 typedef enum eBorderType {
-    BORDER_TYPE_CONSTANT = 0,       ///< Uses a constant value for borders.
-    BORDER_TYPE_REPLICATE = 1,      ///< Replicates the last element for borders.
-    BORDER_TYPE_REFLECT = 2,        ///< Reflects the border elements, including the boundary pixel
-    BORDER_TYPE_REFLECT101 = 3,     ///< Reflects the border elements, excluding the boundary pixel
-    BORDER_TYPE_WRAP = 4,           ///< Wraps the border elements.
+    BORDER_TYPE_CONSTANT = 0,    ///< Uses a constant value for borders.
+    BORDER_TYPE_REPLICATE = 1,   ///< Replicates the last element for borders.
+    BORDER_TYPE_REFLECT = 2,     ///< Reflects the border elements, including the boundary pixel
+    BORDER_TYPE_REFLECT101 = 3,  ///< Reflects the border elements, excluding the boundary pixel
+    BORDER_TYPE_WRAP = 4,        ///< Wraps the border elements.
 } eBorderType;
 
 typedef enum eRemapType {
@@ -106,14 +102,6 @@ typedef struct {
 } Rect_t;
 
 namespace roccv {
-
-/**
- * @brief Describes the 2D dimensions of an image.
- *
- */
-struct Size2D {
-    int w, h;
-};
 
 /**
  * @brief Describes an 8-bit RGBA color value.

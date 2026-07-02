@@ -24,8 +24,7 @@ THE SOFTWARE.
 
 #include <op_brightness_contrast.hpp>
 
-PyTensor PyOpBrightnessContrast::Execute(PyTensor& input, eDataType dtype,
-                                         std::optional<std::reference_wrapper<PyTensor>> brightness,
+PyTensor PyOpBrightnessContrast::Execute(PyTensor& input, std::optional<std::reference_wrapper<PyTensor>> brightness,
                                          std::optional<std::reference_wrapper<PyTensor>> contrast,
                                          std::optional<std::reference_wrapper<PyTensor>> brightnessShift,
                                          std::optional<std::reference_wrapper<PyTensor>> contrastCenter,
@@ -48,7 +47,7 @@ PyTensor PyOpBrightnessContrast::Execute(PyTensor& input, eDataType dtype,
             ? std::optional<std::reference_wrapper<roccv::Tensor>>(*contrastCenter.value().get().getTensor())
             : std::nullopt;
 
-    auto outputTensor = std::make_shared<roccv::Tensor>(inputTensor->shape(), roccv::DataType(dtype), device);
+    auto outputTensor = std::make_shared<roccv::Tensor>(inputTensor->shape(), inputTensor->dtype(), device);
 
     roccv::BrightnessContrast op;
     op(hipStream, *inputTensor, *outputTensor, brightnessTensor, contrastTensor, brightnessShiftTensor,
@@ -86,7 +85,7 @@ void PyOpBrightnessContrast::ExecuteInto(PyTensor& output, PyTensor& input,
 
 void PyOpBrightnessContrast::Export(py::module& m) {
     using namespace py::literals;
-    m.def("brightness_contrast", &PyOpBrightnessContrast::Execute, "src"_a, "dtype"_a, "brightness"_a = py::none(),
+    m.def("brightness_contrast", &PyOpBrightnessContrast::Execute, "src"_a, "brightness"_a = py::none(),
           "contrast"_a = py::none(), "brightness_shift"_a = py::none(), "contrast_center"_a = py::none(), py::kw_only(),
           "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
             
@@ -97,7 +96,6 @@ void PyOpBrightnessContrast::Export(py::module& m) {
             
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                dtype (eDataType): Datatype of the output tensor.
                 brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
                 contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
                 brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default: 0.0.

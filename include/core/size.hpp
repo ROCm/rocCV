@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -21,26 +21,14 @@
 
 #pragma once
 
-#include <stdint.h>
-#include <stdlib.h>
-
 namespace roccv {
 
 /**
- * @brief Abstract class for memory allocators.
+ * @brief Describes the 2D dimensions of an image.
  *
  */
-class IAllocator {
-   public:
-    virtual void* allocHostMem(size_t size, int32_t alignment = 0) const = 0;
-    virtual void freeHostMem(void* ptr) const noexcept = 0;
-
-    virtual void* allocHostPinnedMem(size_t size) const = 0;
-    virtual void freeHostPinnedMem(void* ptr) const noexcept = 0;
-
-    virtual void* allocHipMem(size_t size, int32_t alignment = 0) const = 0;
-    virtual void freeHipMem(void* ptr) const noexcept = 0;
-
-    virtual ~IAllocator() = default;
+struct Size2D {
+    int w, h;
 };
+
 }  // namespace roccv

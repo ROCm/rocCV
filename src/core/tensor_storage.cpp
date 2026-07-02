@@ -29,17 +29,17 @@ namespace roccv {
 TensorStorage::TensorStorage(void* data, TensorStorageCleanupFunc cleanup)
     : m_data(data), m_cleanup(std::move(cleanup)) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device)
-    : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator()) {}
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, int32_t alignment)
+    : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator(), alignment) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc) {
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc, int32_t alignment) {
     switch (device) {
         case eDeviceType::GPU:
-            m_data = alloc.allocHipMem(bytes);
+            m_data = alloc.allocHipMem(bytes, alignment);
             m_cleanup = [&alloc](void* data) { alloc.freeHipMem(data); };
             break;
         case eDeviceType::CPU:
-            m_data = alloc.allocHostMem(bytes);
+            m_data = alloc.allocHostMem(bytes, alignment);
             m_cleanup = [&alloc](void* data) { alloc.freeHostMem(data); };
             break;
     }
