@@ -173,6 +173,121 @@ void TestTensorReshapeCorrectness() {
 }
 
 /**
+ * @brief Ensures that wrapping external data via TensorWrapData does not take ownership of the underlying buffer.
+ *
+ * The buffer must remain valid and intact after the wrapping Tensor (and any views derived from it) are destroyed.
+ */
+void TestTensorWrapNonOwning() {
+    TensorShape shape({1, 2, 2, 3}, "NHWC");
+    DataType dtype(DATA_TYPE_U8);
+    size_t numElems = shape.size();
+
+    // Test owns this buffer for the entire duration of the test.
+    auto* buffer = new uint8_t[numElems];
+    for (size_t i = 0; i < numElems; i++) {
+        buffer[i] = static_cast<uint8_t>(i);
+    }
+
+    {
+        TensorDataStrided::Buffer buf;
+        buf.basePtr = buffer;
+        buf.strides = Tensor::CalcStrides(shape, dtype, 0);
+        TensorDataStridedHost data(shape, dtype, buf);
+
+        // Wrap with no cleanup function: this must produce a non-owning view.
+        Tensor tensor = TensorWrapData(data);
+        EXPECT_TRUE(tensor.exportData<TensorDataStrided>().basePtr() == buffer);
+
+        // A reshaped view shares the same underlying storage; destroying both must still not free the buffer.
+        Tensor view = tensor.reshape(TensorShape({2, 2, 3}, "HWC"));
+        EXPECT_TRUE(view.exportData<TensorDataStrided>().basePtr() == buffer);
+    }
+
+    // The buffer must still be intact (untouched by tensor destruction).
+    bool intact = true;
+    for (size_t i = 0; i < numElems; i++) {
+        if (buffer[i] != static_cast<uint8_t>(i)) {
+            intact = false;
+            break;
+        }
+    }
+    EXPECT_TRUE(intact);
+
+    // The test still owns the buffer and is responsible for freeing it. A double-free here would indicate the tensor
+    // incorrectly took ownership.
+    delete[] buffer;
+}
+
+/**
+ * @brief Ensures that a cleanup function provided to TensorWrapData is invoked exactly once, when the last reference to
+ * the wrapped data is destroyed.
+ */
+void TestTensorWrapCleanup() {
+    TensorShape shape({1, 2, 2, 3}, "NHWC");
+    DataType dtype(DATA_TYPE_U8);
+
+    auto* buffer = new uint8_t[shape.size()];
+    int cleanupCalls = 0;
+
+    {
+        TensorDataStrided::Buffer buf;
+        buf.basePtr = buffer;
+        buf.strides = Tensor::CalcStrides(shape, dtype, 0);
+        TensorDataStridedHost data(shape, dtype, buf);
+
+        Tensor tensor = TensorWrapData(data, [&cleanupCalls](const TensorData&) { cleanupCalls++; });
+
+        // A view shares the same storage, so the cleanup must not fire until both references are dropped.
+        Tensor view = tensor.reshape(TensorShape({2, 2, 3}, "HWC"));
+        EXPECT_EQ(cleanupCalls, 0);
+    }
+
+    // Both the tensor and its view have gone out of scope: cleanup must have run exactly once.
+    EXPECT_EQ(cleanupCalls, 1);
+
+    delete[] buffer;
+}
+
+/**
+ * @brief Ensures TensorData::cast preserves the concrete device when casting to a non-leaf type.
+ *
+ * Casting to the base TensorDataStrided (as exportData<TensorDataStrided>() does throughout the codebase) must report
+ * the same device as the source tensor, not a hardcoded default.
+ */
+void TestTensorDataCastDevicePropagation() {
+    // Host tensor: exporting/casting to the base strided type must still report CPU.
+    {
+        Tensor tensor(TensorShape({1, 2, 2, 3}, "NHWC"), DataType(DATA_TYPE_U8), eDeviceType::CPU);
+        auto data = tensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.device() == eDeviceType::CPU);
+    }
+
+    // Device tensor: exporting/casting to the base strided type must still report GPU.
+    {
+        Tensor tensor(TensorShape({1, 2, 2, 3}, "NHWC"), DataType(DATA_TYPE_U8), eDeviceType::GPU);
+        auto data = tensor.exportData<TensorDataStrided>();
+        EXPECT_TRUE(data.device() == eDeviceType::GPU);
+    }
+
+    // Direct cast: a host strided descriptor must remain CPU when viewed as the base type, and must refuse a cast to an
+    // incompatible (device) leaf type.
+    {
+        TensorShape shape({1, 2, 2, 3}, "NHWC");
+        DataType dtype(DATA_TYPE_U8);
+        TensorDataStrided::Buffer buf;
+        buf.basePtr = nullptr;
+        buf.strides = Tensor::CalcStrides(shape, dtype, 0);
+        TensorDataStridedHost host(shape, dtype, buf);
+
+        auto asStrided = host.cast<TensorDataStrided>();
+        EXPECT_TRUE(asStrided.has_value());
+        EXPECT_TRUE(asStrided->device() == eDeviceType::CPU);
+
+        EXPECT_FALSE(host.cast<TensorDataStridedHip>().has_value());
+    }
+}
+
+/**
  * @brief Tests the correctness of the copyFromHost and copyToHost methods.
  *
  */
@@ -236,6 +351,13 @@ int main(int argc, char** argv) {
     TEST_CASE(TestTensorCorrectness());
     TEST_CASE(TestTensorReshapeCorrectness());
     TEST_CASE(TestTensorCopyCorrectness());
+
+    // Wrapped-data ownership tests
+    TEST_CASE(TestTensorWrapNonOwning());
+    TEST_CASE(TestTensorWrapCleanup());
+
+    // TensorData cast device propagation
+    TEST_CASE(TestTensorDataCastDevicePropagation());
 
     // Stride calculation tests
     // clang-format off

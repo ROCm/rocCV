@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include <array>
+#include <functional>
 #include <memory>
 
 #include "core/data_type.hpp"
@@ -38,8 +39,13 @@ THE SOFTWARE.
 #include "core/tensor_shape.hpp"
 #include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
-
 namespace roccv {
+
+/**
+ * @brief Cleanup function invoked with the wrapped TensorData when the last reference to a wrapped Tensor is destroyed.
+ * Provides callers a hook to free externally-allocated memory according to how it was allocated.
+ */
+using TensorDataCleanupFunc = std::function<void(const TensorData &)>;
 
 class Tensor {
    public:
@@ -53,15 +59,6 @@ class Tensor {
      * @param[in] reqs An object representing the requirements for this tensor.
      */
     explicit Tensor(const TensorRequirements &reqs, const IAllocator &alloc = GlobalContext().getDefaultAllocator());
-
-    /**
-     * @brief Constructs a Tensor object given a list of requirements and the underlying data as a TensorStorage
-     * pointer. This constructor will not automatically allocate data.
-     *
-     * @param[in] reqs An object representing the requirements for this tensor.
-     * @param[in] data A TensorStorage object for the tensor's underlying data.
-     */
-    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
 
     /**
      * @brief Constructs a tensor object and allocates the appropriate amount of memory on the specified device. Uses
@@ -344,6 +341,17 @@ class Tensor {
 
    private:
     /**
+     * @brief Constructs a Tensor that shares an existing TensorStorage rather than allocating new memory. Used
+     * internally to create views over existing storage (e.g. reshape() and TensorWrapData()).
+     *
+     * @param[in] reqs An object representing the requirements for this tensor.
+     * @param[in] data The shared storage backing this tensor.
+     */
+    explicit Tensor(const TensorRequirements &reqs, std::shared_ptr<TensorStorage> data);
+
+    friend Tensor TensorWrapData(const TensorData &tensor_data, TensorDataCleanupFunc cleanup);
+
+    /**
      * @brief Performs a padding-aware, stream-ordered 2D copy between a source and destination buffer that share
      * this tensor's shape but may use different row pitches. Backs the host and tensor-to-tensor copy methods.
      *
@@ -365,11 +373,17 @@ class Tensor {
 };
 
 /**
- * @brief Wraps TensorData object into a Tensor object.
+ * @brief Wraps a TensorData object into a Tensor object without taking ownership of the underlying memory.
  *
- * @param[in] data The tensor data to wrap.
- * @return The resulting Tensor with the provided TensorData.
+ * By default the resulting Tensor is a non-owning view: the wrapped memory is left untouched once the Tensor (and any
+ * views derived from it) goes out of scope. To tie cleanup of the external memory to the Tensor's lifetime, provide a
+ * cleanup function, which is invoked with the wrapped TensorData when the last reference is destroyed.
+ *
+ * @param[in] tensor_data The tensor data to wrap.
+ * @param[in] cleanup An optional cleanup function responsible for freeing the wrapped memory. Defaults to no cleanup
+ * (non-owning view).
+ * @return The resulting Tensor wrapping the provided TensorData.
  */
-extern Tensor TensorWrapData(const TensorData &tensor_data);
+extern Tensor TensorWrapData(const TensorData &tensor_data, TensorDataCleanupFunc cleanup = {});
 
 }  // namespace roccv
