@@ -387,9 +387,7 @@ void Tensor::copyToHostAsync(void* dst, hipStream_t stream) const {
 }
 
 void Tensor::copyToAsync(const Tensor& dst, hipStream_t stream) const {
-    // Source and destination must describe the same logical data; only their padding (row pitch) may differ.
-    if (rank() != dst.rank() || m_requirements.shape != dst.m_requirements.shape ||
-        dtype().size() != dst.dtype().size()) {
+    if (shape() != dst.shape() || dtype().size() != dst.dtype().size()) {
         throw Exception("Source and destination tensors must have the same shape and element size for a copy.",
                         eStatusType::INVALID_VALUE);
     }
@@ -486,7 +484,7 @@ Tensor TensorWrapData(const TensorData& tensor_data, TensorDataCleanupFunc clean
                         eStatusType::INVALID_VALUE);
     }
 
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides{};
     for (int i = 0; i < tensorDataStrided->rank(); i++) {
         strides[i] = tensorDataStrided->stride(i);
     }
