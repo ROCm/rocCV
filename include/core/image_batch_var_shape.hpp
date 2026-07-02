@@ -34,6 +34,7 @@
 #include "core/image.hpp"
 #include "core/image_batch_data.hpp"
 #include "core/image_format.hpp"
+#include "core/size.hpp"
 #include "exception.hpp"
 #include "operator_types.h"
 

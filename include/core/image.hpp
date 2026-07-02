@@ -32,6 +32,7 @@
 #include "core/image_buffer.hpp"
 #include "core/image_data.hpp"
 #include "core/image_format.hpp"
+#include "core/size.hpp"
 #include "core/util_enums.h"
 #include "operator_types.h"
 
