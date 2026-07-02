@@ -61,9 +61,10 @@ class DefaultAllocator final : public IAllocator {
      * @brief Allocates memory on the device.
      *
      * @param size The size in bytes to allocate.
+     * @param alignment The required base address alignment in bytes. A value of 0 uses the device's default alignment.
      * @return A pointer to allocated device memory.
      */
-    void* allocHipMem(size_t size) const override;
+    void* allocHipMem(size_t size, int32_t alignment = 0) const override;
 
     /**
      * @brief Free device allocated memory.

@@ -65,12 +65,13 @@ class RandomGenerator {
         const auto tensor_data = tensor.exportData<roccv::TensorDataStrided>();
 
         if constexpr (std::is_integral_v<T>) {
-            rocrand_generate_char(m_gen, static_cast<unsigned char*>(tensor_data.basePtr()),
-                                  tensor.shape().size() * tensor.dtype().size());
+            rocrand_generate_char(m_gen, static_cast<unsigned char*>(tensor_data.basePtr()), tensor.dataSize());
         } else if constexpr (std::is_same_v<T, float>) {
-            rocrand_generate_uniform(m_gen, static_cast<float*>(tensor_data.basePtr()), tensor.shape().size());
+            size_t num_elements = tensor.dataSize() / sizeof(float);
+            rocrand_generate_uniform(m_gen, static_cast<float*>(tensor_data.basePtr()), num_elements);
         } else if constexpr (std::is_same_v<T, double>) {
-            rocrand_generate_uniform_double(m_gen, static_cast<double*>(tensor_data.basePtr()), tensor.shape().size());
+            size_t num_elements = tensor.dataSize() / sizeof(double);
+            rocrand_generate_uniform_double(m_gen, static_cast<double*>(tensor_data.basePtr()), num_elements);
         } else {
             throw std::runtime_error("Unsupported data type.");
         }

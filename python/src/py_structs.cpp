@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include <operator_types.h>
 #include <pybind11/stl.h>
 
+#include <core/size.hpp>
+
 using namespace py::literals;
 
 void PyStructs::Export(py::module& m) {

@@ -80,27 +80,23 @@ std::shared_ptr<PyTensor> PyTensor::copyTo(eDeviceType device) {
     std::shared_ptr<roccv::Tensor> copiedTensor =
         std::make_shared<roccv::Tensor>(m_tensor->shape(), m_tensor->dtype(), device);
 
-    auto dstTensorData = copiedTensor->exportData<roccv::TensorDataStrided>();
-    auto srcTensorData = m_tensor->exportData<roccv::TensorDataStrided>();
-    size_t dataSize = m_tensor->shape().size() * m_tensor->dtype().size();
-
-    const std::map<std::pair<eDeviceType, eDeviceType>, hipMemcpyKind> devicePairToMemcpyKind = {
-        {{eDeviceType::CPU, eDeviceType::CPU}, hipMemcpyHostToHost},
-        {{eDeviceType::CPU, eDeviceType::GPU}, hipMemcpyHostToDevice},
-        {{eDeviceType::GPU, eDeviceType::CPU}, hipMemcpyDeviceToHost},
-        {{eDeviceType::GPU, eDeviceType::GPU}, hipMemcpyDeviceToDevice}};
-
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy(dstTensorData.basePtr(), srcTensorData.basePtr(), dataSize,
-                                     devicePairToMemcpyKind.at({m_tensor->device(), device})));
+    // The source and destination tensors share the same logical shape but may have different padding (row alignment
+    // differs per device, and externally-wrapped tensors may be fully packed). Tensor::copyToAsync performs the
+    // copy row-by-row using each tensor's own pitch to account for this. Synchronize so the returned tensor is
+    // immediately usable from Python.
+    m_tensor->copyToAsync(*copiedTensor);
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 
     return std::make_shared<PyTensor>(copiedTensor);
 }
 
 std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayout layout) {
+    // Check if the object supports the DLPack protocol
     if (!py::hasattr(src, "__dlpack__")) {
         throw std::runtime_error("Provided object does not support the DLPack protocol.");
     }
 
+    // Obtain a DLPack capsule
     py::capsule dlpackCapsule = src.attr("__dlpack__")();
     if (!PyCapsule_IsValid(dlpackCapsule.ptr(), "dltensor")) {
         throw std::runtime_error("Invalid DLPack capsule.");
@@ -108,23 +104,42 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
     DLManagedTensor* dlManagedTensor = static_cast<DLManagedTensor*>(dlpackCapsule.get_pointer());
     DLTensor dlTensor = dlManagedTensor->dl_tensor;
 
-    // Mark this capsule as consumed, so that the deleter will not free underlying data.
+    // Mark this capsule as consumed, so that the deleter will not free underlying data
     dlpackCapsule.set_name("used_dltensor");
 
-    // Copy shape data
-    std::vector<int64_t> shapeData(dlTensor.ndim);
-    for (int i = 0; i < dlTensor.ndim; i++) {
+    // Copy the shape data from DLPack to a fixed-size array
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shapeData;
+    for (int i = 0; i < dlTensor.ndim; ++i) {
         shapeData[i] = dlTensor.shape[i];
     }
-
-    // Create a non-owning roccv::Tensor based on the received data
-    roccv::TensorShape shape(roccv::TensorLayout(layout), shapeData);
+    roccv::TensorShape shape(shapeData, dlTensor.ndim, roccv::TensorLayout(layout));
     eDeviceType device = DLDeviceToRoccvDevice(dlTensor.device);
-    roccv::TensorRequirements reqs =
-        roccv::Tensor::CalcRequirements(shape, roccv::DataType(DLTypeToRoccvType(dlTensor.dtype)), device);
-    auto data = std::make_shared<roccv::TensorStorage>(dlTensor.data, device, eOwnership::VIEW);
-    auto tensor = std::make_shared<roccv::Tensor>(reqs, data);
+    eDataType dtype = DLTypeToRoccvType(dlTensor.dtype);
 
+    // Prepare the strides array
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> stridesData;
+
+    // If strides are not present, assume contiguous layout. We really shouldn't be recalculating strides here. DLPack
+    // now enforces that the strides are present, but we'll keep this for backwards compatibility.
+    if (dlTensor.strides == nullptr) {
+        stridesData = roccv::Tensor::CalcStrides(shape, roccv::DataType(dtype), 0);
+    } else {
+        for (int i = 0; i < dlTensor.ndim; ++i) {
+            // DLTensor strides are element-wise. Convert from element-wise to byte-wise.
+            stridesData[i] = dlTensor.strides[i] * roccv::DataType(dtype).size();
+        }
+    }
+
+    // Set up the requirements for the new tensor.
+    roccv::Tensor::Requirements reqs =
+        roccv::Tensor::CalcRequirements(shape, roccv::DataType(dtype), stridesData, 0, device);
+
+    // Since this tensor is coming from a DLPack, we don't own the data, so we need to create a view of the data.
+    std::shared_ptr<roccv::TensorStorage> data = std::make_shared<roccv::TensorStorage>(
+        static_cast<uint8_t*>(dlTensor.data) + dlTensor.byte_offset, device, eOwnership::VIEW);
+    std::shared_ptr<roccv::Tensor> tensor = std::make_shared<roccv::Tensor>(reqs, data);
+
+    // Instantiate a new tensor and a PyTensor to wrap it, binding the original DLManagedTensor
     return std::make_shared<PyTensor>(tensor, dlManagedTensor);
 }
 
