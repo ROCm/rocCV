@@ -108,7 +108,7 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
     dlpackCapsule.set_name("used_dltensor");
 
     // Copy the shape data from DLPack to a fixed-size array
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shapeData{};
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shapeData;
     for (int i = 0; i < dlTensor.ndim; ++i) {
         shapeData[i] = dlTensor.shape[i];
     }
@@ -117,7 +117,7 @@ std::shared_ptr<PyTensor> PyTensor::fromDLPack(pybind11::object src, eTensorLayo
     eDataType dtype = DLTypeToRoccvType(dlTensor.dtype);
 
     // Prepare the strides array
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> stridesData{};
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> stridesData;
 
     // If strides are not present, assume contiguous layout. We really shouldn't be recalculating strides here. DLPack
     // now enforces that the strides are present, but we'll keep this for backwards compatibility.
