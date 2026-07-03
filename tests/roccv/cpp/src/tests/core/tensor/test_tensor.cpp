@@ -211,8 +211,17 @@ void TestTensorCopyCorrectness() {
  */
 void TestTensorCopyToCorrectness(const TensorShape& srcShape, const DataType& dtype, eDeviceType srcDevice,
                                  eDeviceType dstDevice) {
-    Tensor source(srcShape, dtype, srcDevice);
-    Tensor dest(srcShape, dtype, dstDevice);
+    // Build requirements normally, then poison the unused trailing shape slots with distinct values per tensor. The
+    // allocation size and strides derive from the in-rank dimensions, so this does not affect the actual data layout.
+    Tensor::Requirements srcReqs = Tensor::CalcRequirements(srcShape, dtype, srcDevice);
+    Tensor::Requirements dstReqs = Tensor::CalcRequirements(srcShape, dtype, dstDevice);
+    for (int i = srcReqs.rank; i < ROCCV_TENSOR_MAX_RANK; i++) {
+        srcReqs.shape[i] = 100 + i;
+        dstReqs.shape[i] = 900 - i;
+    }
+
+    Tensor source(srcReqs);
+    Tensor dest(dstReqs);
 
     const size_t hostDataSize = source.shape().size() * dtype.size();
     std::vector<uint8_t> inputDataHost(hostDataSize);
