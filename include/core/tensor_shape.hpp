@@ -124,7 +124,7 @@ class TensorShape {
     bool operator!=(const TensorShape &rhs) const;
 
    private:
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> m_shape;
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> m_shape{};
     TensorLayout m_layout;
     size_t m_size;
 };
