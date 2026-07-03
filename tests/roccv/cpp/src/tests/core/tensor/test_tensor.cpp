@@ -202,8 +202,7 @@ void TestTensorCopyCorrectness() {
  *
  * Regression coverage for the shape-equality check in copyToAsync: source and destination describe the same logical
  * shape but may carry different row padding (e.g. a padded GPU tensor copied into a packed CPU tensor). The copy must
- * succeed and preserve data. This guards against comparing unused trailing shape dimensions, which previously caused
- * otherwise-identical tensors to be rejected.
+ * succeed and preserve data.
  *
  * @param[in] srcShape The logical shape shared by source and destination.
  * @param[in] dtype The datatype shared by source and destination.
