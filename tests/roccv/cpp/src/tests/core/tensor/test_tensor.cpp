@@ -198,6 +198,65 @@ void TestTensorCopyCorrectness() {
 }
 
 /**
+ * @brief Tests correctness of tensor-to-tensor copies (Tensor::copyToAsync).
+ *
+ * Regression coverage for the shape-equality check in copyToAsync: source and destination describe the same logical
+ * shape but may carry different row padding (e.g. a padded GPU tensor copied into a packed CPU tensor). The copy must
+ * succeed and preserve data. This guards against comparing unused trailing shape dimensions, which previously caused
+ * otherwise-identical tensors to be rejected.
+ *
+ * @param[in] srcShape The logical shape shared by source and destination.
+ * @param[in] dtype The datatype shared by source and destination.
+ * @param[in] srcDevice Device the source tensor is allocated on.
+ * @param[in] dstDevice Device the destination tensor is allocated on.
+ */
+void TestTensorCopyToCorrectness(const TensorShape& srcShape, const DataType& dtype, eDeviceType srcDevice,
+                                 eDeviceType dstDevice) {
+    Tensor source(srcShape, dtype, srcDevice);
+    Tensor dest(srcShape, dtype, dstDevice);
+
+    const size_t hostDataSize = source.shape().size() * dtype.size();
+    std::vector<uint8_t> inputDataHost(hostDataSize);
+    for (size_t i = 0; i < inputDataHost.size(); i++) {
+        inputDataHost[i] = static_cast<uint8_t>(i % 256);
+    }
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    // Seed the source, copy source -> dest, then read the destination back to the host for comparison.
+    source.copyFromHostAsync(inputDataHost.data(), stream);
+    source.copyToAsync(dest, stream);
+
+    std::vector<uint8_t> outputDataHost(hostDataSize);
+    dest.copyToHostAsync(outputDataHost.data(), stream);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    EXPECT_VECTOR_EQ(inputDataHost, outputDataHost);
+}
+
+/**
+ * @brief Negative tests for Tensor::copyToAsync, verifying mismatched source/destination are rejected.
+ */
+void TestNegativeTensorCopyTo() {
+    Tensor source(TensorShape({2, 4, 4}, "HWC"), DataType(DATA_TYPE_U8));
+
+    // Differing dimensions must be rejected.
+    {
+        Tensor dest(TensorShape({2, 4, 3}, "HWC"), DataType(DATA_TYPE_U8));
+        EXPECT_EXCEPTION(source.copyToAsync(dest), eStatusType::INVALID_VALUE);
+    }
+
+    // Differing element size must be rejected.
+    {
+        Tensor dest(TensorShape({2, 4, 4}, "HWC"), DataType(DATA_TYPE_U16));
+        EXPECT_EXCEPTION(source.copyToAsync(dest), eStatusType::INVALID_VALUE);
+    }
+}
+
+/**
  * @brief Tests internal stride calculations on Tensor construction.
  */
 void TestTensorStrideCalculation(const TensorShape& shape, const DataType& dtype) {
@@ -231,11 +290,20 @@ int main(int argc, char** argv) {
     TEST_CASE(TestNegativeTensorShape());
     TEST_CASE(TestNegativeTensor());
     TEST_CASE(TestNegativeTensorReshape());
+    TEST_CASE(TestNegativeTensorCopyTo());
 
     // Correctness tests
     TEST_CASE(TestTensorCorrectness());
     TEST_CASE(TestTensorReshapeCorrectness());
     TEST_CASE(TestTensorCopyCorrectness());
+
+    // Tensor-to-tensor copy tests (padded/cross-device round-trips)
+    TEST_CASE(TestTensorCopyToCorrectness(TensorShape({2, 10, 10, 3}, "NHWC"), DataType(DATA_TYPE_U8), eDeviceType::GPU,
+                                          eDeviceType::CPU));
+    TEST_CASE(TestTensorCopyToCorrectness(TensorShape({2, 10, 10, 3}, "NHWC"), DataType(DATA_TYPE_U8), eDeviceType::GPU,
+                                          eDeviceType::GPU));
+    TEST_CASE(TestTensorCopyToCorrectness(TensorShape({4, 100}, "NW"), DataType(DATA_TYPE_F32), eDeviceType::CPU,
+                                          eDeviceType::GPU));
 
     // Stride calculation tests
     // clang-format off
