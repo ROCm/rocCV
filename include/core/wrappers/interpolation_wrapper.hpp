@@ -98,7 +98,7 @@ class InterpolationWrapper {
             const float omfx = 1.f - fx;
             const float omfy = 1.f - fy;
 
-            if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width() && y1 < m_desc.height()) {
+            if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width(n) && y1 < m_desc.height(n)) {
                 auto v1 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x0, c));
                 auto v2 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x1, c));
                 auto v3 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x0, c));
@@ -142,7 +142,7 @@ class InterpolationWrapper {
 
             WorkType sum = SetAll<WorkType>(0.0f);
             const bool cubic_fast =
-                int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
+                int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width(n) && (int_y + 2) < m_desc.height(n);
             k = 0;
             if (cubic_fast) {
 #pragma unroll
