@@ -50,7 +50,7 @@ AverageBlur::AverageBlur(int32_t maxKernelWidth, int32_t maxKernelHeight)
     size_t memSizeH = m_maxKernelWidth * sizeof(float);
     size_t memSizeV = m_maxKernelHeight * sizeof(float);
 
-    if (maxKernelHeight == 3 && maxKernelWidth == 3) {
+    if (maxKernelHeight <= 3 && maxKernelWidth <= 3) {
         m_use2D = true;
         m_hostKernelMem = static_cast<float*>(m_allocator.allocHostPinnedMem(memSize));
     } else {
