@@ -23,9 +23,9 @@
 #include <math.h>
 #include <stdint.h>
 
+#include <chrono>
 #include <core/image_format.hpp>
 #include <core/tensor.hpp>
-#include <fstream>
 #include <iostream>
 #include <op_custom_crop.hpp>
 #include <op_resize.hpp>
@@ -35,170 +35,172 @@
 #include "core/tensor_shape.hpp"
 
 /**
+ * @file main.cpp
  * @brief Crop and Resize sample app.
  *
- * The Crop and Resize is a simple pipeline which demonstrates usage of
- * rocCV Tensor along with a few operators.
+ * The Crop and Resize is a simple pipeline which demonstrates usage of the
+ * rocCV Tensor along with the Custom Crop and Resize operators.
  *
  * Input Batch Tensor -> Crop -> Resize -> WriteImage
  */
 
-/**
- * @brief Utility to show usage of sample app
- *
- **/
-void showUsage() {
-    std::cout << "usage: ./roccv_cropandresize_app -i <image file path or image directory> -b <batch size>"
-              << std::endl;
+using namespace roccv;
+
+struct Config {
+    std::string inputPath;
+    std::string outputPath = "output";
+    eDeviceType device = eDeviceType::GPU;
+    Size2D resizeShape = {320, 480};
+    Box_t cropRect = {50, 150, 400, 300};
+    eInterpolationType interpolation = eInterpolationType::INTERP_TYPE_LINEAR;
+    int deviceId = 0;
+};
+
+void PrintUsage(const char* programName) {
+    // clang-format off
+    std::cout << "rocCV Crop and Resize Sample Application\n";
+    std::cout << "----------------------------------------\n";
+    std::cout << "This sample demonstrates how to set up a simple image processing pipeline using rocCV.\n";
+    std::cout << "It shows reading a batch of images, cropping them to a specified rectangle,\n";
+    std::cout << "resizing the cropped images to a target shape, and writing the outputs to image files.\n";
+    std::cout << "You may select the device (CPU or GPU), interpolation type, input size, and more.\n";
+    std::cout << '\n';
+    std::cout << "Usage: " << programName << " -i <input_image_or_directory> [options]\n";
+    std::cout << "  -i, --input <input_image_or_directory>   Input image or directory (required)\n";
+    std::cout << "Options:\n";
+    std::cout << "  -o, --output <output_image_or_directory> Output image or directory (optional, default: output)\n";
+    std::cout << "  -r, --resize <width,height>              Resize shape as width,height (optional, default: 320,480)\n";
+    std::cout << "  -c, --crop <x,y,w,h>                     Crop rectangle as x,y,w,h (optional, default: 50,150,400,300)\n";
+    std::cout << "  -I, --interpolation <interpolation>      Interpolation type: 0=NEAREST, 1=LINEAR, 2=CUBIC (optional, default: LINEAR)\n";
+    std::cout << "  -C, --cpu                                Use CPU for execution (optional, default: GPU)\n";
+    std::cout << "  -d, --device <device_id>                 Device ID to use for execution (optional, default: 0)\n";
+    std::cout << "  -h, --help                               Show this help message\n";
+    std::cout << std::endl;
+    // clang-format on
 }
 
-/**
- * @brief Utility to parse the command line arguments
- *
- **/
-int ParseArgs(int argc, char *argv[], std::string &imagePath, uint32_t &batchSize) {
-    static struct option long_options[] = {{"help", no_argument, 0, 'h'},
-                                           {"imagePath", required_argument, 0, 'i'},
-                                           {"batch", required_argument, 0, 'b'},
-                                           {0, 0, 0, 0}};
+void ParseCropRectangle(const std::string& cropStr, Box_t& cropRect) {
+    std::istringstream iss(cropStr);
+    std::string token;
+    getline(iss, token, ',');
+    cropRect.x = std::stoi(token);
+    getline(iss, token, ',');
+    cropRect.y = std::stoi(token);
+    getline(iss, token, ',');
+    cropRect.width = std::stoi(token);
+    getline(iss, token, ',');
+    cropRect.height = std::stoi(token);
+}
 
-    int long_index = 0;
-    int opt = 0;
-    while ((opt = getopt_long(argc, argv, "hi:b:", long_options, &long_index)) != -1) {
+void ParseResizeShape(const std::string& resizeStr, Size2D& resizeShape) {
+    std::istringstream iss(resizeStr);
+    std::string token;
+    getline(iss, token, ',');
+    resizeShape.w = std::stoi(token);
+    getline(iss, token, ',');
+    resizeShape.h = std::stoi(token);
+}
+
+int main(int argc, char** argv) {
+    Config config;
+    static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
+                                          {"output", required_argument, nullptr, 'o'},
+                                          {"resize", required_argument, nullptr, 'r'},
+                                          {"crop", required_argument, nullptr, 'c'},
+                                          {"interpolation", required_argument, nullptr, 'I'},
+                                          {"cpu", no_argument, nullptr, 'C'},
+                                          {"device", required_argument, nullptr, 'd'},
+                                          {"help", no_argument, nullptr, 'h'},
+                                          {nullptr, 0, nullptr, 0}};
+
+    // Parse command line arguments
+    int opt;
+    while ((opt = getopt_long(argc, argv, "i:o:r:c:I:d:h:C", longOptions, nullptr)) != -1) {
         switch (opt) {
-            case 'h':
-                showUsage();
-                return -1;
-                break;
             case 'i':
-                imagePath = optarg;
+                config.inputPath = optarg;
                 break;
-            case 'b':
-                batchSize = std::stoi(optarg);
+            case 'o':
+                config.outputPath = optarg;
                 break;
-            case ':':
-                showUsage();
-                return -1;
+            case 'r':
+                ParseResizeShape(optarg, config.resizeShape);
+                break;
+            case 'c':
+                ParseCropRectangle(optarg, config.cropRect);
+                break;
+            case 'I':
+                config.interpolation = static_cast<eInterpolationType>(std::stoi(optarg));
+                break;
+            case 'C':
+                config.device = eDeviceType::CPU;
+                break;
+            case 'd':
+                config.deviceId = std::stoi(optarg);
+                break;
+            case 'h':
+                PrintUsage(argv[0]);
+                return EXIT_SUCCESS;
             default:
-                break;
+                PrintUsage(argv[0]);
+                return EXIT_FAILURE;
         }
     }
-    std::ifstream imageFile(imagePath);
-    if (!imageFile.good()) {
-        showUsage();
-        std::cerr << "Image path '" + imagePath + "' does not exist" << std::endl;
-        return -1;
-    }
-    return 0;
-}
 
-int main(int argc, char *argv[]) {
-    // Default parameters
-    // TODO: Default parameter for images cannot be added for now. Must specify a sample asset directory in the final
-    // build which is relative to this executable.
-    std::string imagePath = "none.jpg";
-    uint32_t batchSize = 1;
-
-    // Parse the command line paramaters to override the default parameters
-    int retval = ParseArgs(argc, argv, imagePath, batchSize);
-    if (retval != 0) {
-        return retval;
+    if (config.inputPath.empty()) {
+        std::cerr << "Error: Input path is required.\n\n";
+        PrintUsage(argv[0]);
+        return EXIT_FAILURE;
     }
 
-    // Note : The maximum input image dimensions needs to be updated in case
-    // of testing with different test images
+    if (config.device == eDeviceType::GPU) {
+        CHECK_HIP_ERROR(hipSetDevice(config.deviceId));
+    }
 
-    int maxImageWidth = 720;
-    int maxImageHeight = 480;
-    int maxChannels = 3;
-
-    // tag: Create the HIP stream
     hipStream_t stream;
     CHECK_HIP_ERROR(hipStreamCreate(&stream));
 
-    // tag: Allocate input tensor
-    // Allocating memory for RGBI input image batch of uint8_t data type.
+    // Load batch of input images
+    Tensor input = LoadImages(stream, config.inputPath, config.device);
 
-    roccv::TensorDataStrided::Buffer inBuf;
-    inBuf.strides[3] = sizeof(uint8_t);
-    inBuf.strides[2] = maxChannels * inBuf.strides[3];
-    inBuf.strides[1] = maxImageWidth * inBuf.strides[2];
-    inBuf.strides[0] = maxImageHeight * inBuf.strides[1];
-    CHECK_HIP_ERROR(hipMallocAsync(&inBuf.basePtr, batchSize * inBuf.strides[0], stream));
+    // Determine the batch size and channels from the input tensor
+    int64_t batchSize = input.shape(input.layout().batch_index());
+    int64_t channels = input.shape(input.layout().channels_index());
 
-    // tag: Tensor Requirements
-    // Calculate the requirements for the RGBI uint8_t Tensor which include
-    // pitch bytes, alignment, shape  and tensor layout
-    roccv::Tensor::Requirements inReqs =
-        roccv::Tensor::CalcRequirements(batchSize, {maxImageWidth, maxImageHeight}, roccv::FMT_RGB8);
+    // Create tensor for the cropped image
+    Tensor cropTensor =
+        Tensor(TensorShape(input.layout(), {batchSize, config.cropRect.height, config.cropRect.width, channels}),
+               input.dtype(), config.device);
 
-    // Create a tensor buffer to store the data pointer and pitch bytes for each plane
-    roccv::TensorDataStridedHip inData(roccv::TensorShape{inReqs.shape, inReqs.rank, inReqs.layout},
-                                       roccv::DataType{inReqs.dtype}, inBuf);
+    // Create tensor for the resized image
+    Tensor resizedTensor =
+        Tensor(TensorShape(input.layout(), {batchSize, config.resizeShape.h, config.resizeShape.w, channels}),
+               input.dtype(), config.device);
 
-    // Wrap tensor data in a rocCV tensor for use with the rocCV operators.
-    roccv::Tensor inTensor = roccv::TensorWrapData(inData);
+    // Create crop and resize operators
+    CustomCrop cropOp;
+    Resize resizeOp;
 
-    // tag: Image Loading
-    uint8_t *gpuInput = reinterpret_cast<uint8_t *>(inBuf.basePtr);
-    // The total images is set to the same value as batch size for testing
-    uint32_t totalImages = batchSize;
+    std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 
-    // OpenCV is used to load the images, which gets copied into device memory.
-    DecodeRGBIImage(imagePath, totalImages, gpuInput);
+    // Run the crop operation, writing results to the crop tensor
+    cropOp(stream, input, cropTensor, config.cropRect, config.device);
 
-    // tag: The input buffer is now ready to be used by the operators
+    // Run the resize operation, writing results to the resized tensor
+    resizeOp(stream, cropTensor, resizedTensor, config.interpolation, config.device);
+    CHECK_HIP_ERROR(hipStreamSynchronize(stream));
 
-    // Set parameters for Crop and Resize
-    // ROI dimensions to crop in the input image
-    int cropX = 50;
-    int cropY = 150;
-    int cropWidth = 400;
-    int cropHeight = 300;
+    std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 
-    // Set the resize dimensions
-    int resizeWidth = 320;
-    int resizeHeight = 240;
+    // Report the duration of the crop and resize operation
+    long executionTime = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "Processed " << batchSize << " images in " << executionTime << "ms" << std::endl;
 
-    //  Create the crop rect for the cropping operator
-    roccv::Box_t crpRect = {cropX, cropY, cropWidth, cropHeight};
+    // Write the cropped and resized images to disk
+    WriteImages(stream, resizedTensor, config.outputPath);
 
-    // tag: Allocate Tensors for Crop and Resize
-    // Create a rocCV Tensor based on the crop window size.
-    roccv::Tensor cropTensor(batchSize, {cropWidth, cropHeight}, roccv::FMT_RGB8);
-    // Create a rocCV Tensor based on resize dimensions
-    roccv::Tensor resizedTensor(batchSize, {resizeWidth, resizeHeight}, roccv::FMT_RGB8);
-
-#ifdef PROFILE_SAMPLE
-    hipEvent_t start, stop;
-    hipEventCreate(&start);
-    hipEventCreate(&stop);
-    hipEventRecord(start);
-#endif
-    // tag: Initialize operators for Crop and Resize
-    roccv::CustomCrop cropOp;
-    roccv::Resize resizeOp;
-
-    // tag: Executes the CustomCrop operation on the given HIP stream
-    cropOp(stream, inTensor, cropTensor, crpRect);
-
-    // Resize operator can now be enqueued into the same stream
-    resizeOp(stream, cropTensor, resizedTensor, INTERP_TYPE_LINEAR);
-
-    // tag: Profile section
-#ifdef PROFILE_SAMPLE
-    hipEventRecord(stop);
-    hipEventSynchronize(stop);
-    float operatorms = 0;
-    hipEventElapsedTime(&operatorms, start, stop);
-    std::cout << "Time for Crop and Resize : " << operatorms << " ms" << std::endl;
-#endif
-
-    // tag: Copy the buffer to CPU and write resized image into .bmp files
-    WriteRGBITensor(resizedTensor, stream);
-
-    // tag: Clean up
+    // Destroy the stream
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
-    // tag: End of Sample
+    return EXIT_SUCCESS;
 }

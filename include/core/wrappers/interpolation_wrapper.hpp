@@ -22,13 +22,12 @@
 #pragma once
 
 #include "core/detail/casting.hpp"
-#include "core/detail/math/vectorized_type_math.hpp"
-#include "core/wrappers/border_wrapper.hpp"
+#include "core/detail/sampling_helpers.hpp"
 #include "core/detail/vector_utils.hpp"
+#include "core/wrappers/border_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
-
 /**
  * @brief A kernel-friendly wrapper which provides interpolation logic based on the given
  * coordinates. This tensor wrapper is typically only used for input tensors and does not provide write access to its
@@ -66,22 +65,12 @@ class InterpolationWrapper {
      * @return None.
      */
     __device__ __host__ inline void CalBicubicWeights(float dist, float* weight) const {
-        weight[0] = -0.5f;
-        weight[0] = weight[0] * dist + 1.0f;
-        weight[0] = weight[0] * dist - 0.5f;
-        weight[0] = weight[0] * dist;
-
-        weight[1] = 1.5f;
-        weight[1] = weight[1] * dist - 2.5f;
-        weight[1] = weight[1] * dist;
-        weight[1] = weight[1] * dist + 1.0f;
-
-        weight[2] = -1.5f;
-        weight[2] = weight[2] * dist + 2.f;
-        weight[2] = weight[2] * dist + 0.5f;
-        weight[2] = weight[2] * dist;
-
-        weight[3] = 1 - weight[0] - weight[1] - weight[2];
+        const float d = dist;
+        // Fused multiply-add: single rounding vs separate mul+add (matches kernels/device style).
+        weight[0] = fmaf(fmaf(fmaf(-0.5f, d, 1.0f), d, -0.5f), d, 0.f);
+        weight[1] = fmaf(fmaf(fmaf(1.5f, d, -2.5f), d, 0.f), d, 1.0f);
+        weight[2] = fmaf(fmaf(fmaf(-1.5f, d, 2.f), d, 0.5f), d, 0.f);
+        weight[3] = 1.f - weight[0] - weight[1] - weight[2];
     }
 
     /**
@@ -94,8 +83,7 @@ class InterpolationWrapper {
      */
     inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
-            // Nearest neighbor interpolation implementation
-            return m_desc.at(n, lroundf(h), lroundf(w), c);
+            return m_desc.at(n, detail::interp_nearest_i64(h), detail::interp_nearest_i64(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
             // v1 -- v2
@@ -104,39 +92,79 @@ class InterpolationWrapper {
 
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            int64_t x0 = static_cast<int64_t>(floorf(w));
-            int64_t x1 = x0 + 1;
-            int64_t y0 = static_cast<int64_t>(floorf(h));
-            int64_t y1 = y0 + 1;
+            const int64_t x0 = detail::interp_floor_i64(w);
+            const int64_t y0 = detail::interp_floor_i64(h);
+            const int64_t x1 = x0 + 1;
+            const int64_t y1 = y0 + 1;
+            const float fx = w - static_cast<float>(x0);
+            const float fy = h - static_cast<float>(y0);
+            const float omfx = 1.f - fx;
+            const float omfy = 1.f - fy;
+
+            if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width() && y1 < m_desc.height()) {
+                auto v1 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x0, c));
+                auto v2 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x1, c));
+                auto v3 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x0, c));
+                auto v4 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x1, c));
+                auto q1 = v1 * omfx + v2 * fx;
+                auto q2 = v3 * omfx + v4 * fx;
+                auto q = q1 * omfy + q2 * fy;
+                return detail::RangeCast<T>(q);
+            }
 
             auto v1 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x0, c));
             auto v2 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x1, c));
             auto v3 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x0, c));
             auto v4 = detail::RangeCast<WorkType>(m_desc.at(n, y1, x1, c));
 
-            auto q1 = v1 * (x1 - w) + v2 * (w - x0);
-            auto q2 = v3 * (x1 - w) + v4 * (w - x0);
-            auto q = q1 * (y1 - h) + q2 * (h - y0);
+            auto q1 = v1 * omfx + v2 * fx;
+            auto q2 = v3 * omfx + v4 * fx;
+            auto q = q1 * omfy + q2 * fy;
 
             return detail::RangeCast<T>(q);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_CUBIC) {
             using namespace roccv::detail;
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            // Integer coordinates for pixel (x, y)
-            int64_t int_x = static_cast<int64_t>(floorf(w));
-            int64_t int_y = static_cast<int64_t>(floorf(h));
+            const int64_t int_x = detail::interp_floor_i64(w);
+            const int64_t int_y = detail::interp_floor_i64(h);
 
-            // Calculate weights
             float weight_x[4], weight_y[4];
-            CalBicubicWeights(w - int_x, weight_x);
-            CalBicubicWeights(h - int_y, weight_y);
+            CalBicubicWeights(w - static_cast<float>(int_x), weight_x);
+            CalBicubicWeights(h - static_cast<float>(int_y), weight_y);
 
-            // Weighted sum
+            float wxy[16];
+            int k = 0;
+#pragma unroll
+            for (int j = 0; j < 4; j++) {
+#pragma unroll
+                for (int i = 0; i < 4; i++) {
+                    wxy[k++] = weight_y[j] * weight_x[i];
+                }
+            }
+
             WorkType sum = SetAll<WorkType>(0.0f);
-            for (int index_y = -1; index_y <= 2; index_y++) {
-                for (int index_x = -1; index_x <= 2; index_x++) {
-                    sum += detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, 0)) * (weight_x[index_x + 1] * weight_y[index_y + 1]);
+            const bool cubic_fast =
+                int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
+            k = 0;
+            if (cubic_fast) {
+#pragma unroll
+                for (int index_y = -1; index_y <= 2; index_y++) {
+#pragma unroll
+                    for (int index_x = -1; index_x <= 2; index_x++) {
+                        sum = sum +
+                              detail::RangeCast<WorkType>(m_desc.at_inbounds(n, int_y + index_y, int_x + index_x, c)) *
+                                  wxy[k++];
+                    }
+                }
+            } else {
+#pragma unroll
+                for (int index_y = -1; index_y <= 2; index_y++) {
+#pragma unroll
+                    for (int index_x = -1; index_x <= 2; index_x++) {
+                        sum = sum +
+                              detail::RangeCast<WorkType>(m_desc.at(n, int_y + index_y, int_x + index_x, c)) * wxy[k++];
+                    }
                 }
             }
 

@@ -21,9 +21,10 @@ THE SOFTWARE.
 */
 #pragma once
 
+#include <hip/hip_runtime.h>
+
 #include "core/tensor.hpp"
 #include "i_operator.hpp"
-#include "op_warp_perspective.hpp"
 #include "operator_types.h"
 
 namespace roccv {
@@ -40,7 +41,7 @@ class WarpAffine final : public IOperator {
      * @brief Construct a new WarpAffine object
      *
      */
-    WarpAffine() : m_op() {}
+    WarpAffine() = default;
 
     /**
      * @brief Destroy the WarpAffine object
@@ -89,9 +90,5 @@ class WarpAffine final : public IOperator {
     void operator()(hipStream_t stream, const Tensor& input, const Tensor& output, const AffineTransform xform,
                     bool isInverted, eInterpolationType interp, eBorderType borderMode, float4 borderValue,
                     eDeviceType device = eDeviceType::GPU) const;
-
-   private:
-    // WarpPerspective op is used to execute the affine transformation, as affine transformation is a subset.
-    WarpPerspective m_op;
 };
 }  // namespace roccv

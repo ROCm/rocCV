@@ -31,17 +31,17 @@ TensorStorage::TensorStorage(void* data, eDeviceType device, eOwnership ownershi
 TensorStorage::TensorStorage(void* data, eDeviceType device, const IAllocator& alloc, eOwnership ownership)
     : m_device(device), m_ownership(ownership), m_data(data), m_allocator(alloc) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device)
-    : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator()) {}
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, int32_t alignment)
+    : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator(), alignment) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc)
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc, int32_t alignment)
     : m_device(device), m_ownership(eOwnership::OWNING), m_allocator(alloc) {
     switch (m_device) {
         case eDeviceType::GPU:
-            m_data = m_allocator.allocHipMem(bytes);
+            m_data = m_allocator.allocHipMem(bytes, alignment);
             break;
         case eDeviceType::CPU:
-            m_data = m_allocator.allocHostMem(bytes);
+            m_data = m_allocator.allocHostMem(bytes, alignment);
             break;
     }
 }
@@ -62,4 +62,7 @@ TensorStorage::~TensorStorage() {
 void* TensorStorage::data() const { return m_data; }
 
 eDeviceType TensorStorage::device() const { return m_device; }
+
+const IAllocator& TensorStorage::allocator() const { return m_allocator; }
+
 }  // namespace roccv
