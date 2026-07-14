@@ -387,8 +387,7 @@ void Tensor::copyToHostAsync(void* dst, hipStream_t stream) const {
 
 void Tensor::copyToAsync(const Tensor& dst, hipStream_t stream) const {
     // Source and destination must describe the same logical data; only their padding (row pitch) may differ.
-    if (rank() != dst.rank() || m_requirements.shape != dst.m_requirements.shape ||
-        dtype().size() != dst.dtype().size()) {
+    if (shape() != dst.shape() || dtype().size() != dst.dtype().size()) {
         throw Exception("Source and destination tensors must have the same shape and element size for a copy.",
                         eStatusType::INVALID_VALUE);
     }
