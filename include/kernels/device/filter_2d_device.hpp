@@ -32,8 +32,8 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 template <typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
-__global__ void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth, int kernelHeight,
-                         int anchorX, int anchorY) {
+__global__ void filter_2d(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth, int kernelHeight,
+                          int anchorX, int anchorY) {
     using namespace roccv::detail;
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<dst_type>>;
@@ -60,8 +60,8 @@ __global__ void filter2D(SrcWrapper input, DstWrapper output, KernelWrapper kern
 }
 
 template <typename T, int BLOCK_WIDTH, typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
-__global__ void filter2DHorizontal(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth,
-                                   int anchorX) {
+__global__ void filter_2d_horizontal(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelWidth,
+                                     int anchorX) {
     using namespace roccv::detail;
     using work_type = MakeType<float, NumElements<T>>;
     work_type result = SetAll<work_type>(0);
@@ -98,8 +98,8 @@ __global__ void filter2DHorizontal(SrcWrapper input, DstWrapper output, KernelWr
 }
 
 template <typename T, int BLOCK_HEIGHT, typename SrcWrapper, typename DstWrapper, typename KernelWrapper>
-__global__ void filter2DVertical(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelHeight,
-                                 int anchorY) {
+__global__ void filter_2d_vertical(SrcWrapper input, DstWrapper output, KernelWrapper kernel, int kernelHeight,
+                                   int anchorY) {
     using namespace roccv::detail;
     using work_type = MakeType<float, NumElements<T>>;
     work_type result = SetAll<work_type>(0);

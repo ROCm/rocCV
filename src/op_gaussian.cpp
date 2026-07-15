@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
-#include "filter2D.hpp"
+#include "filter_2d.hpp"
 
 namespace roccv {
 Gaussian::Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight)
@@ -212,11 +212,11 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
         eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, float*, int, int, int, int, eBorderType, eDeviceType)>, 4>>
             funcs =
             {
-                {eDataType::DATA_TYPE_U8, {dispatch_filter2D_dtype<uchar1, float*>, 0, dispatch_filter2D_dtype<uchar3, float*>, dispatch_filter2D_dtype<uchar4, float*>}},
-                {eDataType::DATA_TYPE_U16, {dispatch_filter2D_dtype<ushort1, float*>, 0, dispatch_filter2D_dtype<ushort3, float*>, dispatch_filter2D_dtype<ushort4, float*>}},
-                {eDataType::DATA_TYPE_S16, {dispatch_filter2D_dtype<short1, float*>, 0, dispatch_filter2D_dtype<short3, float*>, dispatch_filter2D_dtype<short4, float*>}},
-                {eDataType::DATA_TYPE_S32, {dispatch_filter2D_dtype<int1, float*>, 0, dispatch_filter2D_dtype<int3, float*>, dispatch_filter2D_dtype<int4, float*>}},
-                {eDataType::DATA_TYPE_F32, {dispatch_filter2D_dtype<float1, float*>, 0, dispatch_filter2D_dtype<float3, float*>, dispatch_filter2D_dtype<float4, float*>}},
+                {eDataType::DATA_TYPE_U8, {dispatch_filter_2d_dtype<uchar1, float*>, 0, dispatch_filter_2d_dtype<uchar3, float*>, dispatch_filter_2d_dtype<uchar4, float*>}},
+                {eDataType::DATA_TYPE_U16, {dispatch_filter_2d_dtype<ushort1, float*>, 0, dispatch_filter_2d_dtype<ushort3, float*>, dispatch_filter_2d_dtype<ushort4, float*>}},
+                {eDataType::DATA_TYPE_S16, {dispatch_filter_2d_dtype<short1, float*>, 0, dispatch_filter_2d_dtype<short3, float*>, dispatch_filter_2d_dtype<short4, float*>}},
+                {eDataType::DATA_TYPE_S32, {dispatch_filter_2d_dtype<int1, float*>, 0, dispatch_filter_2d_dtype<int3, float*>, dispatch_filter_2d_dtype<int4, float*>}},
+                {eDataType::DATA_TYPE_F32, {dispatch_filter_2d_dtype<float1, float*>, 0, dispatch_filter_2d_dtype<float3, float*>, dispatch_filter_2d_dtype<float4, float*>}},
             };
         // clang-format on
         auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
@@ -236,11 +236,11 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
         eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, float*, float*, int, int, int, int, eBorderType, eDeviceType)>, 4>>
             funcs =
             {
-                {eDataType::DATA_TYPE_U8, {dispatch_filter2D_dtype_separable<uchar1, float*>, 0, dispatch_filter2D_dtype_separable<uchar3, float*>, dispatch_filter2D_dtype_separable<uchar4, float*>}},
-                {eDataType::DATA_TYPE_U16, {dispatch_filter2D_dtype_separable<ushort1, float*>, 0, dispatch_filter2D_dtype_separable<ushort3, float*>, dispatch_filter2D_dtype_separable<ushort4, float*>}},
-                {eDataType::DATA_TYPE_S16, {dispatch_filter2D_dtype_separable<short1, float*>, 0, dispatch_filter2D_dtype_separable<short3, float*>, dispatch_filter2D_dtype_separable<short4, float*>}},
-                {eDataType::DATA_TYPE_S32, {dispatch_filter2D_dtype_separable<int1, float*>, 0, dispatch_filter2D_dtype_separable<int3, float*>, dispatch_filter2D_dtype_separable<int4, float*>}},
-                {eDataType::DATA_TYPE_F32, {dispatch_filter2D_dtype_separable<float1, float*>, 0, dispatch_filter2D_dtype_separable<float3, float*>, dispatch_filter2D_dtype_separable<float4, float*>}},
+                {eDataType::DATA_TYPE_U8, {dispatch_filter_2d_dtype_separable<uchar1, float*>, 0, dispatch_filter_2d_dtype_separable<uchar3, float*>, dispatch_filter_2d_dtype_separable<uchar4, float*>}},
+                {eDataType::DATA_TYPE_U16, {dispatch_filter_2d_dtype_separable<ushort1, float*>, 0, dispatch_filter_2d_dtype_separable<ushort3, float*>, dispatch_filter_2d_dtype_separable<ushort4, float*>}},
+                {eDataType::DATA_TYPE_S16, {dispatch_filter_2d_dtype_separable<short1, float*>, 0, dispatch_filter_2d_dtype_separable<short3, float*>, dispatch_filter_2d_dtype_separable<short4, float*>}},
+                {eDataType::DATA_TYPE_S32, {dispatch_filter_2d_dtype_separable<int1, float*>, 0, dispatch_filter_2d_dtype_separable<int3, float*>, dispatch_filter_2d_dtype_separable<int4, float*>}},
+                {eDataType::DATA_TYPE_F32, {dispatch_filter_2d_dtype_separable<float1, float*>, 0, dispatch_filter_2d_dtype_separable<float3, float*>, dispatch_filter_2d_dtype_separable<float4, float*>}},
             };
         // clang-format on
         auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
