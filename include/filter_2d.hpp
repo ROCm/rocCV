@@ -1,5 +1,5 @@
 /**
-Copyright (c) 2025 Advanced Micro Devices, Inc. All rights reserved.
+Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@ THE SOFTWARE.
 #include "core/tensor.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
-#include "kernels/device/filter2D_device.hpp"
-#include "kernels/host/filter2D_host.hpp"
+#include "kernels/device/filter_2d_device.hpp"
+#include "kernels/host/filter_2d_host.hpp"
 #include "operator_types.h"
 
 namespace roccv {
@@ -45,7 +45,7 @@ inline void processAnchor(int& anchorX, int& anchorY, int kernelWidth, int kerne
 }
 
 template <typename DT, typename KT, eBorderType BT>
-void dispatch_filter2D_bordertype(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernel,
+void dispatch_filter_2d_bordertype(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernel,
                                   int kernelWidth, int kernelHeight, int anchorX, int anchorY, eDeviceType device) {
     BorderWrapper<DT, BT> inputWrapper(input, roccv::detail::SetAll<DT>(0));
     ImageWrapper<DT> outputWrapper(output);
@@ -55,18 +55,18 @@ void dispatch_filter2D_bordertype(hipStream_t stream, const Tensor& input, const
             dim3 block(16, 16);
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
-            Kernels::Device::filter2D<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, kernel, kernelWidth,
+            Kernels::Device::filter_2d<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, kernel, kernelWidth,
                                                                   kernelHeight, anchorX, anchorY);
             break;
         }
         case eDeviceType::CPU: {
-            Kernels::Host::filter2D(inputWrapper, outputWrapper, kernel, kernelWidth, kernelHeight, anchorX, anchorY);
+            Kernels::Host::filter_2d(inputWrapper, outputWrapper, kernel, kernelWidth, kernelHeight, anchorX, anchorY);
             break;
         }
     }
 }
 template <typename DT, typename KT, eBorderType BT>
-void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernelH,
+void dispatch_filter_2d_bordertype_separable(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernelH,
                                             KT kernelV, int kernelWidth, int kernelHeight, int anchorX, int anchorY,
                                             eDeviceType device) {
     BorderWrapper<DT, BT> inputWrapper(input, roccv::detail::SetAll<DT>(0));
@@ -76,9 +76,9 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
 
     switch (device) {
         case eDeviceType::CPU: {
-            Kernels::Host::filter2DHorizontal(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
+            Kernels::Host::filter_2d_horizontal(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
             BorderWrapper<DT, BT> intermWrapperWithBorder(interm, roccv::detail::SetAll<DT>(0));
-            Kernels::Host::filter2DVertical(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight, anchorY);
+            Kernels::Host::filter_2d_vertical(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight, anchorY);
             break;
         }
         case eDeviceType::GPU: {
@@ -96,7 +96,7 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
                 int tileWidth = BLOCK_WIDTH + halo;
                 size_t smemSize = tileWidth * sizeof(DT);
 
-                Kernels::Device::filter2DHorizontal<DT, BLOCK_WIDTH, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
+                Kernels::Device::filter_2d_horizontal<DT, BLOCK_WIDTH, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
                     <<<grid, block, smemSize, stream>>>(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
             }
 
@@ -111,7 +111,7 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
                 int tileHeight = BLOCK_HEIGHT + halo;
                 size_t smemSize = tileHeight * sizeof(DT);
 
-                Kernels::Device::filter2DVertical<DT, BLOCK_HEIGHT, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
+                Kernels::Device::filter_2d_vertical<DT, BLOCK_HEIGHT, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
                     <<<grid, block, smemSize, stream>>>(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight,
                                                         anchorY);
             }
@@ -121,16 +121,16 @@ void dispatch_filter2D_bordertype_separable(hipStream_t stream, const Tensor& in
 }
 
 template <typename DT, typename KT>
-void dispatch_filter2D_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernel, int kernelWidth,
+void dispatch_filter_2d_dtype(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernel, int kernelWidth,
                              int kernelHeight, int anchorX, int anchorY, eBorderType borderMode, eDeviceType device) {
     // clang-format off
     static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, KT, int, int, int, int, eDeviceType)>>
         funcs = {
-            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_filter2D_bordertype<DT, KT, eBorderType::BORDER_TYPE_REPLICATE>},
-            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_filter2D_bordertype<DT, KT, eBorderType::BORDER_TYPE_CONSTANT>},
-            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_filter2D_bordertype<DT, KT, eBorderType::BORDER_TYPE_REFLECT>},
-            {eBorderType::BORDER_TYPE_REFLECT101,  dispatch_filter2D_bordertype<DT, KT, eBorderType::BORDER_TYPE_REFLECT101>},
-            {eBorderType::BORDER_TYPE_WRAP,        dispatch_filter2D_bordertype<DT, KT, eBorderType::BORDER_TYPE_WRAP>}
+            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_filter_2d_bordertype<DT, KT, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_filter_2d_bordertype<DT, KT, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_filter_2d_bordertype<DT, KT, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,  dispatch_filter_2d_bordertype<DT, KT, eBorderType::BORDER_TYPE_REFLECT101>},
+            {eBorderType::BORDER_TYPE_WRAP,        dispatch_filter_2d_bordertype<DT, KT, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
     if (!funcs.contains(borderMode)) {
@@ -142,17 +142,17 @@ void dispatch_filter2D_dtype(hipStream_t stream, const Tensor& input, const Tens
 }
 
 template <typename DT, typename KT>
-void dispatch_filter2D_dtype_separable(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernelH,
+void dispatch_filter_2d_dtype_separable(hipStream_t stream, const Tensor& input, const Tensor& output, KT kernelH,
                                        KT kernelV, int kernelWidth, int kernelHeight, int anchorX, int anchorY,
                                        eBorderType borderMode, eDeviceType device) {
     // clang-format off
     static const std::unordered_map<eBorderType, std::function<void(hipStream_t, const Tensor&, const Tensor&, KT, KT, int, int, int, int, eDeviceType)>>
         funcs = {
-            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REPLICATE>},
-            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_CONSTANT>},
-            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REFLECT>},
-            {eBorderType::BORDER_TYPE_REFLECT101,  dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REFLECT101>},
-            {eBorderType::BORDER_TYPE_WRAP,        dispatch_filter2D_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_WRAP>}
+            {eBorderType::BORDER_TYPE_REPLICATE,   dispatch_filter_2d_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REPLICATE>},
+            {eBorderType::BORDER_TYPE_CONSTANT,    dispatch_filter_2d_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_CONSTANT>},
+            {eBorderType::BORDER_TYPE_REFLECT,     dispatch_filter_2d_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REFLECT>},
+            {eBorderType::BORDER_TYPE_REFLECT101,  dispatch_filter_2d_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_REFLECT101>},
+            {eBorderType::BORDER_TYPE_WRAP,        dispatch_filter_2d_bordertype_separable<DT, KT, eBorderType::BORDER_TYPE_WRAP>}
         };
     // clang-format on
     if (!funcs.contains(borderMode)) {
