@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
-#include "filter_2d.hpp"
+#include "details/filter_2d.hpp"
 
 namespace roccv {
 Gaussian::Gaussian(int32_t maxKernelWidth, int32_t maxKernelHeight)
