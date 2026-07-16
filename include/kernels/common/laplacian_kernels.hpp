@@ -20,25 +20,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "op_adv_cvt_color.hpp"
-#include "op_bilateral_filter.hpp"
-#include "op_bnd_box.hpp"
-#include "op_brightness_contrast.hpp"
-#include "op_center_crop.hpp"
-#include "op_composite.hpp"
-#include "op_convert_to.hpp"
-#include "op_copy_make_border.hpp"
-#include "op_custom_crop.hpp"
-#include "op_cvt_color.hpp"
-#include "op_flip.hpp"
-#include "op_gamma_contrast.hpp"
-#include "op_histogram.hpp"
-#include "op_laplacian.hpp"
-#include "op_non_max_suppression.hpp"
-#include "op_normalize.hpp"
-#include "op_remap.hpp"
-#include "op_resize.hpp"
-#include "op_rotate.hpp"
-#include "op_thresholding.hpp"
-#include "op_warp_affine.hpp"
-#include "op_warp_perspective.hpp"
+#pragma once
+
+namespace Kernels {
+
+constexpr int LaplaceKWidth = 3;
+constexpr int LaplaceKHeight = 3;
+
+struct LaplacianKernel {
+     constexpr LaplacianKernel& operator*=(float scale) {
+          for (int i = 0; i < 9; i++) {
+              m_kernel[i] *= scale;
+          }
+          return *this;
+     }
+
+     constexpr float& operator[](int i) {
+          return m_kernel[i];
+     }
+
+     constexpr const float& operator[](int i) const {
+          return m_kernel[i];
+     }
+
+     float m_kernel[9] = {};
+};
+
+// clang-format off
+constexpr LaplacianKernel LK1 {
+     {0.0f,  1.0f, 0.0f,
+     1.0f, -4.0f, 1.0f,
+     0.0f,  1.0f, 0.0f}
+};
+
+constexpr LaplacianKernel LK3 { 
+     {2.0f,  0.0f, 2.0f,
+     0.0f, -8.0f, 0.0f,
+     2.0f,  0.0f, 2.0f}
+};
+// clang-format on
+
+}  // namespace Kernels
