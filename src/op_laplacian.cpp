@@ -22,6 +22,7 @@ THE SOFTWARE.
 #include "op_laplacian.hpp"
 
 #include <hip/hip_runtime.h>
+
 #include <functional>
 
 #include "common/validation_helpers.hpp"
@@ -31,7 +32,7 @@ THE SOFTWARE.
 
 namespace roccv {
 void Laplacian::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output, int32_t ksize,
-                    float scale, eBorderType borderMode, eDeviceType device) const {
+                           float scale, eBorderType borderMode, eDeviceType device) const {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DATATYPES(input, DATA_TYPE_U8, DATA_TYPE_U16, DATA_TYPE_F32);
@@ -74,15 +75,12 @@ void Laplacian::operator()(hipStream_t stream, const roccv::Tensor &input, const
         {
             {eDataType::DATA_TYPE_U8, {dispatch_filter_2d_dtype<uchar1, LaplacianKernel>, 0, dispatch_filter_2d_dtype<uchar3, LaplacianKernel>, dispatch_filter_2d_dtype<uchar4, LaplacianKernel>}},
             {eDataType::DATA_TYPE_U16, {dispatch_filter_2d_dtype<ushort1, LaplacianKernel>, 0, dispatch_filter_2d_dtype<ushort3, LaplacianKernel>, dispatch_filter_2d_dtype<ushort4, LaplacianKernel>}},
-            {eDataType::DATA_TYPE_S16, {dispatch_filter_2d_dtype<short1, LaplacianKernel>, 0, dispatch_filter_2d_dtype<short3, LaplacianKernel>, dispatch_filter_2d_dtype<short4, LaplacianKernel>}},
-            {eDataType::DATA_TYPE_S32, {dispatch_filter_2d_dtype<int1, LaplacianKernel>, 0, dispatch_filter_2d_dtype<int3, LaplacianKernel>, dispatch_filter_2d_dtype<int4, LaplacianKernel>}},
             {eDataType::DATA_TYPE_F32, {dispatch_filter_2d_dtype<float1, LaplacianKernel>, 0, dispatch_filter_2d_dtype<float3, LaplacianKernel>, dispatch_filter_2d_dtype<float4, LaplacianKernel>}},
         };
     // clang-format on
     auto func = funcs.at(input.dtype().etype())[input.shape(input.layout().channels_index()) - 1];
     if (func == 0) throw Exception("Not mapped to a defined function.", eStatusType::INVALID_OPERATION);
 
-    func(stream, input, output, kernel, LaplaceKWidth, LaplaceKHeight, anchorX,
-                anchorY, borderMode, device);
+    func(stream, input, output, kernel, LaplaceKWidth, LaplaceKHeight, anchorX, anchorY, borderMode, device);
 }
 }  // namespace roccv
