@@ -29,24 +29,48 @@ THE SOFTWARE.
 
 namespace roccv {
 
+/**
+ * @brief Specifies basic memory requirements for an allocation.
+ *
+ * This struct expresses the number of bytes required for a memory region that backs
+ * a particular tensor or buffer allocation. It is typically used to indicate the raw
+ * size required for device, host, or pinned memory allocations.
+ */
 struct MemRequirements {
     size_t bytes = 0;
 };
 
+/**
+ * @brief Specifies resource requirements for tensor memory allocations.
+ *
+ * This struct aggregates requirements for different types of memory resources
+ * that may be used for tensor allocation and operation:
+ * - deviceMem: Memory required on the device (e.g., GPU).
+ * - hostMem: Memory required on the host (CPU-accessible memory).
+ * - pinnedMem: Memory required in pinned (page-locked) host memory, which may
+ *              be used for efficient device-host transfers.
+ */
 struct ResourceRequirements {
     MemRequirements deviceMem;
     MemRequirements hostMem;
     MemRequirements pinnedMem;
 };
 
+/**
+ * @brief Specifies the requirements for creating and allocating a tensor.
+ *
+ * This struct defines all the necessary properties for specifying the memory and layout
+ * requirements of a tensor, including its datatype, shape, memory alignment, layout, strides,
+ * memory resource requirements, and device placement.
+ */
 struct TensorRequirements {
-    eDataType dtype;
-    eTensorLayout layout;
-    int32_t rank;
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shape;
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
-    int32_t alignBytes;
-    ResourceRequirements res;
-    eDeviceType device;
+    eDataType dtype;                                     // Data type
+    eTensorLayout layout;                                // Tensor layout
+    int32_t rank;                                        // Number of dimensions
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> shape;    // Shape in elements
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;  // Strides in bytes
+    int32_t alignBytes;                                  // Base address alignment in bytes
+    ResourceRequirements res;                            // Resource requirements for memory allocation
+    eDeviceType device;                                  // Device type
 };
 }  // namespace roccv

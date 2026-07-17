@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include <core/hip_assert.h>
+#include <getopt.h>
 
 #include <core/tensor.hpp>
 #include <fstream>
@@ -28,239 +29,249 @@ THE SOFTWARE.
 #include <op_bnd_box.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "common/utils.hpp"
+
 using namespace roccv;
 
 /**
- * @brief Bounding Box operation example.
+ * @file bnd_box.cpp
+ * @brief Example application for drawing bounding boxes on images using ROC CV.
+ *
+ * This file demonstrates how to parse a bounding box description file and apply bounding boxes to input images.
+ * The bounding box file is expected to have the following format:
+ * - The first line contains the number of images.
+ * - Each image section starts with a line containing the number of boxes for that image.
+ * - Each box is described over 13 subsequent lines as follows:
+ *   - X coordinate of top-left corner
+ *   - Y coordinate of top-left corner
+ *   - Width
+ *   - Height
+ *   - Thickness of box boundary
+ *   - B component of box border color
+ *   - G component of box border color
+ *   - R component of box border color
+ *   - Alpha component of box border color
+ *   - B component of box fill color
+ *   - G component of box fill color
+ *   - R component of box fill color
+ *   - Alpha component of box fill color
+ *
+ * Example of bounding box list file content:
+ * @code
+ * 1
+ * 2
+ * 50
+ * 50
+ * 100
+ * 50
+ * 5
+ * 0
+ * 0
+ * 255
+ * 200
+ * 0
+ * 255
+ * 0
+ * 100
+ * 250
+ * 250
+ * 50
+ * 100
+ * 10
+ * 255
+ * 0
+ * 0
+ * 200
+ * 0
+ * 0
+ * 0
+ * 0
+ * @endcode
  */
 
-/**
- * @brief Example bounding box list file content
- * 1 <-- number of images
- * 2 <-- number of boxes for image 1
- * 50 <-- X coordinate of top-left corner of box 1
- * 50 <-- Y coordinate of top-left corner of box 1
- * 100 <-- width of box 1
- * 50 <-- height of box 1
- * 5 <-- thickness of box boundary of box 1
- * 0 <-- B component of box border color of box 1
- * 0 <-- G component of box border color of box 1
- * 255 <-- R component of box border color of box 1
- * 200 <-- alpha component of box border color of box 1
- * 0 <-- B component of box fill color of box 1
- * 255 <-- G component of box fill color of box 1
- * 0 <-- R component of box fill color of box 1
- * 100 <-- alpha component of box fill color of box 1
- * 250 <-- X coordinate of top-left corner of box 2
- * 250 <-- Y coordinate of top-left corner of box 2
- * 50 <-- width of box 2
- * 100 <-- height of box 2
- * 10 <-- thickness of box boundary of box 2
- * 255 <-- B component of box border color of box 2
- * 0 <-- G component of box border color of box 2
- * 0 <-- R component of box border color of box 2
- * 200 <-- alpha component of box border color of box 2
- * 0 <-- B component of box fill color of box 2
- * 0 <-- G component of box fill color of box 2
- * 0 <-- R component of box fill color of box 2
- * 0 <-- alpha component of box fill color of box 2
- */
-
-void ShowHelpAndExit(const char* option = NULL) {
-    std::cout << "Options: " << option << std::endl
-              << "-i Input File Path - required" << std::endl
-              << "-o Output File Path - optional; default: output.bmp" << std::endl
-              << "-cpu Select CPU instead of GPU to perform operation - optional; default choice is GPU path"
-              << std::endl
-              << "-d GPU device ID (0 for the first device, 1 for the second, etc.) - optional; default: 0" << std::endl
-              << "-box_file Bounding box list file - optional; default: use the set value in the app" << std::endl;
-    exit(0);
-}
-
-int main(int argc, char** argv) {
-    std::string input_file_path;
-    std::string box_file_path;
-    std::string output_file_path = "output.bmp";
-    bool gpuPath = true;  // use GPU by default
+struct Config {
+    std::string inputPath;
+    std::string outputPath = "output";
     eDeviceType device = eDeviceType::GPU;
     int deviceId = 0;
-    bool boxSet = false;  // User sets the bounding box list data in a text file
+    std::string boundingBoxFilePath = "";
+};
 
-    if (argc < 3) {
-        ShowHelpAndExit("-h");
-    }
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-h")) {
-            ShowHelpAndExit("-h");
-        }
-        if (!strcmp(argv[i], "-i")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-i");
-            }
-            input_file_path = argv[i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-o")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-o");
-            }
-            output_file_path = argv[i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-box_file")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-o");
-            }
-            box_file_path = argv[i];
-            boxSet = true;
-            continue;
-        }
-        if (!strcmp(argv[i], "-cpu")) {
-            gpuPath = false;
-            continue;
-        }
+void PrintUsage(const char* programName) {
+    // clang-format off
+    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-b <bounding_box_file>] [-d <device_id>] [-C]" << std::endl;
+    std::cout << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
+    std::cout << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
+    std::cout << "  -b, --box_file <bounding_box_file>  Bounding box list file (optional, default: use the set value in the app)" << std::endl;
+    std::cout << "  -d, --device <device_id>            Device ID to use for execution (optional, default: 0)" << std::endl;
+    std::cout << "  -C, --cpu                           Use CPU for execution (optional, default: GPU)" << std::endl;
+    std::cout << "  -h, --help                          Show this help message" << std::endl;
+    // clang-format on
+}
+
+/**
+ * @brief Parse bounding box file and setup bounding box vector.
+ *
+ * @param[in] boundingBoxFilePath Path to bounding box list file.
+ * @param[out] bbox_vector Vector of bounding box vectors to be filled.
+ * @return void
+ * @throws std::runtime_error if failed to open bounding box file.
+ */
+void ParseBoundingBoxFile(const std::string& boundingBoxFilePath, std::vector<std::vector<BndBox_t>>& bbox_vector) {
+    std::ifstream file(boundingBoxFilePath);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open bounding box file " + boundingBoxFilePath);
     }
 
-    if (gpuPath) {
-        device = eDeviceType::GPU;
-        HIP_VALIDATE_NO_ERRORS(hipSetDevice(deviceId));
-    } else {
-        device = eDeviceType::CPU;
-    }
+    int numImages;
+    file >> numImages;
+    bbox_vector.resize(numImages);
+    for (int i = 0; i < numImages; i++) {
+        int numBoxes;
+        file >> numBoxes;
 
-    cv::Mat imageData = cv::imread(input_file_path);
-    if (imageData.empty()) {
-        std::cerr << "Failed to read the input image file" << std::endl;
-        exit(1);
-    }
+        bbox_vector[i].resize(numBoxes);
+        for (int j = 0; j < numBoxes; j++) {
+            // Parse each box from 13 lines, in order:
+            //   1. x         (top-left corner)
+            //   2. y         (top-left corner)
+            //   3. width
+            //   4. height
+            //   5. thickness (box boundary)
+            //   6. border B
+            //   7. border G
+            //   8. border R
+            //   9. border A (alpha)
+            //  10. fill B
+            //  11. fill G
+            //  12. fill R
+            //  13. fill A (alpha)
+            // (13 values total per box)
 
-    int batchSize = 1;
+            // Read box dimensions
+            file >> bbox_vector[i][j].box.x >> bbox_vector[i][j].box.y >> bbox_vector[i][j].box.width >>
+                bbox_vector[i][j].box.height;
+            file >> bbox_vector[i][j].thickness;
+
+            // Read colors into temp ints
+            int r, g, b, a;
+            file >> b >> g >> r >> a;
+            bbox_vector[i][j].borderColor = {static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b),
+                                             static_cast<uint8_t>(a)};
+
+            file >> b >> g >> r >> a;
+            bbox_vector[i][j].fillColor = {static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b),
+                                           static_cast<uint8_t>(a)};
+        }
+    }
+}
+
+/**
+ * @brief Setup bounding box vector from file or default values.
+ *
+ * @param[in] batchSize Number of images in the batch.
+ * @param[in] width Width of each image in the batch.
+ * @param[in] height Height of each image in the batch.
+ * @param[in] boundingBoxFilePath Path to bounding box list file.
+ * @return Vector of bounding box vectors.
+ */
+std::vector<std::vector<BndBox_t>> SetupBoundingBoxVector(int64_t batchSize, int64_t width, int64_t height,
+                                                          const std::string& boundingBoxFilePath) {
     std::vector<std::vector<BndBox_t>> bbox_vector;
-    if (boxSet) {
-        std::ifstream box_list_file(box_file_path);
-        if (box_list_file.is_open()) {
-            std::string line;
-            std::getline(box_list_file, line);
-            batchSize = std::stoi(line.c_str());
-            if (batchSize > 0) {
-                bbox_vector.resize(batchSize);
-                for (int i = 0; i < batchSize; i++) {
-                    std::getline(box_list_file, line);
-                    int numBoxes = std::stoi(line.c_str());
-                    if (numBoxes > 0) {
-                        for (int b = 0; b < numBoxes; b++) {
-                            BndBox_t box;
-                            std::getline(box_list_file, line);
-                            box.box.x = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.box.y = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.box.width = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.box.height = std::atoi(line.c_str());
 
-                            std::getline(box_list_file, line);
-                            box.thickness = std::atoi(line.c_str());
-
-                            std::getline(box_list_file, line);
-                            box.borderColor.r = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.borderColor.g = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.borderColor.b = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.borderColor.a = std::atoi(line.c_str());
-
-                            std::getline(box_list_file, line);
-                            box.fillColor.r = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.fillColor.g = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.fillColor.b = std::atoi(line.c_str());
-                            std::getline(box_list_file, line);
-                            box.fillColor.a = std::atoi(line.c_str());
-
-                            bbox_vector[i].push_back(box);
-                        }
-                    } else {
-                        std::cerr << "Invalid number of boxes: " << numBoxes << "for image: " << i << std::endl;
-                        exit(1);
-                    }
-                }
-            } else {
-                std::cerr << "Invalid batch size: " << batchSize << std::endl;
-                exit(1);
-            }
-        } else {
-            std::cerr << "Failed to open bounding box list file " << box_file_path << std::endl;
-            exit(1);
-        }
-    } else {
-        auto width = imageData.cols;
-        auto height = imageData.rows;
-        bbox_vector = {
-            {
+    if (boundingBoxFilePath.empty()) {
+        for (int64_t b = 0; b < batchSize; b++) {
+            bbox_vector.push_back({
                 {{width / 4, height / 4, width / 2, height / 2}, 5, {0, 0, 255, 200}, {0, 255, 0, 100}},
                 {{width / 3, height / 3, width / 3 * 2, height / 4}, -1, {90, 16, 181, 50}, {0, 0, 0, 0}},
                 {{-50, (height * 2) / 3, width + 50, height / 3 + 50}, 0, {0, 0, 0, 0}, {111, 159, 232, 150}},
-            },
-        };
+            });
+        }
+    } else {
+        ParseBoundingBoxFile(boundingBoxFilePath, bbox_vector);
     }
+
+    return bbox_vector;
+}
+
+/**
+ * @brief Main function to run the bounding box operation example.
+ *
+ * @param[in] argc Number of command line arguments.
+ * @param[in] argv Command line arguments.
+ * @return int Exit status.
+ */
+int main(int argc, char** argv) {
+    Config config;
+    static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
+                                          {"output", required_argument, nullptr, 'o'},
+                                          {"box_file", required_argument, nullptr, 'b'},
+                                          {"device", required_argument, nullptr, 'd'},
+                                          {"cpu", no_argument, nullptr, 'C'},
+                                          {"help", no_argument, nullptr, 'h'},
+                                          {nullptr, 0, nullptr, 0}};
+    int opt;
+    while ((opt = getopt_long(argc, argv, "i:o:b:d:h:C", longOptions, nullptr)) != -1) {
+        switch (opt) {
+            case 'i':
+                config.inputPath = optarg;
+                break;
+            case 'o':
+                config.outputPath = optarg;
+                break;
+            case 'b':
+                config.boundingBoxFilePath = optarg;
+                break;
+            case 'd':
+                config.deviceId = std::stoi(optarg);
+                break;
+            case 'C':
+                config.device = eDeviceType::CPU;
+                break;
+            case 'h':
+                PrintUsage(argv[0]);
+                return EXIT_SUCCESS;
+            default:
+                PrintUsage(argv[0]);
+                return EXIT_FAILURE;
+        }
+    }
+
+    if (config.inputPath.empty()) {
+        std::cerr << "Error: Input path is required.\n\n";
+        PrintUsage(argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    if (config.device == eDeviceType::GPU) {
+        CHECK_HIP_ERROR(hipSetDevice(config.deviceId));
+    }
+
+    hipStream_t stream;
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
+
+    // Load images
+    Tensor input = LoadImages(stream, config.inputPath.c_str(), config.device);
+    int64_t batchSize = input.shape()[input.shape().layout().batch_index()];
+    int64_t height = input.shape()[input.shape().layout().height_index()];
+    int64_t width = input.shape()[input.shape().layout().width_index()];
+
+    // Setup bounding box vector
+    std::vector<std::vector<BndBox_t>> bbox_vector =
+        SetupBoundingBoxVector(batchSize, width, height, config.boundingBoxFilePath);
+
     BndBoxes bboxes(bbox_vector);
 
-    // Create input/output tensors for the image.
-    TensorShape imageShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                           {1, imageData.rows, imageData.cols, imageData.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
-    Tensor input(imageShape, dtype, device);
-    Tensor output(imageShape, dtype, device);
+    // Create output tensor
+    Tensor output(input.shape(), input.dtype(), config.device);
 
-    hipStream_t stream = nullptr;
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-    }
-
-    // Move image data to input tensor
-    size_t imageSizeInByte = input.shape().size() * input.dtype().size();
-    auto inputData = input.exportData<TensorDataStrided>();
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(
-            hipMemcpyAsync(inputData.basePtr(), imageData.data, imageSizeInByte, hipMemcpyHostToDevice, stream));
-    } else {
-        memcpy(inputData.basePtr(), imageData.data, imageSizeInByte);
-    }
-
+    // Create BndBox operator
     BndBox op;
-    op(stream, input, output, bboxes, device);
+    op(stream, input, output, bboxes, config.device);
 
-    // Move image data back to host
-    size_t outputSize = output.shape().size() * output.dtype().size();
-    auto outData = output.exportData<TensorDataStrided>();
-    std::vector<uint8_t> h_output(outputSize);
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(
-            hipMemcpyAsync(h_output.data(), outData.basePtr(), outputSize, hipMemcpyDeviceToHost, stream));
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-    } else {
-        memcpy(h_output.data(), outData.basePtr(), outputSize);
-    }
+    // Write output images to disk
+    WriteImages(stream, output, config.outputPath);
 
-    // Write output image to disk
-    cv::Mat outImageData(imageData.rows, imageData.cols, imageData.type(), h_output.data());
-    bool ret = cv::imwrite(output_file_path, outImageData);
-    if (!ret) {
-        std::cerr << "Faild to save output image to the file" << std::endl;
-        exit(1);
-    }
-
-    std::cout << "Input image file: " << input_file_path << std::endl;
-    std::cout << "Output image file: " << output_file_path << std::endl;
-    if (gpuPath) {
-        std::cout << "Operation on GPU device " << deviceId << std::endl;
-    } else {
-        std::cout << "Operation on CPU" << std::endl;
-    }
-    std::cout << "Image size: width = " << imageData.cols << ", height = " << imageData.rows << std::endl;
-
+    CHECK_HIP_ERROR(hipStreamDestroy(stream));
     return EXIT_SUCCESS;
 }
