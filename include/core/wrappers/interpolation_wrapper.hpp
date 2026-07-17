@@ -29,34 +29,31 @@
 
 namespace roccv {
 /**
- * @brief A kernel-friendly wrapper which provides interpolation logic based on the given
- * coordinates. This tensor wrapper is typically only used for input tensors and does not provide write access to its
- * underlying data.
+ * @brief A kernel-friendly wrapper which provides interpolation logic on top of a BorderWrapper.
  *
- * @tparam T Underlying data type of the tensor data.
- * @tparam C Number of channels in data type.
- * @tparam B Border type to use for interpolation.
- * @tparam I Interpolation type to use.
+ * Templated directly on the BorderWrapper type so the redundant border-mode and underlying-wrapper template
+ * parameters need only be spelled once (in the BorderWrapper type). Recover the border mode via
+ * BW::kBorderType and the underlying wrapper type via BW::WrapperType.
+ *
+ * Read-only access; do not use for output tensors.
+ *
+ * @tparam I  Interpolation type to use.
+ * @tparam BW The BorderWrapper type to wrap. Must expose ValueType plus at(n,h,w,c), width(n), height(n).
  */
-template <typename T, eBorderType B, eInterpolationType I>
+template <eInterpolationType I, typename BW>
 class InterpolationWrapper {
    public:
-    /**
-     * @brief Wraps a roccv::Tensor in an InterpolationWrapper to provide pixel interpolation when accessing
-     * non-integer coordinate mappings.
-     *
-     * @param tensor The tensor to wrap.
-     * @param border_value A fallback border value to use in the case of a constant border mode.
-     */
-    InterpolationWrapper(const Tensor& tensor, T border_value) : m_desc(tensor, border_value) {}
+    using ValueType = typename BW::ValueType;
+    using BorderType = BW;
+    static constexpr eInterpolationType kInterpolationType = I;
 
     /**
-     * @brief Wraps a BorderWrapper in an Interpolation wrapper. Extends capabilities to interpolate pixel values when
-     * given non-integer coordinates.
+     * @brief Wraps a BorderWrapper in an InterpolationWrapper. Extends capabilities to interpolate pixel values
+     * when given non-integer coordinates.
      *
      * @param borderWrapper The BorderWrapper to wrap.
      */
-    InterpolationWrapper(BorderWrapper<T, B> borderWrapper) : m_desc(borderWrapper) {}
+    InterpolationWrapper(BW borderWrapper) : m_desc(borderWrapper) {}
 
     /**
      * @brief This function calculates the weighting coefficients for the Catmull-Rom cubic interpolation.
@@ -81,7 +78,7 @@ class InterpolationWrapper {
      * @param w Width coordinates.
      * @return An interpolated value.
      */
-    inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
+    inline __device__ __host__ ValueType at(int64_t n, float h, float w, int64_t c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
             return m_desc.at(n, detail::interp_nearest_i64(h), detail::interp_nearest_i64(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
@@ -90,7 +87,7 @@ class InterpolationWrapper {
             // -     -
             // v3 -- v4
 
-            using WorkType = detail::MakeType<float, detail::NumElements<T>>;
+            using WorkType = detail::MakeType<float, detail::NumElements<ValueType>>;
 
             const int64_t x0 = detail::interp_floor_i64(w);
             const int64_t y0 = detail::interp_floor_i64(h);
@@ -101,7 +98,7 @@ class InterpolationWrapper {
             const float omfx = 1.f - fx;
             const float omfy = 1.f - fy;
 
-            if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width() && y1 < m_desc.height()) {
+            if (x0 >= 0 && y0 >= 0 && x1 < m_desc.width(n) && y1 < m_desc.height(n)) {
                 auto v1 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x0, c));
                 auto v2 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y0, x1, c));
                 auto v3 = detail::RangeCast<WorkType>(m_desc.at_inbounds(n, y1, x0, c));
@@ -109,7 +106,7 @@ class InterpolationWrapper {
                 auto q1 = v1 * omfx + v2 * fx;
                 auto q2 = v3 * omfx + v4 * fx;
                 auto q = q1 * omfy + q2 * fy;
-                return detail::RangeCast<T>(q);
+                return detail::RangeCast<ValueType>(q);
             }
 
             auto v1 = detail::RangeCast<WorkType>(m_desc.at(n, y0, x0, c));
@@ -121,10 +118,10 @@ class InterpolationWrapper {
             auto q2 = v3 * omfx + v4 * fx;
             auto q = q1 * omfy + q2 * fy;
 
-            return detail::RangeCast<T>(q);
+            return detail::RangeCast<ValueType>(q);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_CUBIC) {
             using namespace roccv::detail;
-            using WorkType = detail::MakeType<float, detail::NumElements<T>>;
+            using WorkType = detail::MakeType<float, detail::NumElements<ValueType>>;
 
             const int64_t int_x = detail::interp_floor_i64(w);
             const int64_t int_y = detail::interp_floor_i64(h);
@@ -145,7 +142,7 @@ class InterpolationWrapper {
 
             WorkType sum = SetAll<WorkType>(0.0f);
             const bool cubic_fast =
-                int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width() && (int_y + 2) < m_desc.height();
+                int_x >= 1 && int_y >= 1 && (int_x + 2) < m_desc.width(n) && (int_y + 2) < m_desc.height(n);
             k = 0;
             if (cubic_fast) {
 #pragma unroll
@@ -168,16 +165,29 @@ class InterpolationWrapper {
                 }
             }
 
-            return detail::RangeCast<T>(sum);
+            return detail::RangeCast<ValueType>(sum);
         }
     }
 
-    __device__ __host__ inline int64_t height() const { return m_desc.height(); }
-    __device__ __host__ inline int64_t width() const { return m_desc.width(); }
+    __device__ __host__ inline int64_t height(int64_t n = 0) const { return m_desc.height(n); }
+    __device__ __host__ inline int64_t width(int64_t n = 0) const { return m_desc.width(n); }
     __device__ __host__ inline int64_t batches() const { return m_desc.batches(); }
     __device__ __host__ inline int64_t channels() const { return m_desc.channels(); }
 
    private:
-    BorderWrapper<T, B> m_desc;
+    BW m_desc;
 };
+
+/**
+ * @brief Factory for InterpolationWrapper. Deduces the BorderWrapper type BW (and its border mode +
+ * underlying wrapper) from the argument; callers only need to spell the interpolation policy.
+ *
+ * @tparam I The interpolation type.
+ * @param borderWrap An already-constructed BorderWrapper (typically via MakeBorderWrapper<B>(...)).
+ */
+template <eInterpolationType I, typename BW>
+auto MakeInterpolationWrapper(BW borderWrap) {
+    return InterpolationWrapper<I, BW>(borderWrap);
+}
+
 }  // namespace roccv

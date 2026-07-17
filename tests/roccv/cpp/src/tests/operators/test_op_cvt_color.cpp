@@ -22,7 +22,7 @@ THE SOFTWARE.
 
 #include <core/detail/swizzling.hpp>
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_cvt_color.hpp>
 
 #include "test_helpers.hpp"
@@ -34,9 +34,9 @@ namespace {
 
 template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenReorder(std::vector<BT>& input, int samples, int width, int height) {
-    ImageWrapper<T> inputWrap(input, samples, width, height);
+    TensorWrapper<T> inputWrap(input, samples, width, height);
     std::vector<BT> output(samples * width * height * detail::NumElements<T>);
-    ImageWrapper<T> outputWrap(output, samples, width, height);
+    TensorWrapper<T> outputWrap(output, samples, width, height);
 
     for (int b = 0; b < samples; b++) {
         for (int y = 0; y < height; y++) {
@@ -51,9 +51,9 @@ std::vector<BT> GoldenReorder(std::vector<BT>& input, int samples, int width, in
 
 template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenYUVToRGB(std::vector<BT>& input, int samples, int width, int height, float delta) {
-    ImageWrapper<T> inputWrap(input, samples, width, height);
+    TensorWrapper<T> inputWrap(input, samples, width, height);
     std::vector<BT> output(samples * width * height * detail::NumElements<T>);
-    ImageWrapper<T> outputWrap(output, samples, width, height);
+    TensorWrapper<T> outputWrap(output, samples, width, height);
 
     for (int b = 0; b < samples; b++) {
         for (int y = 0; y < height; y++) {
@@ -77,9 +77,9 @@ std::vector<BT> GoldenYUVToRGB(std::vector<BT>& input, int samples, int width, i
 
 template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenRGBToYUV(std::vector<BT>& input, int samples, int width, int height, float delta) {
-    ImageWrapper<T> inputWrap(input, samples, width, height);
+    TensorWrapper<T> inputWrap(input, samples, width, height);
     std::vector<BT> output(samples * width * height * detail::NumElements<T>);
-    ImageWrapper<T> outputWrap(output, samples, width, height);
+    TensorWrapper<T> outputWrap(output, samples, width, height);
 
     for (int b = 0; b < samples; b++) {
         for (int y = 0; y < height; y++) {
@@ -104,11 +104,11 @@ std::vector<BT> GoldenRGBToYUV(std::vector<BT>& input, int samples, int width, i
 
 template <typename T, eSwizzle S, typename BT = detail::BaseType<T>>
 std::vector<BT> GoldenRGBToGrayscale(std::vector<BT>& input, int samples, int width, int height) {
-    ImageWrapper<T> inputWrap(input, samples, width, height);
+    TensorWrapper<T> inputWrap(input, samples, width, height);
     std::vector<BT> output(samples * width * height);
 
     // Output must always be uchar1 for grayscale
-    ImageWrapper<uchar1> outputWrap(output, samples, width, height);
+    TensorWrapper<uchar1> outputWrap(output, samples, width, height);
 
     for (int b = 0; b < samples; b++) {
         for (int y = 0; y < height; y++) {

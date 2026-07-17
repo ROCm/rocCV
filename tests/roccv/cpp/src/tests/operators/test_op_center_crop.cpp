@@ -23,7 +23,7 @@ THE SOFTWARE.
 #include <cstdint>
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_center_crop.hpp>
 #include "test_helpers.hpp"
 
@@ -48,8 +48,8 @@ namespace {
 template <typename T, typename BT = detail::BaseType<T>>
 void GenerateGoldenCrop(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, int32_t width, int32_t height, Size2D cropSize) {
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, cropSize.w, cropSize.h);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, cropSize.w, cropSize.h);
 
     int topLeftX = (width >> 1) - (cropSize.w >> 1);
     int topLeftY = (height >> 1) - (cropSize.h >> 1);

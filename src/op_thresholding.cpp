@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/thresholding_device.hpp"
 #include "kernels/host/thresholding_host.hpp"
 
@@ -43,8 +43,8 @@ Threshold::~Threshold() {}
 template <typename T>
 void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, const Tensor &thresh,
                               const Tensor &maxVal, eThresholdType m_threshType, eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
+    TensorWrapper<T> inputWrapper(input);
+    TensorWrapper<T> outputWrapper(output);
 
     const auto height = input.shape()[input.shape().layout().height_index()];
     const auto width = input.shape()[input.shape().layout().width_index()];

@@ -103,7 +103,7 @@ int64_t GetCoordOfBorderPel(int64_t u, int64_t dimSize, eBorderType borderMode) 
  *
  * @tparam T The underlying datatype of the image. (e.g. uchar3)
  * @tparam BT The base datatype of the image (e.g. unsigned char)
- * @param[in] input The input ImageWrapper referencing the underlying image data.
+ * @param[in] input The input TensorWrapper referencing the underlying image data.
  * @param[in] borderMode The border mode used to handle out of bounds coordinates.
  * @param[in] borderValue The value to fallback to when handling out of bounds coordinates with the CONSTANT border
  * mode.
@@ -115,8 +115,8 @@ int64_t GetCoordOfBorderPel(int64_t u, int64_t dimSize, eBorderType borderMode) 
  * coordinates fall out of bounds.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-BT GoldenBorderAt(ImageWrapper<T>& input, eBorderType borderMode, T borderValue, int64_t sample, int64_t y,
-                  int64_t x, int64_t channel) {
+BT GoldenBorderAt(TensorWrapper<T>& input, eBorderType borderMode, T borderValue, int64_t sample, int64_t y, int64_t x,
+                  int64_t channel) {
     int64_t outX = x, outY = y;
 
     if (borderMode == eBorderType::BORDER_TYPE_CONSTANT) {
@@ -130,7 +130,7 @@ BT GoldenBorderAt(ImageWrapper<T>& input, eBorderType borderMode, T borderValue,
         outY = GetCoordOfBorderPel(y, input.height(), borderMode);
     }
 
-    // Return the value at the modified outX, outY coordinates using the passed in ImageWrapper.
+    // Return the value at the modified outX, outY coordinates using the passed in TensorWrapper.
     return detail::GetElement(input.at(sample, outY, outX, 0), channel);
 }
 
@@ -161,7 +161,8 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
     FillVector(inputData);
 
     // BorderWrapper to calculate the actual calculated values.
-    BorderWrapper<T, BorderType> borderWrap(ImageWrapper<T>(inputData, batchSize, imageSize.w, imageSize.h), borderVal);
+    auto borderWrap =
+        MakeBorderWrapper<BorderType>(TensorWrapper<T>(inputData, batchSize, imageSize.w, imageSize.h), borderVal);
     std::vector<BT> actualOutput(numElementsWithBorder);
     int actualIndex = 0;
     for (int batch = 0; batch < batchSize; ++batch) {
@@ -176,9 +177,9 @@ void TestCorrectness(float4 borderValue, int32_t batchSize, Size2D imageSize, in
         }
     }
 
-    // ImageWrapper for use in the golden output generator. ImageWrapper is unit tested separately, and is
+    // TensorWrapper for use in the golden output generator. TensorWrapper is unit tested separately, and is
     // considered working at this point in the dependency chain.
-    ImageWrapper<T> imageWrap(inputData, batchSize, imageSize.w, imageSize.h);
+    TensorWrapper<T> imageWrap(inputData, batchSize, imageSize.w, imageSize.h);
     std::vector<BT> goldenOutput(numElementsWithBorder);
     int goldenIndex = 0;
     for (int batch = 0; batch < batchSize; ++batch) {

@@ -21,7 +21,7 @@
 
 #include <hip/hip_runtime.h>
 
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 
 namespace Kernels::Device {
 
@@ -34,7 +34,7 @@ namespace Kernels::Device {
  * @param[out] output The output tensor.
  */
 template <int Channels, typename T>
-__global__ void reformat(roccv::ImageWrapper<T> input, roccv::ImageWrapper<T> output) {
+__global__ void reformat(roccv::TensorWrapper<T> input, roccv::TensorWrapper<T> output) {
     const int x = blockDim.x * blockIdx.x + threadIdx.x;
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
     const int b = blockIdx.z;

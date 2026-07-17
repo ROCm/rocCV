@@ -52,12 +52,12 @@ std::vector<detail::BaseType<T>> GoldenWarpPerspective(std::vector<detail::BaseT
                                                        const std::array<float, 9>& mat, bool isInverted, int batchSize,
                                                        Size2D inputSize, Size2D outputSize, float4 borderValue) {
     // Create interpolation wrapper for input vector
-    InterpolationWrapper<T, BorderType, InterpType> inputWrap((BorderWrapper<T, BorderType>(
-        ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue))));
+    auto inputWrap = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<BorderType>(
+        TensorWrapper<T>(input, batchSize, inputSize.w, inputSize.h), detail::SaturateCast<T>(borderValue)));
 
-    // Create ImageWrapper for output vector. We also need to create said output vector.
+    // Create TensorWrapper for output vector. We also need to create said output vector.
     std::vector<detail::BaseType<T>> output(batchSize * outputSize.w * outputSize.h * detail::NumElements<T>);
-    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
+    TensorWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
     // If given matrix is not the inverted representation of the transformation, we have to invert it first (since we
     // transform from output -> input).

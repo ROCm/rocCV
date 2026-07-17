@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/tensor.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/cvt_color_device.hpp"
 #include "kernels/host/cvt_color_host.hpp"
 
@@ -87,38 +87,38 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
         switch (conversionCode) {
             case eColorConversionCode::COLOR_BGR2GRAY:
                 Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+                    <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar1>(output));
                 break;
 
             case eColorConversionCode::COLOR_RGB2GRAY:
                 Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+                    <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar1>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2RGB:
             case eColorConversionCode::COLOR_RGB2BGR:
                 Kernels::Device::reorder<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output));
+                    <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2YUV:
                 Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                    TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             case eColorConversionCode::COLOR_RGB2YUV:
                 Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                    TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             case eColorConversionCode::COLOR_YUV2BGR:
                 Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                    TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             case eColorConversionCode::COLOR_YUV2RGB:
                 Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+                    TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             default:
@@ -129,39 +129,39 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
 
         switch (conversionCode) {
             case eColorConversionCode::COLOR_BGR2GRAY:
-                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                               ImageWrapper<uchar1>(output));
+                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>(TensorWrapper<uchar3>(input),
+                                                                               TensorWrapper<uchar1>(output));
                 break;
 
             case eColorConversionCode::COLOR_RGB2GRAY:
-                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                               ImageWrapper<uchar1>(output));
+                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>(TensorWrapper<uchar3>(input),
+                                                                               TensorWrapper<uchar1>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2RGB:
             case eColorConversionCode::COLOR_RGB2BGR:
-                Kernels::Host::reorder<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                               ImageWrapper<uchar3>(output));
+                Kernels::Host::reorder<uchar3, eSwizzle::ZYXW>(TensorWrapper<uchar3>(input),
+                                                               TensorWrapper<uchar3>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2YUV:
-                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW>(TensorWrapper<uchar3>(input),
+                                                                         TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             case eColorConversionCode::COLOR_RGB2YUV:
-                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW>(TensorWrapper<uchar3>(input),
+                                                                         TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             case eColorConversionCode::COLOR_YUV2BGR:
-                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW>(TensorWrapper<uchar3>(input),
+                                                                         TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             case eColorConversionCode::COLOR_YUV2RGB:
-                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW>(TensorWrapper<uchar3>(input),
+                                                                         TensorWrapper<uchar3>(output), 128.0f);
                 break;
 
             default:
