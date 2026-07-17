@@ -22,28 +22,20 @@ THE SOFTWARE.
 
 #pragma once
 
-#include <hip/hip_runtime.h>
-#include "core/detail/casting.hpp"
-#include "core/detail/type_traits.hpp"
-#include "core/wrappers/tensor_wrapper.hpp"
+#include <pybind11/pybind11.h>
 
-namespace Kernels {
-namespace Host {
-template <typename SrcWrapper, typename DstWrapper, typename DT_AB>
-void convert_to(SrcWrapper input, DstWrapper output, DT_AB alpha, DT_AB beta) {
-    using namespace roccv::detail;  // For RangeCast, NumElements, etc.
-    using dst_type = typename DstWrapper::ValueType;
-    using work_type = MakeType<DT_AB, NumElements<dst_type>>;
-#pragma omp parallel for
-    for (int batch = 0; batch < output.batches(); batch++) {
-        for (int y = 0; y < output.height(); y++) {
-            for (int x = 0; x < output.width(); x++) {
-                work_type src_val = StaticCast<work_type>(input.at(batch, y, x, 0));
-                work_type result = alpha * src_val + beta;
-                output.at(batch, y, x, 0) = SaturateCast<dst_type>(result);
-            }
-        }
-    }
-}
-}  // namespace Host
-}  // namespace Kernels
+namespace py = pybind11;
+
+/**
+ * @brief Exports roccv::ImageFormat to Python as the `Format` type.
+ *
+ * Every FMT_* constant is exposed as a named attribute (e.g. Format.RGB8), with
+ * read-only `channels`/`dtype`/`swizzle`/`planes` properties and a named
+ * __repr__. Because roccv::ImageFormat is a value class (dtype + channels +
+ * swizzle) rather than a packed integer, it is bound as a py::class_ instead of
+ * a py::enum_.
+ */
+class PyImageFormat {
+   public:
+    static void Export(py::module& m);
+};

@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/histogram_device.hpp"
 #include "kernels/host/histogram_host.hpp"
 
@@ -44,7 +44,7 @@ template <typename T>
 void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
                               std::optional<std::reference_wrapper<const Tensor>> mask, const Tensor& histogram,
                               eDeviceType device) {
-    ImageWrapper<uchar1> inputWrapper(input);
+    TensorWrapper<uchar1> inputWrapper(input);
 
     const auto o_height = histogram.shape()[histogram.shape().layout().height_index()];
     const auto o_width = histogram.shape()[histogram.shape().layout().width_index()];
@@ -91,7 +91,7 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
                 std::reference_wrapper<const Tensor> mask_ref = mask.value();
                 const Tensor& actual_mask = mask_ref.get();
                 CHECK_TENSOR_COMPARISON(input.shape() == actual_mask.shape());
-                ImageWrapper<uchar1> maskWrapper(actual_mask);
+                TensorWrapper<uchar1> maskWrapper(actual_mask);
                 Kernels::Device::histogram_kernel<T><<<grid_size, threads_block, shared_mem_size, stream>>>(
                     inputWrapper, maskWrapper, GenericTensorWrapper<T>(histogram));
             } else {
@@ -115,7 +115,7 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
                 std::reference_wrapper<const Tensor> mask_ref = mask.value();
                 const Tensor& actual_mask = mask_ref.get();
                 CHECK_TENSOR_COMPARISON(input.shape() == actual_mask.shape());
-                ImageWrapper<uchar1> maskWrapper(actual_mask);
+                TensorWrapper<uchar1> maskWrapper(actual_mask);
                 Kernels::Host::histogram_kernel(inputWrapper, maskWrapper, GenericTensorWrapper<T>(histogram));
             } else {
                 Kernels::Host::histogram_kernel(inputWrapper, GenericTensorWrapper<T>(histogram));

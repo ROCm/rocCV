@@ -8,7 +8,7 @@
 from __future__ import annotations
 import collections.abc
 import typing
-__all__: list[str] = ['BGR', 'BINARY', 'BINARY_INV', 'BOTH', 'BT2020', 'BT601', 'BT709', 'BndBox', 'BndBoxes', 'Box', 'CHW', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB', 'COLOR_BGR2YUV', 'COLOR_BGR2YUV_NV12', 'COLOR_BGR2YUV_NV21', 'COLOR_RGB2BGR', 'COLOR_RGB2GRAY', 'COLOR_RGB2YUV', 'COLOR_RGB2YUV_NV12', 'COLOR_RGB2YUV_NV21', 'COLOR_YUV2BGR', 'COLOR_YUV2BGR_NV12', 'COLOR_YUV2BGR_NV21', 'COLOR_YUV2RGB', 'COLOR_YUV2RGB_NV12', 'COLOR_YUV2RGB_NV21', 'CONSTANT', 'CPU', 'CUBIC', 'ColorRGBA', 'Exception', 'F32', 'F64', 'GPU', 'Grayscale', 'HWC', 'LINEAR', 'N', 'NC', 'NCHW', 'NEAREST', 'NHWC', 'NW', 'NWC', 'NormalizeFlags', 'REFLECT', 'REFLECT101', 'REMAP_ABSOLUTE', 'REMAP_ABSOLUTE_NORMALIZED', 'REMAP_RELATIVE_NORMALIZED', 'REPLICATE', 'RGB', 'S16', 'S32', 'S8', 'Size2D', 'Stream', 'TOZERO', 'TOZERO_INV', 'TRUNC', 'Tensor', 'U16', 'U32', 'U8', 'WRAP', 'X', 'Y', 'YUV', 'YVU', 'advcvtcolor', 'advcvtcolor_into', 'bilateral_filter', 'bilateral_filter_into', 'bndbox', 'bndbox_into', 'center_crop', 'center_crop_into', 'composite', 'composite_into', 'convert_to', 'convert_to_into', 'copymakeborder', 'copymakeborder_into', 'custom_crop', 'custom_crop_into', 'cvtcolor', 'cvtcolor_into', 'eAxis', 'eBorderType', 'eChannelType', 'eColorConversionCode', 'eColorSpec', 'eDataType', 'eDeviceType', 'eInterpolationType', 'eRemapType', 'eTensorLayout', 'eThresholdType', 'flip', 'flip_into', 'from_dlpack', 'gamma_contrast', 'gamma_contrast_into', 'histogram', 'histogram_into', 'nms', 'nms_into', 'normalize', 'normalize_into', 'reformat', 'reformat_into', 'remap', 'remap_into', 'resize', 'resize_into', 'rotate', 'rotate_into', 'threshold', 'threshold_into', 'warp_affine', 'warp_affine_into', 'warp_perspective', 'warp_perspective_into']
+__all__: list[str] = ['BGR', 'BINARY', 'BINARY_INV', 'BOTH', 'BT2020', 'BT601', 'BT709', 'BndBox', 'BndBoxes', 'Box', 'CHW', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB', 'COLOR_BGR2YUV', 'COLOR_BGR2YUV_NV12', 'COLOR_BGR2YUV_NV21', 'COLOR_RGB2BGR', 'COLOR_RGB2GRAY', 'COLOR_RGB2YUV', 'COLOR_RGB2YUV_NV12', 'COLOR_RGB2YUV_NV21', 'COLOR_YUV2BGR', 'COLOR_YUV2BGR_NV12', 'COLOR_YUV2BGR_NV21', 'COLOR_YUV2RGB', 'COLOR_YUV2RGB_NV12', 'COLOR_YUV2RGB_NV21', 'CONSTANT', 'CPU', 'CUBIC', 'ColorRGBA', 'Exception', 'F32', 'F64', 'Format', 'GPU', 'Grayscale', 'HWC', 'Image', 'ImageBatchVarShape', 'LINEAR', 'N', 'NC', 'NCHW', 'NEAREST', 'NHWC', 'NW', 'NWC', 'NormalizeFlags', 'REFLECT', 'REFLECT101', 'REMAP_ABSOLUTE', 'REMAP_ABSOLUTE_NORMALIZED', 'REMAP_RELATIVE_NORMALIZED', 'REPLICATE', 'RGB', 'S16', 'S32', 'S8', 'Size2D', 'Stream', 'TOZERO', 'TOZERO_INV', 'TRUNC', 'Tensor', 'U16', 'U32', 'U8', 'WRAP', 'X', 'XYZW', 'Y', 'YUV', 'YVU', 'ZYXW', 'advcvtcolor', 'advcvtcolor_into', 'as_image', 'as_images', 'bilateral_filter', 'bilateral_filter_into', 'bndbox', 'bndbox_into', 'center_crop', 'center_crop_into', 'composite', 'composite_into', 'convert_to', 'convert_to_into', 'copymakeborder', 'copymakeborder_into', 'custom_crop', 'custom_crop_into', 'cvtcolor', 'cvtcolor_into', 'eAxis', 'eBorderType', 'eChannelType', 'eColorConversionCode', 'eColorSpec', 'eDataType', 'eDeviceType', 'eInterpolationType', 'eRemapType', 'eSwizzle', 'eTensorLayout', 'eThresholdType', 'flip', 'flip_into', 'from_dlpack', 'gamma_contrast', 'gamma_contrast_into', 'histogram', 'histogram_into', 'nms', 'nms_into', 'normalize', 'normalize_into', 'reformat', 'reformat_into', 'remap', 'remap_into', 'resize', 'resize_into', 'rotate', 'rotate_into', 'threshold', 'threshold_into', 'warp_affine', 'warp_affine_into', 'warp_perspective', 'warp_perspective_into']
 class BndBox:
     borderColor: ColorRGBA
     box: Box
@@ -92,6 +92,187 @@ class ColorRGBA:
         ...
 class Exception(Exception):
     pass
+class _FormatConstants(type):
+    """
+    Metaclass carrying the named Format constants. Declaring them here (rather
+    than on Format itself) makes them accessible on the class object only
+    (Format.RGB8) and not on Format *instances*, so chains like
+    Format.RGB8.RGB8 are correctly rejected by type checkers — mirroring the
+    runtime __getattribute__ guard in the C++ binding.
+    """
+    BGR8: Format  # value = rocpycv.Format.BGR8
+    BGRA8: Format  # value = rocpycv.Format.BGRA8
+    F32: Format  # value = rocpycv.Format.F32
+    F64: Format  # value = rocpycv.Format.F64
+    NONE: Format  # value = rocpycv.Format.NONE
+    RGB16: Format  # value = rocpycv.Format.RGB16
+    RGB32: Format  # value = rocpycv.Format.RGB32
+    RGB8: Format  # value = rocpycv.Format.RGB8
+    RGBA16: Format  # value = rocpycv.Format.RGBA16
+    RGBA32: Format  # value = rocpycv.Format.RGBA32
+    RGBA8: Format  # value = rocpycv.Format.RGBA8
+    RGBAf32: Format  # value = rocpycv.Format.RGBAf32
+    RGBAf64: Format  # value = rocpycv.Format.RGBAf64
+    RGBAs16: Format  # value = rocpycv.Format.RGBAs16
+    RGBAs32: Format  # value = rocpycv.Format.RGBAs32
+    RGBAs8: Format  # value = rocpycv.Format.RGBAs8
+    RGBf32: Format  # value = rocpycv.Format.RGBf32
+    RGBf64: Format  # value = rocpycv.Format.RGBf64
+    RGBs16: Format  # value = rocpycv.Format.RGBs16
+    RGBs32: Format  # value = rocpycv.Format.RGBs32
+    RGBs8: Format  # value = rocpycv.Format.RGBs8
+    S16: Format  # value = rocpycv.Format.S16
+    S32: Format  # value = rocpycv.Format.S32
+    S8: Format  # value = rocpycv.Format.S8
+    U16: Format  # value = rocpycv.Format.U16
+    U32: Format  # value = rocpycv.Format.U32
+    U8: Format  # value = rocpycv.Format.U8
+    _2F32: Format  # value = rocpycv.Format._2F32
+
+class Format(metaclass=_FormatConstants):
+    """
+    Describes how image pixel data is laid out in memory.
+    """
+    def __eq__(self, arg0: Format) -> bool:
+        ...
+    def __hash__(self) -> int:
+        ...
+    def __init__(self, dtype: eDataType, channels: typing.SupportsInt | typing.SupportsIndex, swizzle: eSwizzle = ...) -> None:
+        """
+        Construct a format from a data type, channel count, and swizzle.
+        """
+    def __ne__(self, arg0: Format) -> bool:
+        ...
+    def __repr__(self) -> str:
+        ...
+    @property
+    def channels(self) -> int:
+        """
+        Read-only property that returns the number of color channels in the image.
+        """
+    @property
+    def dtype(self) -> eDataType:
+        """
+        Read-only property that returns the data type of each channel.
+        """
+    @property
+    def planes(self) -> int:
+        """
+        Read-only property that returns the number of planes in the image (always 1; rocCV is single-plane).
+        """
+    @property
+    def swizzle(self) -> eSwizzle:
+        """
+        Read-only property that returns the channel swizzle of the format.
+        """
+class Image:
+    """
+    A single variable-sized image with device-resident data.
+    """
+    @staticmethod
+    def zeros(size: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], format: Format, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Image:
+        """
+        Create an image of the given size and format filled with zeros.
+        """
+    def __dlpack__(self, stream: typing.Any = None) -> typing_extensions.CapsuleType:
+        """
+        Creates a DLPack capsule from this image.
+        """
+    def __dlpack_device__(self) -> tuple:
+        """
+        Returns a tuple containing the DLPack device type and id for this image.
+        """
+    def __init__(self, size: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], format: Format, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
+        """
+        Allocate a new image of the given size (width, height) and format.
+        """
+    def copy_to(self, device: eDeviceType) -> Image:
+        """
+        Returns a copy of the image with data copied to the given device.
+        """
+    @property
+    def device(self) -> eDeviceType:
+        """
+        Read-only property returning the device of the image.
+        """
+    @property
+    def format(self) -> Format:
+        """
+        Read-only property returning the format of the image.
+        """
+    @property
+    def height(self) -> int:
+        """
+        Read-only property returning the height of the image.
+        """
+    @property
+    def size(self) -> tuple[int, int]:
+        """
+        Read-only property returning the (width, height) of the image.
+        """
+    @property
+    def width(self) -> int:
+        """
+        Read-only property returning the width of the image.
+        """
+class ImageBatchVarShape:
+    """
+    A batch of variable-sized images that may differ in size, format, and dtype.
+    """
+    def __getitem__(self, index: typing.SupportsInt | typing.SupportsIndex) -> Image:
+        """
+        Return the image at the given index.
+        """
+    def __init__(self, capacity: typing.SupportsInt | typing.SupportsIndex, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
+        """
+        Create an empty batch with the given capacity (maximum number of images).
+        """
+    def __iter__(self) -> collections.abc.Iterator[Image]:
+        """
+        Return an iterator over the images in the batch.
+        """
+    def __len__(self) -> int:
+        """
+        Return the number of images currently in the batch.
+        """
+    def clear(self) -> None:
+        """
+        Remove all images from the batch; capacity is retained.
+        """
+    def popback(self, count: typing.SupportsInt | typing.SupportsIndex = 1) -> None:
+        """
+        Remove one or more images from the end of the batch.
+        """
+    @typing.overload
+    def pushback(self, image: Image) -> None:
+        """
+        Append a single image to the end of the batch.
+        """
+    @typing.overload
+    def pushback(self, images: collections.abc.Sequence[Image]) -> None:
+        """
+        Append multiple images to the end of the batch.
+        """
+    @property
+    def capacity(self) -> int:
+        """
+        Read-only property returning the maximum number of images the batch can hold.
+        """
+    @property
+    def device(self) -> eDeviceType:
+        """
+        Read-only property returning the device the batch resides on.
+        """
+    @property
+    def maxsize(self) -> tuple[int, int]:
+        """
+        Read-only property returning the (width, height) bounding box across all images.
+        """
+    @property
+    def uniqueformat(self) -> Format:
+        """
+        Read-only property returning the common format, or Format.NONE if heterogeneous/empty.
+        """
 class NormalizeFlags:
     """
     Members:
@@ -166,7 +347,7 @@ class Tensor:
         """
         Returns a tuple containing the DLPack device and device id for the tensor.
         """
-    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: eTensorLayout, dtype: eDataType, device: eDeviceType = ...) -> None:
+    def __init__(self, shape: collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], layout: eTensorLayout, dtype: eDataType, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
         """
         Constructs a tensor object.
         """
@@ -627,6 +808,43 @@ class eRemapType:
     @property
     def value(self) -> int:
         ...
+class eSwizzle:
+    """
+    Members:
+    
+      XYZW
+    
+      ZYXW
+    """
+    XYZW: typing.ClassVar[eSwizzle]  # value = <eSwizzle.XYZW: 0>
+    ZYXW: typing.ClassVar[eSwizzle]  # value = <eSwizzle.ZYXW: 1>
+    __members__: typing.ClassVar[dict[str, eSwizzle]]  # value = {'XYZW': <eSwizzle.XYZW: 0>, 'ZYXW': <eSwizzle.ZYXW: 1>}
+    def __eq__(self, other: typing.Any) -> bool:
+        ...
+    def __getstate__(self) -> int:
+        ...
+    def __hash__(self) -> int:
+        ...
+    def __index__(self) -> int:
+        ...
+    def __init__(self, value: typing.SupportsInt | typing.SupportsIndex) -> None:
+        ...
+    def __int__(self) -> int:
+        ...
+    def __ne__(self, other: typing.Any) -> bool:
+        ...
+    def __repr__(self) -> str:
+        ...
+    def __setstate__(self, state: typing.SupportsInt | typing.SupportsIndex) -> None:
+        ...
+    def __str__(self) -> str:
+        ...
+    @property
+    def name(self) -> str:
+        ...
+    @property
+    def value(self) -> int:
+        ...
 class eTensorLayout:
     """
     Members:
@@ -728,7 +946,7 @@ class eThresholdType:
     @property
     def value(self) -> int:
         ...
-def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Advanced Color Convert operation on the given HIP stream.
     
@@ -745,7 +963,7 @@ def advcvtcolor(src: Tensor, conversion_code: eColorConversionCode, color_spec: 
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, color_spec: eColorSpec, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Advanced Color Convert operation on the given HIP stream.
     
@@ -763,7 +981,15 @@ def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversion
                 Returns:
                     None
     """
-def bilateral_filter(src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def as_image(buffer: typing.Any, format: Format = ...) -> Image:
+    """
+    Wraps a DLPack-supported buffer as a rocpycv Image without copying.
+    """
+def as_images(buffers: collections.abc.Sequence[typing.Any], format: Format = ...) -> ImageBatchVarShape:
+    """
+    Wraps a list of DLPack-supported buffers as a rocpycv ImageBatchVarShape without copying.
+    """
+def bilateral_filter(src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Bilateral Filter operation on the given HIP stream.
     
@@ -783,7 +1009,7 @@ def bilateral_filter(src: Tensor, diameter: typing.SupportsInt | typing.Supports
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def bilateral_filter_into(dst: Tensor, src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def bilateral_filter_into(dst: Tensor, src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Bilateral Filter operation on the given HIP stream.
     
@@ -804,7 +1030,7 @@ def bilateral_filter_into(dst: Tensor, src: Tensor, diameter: typing.SupportsInt
                 Returns:
                     None
     """
-def bndbox(src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def bndbox(src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the BndBox operation on the given HIP stream.
     
@@ -820,7 +1046,7 @@ def bndbox(src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.Stream | None = Non
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def bndbox_into(dst: Tensor, src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def bndbox_into(dst: Tensor, src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the BndBox operation on the given HIP stream.
     
@@ -837,7 +1063,7 @@ def bndbox_into(dst: Tensor, src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.S
                 Returns:
                     None
     """
-def center_crop(src: Tensor, crop_size: tuple, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def center_crop(src: Tensor, crop_size: tuple, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Center Crop operation on the given HIP stream.
     
@@ -854,7 +1080,7 @@ def center_crop(src: Tensor, crop_size: tuple, stream: rocpycv.Stream | None = N
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def center_crop_into(dst: Tensor, src: Tensor, crop_size: tuple, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def center_crop_into(dst: Tensor, src: Tensor, crop_size: tuple, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Center Crop operation on the given HIP stream.
     
@@ -871,7 +1097,7 @@ def center_crop_into(dst: Tensor, src: Tensor, crop_size: tuple, stream: rocpycv
                 Returns:
                     None
     """
-def composite(foreground: Tensor, background: Tensor, fgmask: Tensor, outchannels: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def composite(foreground: Tensor, background: Tensor, fgmask: Tensor, outchannels: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Composite operation on the given HIP stream.
     
@@ -889,7 +1115,7 @@ def composite(foreground: Tensor, background: Tensor, fgmask: Tensor, outchannel
                 Returns:
                     rocpycv.Tensor: The output tensor with <outchannels> number of channels.
     """
-def composite_into(dst: Tensor, foreground: Tensor, background: Tensor, fgmask: Tensor, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def composite_into(dst: Tensor, foreground: Tensor, background: Tensor, fgmask: Tensor, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Composite operation on the given HIP stream.
     
@@ -907,7 +1133,7 @@ def composite_into(dst: Tensor, foreground: Tensor, background: Tensor, fgmask: 
                 Returns:
                     None
     """
-def convert_to(src: Tensor, dtype: eDataType, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def convert_to(src: Tensor, dtype: eDataType, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Convert To operation on the given HIP stream.
     
@@ -925,7 +1151,7 @@ def convert_to(src: Tensor, dtype: eDataType, alpha: typing.SupportsFloat | typi
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def convert_to_into(dst: Tensor, src: Tensor, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def convert_to_into(dst: Tensor, src: Tensor, alpha: typing.SupportsFloat | typing.SupportsIndex = 1.0, beta: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Convert To operation on the given HIP stream.
     
@@ -943,7 +1169,7 @@ def convert_to_into(dst: Tensor, src: Tensor, alpha: typing.SupportsFloat | typi
                 Returns:
                     None
     """
-def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, bottom: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, right: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def copymakeborder(src: Tensor, border_mode: eBorderType = eBorderType.eBorderType.CONSTANT, border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, bottom: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, right: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the CopyMakeBorder operation on the given HIP stream.
     
@@ -964,7 +1190,7 @@ def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: li
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = eBorderType.eBorderType.CONSTANT, border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the CopyMakeBorder operation on the given HIP stream.
     
@@ -984,7 +1210,7 @@ def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ...
                 Returns:
                     None
     """
-def custom_crop(src: Tensor, crop_rect: Box, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def custom_crop(src: Tensor, crop_rect: Box, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Custom Crop operation on the given HIP stream.
     
@@ -1001,7 +1227,7 @@ def custom_crop(src: Tensor, crop_rect: Box, stream: rocpycv.Stream | None = Non
                 Returns:
                     None
     """
-def custom_crop_into(dst: Tensor, src: Tensor, crop_rect: Box, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def custom_crop_into(dst: Tensor, src: Tensor, crop_rect: Box, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Custom Crop operation on the given HIP stream.
     
@@ -1017,7 +1243,7 @@ def custom_crop_into(dst: Tensor, src: Tensor, crop_rect: Box, stream: rocpycv.S
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def cvtcolor(src: Tensor, conversion_code: eColorConversionCode, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def cvtcolor(src: Tensor, conversion_code: eColorConversionCode, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Color Convert operation on the given HIP stream.
     
@@ -1033,7 +1259,7 @@ def cvtcolor(src: Tensor, conversion_code: eColorConversionCode, stream: rocpycv
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def cvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def cvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCode, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Color Convert operation on the given HIP stream.
     
@@ -1050,7 +1276,7 @@ def cvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversionCod
                 Returns:
                     None
     """
-def flip(src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def flip(src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Flip operation on the given HIP stream.
     
@@ -1066,7 +1292,7 @@ def flip(src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stre
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def flip_into(dst: Tensor, src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def flip_into(dst: Tensor, src: Tensor, flip_code: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Flip operation on the given HIP stream.
     
@@ -1087,7 +1313,7 @@ def from_dlpack(buffer: typing.Any, layout: eTensorLayout) -> Tensor:
     """
     Wraps a DLPack supported tensor in a rocpycv tensor.
     """
-def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Gamma Contrast operation on the given HIP stream.
     
@@ -1103,7 +1329,7 @@ def gamma_contrast(src: Tensor, gamma: typing.SupportsFloat | typing.SupportsInd
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: typing.SupportsFloat | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Gamma Contrast operation on the given HIP stream.
     
@@ -1120,7 +1346,7 @@ def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: typing.SupportsFloat | 
                 Returns:
                     None
     """
-def histogram(src: Tensor, mask: rocpycv.Tensor | None, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def histogram(src: Tensor, mask: rocpycv.Tensor | None, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Histogram operation on the given HIP stream.
     
@@ -1136,7 +1362,7 @@ def histogram(src: Tensor, mask: rocpycv.Tensor | None, stream: rocpycv.Stream |
                 Returns:
                     rocpycv.Tensor: Output tensor with width of 256 and a height equal to the batch size of input (1 if HWC input).
     """
-def histogram_into(dst: Tensor, src: Tensor, mask: rocpycv.Tensor | None, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def histogram_into(dst: Tensor, src: Tensor, mask: rocpycv.Tensor | None, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Histogram operation on the given HIP stream.
     
@@ -1153,7 +1379,7 @@ def histogram_into(dst: Tensor, src: Tensor, mask: rocpycv.Tensor | None, stream
                 Returns:
                     None
     """
-def nms(src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def nms(src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Non-maximum Suppression operation on the given HIP stream.
     
@@ -1171,7 +1397,7 @@ def nms(src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typ
                 Returns:
                     rocpycv.Tensor: The output tensor of shape [i, j], containing 1 (kept) or 0 (suppressed) for each bounding box (j) per batch (i). Results will be written to this tensor.
     """
-def nms_into(dst: Tensor, src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def nms_into(dst: Tensor, src: Tensor, scores: Tensor, score_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.1920928955078125e-07, iou_threshold: typing.SupportsFloat | typing.SupportsIndex = 1.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Non-maximum Suppression operation on the given HIP stream.
     
@@ -1190,7 +1416,7 @@ def nms_into(dst: Tensor, src: Tensor, scores: Tensor, score_threshold: typing.S
                 Returns:
                     None
     """
-def normalize(src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | typing.SupportsIndex | None = None, globalscale: typing.SupportsFloat | typing.SupportsIndex = 1.0, globalshift: typing.SupportsFloat | typing.SupportsIndex = 0.0, epsilon: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def normalize(src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | typing.SupportsIndex | None = None, globalscale: typing.SupportsFloat | typing.SupportsIndex = 1.0, globalshift: typing.SupportsFloat | typing.SupportsIndex = 0.0, epsilon: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Normalize operation on the given HIP stream.
     
@@ -1211,7 +1437,7 @@ def normalize(src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsIn
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | typing.SupportsIndex | None = None, globalscale: typing.SupportsFloat | typing.SupportsIndex = 1.0, globalshift: typing.SupportsFloat | typing.SupportsIndex = 0.0, epsilon: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags: typing.SupportsInt | typing.SupportsIndex | None = None, globalscale: typing.SupportsFloat | typing.SupportsIndex = 1.0, globalshift: typing.SupportsFloat | typing.SupportsIndex = 0.0, epsilon: typing.SupportsFloat | typing.SupportsIndex = 0.0, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                   Executes the Normalize operation on the given HIP stream.
       
@@ -1233,7 +1459,7 @@ def normalize_into(dst: Tensor, src: Tensor, base: Tensor, scale: Tensor, flags:
                   Returns:
                       None
     """
-def reformat(input: Tensor, out_layout: eTensorLayout, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def reformat(input: Tensor, out_layout: eTensorLayout, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Reformat operation and returns the result as a new tensor.
     
@@ -1249,7 +1475,7 @@ def reformat(input: Tensor, out_layout: eTensorLayout, stream: rocpycv.Stream | 
                 Returns:
                     rocpycv.Tensor: The reformatted tensor.
     """
-def reformat_into(output: Tensor, input: Tensor, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def reformat_into(output: Tensor, input: Tensor, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Reformat operation on the given HIP stream.
     
@@ -1265,7 +1491,7 @@ def reformat_into(output: Tensor, input: Tensor, stream: rocpycv.Stream | None =
                 Returns:
                     None
     """
-def remap(src: Tensor, map: Tensor, in_interpolation: eInterpolationType, map_interpolation: eInterpolationType, map_value_type: eRemapType, align_corners: bool, border_type: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def remap(src: Tensor, map: Tensor, in_interpolation: eInterpolationType, map_interpolation: eInterpolationType, map_value_type: eRemapType, align_corners: bool, border_type: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Remap operation on the given HIP stream.
     
@@ -1287,7 +1513,7 @@ def remap(src: Tensor, map: Tensor, in_interpolation: eInterpolationType, map_in
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def remap_into(dst: Tensor, src: Tensor, map: Tensor, in_interpolation: eInterpolationType, map_interpolation: eInterpolationType, map_value_type: eRemapType, align_corners: bool, border_type: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def remap_into(dst: Tensor, src: Tensor, map: Tensor, in_interpolation: eInterpolationType, map_interpolation: eInterpolationType, map_value_type: eRemapType, align_corners: bool, border_type: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Remap operation on the given HIP stream.
     
@@ -1310,7 +1536,7 @@ def remap_into(dst: Tensor, src: Tensor, map: Tensor, in_interpolation: eInterpo
                 Returns:
                     None
     """
-def resize(src: Tensor, shape: tuple, interp: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def resize(src: Tensor, shape: tuple, interp: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Resize operation on the given HIP stream.
     
@@ -1327,7 +1553,7 @@ def resize(src: Tensor, shape: tuple, interp: eInterpolationType, stream: rocpyc
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def resize_into(dst: Tensor, src: Tensor, interp: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def resize_into(dst: Tensor, src: Tensor, interp: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Resize operation on the given HIP stream.
     
@@ -1344,7 +1570,7 @@ def resize_into(dst: Tensor, src: Tensor, interp: eInterpolationType, stream: ro
                 Returns:
                     None
     """
-def rotate(src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def rotate(src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Rotate operation on the given HIP stream.
     
@@ -1362,7 +1588,7 @@ def rotate(src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, 
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def rotate_into(dst: Tensor, src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def rotate_into(dst: Tensor, src: Tensor, angle_deg: typing.SupportsFloat | typing.SupportsIndex, shift: tuple, interpolation: eInterpolationType, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Rotate operation on the given HIP stream.
     
@@ -1381,7 +1607,7 @@ def rotate_into(dst: Tensor, src: Tensor, angle_deg: typing.SupportsFloat | typi
                 Returns:
                     None
     """
-def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt | typing.SupportsIndex, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt | typing.SupportsIndex, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Thresholding operation on the given HIP stream.
     
@@ -1397,7 +1623,7 @@ def threshold(src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
     """
-def threshold_into(dst: Tensor, src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt | typing.SupportsIndex, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def threshold_into(dst: Tensor, src: Tensor, thresh: Tensor, maxVal: Tensor, maxBatchSize: typing.SupportsInt | typing.SupportsIndex, threshType: eThresholdType, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Thresholding operation on the given HIP stream.
     
@@ -1414,7 +1640,7 @@ def threshold_into(dst: Tensor, src: Tensor, thresh: Tensor, maxVal: Tensor, max
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
     """
-def warp_affine(src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def warp_affine(src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Warp Affine operation on the given HIP stream.
     
@@ -1434,7 +1660,7 @@ def warp_affine(src: Tensor, xform: list, inverted: bool, interp: eInterpolation
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def warp_affine_into(dst: Tensor, src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def warp_affine_into(dst: Tensor, src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Warp Affine operation on the given HIP stream.
     
@@ -1455,7 +1681,7 @@ def warp_affine_into(dst: Tensor, src: Tensor, xform: list, inverted: bool, inte
                 Returns:
                     None
     """
-def warp_perspective(src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def warp_perspective(src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> Tensor:
     """
                 Executes the Warp Perspective operation on the given HIP stream.
     
@@ -1475,7 +1701,7 @@ def warp_perspective(src: Tensor, xform: list, inverted: bool, interp: eInterpol
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def warp_perspective_into(dst: Tensor, src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def warp_perspective_into(dst: Tensor, src: Tensor, xform: list, inverted: bool, interp: eInterpolationType, border_mode: eBorderType, border_value: list, stream: rocpycv.Stream | None = None, device: eDeviceType = eDeviceType.eDeviceType.GPU) -> None:
     """
                 Executes the Warp Perspective operation on the given HIP stream.
     
@@ -1554,6 +1780,8 @@ U32: eDataType  # value = <eDataType.U32: 4>
 U8: eDataType  # value = <eDataType.U8: 0>
 WRAP: eBorderType  # value = <eBorderType.WRAP: 4>
 X: eAxis  # value = <eAxis.X: 0>
+XYZW: eSwizzle  # value = <eSwizzle.XYZW: 0>
 Y: eAxis  # value = <eAxis.Y: 1>
 YUV: eChannelType  # value = <eChannelType.YUV: 4>
 YVU: eChannelType  # value = <eChannelType.YVU: 8>
+ZYXW: eSwizzle  # value = <eSwizzle.ZYXW: 1>

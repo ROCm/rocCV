@@ -25,7 +25,15 @@ THE SOFTWARE.
 #include <core/util_enums.h>
 #include <operator_types.h>
 
+#include <core/image_format.hpp>
+
 void PyEnums::Export(py::module& m) {
+    // eSwizzle Enum Bindings
+    py::enum_<roccv::eSwizzle>(m, "eSwizzle")
+        .value("XYZW", roccv::eSwizzle::XYZW)
+        .value("ZYXW", roccv::eSwizzle::ZYXW)
+        .export_values();
+
     // eTensorLayout Enum Bindings
     py::enum_<eTensorLayout>(m, "eTensorLayout")
         .value("NHWC", TENSOR_LAYOUT_NHWC)

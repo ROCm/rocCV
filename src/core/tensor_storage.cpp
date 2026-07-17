@@ -22,7 +22,6 @@
 #include "core/tensor_storage.hpp"
 
 #include "core/detail/context.hpp"
-#include "core/hip_assert.h"
 
 namespace roccv {
 TensorStorage::TensorStorage(void* data, eDeviceType device, eOwnership ownership)

@@ -22,7 +22,7 @@ THE SOFTWARE.
 
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_brightness_contrast.hpp>
 
 #include "test_helpers.hpp"
@@ -61,8 +61,8 @@ std::vector<BT_DEST> GoldenBrightnessContrast(std::vector<BT_SRC>& input, int32_
     std::vector<BT_DEST> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<SRC_DT> src(input, batchSize, width, height);
-    ImageWrapper<DEST_DT> dst(output, batchSize, width, height);
+    TensorWrapper<SRC_DT> src(input, batchSize, width, height);
+    TensorWrapper<DEST_DT> dst(output, batchSize, width, height);
 
     using work_type = detail::MakeType<BC_DT, detail::NumElements<DEST_DT>>;
 

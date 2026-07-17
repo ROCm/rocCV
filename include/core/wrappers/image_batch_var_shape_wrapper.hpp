@@ -1,0 +1,119 @@
+/*
+ * Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#pragma once
+
+#include <hip/hip_runtime.h>
+
+#include <cassert>
+#include <cstdint>
+
+#include "core/detail/type_traits.hpp"
+#include "core/image_batch_data.hpp"
+#include "core/image_buffer.hpp"
+
+namespace roccv {
+
+/**
+ * @brief ImageBatchVarShapeWrapper is a non-owning, kernel-friendly view over an ImageBatchVarShape's
+ * descriptor table. It satisfies the same wrapper concept as TensorWrapper<T>
+ * (ValueType, at(n,h,w,c), width(n), height(n), batches(), channels()) so it composes with
+ * BorderWrapper / InterpolationWrapper unchanged.
+ *
+ * Single-plane interleaved (NHWC-style) only — ImageBatchVarShape rejects multi-plane images
+ * at pushBack, and channel count is derived from T via detail::NumElements<T>.
+ *
+ * Pointer residency follows the snapshot it is built from: for a GPU batch
+ * (ImageBatchVarShapeDataStridedHip) m_imageList is a device pointer, so the wrapper is usable from
+ * device code; for a CPU batch (ImageBatchVarShapeDataStridedHost) it is a host pointer, usable from
+ * host code. Every at()/width()/height() call dereferences it, so the caller must run the wrapper on
+ * the side matching the snapshot's residency.
+ *
+ * @tparam T The datatype of an individual pixel (e.g. uchar1, uchar3, uchar4, float1, float4).
+ */
+template <typename T>
+class ImageBatchVarShapeWrapper {
+   public:
+    using ValueType = T;
+    using BaseType = detail::BaseType<T>;
+
+    ImageBatchVarShapeWrapper() = default;
+
+    /**
+     * @brief Creates a ImageBatchVarShapeWrapper from a varshape batch data snapshot.
+     *
+     * Accepts either residency through the common ImageBatchVarShapeDataStrided base — a GPU
+     * (...Hip) snapshot yields a device-usable wrapper, a CPU (...Host) snapshot a host-usable one.
+     *
+     * @param data The exported descriptor table from ImageBatchVarShape::exportData(stream).
+     */
+    __host__ ImageBatchVarShapeWrapper(const ImageBatchVarShapeDataStrided& data)
+        : m_imageList(data.imageList()), m_numImages(data.numImages()) {}
+
+    /**
+     * @brief Returns a reference to data at given image-batch coordinates.
+     *
+     * @param n Batch index.
+     * @param h Row index within image n.
+     * @param w Column index within image n.
+     * @param c Channel index within the pixel.
+     * @return A reference to the underlying pixel-channel value.
+     */
+    __device__ __host__ T& at(int64_t n, int64_t h, int64_t w, int64_t c) { return *doGetPtr(n, h, w, c); }
+
+    __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const { return *doGetPtr(n, h, w, c); }
+
+    /**
+     * @brief Width of the image at batch index n.
+     */
+    __device__ __host__ inline int64_t width(int64_t n) const { return m_imageList[n].planes[0].width; }
+
+    /**
+     * @brief Height of the image at batch index n.
+     */
+    __device__ __host__ inline int64_t height(int64_t n) const { return m_imageList[n].planes[0].height; }
+
+    /**
+     * @brief Number of images in the batch.
+     */
+    __device__ __host__ inline int64_t batches() const { return m_numImages; }
+
+    /**
+     * @brief Number of channels per pixel. Derived from T, identical across all images in v1.
+     */
+    __device__ __host__ inline int64_t channels() const { return detail::NumElements<T>; }
+
+   private:
+    __device__ __host__ inline T* doGetPtr(int64_t n, int64_t h, int64_t w, int64_t c) const {
+        // Single-plane interleaved NHWC layout: pixel stride is sizeof(T), channel stride is
+        // sizeof(BaseType). Match TensorWrapper<T>::at semantics — returns a T* offset to (h, w)
+        // and additionally shifted by c channels.
+        const ImagePlaneStrided& p = m_imageList[n].planes[0];
+        unsigned char* addr =
+            reinterpret_cast<unsigned char*>(p.basePtr) + h * p.rowStride + w * sizeof(T) + c * sizeof(BaseType);
+        return reinterpret_cast<T*>(addr);
+    }
+
+    const ImageBufferStrided* m_imageList = nullptr;
+    int32_t m_numImages = 0;
+};
+
+}  // namespace roccv

@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include <core/detail/type_traits.hpp>
 #include <core/detail/vector_utils.hpp>
 #include <core/wrappers/border_wrapper.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <op_bilateral_filter.hpp>
 
 #include "test_helpers.hpp"
@@ -51,8 +51,8 @@ namespace {
 template <typename T, eBorderType borderMode, typename BT = detail::BaseType<T>>
 void GenerateGoldenBilateral(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, Size2D imageSize,
                              int diameter, float sigmaColor, float sigmaSpace, T borderValue) {
-    BorderWrapper<T, borderMode> src(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
-    ImageWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
+    auto src = MakeBorderWrapper<borderMode>(TensorWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
+    TensorWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
     using namespace roccv::detail;
     using Worktype = MakeType<float, NumElements<T>>;
 
@@ -179,9 +179,9 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 0, 50.0f, 1.2f, {0.0, 0.0, 0.0, 0.0},
                                                             eDeviceType::GPU)));
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(2, 20, 20, FMT_RGB8, -1, 50.0f, 1.2f,
-                                                             {0.0, 0.0, 0.0, 0.0}, eDeviceType::GPU)));
-    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(1, 24, 24, FMT_F32, 0, 500.0f, 1.2f,
-                                                         {500.0, 500.0, 0.0, 0.0}, eDeviceType::GPU)));
+                                                              {0.0, 0.0, 0.0, 0.0}, eDeviceType::GPU)));
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(1, 24, 24, FMT_F32, 0, 500.0f, 1.2f, {500.0, 500.0, 0.0, 0.0},
+                                                         eDeviceType::GPU)));
 
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 4, 50.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::GPU)));
@@ -288,9 +288,9 @@ int main(int argc, char** argv) {
     TEST_CASE((TestCorrectness<uchar, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 0, 50.0f, 1.2f, {0.0, 0.0, 0.0, 0.0},
                                                             eDeviceType::CPU)));
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_REPLICATE>(2, 20, 20, FMT_RGB8, -1, 50.0f, 1.2f,
-                                                             {0.0, 0.0, 0.0, 0.0}, eDeviceType::CPU)));
-    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(1, 24, 24, FMT_F32, 0, 500.0f, 1.2f,
-                                                         {500.0, 500.0, 0.0, 0.0}, eDeviceType::CPU)));
+                                                              {0.0, 0.0, 0.0, 0.0}, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectness<float1, BORDER_TYPE_WRAP>(1, 24, 24, FMT_F32, 0, 500.0f, 1.2f, {500.0, 500.0, 0.0, 0.0},
+                                                         eDeviceType::CPU)));
 
     TEST_CASE((TestCorrectness<uchar3, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_RGB8, 4, 50.0f, 3.0f, {0.0, 0.0, 0.0, 0.0},
                                                              eDeviceType::CPU)));

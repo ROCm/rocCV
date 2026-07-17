@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include <functional>
 
 #include <hip/hip_runtime.h>
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
@@ -40,8 +40,8 @@ void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const
     using SRC_DT_NC = detail::MakeType<SRC_DT, NC>;
     using DST_DT_NC = detail::MakeType<DST_DT, NC>;
 
-    ImageWrapper<SRC_DT_NC> inputWrapper(input);
-    ImageWrapper<DST_DT_NC> outputWrapper(output);
+    TensorWrapper<SRC_DT_NC> inputWrapper(input);
+    TensorWrapper<DST_DT_NC> outputWrapper(output);
 
     using SRC_BT = detail::BaseType<SRC_DT>;
     using DST_BT = detail::BaseType<DST_DT>;

@@ -48,6 +48,9 @@ THE SOFTWARE.
 #include "operators/py_op_warp_perspective.hpp"
 #include "py_enums.hpp"
 #include "py_exception.hpp"
+#include "py_image.hpp"
+#include "py_image_batch_var_shape.hpp"
+#include "py_image_format.hpp"
 #include "py_stream.hpp"
 #include "py_structs.hpp"
 #include "py_tensor.hpp"
@@ -61,8 +64,11 @@ PYBIND11_MODULE(rocpycv, m) {
     PyException::Export(m);
     PyEnums::Export(m);
     PyStructs::Export(m);
+    PyImageFormat::Export(m);
     PyStream::Export(m);
     PyTensor::Export(m);
+    PyImage::Export(m);
+    PyImageBatchVarShape::Export(m);
     PyOpCustomCrop::Export(m);
     PyOpNonMaxSuppression::Export(m);
     PyOpNormalize::Export(m);

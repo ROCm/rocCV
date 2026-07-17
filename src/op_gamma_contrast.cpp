@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include "common/math_vector.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/tensor.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/gamma_contrast_device.hpp"
 #include "kernels/host/gamma_contrast_host.hpp"
 
@@ -43,8 +43,8 @@ namespace roccv {
 template <typename T>
 void dispatch_gamma_contrast_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, float gamma,
                                    eDeviceType device) {
-    ImageWrapper<T> inputWrapper(input);
-    ImageWrapper<T> outputWrapper(output);
+    TensorWrapper<T> inputWrapper(input);
+    TensorWrapper<T> outputWrapper(output);
 
     if (device == eDeviceType::GPU) {
         dim3 block(64, 16);

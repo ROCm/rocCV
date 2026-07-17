@@ -20,7 +20,7 @@
  */
 
 #include <core/detail/type_traits.hpp>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 
 #include "test_helpers.hpp"
 
@@ -37,11 +37,11 @@ void TestCorrectness(int numImages, Size2D size) {
     std::vector<BT> ref(numElements);
     FillVector(ref);
 
-    ImageWrapper<T> input(ref, numImages, size.w, size.h);
+    TensorWrapper<T> input(ref, numImages, size.w, size.h);
     std::vector<BT> actual;
 
     // To determine if coordinates are pointing to the proper values in memory, iterate through the reference vector
-    // element-by-element and iterate through the ImageWrapper coordinate-wise. All values should be the same if
+    // element-by-element and iterate through the TensorWrapper coordinate-wise. All values should be the same if
     // everything lines up.
 
     for (int b = 0; b < numImages; ++b) {
@@ -58,9 +58,9 @@ void TestCorrectness(int numImages, Size2D size) {
 }
 
 template <typename T>
-void TestImageWrapperConstructor(int imageCount, Size2D imageSize, ImageFormat format) {
+void TestTensorWrapperConstructor(int imageCount, Size2D imageSize, ImageFormat format) {
     Tensor input(imageCount, imageSize, format);
-    ImageWrapper<T> wrapper(input);
+    TensorWrapper<T> wrapper(input);
 
     EXPECT_EQ(wrapper.batches(), imageCount);
     EXPECT_EQ(wrapper.channels(), format.channels());
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     (void)argv;
     TEST_CASES_BEGIN();
 
-    TEST_CASE(TestImageWrapperConstructor<uchar3>(2, {54, 67}, FMT_RGB8));
+    TEST_CASE(TestTensorWrapperConstructor<uchar3>(2, {54, 67}, FMT_RGB8));
 
     TEST_CASE(TestCorrectness<uchar1>(1, {10, 10}));
     TEST_CASE(TestCorrectness<uchar3>(2, {43, 9}));

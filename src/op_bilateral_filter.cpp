@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/wrappers/border_wrapper.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/bilateral_filter_device.hpp"
 #include "kernels/host/bilateral_filter_host.hpp"
 
@@ -43,8 +43,8 @@ BilateralFilter::~BilateralFilter() {}
 template <typename T, eBorderType B>
 void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &input, const Tensor &output, int diameter,
                                            float sigmaColor, float sigmaSpace, T borderValue, eDeviceType device) {
-    BorderWrapper<T, B> inputWrapper(input, borderValue);
-    ImageWrapper<T> outputWrapper(output);
+    auto inputWrapper = MakeBorderWrapper<B>(TensorWrapper<T>(input), borderValue);
+    TensorWrapper<T> outputWrapper(output);
 
     if (outputWrapper.channels() > 4 || outputWrapper.channels() < 1) {
         throw Exception("Invalid channel size: cannot be greater than 4 or less than 1.", eStatusType::OUT_OF_BOUNDS);
@@ -61,8 +61,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         sigmaSpace = 1.0f;
     }
 
-    const int radius =
-        (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
+    const int radius = (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
 
     float spaceCoeff = -1 / (2 * sigmaSpace * sigmaSpace);
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
@@ -89,9 +88,9 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
 
         for (int j = 0; j < divisor; j++) {
             for (int i = 0; i < dividend; i++) {
-                threads.push_back(std::thread(Kernels::Host::bilateral_filter<T, BorderWrapper<T, B>, ImageWrapper<T>>,
-                                              inputWrapper, outputWrapper, radius, rollingHeight, rollingWidth,
-                                              prevHeight, prevWidth, spaceCoeff, colorCoeff));
+                threads.push_back(std::thread(
+                    Kernels::Host::bilateral_filter<T, decltype(inputWrapper), TensorWrapper<T>>, inputWrapper,
+                    outputWrapper, radius, rollingHeight, rollingWidth, prevHeight, prevWidth, spaceCoeff, colorCoeff));
                 prevWidth = rollingWidth;
                 rollingWidth += factorW;
             }
