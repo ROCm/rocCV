@@ -29,8 +29,19 @@ THE SOFTWARE.
 #include <core/tensor.hpp>
 #include <memory>
 
-namespace py = pybind11;
-
+/**
+ * @brief A Python-facing wrapper for roccv::Tensor, providing DLPack interoperability and Pybind11 integration.
+ *
+ * The PyTensor class serves as a container around roccv::Tensor, exposing its functionality to Python. It supports
+ * construction from shape, data type, layout, and device information, as well as wrapping existing tensors or
+ * external DLPack-managed tensors. The class ensures correct lifetime handling for external resources (such as those
+ * transferred via DLPack) and enables seamless data movement between devices (CPU/GPU). PyTensor also supplies
+ * utilities to export to and import from DLPack capsules, making it suitable for zero-copy interoperability with
+ * frameworks like PyTorch, NumPy, or TensorFlow.
+ *
+ * Usage scenarios include direct creation from Python, import/export to DLPack, device copying, and serving as a
+ * type-safe bridge between Python and C++ tensor operations.
+ */
 class PyTensor : public std::enable_shared_from_this<PyTensor> {
    public:
     /**
@@ -79,22 +90,51 @@ class PyTensor : public std::enable_shared_from_this<PyTensor> {
     std::shared_ptr<PyTensor> copyTo(eDeviceType device);
 
     /**
-     * @brief Creates a new tensor given a capsule containing a DLManagedTensor.
+     * @brief Creates a new PyTensor by consuming an external DLPack capsule.
      *
-     * @param src A capsule containing a DLManagedTensor.
-     * @param layout The layout for the new tensor.
-     * @return std::shared_ptr<PyTensor>
+     * This static method constructs a PyTensor that wraps a new roccv::Tensor allocated
+     * from the contents of a DLPack capsule (i.e., an object supporting the __dlpack__ protocol),
+     * typically exported from other frameworks such as PyTorch, NumPy, or TVM.
+     * The shape and datatype are taken from the capsule's DLTensor metadata, while the layout
+     * must be specified explicitly, since DLPack does not encode layout.
+     *
+     * Ownership of the underlying DLPack-managed memory is transferred to the returned PyTensor,
+     * such that when the PyTensor is destroyed (and no Python references remain), the deleter
+     * from the DLPack capsule is called, ensuring correct cross-framework resource management.
+     *
+     * @param src   Python object supporting the __dlpack__() method. This can be a capsule returned by
+     *              __dlpack__() or any object exposing the DLPack consumer protocol.
+     * @param layout The tensor layout to use for the new roccv::Tensor (e.g., NHWC, NCHW, etc.).
+     * @return      A std::shared_ptr<PyTensor> wrapping a new tensor that shares memory with the DLPack object.
+     *
+     * @throws std::runtime_error if the object does not support the DLPack protocol,
+     *         if the capsule is invalid or missing, or if conversion fails in any other way.
+     *
+     * @note The resulting tensor will have the same shape, datatype, device, and (if present) strides
+     *       as encoded in the DLPack capsule, but the layout must be provided by the caller.
      */
     static std::shared_ptr<PyTensor> fromDLPack(pybind11::object src, eTensorLayout layout);
 
     /**
-     * @brief Creates a DLManagedTensor contained in a capsule from the tensor.
+     * @brief Exports this tensor as a DLPack-compatible capsule.
      *
-     * @param stream Optional stream pointer value (used for pytorch).
+     * This method creates a DLPack DLManagedTensor wrapper for the current PyTensor,
+     * encapsulates it in a Python capsule with the "dltensor" name, and returns it.
+     * The resulting capsule can be consumed by any framework supporting the DLPack protocol
+     * for zero-copy tensor data sharing.
      *
-     * @return py::capsule
+     * The optional @p stream argument is present to satisfy the Pytorch DLPack consumer interface,
+     * but is ignored by this implementation currently.
+     *
+     * @param stream Optional stream pointer (typically unused, present for PyTorch DLPack compliance).
+     *
+     * @return py::capsule  A Python capsule containing the DLPack DLManagedTensor.
+     *
+     * @note The caller is responsible for transferring or managing ownership of the data
+     * (according to DLPack conventions), including calling the capsule consumer and ensuring
+     * that the deleter in DLManagedTensor is invoked only once.
      */
-    py::capsule toDLPack(py::object stream);
+    pybind11::capsule toDLPack(pybind11::object stream);
 
     /**
      * @brief Gets the strides of the tensor as a python list.
@@ -151,15 +191,28 @@ class PyTensor : public std::enable_shared_from_this<PyTensor> {
      * @return A python tuple with the first index corresponding to the device type, and the second index corresponding
      * to the device id.
      */
-    py::tuple getDLDevice();
+    pybind11::tuple getDLDevice();
 
     /**
      * @brief Exports this class in the provided module.
      *
      * @param m The python module to export this class to.
      */
-    static void Export(py::module& m);
+    static void Export(pybind11::module& m);
 
+    /**
+     * @brief Returns a new PyTensor with a reshaped tensor according to the specified shape and layout.
+     *
+     * Creates and returns a new PyTensor whose underlying tensor is a view or copy of this tensor,
+     * with the shape specified by newShape and the layout specified by layout. The number of elements
+     * in newShape must match the number of elements in the original tensor.
+     *
+     * @param newShape The new shape for the tensor.
+     * @param layout The new layout to use for the reshaped tensor.
+     * @return std::shared_ptr<PyTensor> A new PyTensor with the reshaped tensor.
+     *
+     * @throws std::runtime_error if the total number of elements does not match.
+     */
     std::shared_ptr<PyTensor> reshape(std::vector<int64_t> newShape, eTensorLayout layout);
 
    private:

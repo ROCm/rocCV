@@ -21,71 +21,138 @@ THE SOFTWARE.
 */
 
 #include <core/hip_assert.h>
+#include <getopt.h>
 
 #include <core/tensor.hpp>
 #include <iostream>
 #include <op_copy_make_border.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "common/utils.hpp"
+
 using namespace roccv;
+
+struct Config {
+    std::string inputPath;
+    std::string outputPath = "output";
+    int32_t top = 10;
+    int32_t left = 10;
+    float r = 0.0f, g = 0.0f, b = 0.0f, a = 255.0f;
+    eBorderType borderMode = eBorderType::BORDER_TYPE_CONSTANT;
+    int deviceId = 0;
+};
+
+void PrintUsage(const char* programName) {
+    // clang-format off
+    std::cout << "Usage: " << programName << " -i <input_image_or_directory> [options]\n\n"
+              << "Options:\n"
+              << "  -i, --input <path>      Input image or directory (required)\n"
+              << "  -o, --output <path>     Output file or directory (default: output/image_<index>.bmp)\n"
+              << "  -t, --top <pixels>      Top/bottom border size (default: 10)\n"
+              << "  -l, --left <pixels>     Left/right border size (default: 10)\n"
+              << "  -c, --color <r,g,b,a>   Border color as r,g,b,a (default: 0,0,0,255)\n"
+              << "  -m, --mode <mode>       Border mode: 0=CONSTANT, 1=REPLICATE, 2=REFLECT, 3=REFLECT101, 4=WRAP (default: CONSTANT)\n"
+              << "  -d, --device <id>       GPU device ID (default: 0)\n"
+              << "  -h, --help              Show this help message\n\n"
+              << "Example:\n"
+              << "  " << programName << " -i image.jpg -o bordered.png -t 20 -l 15 -c 255,0,0,255\n";
+    // clang-format on
+}
+
+bool ParseColor(const std::string& colorStr, float& r, float& g, float& b, float& a) {
+    return sscanf(colorStr.c_str(), "%f,%f,%f,%f", &r, &g, &b, &a) == 4;
+}
 
 /**
  * @brief Copy make border operation example.
+ *
+ * This sample demonstrates the usage of the CopyMakeBorder operator. It accepts either a single image file or a
+ * directory of images as the input path, and either a single file or a directory as the output path. If a directory is
+ * provided for the input, all supported images within the directory will be processed as a batch. Similarly, if the
+ * output path is a directory, all resulting images will be written to that directory. For each image, a border is
+ * created based on the specified border mode and border value.
+ *
+ * If <image_or_directory> is a directory, a batch operation will occur on every image in the directory.
+ * If <output_file_or_directory> is a directory, the output images will be written into that directory.
  */
 int main(int argc, char** argv) {
-    if (argc != 11) {
-        std::cerr << "Usage: " << argv[0]
-                  << " <image_filename> <output_filename> <top> <left> <r> <g> <b> <a> <border_mode> <device_id>"
-                  << std::endl;
+    Config config;
+
+    static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
+                                          {"output", required_argument, nullptr, 'o'},
+                                          {"top", required_argument, nullptr, 't'},
+                                          {"left", required_argument, nullptr, 'l'},
+                                          {"color", required_argument, nullptr, 'c'},
+                                          {"mode", required_argument, nullptr, 'm'},
+                                          {"device", required_argument, nullptr, 'd'},
+                                          {"help", no_argument, nullptr, 'h'},
+                                          {nullptr, 0, nullptr, 0}};
+
+    int opt;
+    while ((opt = getopt_long(argc, argv, "i:o:t:l:c:m:d:h", longOptions, nullptr)) != -1) {
+        switch (opt) {
+            case 'i':
+                config.inputPath = optarg;
+                break;
+            case 'o':
+                config.outputPath = optarg;
+                break;
+            case 't':
+                config.top = std::stoi(optarg);
+                break;
+            case 'l':
+                config.left = std::stoi(optarg);
+                break;
+            case 'c':
+                if (!ParseColor(optarg, config.r, config.g, config.b, config.a)) {
+                    std::cerr << "Invalid color format. Use: r,g,b,a (e.g., 255,0,0,255)\n";
+                    return EXIT_FAILURE;
+                }
+                break;
+            case 'm':
+                config.borderMode = static_cast<eBorderType>(std::stoi(optarg));
+                break;
+            case 'd':
+                config.deviceId = std::stoi(optarg);
+                break;
+            case 'h':
+                PrintUsage(argv[0]);
+                return EXIT_SUCCESS;
+            default:
+                PrintUsage(argv[0]);
+                return EXIT_FAILURE;
+        }
+    }
+
+    if (config.inputPath.empty()) {
+        std::cerr << "Error: Input path is required.\n\n";
+        PrintUsage(argv[0]);
         return EXIT_FAILURE;
     }
 
-    HIP_VALIDATE_NO_ERRORS(hipSetDevice(std::stoi(argv[10])));
+    CHECK_HIP_ERROR(hipSetDevice(config.deviceId));
 
-    int32_t top = std::stoi(argv[3]);
-    int32_t left = std::stoi(argv[4]);
-    float r = std::stof(argv[5]);
-    float g = std::stof(argv[6]);
-    float b = std::stof(argv[7]);
-    float a = std::stof(argv[8]);
-    eBorderType border_mode = static_cast<eBorderType>(std::stoi(argv[9]));
-
-    cv::Mat image_data = cv::imread(argv[1]);
-
-    // Create input/output tensors for the image.
-    TensorShape shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                      {1, image_data.rows, image_data.cols, image_data.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
-
-    TensorShape o_shape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC),
-                        {1, image_data.rows + top * 2, image_data.cols + left * 2, image_data.channels()});
-
-    Tensor d_in(shape, dtype);
-    Tensor d_out(o_shape, dtype);
-
+    // Create stream
     hipStream_t stream;
-    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
 
-    // Move image data to input tensor
-    size_t image_size = d_in.shape().size() * d_in.dtype().size();
-    auto d_input_data = d_in.exportData<TensorDataStrided>();
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpyAsync(d_input_data.basePtr(), image_data.data, image_size, hipMemcpyHostToDevice, stream));
+    // Load input image
+    Tensor input = LoadImages(stream, config.inputPath.c_str());
 
+    // Create output tensor
+    int64_t outputHeight = input.shape(input.layout().height_index()) + config.top * 2;
+    int64_t outputWidth = input.shape(input.layout().width_index()) + config.left * 2;
+    TensorShape outputShape(input.layout(), {input.shape(input.layout().batch_index()), outputHeight, outputWidth,
+                                             input.shape(input.layout().channels_index())});
+    Tensor output(outputShape, input.dtype());
+
+    // Create CopyMakeBorder operator
     CopyMakeBorder op;
-    op(stream, d_in, d_out, top, left, border_mode, {b, g, r, a});
+    op(stream, input, output, config.top, config.left, config.borderMode, {config.b, config.g, config.r, config.a});
 
-    // Move image data back to device
-    auto d_out_data = d_out.exportData<TensorDataStrided>();
-    size_t out_image_size = d_out.shape().size() * d_out.dtype().size();
-    std::vector<uint8_t> h_output(out_image_size);
-    HIP_VALIDATE_NO_ERRORS(
-        hipMemcpyAsync(h_output.data(), d_out_data.basePtr(), out_image_size, hipMemcpyDeviceToHost, stream));
+    WriteImages(stream, output, config.outputPath);
 
-    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-
-    cv::Mat output_image_data(image_data.rows + top * 2, image_data.cols + left * 2, CV_8UC3, h_output.data());
-    cv::imwrite(argv[2], output_image_data);
+    CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
 }

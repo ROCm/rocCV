@@ -21,12 +21,70 @@
 
 #pragma once
 
-#include <hip/hip_runtime.h>
-
+#include "core/detail/sampling_helpers.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "operator_types.h"
 
 namespace roccv {
+
+namespace detail {
+/**
+ * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT (edge pixels duplicated; not @c BORDER_REFLECT101).
+ * @param coord Possibly out-of-bounds coordinate along the axis (width or height index space).
+ * @param extent Positive extent of the axis (number of samples, e.g. image width or height).
+ * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
+ * @note Period is <tt>2 * extent</tt>. Implementation uses Euclidean modulo then
+ *       <tt>min(val, 2*extent - 1 - val)</tt>, which matches comparing @c val to @c extent with a ternary, without a
+ *       separate branch on @p extent alone. On device, a 32-bit remainder path is used when @p extent and @p coord are
+ *       in a safe range.
+ */
+__device__ __host__ inline int64_t reflect_border_coord_i64(int64_t coord, int64_t extent) {
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    constexpr int64_t kLim = int64_t{1} << 30;
+    if (extent > 0 && extent < kLim && coord > -kLim && coord < kLim) {
+        const int32_t e = static_cast<int32_t>(extent);
+        const int32_t scale = e * 2;
+        int32_t val = static_cast<int32_t>(coord) % scale;
+        if (val < 0) val += scale;
+        const int32_t inv = scale - 1 - val;
+        return static_cast<int64_t>(min_i32(val, inv));
+    }
+#endif
+    const int64_t scale = extent * 2;
+    const int64_t val = euclid_mod_i64(coord, scale);
+    const int64_t inv = scale - 1 - val;
+    return min_i64(val, inv);
+}
+
+/**
+ * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT101 (endpoints are not repeated in the reflection).
+ * @param coord Possibly out-of-bounds coordinate along the axis.
+ * @param extent Positive extent of the axis (number of samples). If @p extent is at most 1, returns @c 0.
+ * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
+ * @note Period is <tt>2 * extent - 2</tt> when @p extent is greater than 1. Uses Euclidean modulo then folds with
+ *       <tt>(extent - 1) - abs((extent - 1) - v)</tt>. On device, a 32-bit path applies when values fit a fixed bound.
+ */
+__device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, int64_t extent) {
+    if (extent <= 1) {
+        return 0;
+    }
+    const int64_t scale = 2 * extent - 2;
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+    constexpr int64_t kLim = int64_t{1} << 30;
+    if (extent < kLim && coord > -kLim && coord < kLim && scale > 0 && scale < kLim) {
+        const int32_t e = static_cast<int32_t>(extent);
+        const int32_t s = e * 2 - 2;
+        int32_t v = euclid_mod_i32(static_cast<int32_t>(coord), s);
+        const int32_t inner = (e - 1) - v;
+        const int32_t a = abs_i32(inner);
+        return static_cast<int64_t>((e - 1) - a);
+    }
+#endif
+    const int64_t v = euclid_mod_i64_fast(coord, scale);
+    const int64_t inner = (extent - 1) - v;
+    return (extent - 1) - abs_i64(inner);
+}
+}  // namespace detail
 
 /**
  * @brief Wrapper class for ImageWrapper. This extends the descriptors by defining behaviors for when tensor
@@ -55,6 +113,13 @@ class BorderWrapper {
      */
     BorderWrapper(ImageWrapper<T> image_wrapper, T border_value)
         : m_desc(image_wrapper), m_border_value(border_value) {}
+
+    /**
+     * @brief Sample the underlying image with no border logic. Caller must ensure coordinates are in-range.
+     */
+    __device__ __host__ inline const T at_inbounds(int64_t n, int64_t h, int64_t w, int64_t c) const {
+        return m_desc.at(n, h, w, c);
+    }
 
     /**
      * @brief Returns a reference to the underlying data given image coordinates. If the coordinates fall out of bounds,
@@ -91,48 +156,29 @@ class BorderWrapper {
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
-            int64_t scale = imgWidth * 2;
-            int64_t val = (w % scale + scale) % scale;
-            x = (val < imgWidth) ? val : scale - 1 - val;
-
-            scale = imgHeight * 2;
-            val = (h % scale + scale) % scale;
-            y = (val < imgHeight) ? val : scale - 1 - val;
+            if (w < 0 || w >= imgWidth) {
+                x = detail::reflect_border_coord_i64(w, imgWidth);
+            }
+            if (h < 0 || h >= imgHeight) {
+                y = detail::reflect_border_coord_i64(h, imgHeight);
+            }
         }
 
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT101) {
-            if (imgWidth == 1) {
-                x = 0;
-            } else {
-                int64_t scale = 2 * imgWidth - 2;
-                x = (w % scale + scale) % scale;
-                x = imgWidth - 1 - std::abs(imgWidth - 1 - x);
-            }
-
-            if (imgHeight == 1) {
-                y = 0;
-            } else {
-                int64_t scale = 2 * imgHeight - 2;
-                y = (h % scale + scale) % scale;
-                y = imgHeight - 1 - std::abs(imgHeight - 1 - y);
-            }
+            x = detail::reflect101_border_coord_i64(w, imgWidth);
+            y = detail::reflect101_border_coord_i64(h, imgHeight);
         }
 
-        // Replicate border type implementation
+        // Replicate: clamp to edge. Equivalent to per-axis OOB snap; min/max maps cleanly to GPU integer ops.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            x = std::clamp<int64_t>(w, 0, imgWidth - 1);
-            y = std::clamp<int64_t>(h, 0, imgHeight - 1);
+            x = detail::clamp_i64(w, 0, imgWidth - 1);
+            y = detail::clamp_i64(h, 0, imgHeight - 1);
         }
 
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
-            if (w < 0 || w >= imgWidth) {
-                x = (w % imgWidth + imgWidth) % imgWidth;
-            }
-
-            if (h < 0 || h >= imgHeight) {
-                y = (h % imgHeight + imgHeight) % imgHeight;
-            }
+            x = detail::euclid_mod_i64_fast(w, imgWidth);
+            y = detail::euclid_mod_i64_fast(h, imgHeight);
         }
 
         return m_desc.at(n, y, x, c);
@@ -160,7 +206,7 @@ class BorderWrapper {
     __device__ __host__ inline int64_t batches() const { return m_desc.batches(); }
 
     /**
-     * @brief Retries the number of channels in the image.
+     * @brief Retrieves the number of channels in the image.
      *
      * @return Image channels.
      */
