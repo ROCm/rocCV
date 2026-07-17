@@ -35,8 +35,8 @@ template <typename T, eBorderType B, eInterpolationType I>
 void dispatch_warp_affine_interp(hipStream_t stream, const Tensor &input, const Tensor &output,
                                  const AffineTransform affineInv, T borderValue, eDeviceType device) {
     ArrayWrapper<float, 6> transform(affineInv);
-    ImageWrapper<T> outputWrapper(output);
-    InterpolationWrapper<T, B, I> inputWrapper(input, borderValue);
+    TensorWrapper<T> outputWrapper(output);
+    auto inputWrapper = MakeInterpolationWrapper<I>(MakeBorderWrapper<B>(TensorWrapper<T>(input), borderValue));
 
     switch (device) {
         case eDeviceType::GPU: {

@@ -29,9 +29,9 @@ namespace Device {
  * @brief GPU kernel for CopyMakeBorder operator.
  *
  * @tparam SrcDesc Must be a BorderWrapper.
- * @tparam DstDesc Must be a ImageWrapper.
+ * @tparam DstDesc Must be a TensorWrapper.
  * @param src A BorderWrapper containing information for the input tensor.
- * @param dst A ImageWrapper containing information for the output tensor.
+ * @param dst A TensorWrapper containing information for the output tensor.
  * @param top The top pixel coordinate on the y-axis where the border should start.
  * @param left The left-most pixel coordinate on the x-axis where the border should start.
  * @return __global__

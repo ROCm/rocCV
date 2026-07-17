@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include <unordered_map>
 
 #include "common/validation_helpers.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/reformat_device.hpp"
 #include "kernels/host/reformat_host.hpp"
 
@@ -35,8 +35,8 @@ namespace roccv {
 namespace {
 template <int Channels, typename T>
 void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) {
-    ImageWrapper<T> inputWrap(input);
-    ImageWrapper<T> outputWrap(output);
+    TensorWrapper<T> inputWrap(input);
+    TensorWrapper<T> outputWrap(output);
 
     switch (device) {
         case eDeviceType::GPU: {

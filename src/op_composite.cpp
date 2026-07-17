@@ -24,7 +24,7 @@
 #include <functional>
 
 #include "common/validation_helpers.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/device/composite_device.hpp"
 #include "kernels/host/composite_host.hpp"
 
@@ -33,10 +33,10 @@ namespace roccv {
 template <typename SrcType, typename DstType, typename MaskType>
 void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, const Tensor& background,
                                  const Tensor& mask, const Tensor& output, eDeviceType device) {
-    ImageWrapper<SrcType> fgWrapper(foreground);
-    ImageWrapper<SrcType> bgWrapper(background);
-    ImageWrapper<MaskType> maskWrapper(mask);
-    ImageWrapper<DstType> outputWrapper(output);
+    TensorWrapper<SrcType> fgWrapper(foreground);
+    TensorWrapper<SrcType> bgWrapper(background);
+    TensorWrapper<MaskType> maskWrapper(mask);
+    TensorWrapper<DstType> outputWrapper(output);
 
     switch (device) {
         case eDeviceType::GPU: {

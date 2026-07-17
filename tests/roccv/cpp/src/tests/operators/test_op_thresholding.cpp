@@ -24,7 +24,7 @@ THE SOFTWARE.
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
 #include "core/detail/math/vectorized_type_math.hpp"
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <iostream>
 #include <op_thresholding.hpp>
 #include "operator_types.h"
@@ -59,8 +59,8 @@ std::vector<BT> GoldenBinaryThreshold(std::vector<BT>& input, int32_t batchSize,
     std::vector<BT> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
     
     for (int b = 0; b < batchSize; ++b) {
         double th = thresh[b];
@@ -88,8 +88,8 @@ std::vector<BT> GoldenBinaryInvThreshold(std::vector<BT>& input, int32_t batchSi
     std::vector<BT> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
     
     for (int b = 0; b < batchSize; ++b) {
         double th = thresh[b];
@@ -117,8 +117,8 @@ std::vector<BT> GoldenTruncThreshold(std::vector<BT>& input, int32_t batchSize, 
     std::vector<BT> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
     
     for (int b = 0; b < batchSize; ++b) {
         double th = thresh[b];
@@ -145,8 +145,8 @@ std::vector<BT> GoldenToZeroThreshold(std::vector<BT>& input, int32_t batchSize,
     std::vector<BT> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
     
     for (int b = 0; b < batchSize; ++b) {
         double th = thresh[b];
@@ -173,8 +173,8 @@ std::vector<BT> GoldenToZeroInvThreshold(std::vector<BT>& input, int32_t batchSi
     std::vector<BT> output(input.size());
 
     // Wrap input/output vectors for simplified data access
-    ImageWrapper<T> src(input, batchSize, width, height);
-    ImageWrapper<T> dst(output, batchSize, width, height);
+    TensorWrapper<T> src(input, batchSize, width, height);
+    TensorWrapper<T> dst(output, batchSize, width, height);
     
     for (int b = 0; b < batchSize; ++b) {
         double th = thresh[b];

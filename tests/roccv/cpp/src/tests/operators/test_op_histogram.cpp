@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 
 #include <algorithm>
-#include <core/wrappers/image_wrapper.hpp>
+#include <core/wrappers/tensor_wrapper.hpp>
 #include <iostream>
 #include <op_histogram.hpp>
 #include <optional>
@@ -57,7 +57,7 @@ std::vector<BT> GoldenHistogram(std::vector<uchar>& input, int32_t batchSize, in
     std::vector<BT> local_histogram(256);
 
     // Wrap the input vector for simplified data access
-    ImageWrapper<uchar> src(input, batchSize, width, height);
+    TensorWrapper<uchar> src(input, batchSize, width, height);
 
     for (int b = 0; b < batchSize; ++b) {
         std::fill(local_histogram.begin(), local_histogram.end(), 0);
@@ -94,8 +94,8 @@ std::vector<BT> GoldenHistogramMask(std::vector<uchar>& input, std::vector<uchar
     std::vector<BT> local_histogram(256);
 
     // Wrap input/mask vectors for simplified data access
-    ImageWrapper<uchar> src(input, batchSize, width, height);
-    ImageWrapper<uchar> maskWrap(mask, batchSize, width, height);
+    TensorWrapper<uchar> src(input, batchSize, width, height);
+    TensorWrapper<uchar> maskWrap(mask, batchSize, width, height);
 
     for (int b = 0; b < batchSize; ++b) {
         std::fill(local_histogram.begin(), local_histogram.end(), 0);

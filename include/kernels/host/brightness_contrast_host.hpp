@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 
 namespace Kernels {
 namespace Host {

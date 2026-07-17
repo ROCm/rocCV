@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/tensor.hpp"
-#include "core/wrappers/image_wrapper.hpp"
+#include "core/wrappers/tensor_wrapper.hpp"
 #include "kernels/common/adv_cvt_color_coefficients.hpp"
 #include "kernels/device/adv_cvt_color_device.hpp"
 #include "kernels/host/adv_cvt_color_host.hpp"
@@ -189,22 +189,22 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
             switch (conversionCode) {
                 case COLOR_BGR2YUV:
                     Kernels::Device::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output),
                                                               coeff, kDelta);
                     break;
                 case COLOR_RGB2YUV:
                     Kernels::Device::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output),
                                                               coeff, kDelta);
                     break;
                 case COLOR_YUV2BGR:
                     Kernels::Device::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output),
                                                               coeff, kDelta);
                     break;
                 case COLOR_YUV2RGB:
                     Kernels::Device::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar3>(output),
                                                               coeff, kDelta);
                     break;
                 default: throw Exception("Unsupported conversion code.", eStatusType::INVALID_COMBINATION);
@@ -215,26 +215,26 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
 
             if (outChannels == 3) {
                 if (bgr) {
-                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar3>, uchar3>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output),
+                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, TensorWrapper<uchar1>,
+                                                                     TensorWrapper<uchar3>, uchar3>
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar1>(input), TensorWrapper<uchar3>(output),
                                                               coeff, kDelta, uidx);
                 } else {
-                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar3>, uchar3>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output),
+                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, TensorWrapper<uchar1>,
+                                                                     TensorWrapper<uchar3>, uchar3>
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar1>(input), TensorWrapper<uchar3>(output),
                                                               coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
-                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar4>, uchar4>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output),
+                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, TensorWrapper<uchar1>,
+                                                                     TensorWrapper<uchar4>, uchar4>
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar1>(input), TensorWrapper<uchar4>(output),
                                                               coeff, kDelta, uidx);
                 } else {
-                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar4>, uchar4>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output),
+                    Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, TensorWrapper<uchar1>,
+                                                                     TensorWrapper<uchar4>, uchar4>
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar1>(input), TensorWrapper<uchar4>(output),
                                                               coeff, kDelta, uidx);
                 }
             }
@@ -245,21 +245,21 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
             if (inChannels == 3) {
                 if (bgr) {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar3, eSwizzle::ZYXW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar1>(output),
                                                               coeff, kDelta, uidx);
                 } else {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar3, eSwizzle::XYZW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar3>(input), TensorWrapper<uchar1>(output),
                                                               coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar4, eSwizzle::ZYXW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar4>(input), ImageWrapper<uchar1>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar4>(input), TensorWrapper<uchar1>(output),
                                                               coeff, kDelta, uidx);
                 } else {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar4, eSwizzle::XYZW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar4>(input), ImageWrapper<uchar1>(output),
+                        <<<gridSize, blockSize, 0, stream>>>(TensorWrapper<uchar4>(input), TensorWrapper<uchar1>(output),
                                                               coeff, kDelta, uidx);
                 }
             }
@@ -268,23 +268,23 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
         if (IsInterleaved444(conversionCode)) {
             switch (conversionCode) {
                 case COLOR_BGR2YUV:
-                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
+                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW>(TensorWrapper<uchar3>(input),
+                                                                                  TensorWrapper<uchar3>(output), coeff,
                                                                                   kDelta);
                     break;
                 case COLOR_RGB2YUV:
-                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
+                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW>(TensorWrapper<uchar3>(input),
+                                                                                  TensorWrapper<uchar3>(output), coeff,
                                                                                   kDelta);
                     break;
                 case COLOR_YUV2BGR:
-                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
+                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW>(TensorWrapper<uchar3>(input),
+                                                                                  TensorWrapper<uchar3>(output), coeff,
                                                                                   kDelta);
                     break;
                 case COLOR_YUV2RGB:
-                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
+                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW>(TensorWrapper<uchar3>(input),
+                                                                                  TensorWrapper<uchar3>(output), coeff,
                                                                                   kDelta);
                     break;
                 default: throw Exception("Unsupported conversion code.", eStatusType::INVALID_COMBINATION);
@@ -292,41 +292,41 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
         } else if (IsSemiPlanarToInterleaved(conversionCode)) {
             if (outChannels == 3) {
                 if (bgr) {
-                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar3>, uchar3>(
-                        ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output), coeff, kDelta, uidx);
+                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, TensorWrapper<uchar1>,
+                                                                   TensorWrapper<uchar3>, uchar3>(
+                        TensorWrapper<uchar1>(input), TensorWrapper<uchar3>(output), coeff, kDelta, uidx);
                 } else {
-                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar3>, uchar3>(
-                        ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output), coeff, kDelta, uidx);
+                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, TensorWrapper<uchar1>,
+                                                                   TensorWrapper<uchar3>, uchar3>(
+                        TensorWrapper<uchar1>(input), TensorWrapper<uchar3>(output), coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
-                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar4>, uchar4>(
-                        ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output), coeff, kDelta, uidx);
+                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, TensorWrapper<uchar1>,
+                                                                   TensorWrapper<uchar4>, uchar4>(
+                        TensorWrapper<uchar1>(input), TensorWrapper<uchar4>(output), coeff, kDelta, uidx);
                 } else {
-                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar4>, uchar4>(
-                        ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output), coeff, kDelta, uidx);
+                    Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, TensorWrapper<uchar1>,
+                                                                   TensorWrapper<uchar4>, uchar4>(
+                        TensorWrapper<uchar1>(input), TensorWrapper<uchar4>(output), coeff, kDelta, uidx);
                 }
             }
         } else {
             if (inChannels == 3) {
                 if (bgr) {
                     Kernels::Host::rgb_or_bgr_to_nv12_or_nv21_adv<uchar3, eSwizzle::ZYXW>(
-                        ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output), coeff, kDelta, uidx);
+                        TensorWrapper<uchar3>(input), TensorWrapper<uchar1>(output), coeff, kDelta, uidx);
                 } else {
                     Kernels::Host::rgb_or_bgr_to_nv12_or_nv21_adv<uchar3, eSwizzle::XYZW>(
-                        ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output), coeff, kDelta, uidx);
+                        TensorWrapper<uchar3>(input), TensorWrapper<uchar1>(output), coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
                     Kernels::Host::rgb_or_bgr_to_nv12_or_nv21_adv<uchar4, eSwizzle::ZYXW>(
-                        ImageWrapper<uchar4>(input), ImageWrapper<uchar1>(output), coeff, kDelta, uidx);
+                        TensorWrapper<uchar4>(input), TensorWrapper<uchar1>(output), coeff, kDelta, uidx);
                 } else {
                     Kernels::Host::rgb_or_bgr_to_nv12_or_nv21_adv<uchar4, eSwizzle::XYZW>(
-                        ImageWrapper<uchar4>(input), ImageWrapper<uchar1>(output), coeff, kDelta, uidx);
+                        TensorWrapper<uchar4>(input), TensorWrapper<uchar1>(output), coeff, kDelta, uidx);
                 }
             }
         }

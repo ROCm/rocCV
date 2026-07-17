@@ -50,13 +50,12 @@ std::vector<BT> GoldenResize(std::vector<detail::BaseType<T>> &input, int batchS
     size_t numOutputElements = batchSize * outputSize.w * outputSize.h * detail::NumElements<T>;
 
     std::vector<detail::BaseType<T>> output(numOutputElements);
-    ImageWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
+    TensorWrapper<T> outputWrap(output, batchSize, outputSize.w, outputSize.h);
 
     // Use the replicate (or clamping) border mode by default to handle out of bounds conditions with certain
     // interpolation modes.
-    InterpolationWrapper<T, eBorderType::BORDER_TYPE_REPLICATE, InterpType> inputWrap(
-        BorderWrapper<T, eBorderType::BORDER_TYPE_REPLICATE>(
-            ImageWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
+    auto inputWrap = MakeInterpolationWrapper<InterpType>(MakeBorderWrapper<eBorderType::BORDER_TYPE_REPLICATE>(
+        TensorWrapper<T>(input, batchSize, inputSize.w, inputSize.h), T{}));
 
     // Determine the scaling factor required to map from the output coordinates to the corresponding input coordinates
     // on both the x and y axes.
