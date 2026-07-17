@@ -8,6 +8,7 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 - Added `Reformat` operator.
 - Added `BrightnessContrast` operator.
 - Added `Gaussian` operator.
+- Added `AverageBlur` operator.
 - Dockerfile support for running rocCV in a container environment.
 
 ### Changed

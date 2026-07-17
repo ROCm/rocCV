@@ -13,6 +13,7 @@ The rocCV is a collection of the following computer vision operators that are su
     :header: "Operator", "Description", "Datatypes", "Layouts"
     
     "AdvCvtColor","Converts color spaces with explicit BT601/BT709/BT2020 coefficients, including NV12/NV21 paths.","U8","NHWC, HWC"
+    "AverageBlur","Applies an average filter.","U8, U16, S16, S32, F32", "NHWC, HWC"
     "BilateralFilter", "Applies a bilateral filter.", "U8", "NHWC, HWC"
     "BndBox","Draws bounding boxes on the images in a tensor.","U8","NHWC, HWC"
     "BrightnessContrast", "Adjusts the brightness and contrast on images in a tensor.", "U8, U16, S16, S32, F32", "NHWC, HWC"
