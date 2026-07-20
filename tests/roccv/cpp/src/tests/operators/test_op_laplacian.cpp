@@ -49,7 +49,7 @@ namespace {
  * @param[in] batchSize The number of images in the batch.
  * @param[in] width Image width.
  * @param[in] height Image height.
- * @param[in] ksize Aperture size. Must be 1 or 3.
+ * @param[in] ksize Aperture size for the second derivative filters. Must be 1 or 3.
  * @param[in] scale Scale factor for the Laplacian values.
  * @return Vector containing the results of the operation.
  */
@@ -99,7 +99,7 @@ std::vector<BT> GenerateGoldenLaplacian(std::vector<BT>& input, int32_t batchSiz
  * @param[in] width Width of each image in the batch.
  * @param[in] height Height of each image in the batch.
  * @param[in] format Image format.
- * @param[in] ksize Aperture size. Must be 1 or 3.
+ * @param[in] ksize Aperture size for the second derivative filters. Must be 1 or 3.
  * @param[in] scale Scale factor for the Laplacian values.
  * @param[in] device Device this correctness test should be run on.
  */
@@ -138,7 +138,7 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
 
     // Compare data in actual output versus the generated golden reference image
     // TODO check on delta
-    CompareVectorsNear(outputData, ref, 1);
+    CompareVectorsNear(outputData, ref, 1.0);
 }
 
 void TestNegativeLaplacian() {

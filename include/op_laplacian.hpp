@@ -67,7 +67,7 @@ class Laplacian final : public IOperator {
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.
      * @param[out] output Output tensor for storing modified image data.
-     * @param[in] ksize Aperture size to compute the second derivative filters. Must be 1 or 3.
+     * @param[in] ksize Aperture size used to compute the second derivative filters. Must be 1 or 3.
      * @param[in] scale Scale factor for the Laplacian values.
      * @param[in] borderMode A border type to identify the pixel extrapolation method.
      * @param[in] device The device to run this operator on. (Default: GPU)

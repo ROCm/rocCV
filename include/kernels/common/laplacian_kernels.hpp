@@ -28,18 +28,14 @@ constexpr int LaplaceKWidth = 3;
 constexpr int LaplaceKHeight = 3;
 
 struct LaplacianKernel {
-     constexpr LaplacianKernel& operator*=(float scale) {
+     LaplacianKernel& operator*=(float scale) {
           for (int i = 0; i < 9; i++) {
               m_kernel[i] *= scale;
           }
           return *this;
      }
 
-     constexpr float& operator[](int i) {
-          return m_kernel[i];
-     }
-
-     constexpr const float& operator[](int i) const {
+     __device__ __host__ const float& operator[](int i) const {
           return m_kernel[i];
      }
 

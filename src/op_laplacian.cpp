@@ -58,7 +58,6 @@ void Laplacian::operator()(hipStream_t stream, const roccv::Tensor &input, const
     } else if (ksize == 3) {
         kernel = LK3;
     }
-
     if (scale != 1) {
         kernel *= scale;
     }
