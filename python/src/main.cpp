@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "operators/py_op_cvt_color.hpp"
 #include "operators/py_op_flip.hpp"
 #include "operators/py_op_gamma_contrast.hpp"
+#include "operators/py_op_gaussian.hpp"
 #include "operators/py_op_histogram.hpp"
 #include "operators/py_op_non_max_suppression.hpp"
 #include "operators/py_op_normalize.hpp"
@@ -78,6 +79,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpBndBox::Export(m);
     PyOpBrightnessContrast::Export(m);
     PyOpGammaContrast::Export(m);
+    PyOpGaussian::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
     PyOpCenterCrop::Export(m);
