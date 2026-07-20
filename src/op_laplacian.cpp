@@ -28,10 +28,46 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "details/filter_2d.hpp"
-#include "kernels/common/laplacian_kernels.hpp"
+
+namespace {
+using namespace roccv;
+constexpr int LaplaceKWidth = 3;
+constexpr int LaplaceKHeight = 3;
+
+class LaplacianKernel {
+   public:
+    LaplacianKernel(const float (&kernel)[9]) {
+        for (int i = 0; i < 9; i++) {
+            m_kernel[i] = kernel[i];
+        }
+    }
+    LaplacianKernel& operator*=(float scale) {
+        for (int i = 0; i < 9; i++) {
+            m_kernel[i] *= scale;
+        }
+        return *this;
+    }
+    __device__ __host__ const float& operator[](int i) const { return m_kernel[i]; }
+
+   private:
+    float m_kernel[9] = {};
+};
+// clang-format off
+const LaplacianKernel LK1{
+    {0.0f,  1.0f, 0.0f,
+     1.0f, -4.0f, 1.0f,
+     0.0f,  1.0f, 0.0f}
+};
+const LaplacianKernel LK3{
+    {2.0f,  0.0f, 2.0f,
+     0.0f, -8.0f, 0.0f,
+     2.0f,  0.0f, 2.0f}
+};
+// clang-format on
+}  // namespace
 
 namespace roccv {
-void Laplacian::operator()(hipStream_t stream, const roccv::Tensor &input, const roccv::Tensor &output, int32_t ksize,
+void Laplacian::operator()(hipStream_t stream, const roccv::Tensor& input, const roccv::Tensor& output, int32_t ksize,
                            float scale, eBorderType borderMode, eDeviceType device) const {
     // Validate input tensor
     CHECK_TENSOR_DEVICE(input, device);
@@ -50,14 +86,8 @@ void Laplacian::operator()(hipStream_t stream, const roccv::Tensor &input, const
                                eStatusType::INVALID_VALUE);
     }
 
-    using namespace Kernels;
-    LaplacianKernel kernel;
-
-    if (ksize == 1) {
-        kernel = LK1;
-    } else if (ksize == 3) {
-        kernel = LK3;
-    }
+    // get the right kernel
+    LaplacianKernel kernel = (ksize == 1) ? LK1 : LK3;
     if (scale != 1) {
         kernel *= scale;
     }

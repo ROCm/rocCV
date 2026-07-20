@@ -137,7 +137,6 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, i
     std::vector<BT> ref = GenerateGoldenLaplacian<T, BorderMode>(inputData, batchSize, width, height, ksize, scale);
 
     // Compare data in actual output versus the generated golden reference image
-    // TODO check on delta
     CompareVectorsNear(outputData, ref, 1.0);
 }
 

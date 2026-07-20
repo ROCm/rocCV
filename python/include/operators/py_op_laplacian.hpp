@@ -22,38 +22,19 @@ THE SOFTWARE.
 
 #pragma once
 
-namespace Kernels {
+#include <operator_types.h>
+#include <pybind11/pybind11.h>
 
-constexpr int LaplaceKWidth = 3;
-constexpr int LaplaceKHeight = 3;
+#include "py_stream.hpp"
+#include "py_tensor.hpp"
 
-struct LaplacianKernel {
-     LaplacianKernel& operator*=(float scale) {
-          for (int i = 0; i < 9; i++) {
-              m_kernel[i] *= scale;
-          }
-          return *this;
-     }
+namespace py = pybind11;
 
-     __device__ __host__ const float& operator[](int i) const {
-          return m_kernel[i];
-     }
-
-     float m_kernel[9] = {};
+class PyOpLaplacian {
+   public:
+    static void Export(py::module& m);
+    static PyTensor Execute(PyTensor& input, int ksize, float scale, eBorderType borderMode,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
+    static void ExecuteInto(PyTensor& output, PyTensor& input, int ksize, float scale, eBorderType borderMode,
+                            std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device);
 };
-
-// clang-format off
-constexpr LaplacianKernel LK1 {
-     {0.0f,  1.0f, 0.0f,
-     1.0f, -4.0f, 1.0f,
-     0.0f,  1.0f, 0.0f}
-};
-
-constexpr LaplacianKernel LK3 { 
-     {2.0f,  0.0f, 2.0f,
-     0.0f, -8.0f, 0.0f,
-     2.0f,  0.0f, 2.0f}
-};
-// clang-format on
-
-}  // namespace Kernels

@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 namespace roccv {
 /**
- * @brief Class for managing the Brightness Contrast operator.
+ * @brief Class for managing the Laplacian operator.
  *
  */
 class Laplacian final : public IOperator {
