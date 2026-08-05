@@ -50,8 +50,8 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
     const auto width = input.shape()[input.shape().layout().width_index()];
 
     if (device == eDeviceType::GPU) {
-        dim3 block(64, 16);
-        dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y, outputWrapper.batches());
+        dim3 block = Kernels::Device::PackedBlock();
+        dim3 grid = Kernels::Device::PackedGrid<T>(width, height, outputWrapper.batches(), block);
 
         switch (m_threshType) {
             case THRESH_BINARY:

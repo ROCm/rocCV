@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
+#include "kernels/device/packed_apply.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
@@ -36,124 +37,130 @@ template <typename SrcWrapper, typename DstWrapper>
 __global__ void binary_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
                                roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
 
-    if (x_idx < output.width() && y_idx < output.height()) {
-        double th = thresh.at(z_idx);
-        double mv = maxVal.at(z_idx);
-        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const auto z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
+
+    // Threshold/max are per-image; fetch once per thread.
+    const double th = thresh.at(z_idx);
+    const double mv = maxVal.at(z_idx);
+
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? mv : 0;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
-        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
-    }
+        return outputVal;
+    });
 }
 
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void binary_inv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh,
                                    roccv::GenericTensorWrapper<double> maxVal) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
 
-    if (x_idx < output.width() && y_idx < output.height()) {
-        double th = thresh.at(z_idx);
-        double mv = maxVal.at(z_idx);
-        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const auto z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
+
+    const double th = thresh.at(z_idx);
+    const double mv = maxVal.at(z_idx);
+
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? 0 : mv;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
-        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
-    }
+        return outputVal;
+    });
 }
 
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void trunc_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
 
-    if (x_idx < output.width() && y_idx < output.height()) {
-        double th = thresh.at(z_idx);
-        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const auto z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
+
+    const double th = thresh.at(z_idx);
+
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? th : ip;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
-        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
-    }
+        return outputVal;
+    });
 }
 
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void tozero_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
 
-    if (x_idx < output.width() && y_idx < output.height()) {
-        double th = thresh.at(z_idx);
-        src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
+    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const auto z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
+
+    const double th = thresh.at(z_idx);
+
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
         dst_type outputVal;
         for (int i = 0; i < output.channels(); i++) {
             double ip = StaticCast<double>(GetElement(inputVal, i));
             double outVal = ip > th ? ip : 0;
             GetElement(outputVal, i) = StaticCast<base_type>(outVal);
         }
-        output.at(z_idx, y_idx, x_idx, 0) = outputVal;
-    }
+        return outputVal;
+    });
 }
 
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void tozeroinv_generic(SrcWrapper input, DstWrapper output, roccv::GenericTensorWrapper<double> thresh) {
     using namespace roccv::detail;
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = threadIdx.z + blockIdx.z * blockDim.z;
-
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using base_type = BaseType<dst_type>;
 
-    if (x_idx >= output.width() || y_idx >= output.height()) return;
+    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const auto z_idx = blockIdx.z;
+    if (y_idx >= output.height() || z_idx >= output.batches()) return;
 
-    double th = thresh.at(z_idx);
-    src_type inputVal = input.at(z_idx, y_idx, x_idx, 0);
-    dst_type outputVal;
-    for (int i = 0; i < output.channels(); i++) {
-        double ip = StaticCast<double>(GetElement(inputVal, i));
-        double outVal = ip > th ? 0 : ip;
-        GetElement(outputVal, i) = StaticCast<base_type>(outVal);
-    }
-    output.at(z_idx, y_idx, x_idx, 0) = outputVal;
+    const double th = thresh.at(z_idx);
+
+    ApplyPackedTransform(input, output, z_idx, y_idx,
+                         [=] __device__(src_type inputVal, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+        dst_type outputVal;
+        for (int i = 0; i < output.channels(); i++) {
+            double ip = StaticCast<double>(GetElement(inputVal, i));
+            double outVal = ip > th ? 0 : ip;
+            GetElement(outputVal, i) = StaticCast<base_type>(outVal);
+        }
+        return outputVal;
+    });
 }
 }  // namespace Device
 }  // namespace Kernels

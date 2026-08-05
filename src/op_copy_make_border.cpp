@@ -43,9 +43,9 @@ void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& inp
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block_dim(64, 16);
-            dim3 grid_dim((out_desc.width() + block_dim.x - 1) / block_dim.x,
-                          (out_desc.height() + block_dim.y - 1) / block_dim.y, out_desc.batches());
+            dim3 block_dim = Kernels::Device::PackedBlock();
+            dim3 grid_dim =
+                Kernels::Device::PackedGrid<T>(out_desc.width(), out_desc.height(), out_desc.batches(), block_dim);
             Kernels::Device::copy_make_border<<<grid_dim, block_dim, 0, stream>>>(in_desc, out_desc, top, left);
             break;
         }
@@ -83,8 +83,7 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
 }
 
 void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,
-                                int32_t left, eBorderType border_mode, float4 border_value,
-                                eDeviceType device) const {
+                                int32_t left, eBorderType border_mode, float4 border_value, eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,

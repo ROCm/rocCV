@@ -47,9 +47,9 @@ void dispatch_gamma_contrast_dtype(hipStream_t stream, const Tensor &input, cons
     ImageWrapper<T> outputWrapper(output);
 
     if (device == eDeviceType::GPU) {
-        dim3 block(64, 16);
-        dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                  outputWrapper.batches());
+        dim3 block = Kernels::Device::PackedBlock();
+        dim3 grid = Kernels::Device::PackedGrid<T>(outputWrapper.width(), outputWrapper.height(),
+                                                   outputWrapper.batches(), block);
 
         Kernels::Device::gamma_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, gamma);
     } else if (device == eDeviceType::CPU) {

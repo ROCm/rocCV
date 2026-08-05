@@ -22,38 +22,39 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
+
 #include "core/detail/internal_structs.hpp"
+#include "kernels/device/packed_apply.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
 namespace Device {
 
 using namespace roccv::detail;
-    
+
 template <typename SrcWrapper, typename DstWrapper, typename MapWrapper>
 __global__ void remap(SrcWrapper input, DstWrapper output, MapWrapper map, int mapBatchSize, RemapParams params) {
-    const int x = blockDim.x * blockIdx.x + threadIdx.x;
+    using dst_type = typename DstWrapper::ValueType;
+
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
     const int b = blockIdx.z;
+    if (y >= output.height() || b >= output.batches()) return;
 
-    float2 srcCoord = make_float2(0.f, 0.f);
-    float2 mapCoord = make_float2(0.f, 0.f);
-    float2 dstCoord = make_float2(0.f, 0.f);
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        float2 dstCoord = make_float2(static_cast<float>(x), static_cast<float>(yy));
 
-    if (x >= output.width() || y >= output.height()) return;
+        float2 mapCoord;
+        mapCoord.x = (dstCoord.x + params.dstOffset) * params.mapScale.x;
+        mapCoord.y = (dstCoord.y + params.dstOffset) * params.mapScale.y;
 
-    dstCoord.x = static_cast<float>(x);
-    dstCoord.y = static_cast<float>(y);
-                
-    mapCoord.x = (dstCoord.x + params.dstOffset) * params.mapScale.x;
-    mapCoord.y = (dstCoord.y + params.dstOffset) * params.mapScale.y;
-    
-    float2 mapValue = map.at((mapBatchSize == 1 ? 0 : b), mapCoord.y, mapCoord.x, 0);
+        float2 mapValue = map.at((mapBatchSize == 1 ? 0 : n), mapCoord.y, mapCoord.x, 0);
 
-    srcCoord.x = dstCoord.x * params.srcScale.x + mapValue.x * params.valScale.x + params.srcOffset.x;
-    srcCoord.y = dstCoord.y * params.srcScale.y + mapValue.y * params.valScale.y + params.srcOffset.y;
+        float2 srcCoord;
+        srcCoord.x = dstCoord.x * params.srcScale.x + mapValue.x * params.valScale.x + params.srcOffset.x;
+        srcCoord.y = dstCoord.y * params.srcScale.y + mapValue.y * params.valScale.y + params.srcOffset.y;
 
-    output.at(b, y, x, 0) = input.at(b, srcCoord.y, srcCoord.x, 0);
+        return input.at(n, srcCoord.y, srcCoord.x, 0);
+    });
 }
 };  // namespace Device
 };  // namespace Kernels

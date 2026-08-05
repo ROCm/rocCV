@@ -81,18 +81,21 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     if (device == eDeviceType::GPU) {
         // Dispatch appropriate device kernel based on given conversion code
 
-        dim3 blockSize(32, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, samples);
+        // Packed launches: pixel runs along x are written with a single vector store. Grayscale outputs a 1-channel
+        // pixel (different pack width) so it gets its own grid; all other conversions output a 3-channel pixel.
+        dim3 blockSize = Kernels::Device::PackedBlock();
+        dim3 gridSize = Kernels::Device::PackedGrid<uchar3>(width, height, samples, blockSize);
+        dim3 grayGridSize = Kernels::Device::PackedGrid<uchar1>(width, height, samples, blockSize);
 
         switch (conversionCode) {
             case eColorConversionCode::COLOR_BGR2GRAY:
                 Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+                    <<<grayGridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
                 break;
 
             case eColorConversionCode::COLOR_RGB2GRAY:
                 Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+                    <<<grayGridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
                 break;
 
             case eColorConversionCode::COLOR_BGR2RGB:

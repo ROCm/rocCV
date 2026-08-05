@@ -45,9 +45,10 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(64, 16);
-            dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                      outputWrapper.batches());
+            // Each thread emits a run of PackWidth<T> output pixels along x for a single coalesced vector write.
+            dim3 block(64, 8);
+            dim3 grid = Kernels::Device::PackedGrid<T>(outputWrapper.width(), outputWrapper.height(),
+                                                       outputWrapper.batches(), block);
             Kernels::Device::resize<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
             break;
         }
@@ -62,13 +63,13 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 template <typename T>
 void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor& output,
                            eInterpolationType interpolation, eDeviceType device) {
-    static const std::unordered_map<
-        eInterpolationType,
-        std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device)>>
-        funcs = {{eInterpolationType::INTERP_TYPE_NEAREST, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
-                 {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
-                 {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}
-                };
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor& input,
+                                                                           const Tensor& output, eDeviceType device)>>
+        funcs = {
+            {eInterpolationType::INTERP_TYPE_NEAREST,
+             dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
+            {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}};
 
     if (!funcs.contains(interpolation)) {
         throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
@@ -78,8 +79,8 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
     func(stream, input, output, device);
 }
 
-void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                        eInterpolationType interpolation, eDeviceType device) const {
+void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, eInterpolationType interpolation,
+                        eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
 

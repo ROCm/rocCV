@@ -59,9 +59,9 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(32, 16);
-            dim3 grid((outputWrap.width() + block.x - 1) / block.x, (outputWrap.height() + block.y - 1) / block.y,
-                      outputWrap.batches());
+            dim3 block = Kernels::Device::PackedBlock();
+            dim3 grid =
+                Kernels::Device::PackedGrid<T>(outputWrap.width(), outputWrap.height(), outputWrap.batches(), block);
             Kernels::Device::rotate<<<grid, block, 0, stream>>>(inputWrap, outputWrap, matWrap);
             break;
         }
@@ -74,8 +74,8 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
 }
 
 template <typename T>
-void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
-                          double2 shift, eInterpolationType interpolation, eDeviceType device) {
+void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg, double2 shift,
+                          eInterpolationType interpolation, eDeviceType device) {
     // clang-format off
     static const std::unordered_map<eInterpolationType,
                                     std::function<void(hipStream_t, const Tensor &, const Tensor &, double,
@@ -94,8 +94,8 @@ void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor 
     func(stream, input, output, angleDeg, shift, device);
 }
 
-void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
-                        double2 shift, eInterpolationType interpolation, eDeviceType device) const {
+void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg, double2 shift,
+                        eInterpolationType interpolation, eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,

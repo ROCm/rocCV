@@ -23,10 +23,29 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "core/detail/type_traits.hpp"
 
 namespace roccv::detail {
+
+/**
+ * @brief The value of a "fully saturated" channel for type @p T in its native storage scale, as a float.
+ *
+ * For floating-point base types this is 1.0 (rocCV's normalized-float convention); for integral base types it is the
+ * type's maximum representable value (e.g. 255 for unsigned char). This mirrors RangeCast's range convention and is
+ * useful when blend math is done in native (un-normalized) scale but a channel -- such as an opaque alpha -- still
+ * needs to be set fully on before a SaturateCast back to the output type.
+ */
+template <typename T>
+__device__ __host__ constexpr float RangeMax() {
+    using B = BaseType<T>;
+    if constexpr (std::is_floating_point_v<B>) {
+        return 1.0f;
+    } else {
+        return static_cast<float>(std::numeric_limits<B>::max());
+    }
+}
 
 /**
  * @brief Rounds a floating-point value to the nearest integer using IEEE
@@ -130,6 +149,40 @@ __device__ __host__ T ScalarSaturateCast(U v) {
     }
 }
 
+#ifdef __HIP_DEVICE_COMPILE__
+/**
+ * @brief Device-only fused saturating cast from a float type to a 1-4 element unsigned char type.
+ *
+ * Each `__builtin_amdgcn_cvt_pk_u8_f32` invocation lowers to a single `v_cvt_pk_u8_f32` instruction that performs
+ * round-to-nearest-even, saturation to [0, 255], the f32->u8 conversion, and a write into a selected byte of the
+ * destination word. This fuses what the generic scalar path does with a separate clamp (`v_med3_f32`), round
+ * (`v_rndne_f32`), convert (`v_cvt_i32_f32`), and byte-assembly sequence -- a float4 -> uchar4 cast collapses from
+ * ~12 ALU ops plus packing down to four instructions that build the packed 32-bit word directly.
+ *
+ * @tparam T Destination type: `unsigned char` or `uchar1`..`uchar4`.
+ * @tparam U Source type: `float` or `float1`..`float4`, with at least `NumElements<T>` elements.
+ */
+template <typename T, typename U>
+__device__ __forceinline__ T CvtPackedSaturateU8(U v) {
+    constexpr int N = NumElements<T>;
+    unsigned packed = 0;
+    packed = __builtin_amdgcn_cvt_pk_u8_f32(GetElement(v, 0), 0, packed);
+    if constexpr (N >= 2) packed = __builtin_amdgcn_cvt_pk_u8_f32(GetElement(v, 1), 1, packed);
+    if constexpr (N >= 3) packed = __builtin_amdgcn_cvt_pk_u8_f32(GetElement(v, 2), 2, packed);
+    if constexpr (N >= 4) packed = __builtin_amdgcn_cvt_pk_u8_f32(GetElement(v, 3), 3, packed);
+
+    if constexpr (N == 4) {
+        // uchar4 shares the layout of the packed 32-bit word, so the store needs no byte assembly.
+        return __builtin_bit_cast(T, packed);
+    } else {
+        T out{};
+        const unsigned char* bytes = reinterpret_cast<const unsigned char*>(&packed);
+        for (int i = 0; i < N; i++) GetElement(out, i) = bytes[i];
+        return out;
+    }
+}
+#endif
+
 /**
  * @brief Performs a saturation cast from one type to another. Each type must have type traits supported. A
  * saturation cast converts one type to another, clamping values down to the minimum/maximum of the desired cast if the
@@ -145,6 +198,13 @@ template <typename T, typename U,
           class = std::enable_if_t<(HasTypeTraits<T> && HasTypeTraits<U>) && (NumElements<T> <= NumElements<U>)>>
 __device__ __host__ T SaturateCast(U v) {
     using B = BaseType<T>;
+#ifdef __HIP_DEVICE_COMPILE__
+    // Fast path: float -> uint8 saturating casts map directly onto the hardware v_cvt_pk_u8_f32 instruction, which
+    // matches the generic clamp-then-IEEE-round semantics below. Guarded to float sources (the builtin is f32-only).
+    if constexpr (std::is_same_v<B, unsigned char> && std::is_same_v<BaseType<U>, float>) {
+        return CvtPackedSaturateU8<T, U>(v);
+    }
+#endif
     if constexpr (std::is_same_v<T, U>) {
         return v;
     } else if constexpr (NumElements<T> == 1) {

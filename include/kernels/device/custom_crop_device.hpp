@@ -24,24 +24,22 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include "kernels/device/packed_apply.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
 namespace Device {
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void custom_crop(SrcWrapper input, DstWrapper output, roccv::Box_t cropRect) {
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
+    using dst_type = typename DstWrapper::ValueType;
+
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     const int b = blockIdx.z;
+    if (y >= cropRect.height || b >= output.batches()) return;
 
-    if (x >= cropRect.width || y >= cropRect.height || b >= output.batches()) return;
-
-    const int srcX = x + cropRect.x;
-    const int srcY = y + cropRect.y;
-    const int dstX = x;
-    const int dstY = y;
-
-    output.at(b, dstY, dstX, 0) = input.at(b, srcY, srcX, 0);
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        return input.at(n, yy + cropRect.y, x + cropRect.x, 0);
+    });
 }
 }  // namespace Device
 }  // namespace Kernels

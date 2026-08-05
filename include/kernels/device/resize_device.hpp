@@ -23,17 +23,29 @@
 
 #include <hip/hip_runtime.h>
 
+#include "kernels/device/packed_apply.hpp"
+
 namespace Kernels::Device {
+
+/**
+ * @brief Resizes an image using the interpolation/border logic baked into the source wrapper.
+ *
+ * Each thread emits a contiguous run of PackWidth output pixels along x via the shared packed-write helper. Reads and
+ * interpolation are unchanged from the scalar path, so results are bit-identical.
+ */
 template <typename SrcWrapper, typename DstWrapper>
 __global__ void resize(SrcWrapper input, DstWrapper output, float scaleX, float scaleY) {
-    const int x = blockIdx.x * blockDim.x + threadIdx.x;
+    using T = typename DstWrapper::ValueType;
+
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
     const int batch = blockIdx.z;
+    if (y >= output.height() || batch >= output.batches()) return;
 
-    if (x >= output.width() || y >= output.height()) return;
+    const float srcY = fmaf(y + 0.5f, scaleY, -0.5f);
 
-    float srcX = fmaf(x + 0.5f, scaleX, -0.5f);
-    float srcY = fmaf(y + 0.5f, scaleY, -0.5f);
-    output.at(batch, y, x, 0) = input.at(batch, srcY, srcX, 0);
+    ApplyPackedGather(output, batch, y, [=] __device__(int n, int /*y*/, int x) -> T {
+        const float srcX = fmaf(x + 0.5f, scaleX, -0.5f);
+        return input.at(n, srcY, srcX, 0);
+    });
 }
 }  // namespace Kernels::Device

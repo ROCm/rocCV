@@ -23,9 +23,10 @@ THE SOFTWARE.
 #pragma once
 
 #include <hip/hip_runtime.h>
-#include "core/detail/math/vectorized_type_math.hpp"
-#include "core/detail/casting.hpp"
 
+#include "core/detail/casting.hpp"
+#include "core/detail/math/vectorized_type_math.hpp"
+#include "kernels/device/packed_apply.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
@@ -36,21 +37,21 @@ __global__ void gamma_contrast(SrcWrapper input, DstWrapper output, float gamma)
     using src_type = typename SrcWrapper::ValueType;
     using dst_type = typename DstWrapper::ValueType;
     using work_type = MakeType<float, NumElements<src_type>>;
-    
-    const int x = threadIdx.x + blockIdx.x * blockDim.x;
+
     const int y = threadIdx.y + blockIdx.y * blockDim.y;
     const int batch = blockIdx.z;
+    if (y >= output.height() || batch >= output.batches()) return;
 
-    if (x >= output.width() || y >= output.height() || batch >= output.batches()) return;
-    
-    auto inVal = (RangeCast<work_type>(input.at(batch, y, x, 0)));
-    work_type result = math::vpowf(inVal, gamma);
-    if constexpr (NumElements<dst_type> == 4) {
-        output.at(batch, y, x, 0) = RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
-    } else {
-        output.at(batch, y, x, 0) = RangeCast<dst_type>(result);
-    }
-    
+    ApplyPackedTransform(
+        input, output, batch, y, [=] __device__(src_type srcPixel, int /*n*/, int /*yy*/, int /*x*/) -> dst_type {
+            auto inVal = (RangeCast<work_type>(srcPixel));
+            work_type result = math::vpowf(inVal, gamma);
+            if constexpr (NumElements<dst_type> == 4) {
+                return RangeCast<dst_type>((MakeType<float, 4>){result.x, result.y, result.z, inVal.w});
+            } else {
+                return RangeCast<dst_type>(result);
+            }
+        });
 }
 }  // namespace Device
 }  // namespace Kernels

@@ -23,29 +23,30 @@
 
 #include <hip/hip_runtime.h>
 
+#include "kernels/device/packed_apply.hpp"
 #include "operator_types.h"
 
 namespace Kernels::Device {
 template <eAxis FlipType, typename SrcWrapper, typename DstWrapper>
 __global__ void flip(SrcWrapper input, DstWrapper output) {
-    const int x = blockDim.x * blockIdx.x + threadIdx.x;
+    using dst_type = typename DstWrapper::ValueType;
+
     const int y = blockDim.y * blockIdx.y + threadIdx.y;
     const int b = blockIdx.z;
+    if (y >= output.height() || b >= output.batches()) return;
 
-    if (x >= output.width() || y >= output.height()) return;
-
-    int srcX = x;
-    int srcY = y;
-    if constexpr (FlipType == eAxis::Y || FlipType == eAxis::BOTH) {
-        // Flip along y-axis (horizontally)
-        srcX = output.width() - x - 1;
-    }
-
-    if constexpr (FlipType == eAxis::X || FlipType == eAxis::BOTH) {
-        // Flip along x-axis (vertically)
-        srcY = output.height() - y - 1;
-    }
-
-    output.at(b, y, x, 0) = input.at(b, srcY, srcX, 0);
+    ApplyPackedGather(output, b, y, [=] __device__(int n, int yy, int x) -> dst_type {
+        int srcX = x;
+        int srcY = yy;
+        if constexpr (FlipType == eAxis::Y || FlipType == eAxis::BOTH) {
+            // Flip along y-axis (horizontally)
+            srcX = output.width() - x - 1;
+        }
+        if constexpr (FlipType == eAxis::X || FlipType == eAxis::BOTH) {
+            // Flip along x-axis (vertically)
+            srcY = output.height() - yy - 1;
+        }
+        return input.at(n, srcY, srcX, 0);
+    });
 }
 }  // namespace Kernels::Device
