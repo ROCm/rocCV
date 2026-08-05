@@ -39,19 +39,20 @@ namespace {
  * @brief Verified golden C++ model for the bilateral filtering operation on one image.
  *
  * @tparam T Vectorized datatype of the image's pixels.
+ * @tparam BorderMode Border pixel extrapolation method
+ * @tparam BT Base type of the image data.
  * @param[in] input Input tensor containing image data.
  * @param[out] output Output tensor containing normalized image data.
  * @param[in] diameter Diameter of the work region
  * @param[in] sigmaColor Sigma component of Gaussian exponent for color difference
  * @param[in] sigmaSpace Sigma component of Gaussian exponent for pixel spatial distance
- * @param[in] borderMode Border pixel extrapolation method
  * @param[in] borderValue Color for constant border mode
  * @return None.
  */
-template <typename T, eBorderType borderMode, typename BT = detail::BaseType<T>>
+template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
 void GenerateGoldenBilateral(std::vector<BT>& input, std::vector<BT>& output, int32_t batchSize, Size2D imageSize,
                              int diameter, float sigmaColor, float sigmaSpace, T borderValue) {
-    BorderWrapper<T, borderMode> src(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
+    BorderWrapper<T, BorderMode> src(ImageWrapper<T>(input, batchSize, imageSize.w, imageSize.h), borderValue);
     ImageWrapper<T> dst(output, batchSize, imageSize.w, imageSize.h);
     using namespace roccv::detail;
     using Worktype = MakeType<float, NumElements<T>>;
@@ -112,6 +113,7 @@ void GenerateGoldenBilateral(std::vector<BT>& input, std::vector<BT>& output, in
  * @brief Tests correctness of the bilateral filter operator, comparing it against a generated golden result.
  *
  * @tparam T Underlying datatype of the image's pixels.
+ * @tparam BorderMode Border pixel extrapolation method
  * @tparam BT Base type of the image data.
  * @param[in] batchSize Number of images in the batch.
  * @param[in] width Width of each image in the batch.
