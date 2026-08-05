@@ -22,13 +22,11 @@ THE SOFTWARE.
 #include "op_histogram.hpp"
 
 #include <hip/hip_runtime.h>
-#include <stdio.h>
 
 #include <cstring>
 #include <functional>
 #include <unordered_map>
 
-#include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"

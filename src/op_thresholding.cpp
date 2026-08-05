@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <functional>
 
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/thresholding_device.hpp"
@@ -50,34 +51,45 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
     const auto width = input.shape()[input.shape().layout().width_index()];
 
     if (device == eDeviceType::GPU) {
-        dim3 block(64, 16);
-        dim3 grid((width + block.x - 1) / block.x, (height + block.y - 1) / block.y, outputWrapper.batches());
-
         switch (m_threshType) {
-            case THRESH_BINARY:
-                Kernels::Device::binary_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
-                                                                            GenericTensorWrapper<double>(thresh),
-                                                                            GenericTensorWrapper<double>(maxVal));
+            case THRESH_BINARY: {
+                constexpr auto kernel = Kernels::Device::binary_generic<ImageWrapper<T>, ImageWrapper<T>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, outputWrapper.batches(), block);
+                kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
+                                                   GenericTensorWrapper<double>(maxVal));
                 break;
-            case THRESH_BINARY_INV:
-                Kernels::Device::binary_inv_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
-                                                                                GenericTensorWrapper<double>(thresh),
-                                                                                GenericTensorWrapper<double>(maxVal));
+            }
+            case THRESH_BINARY_INV: {
+                constexpr auto kernel = Kernels::Device::binary_inv_generic<ImageWrapper<T>, ImageWrapper<T>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, outputWrapper.batches(), block);
+                kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh),
+                                                   GenericTensorWrapper<double>(maxVal));
                 break;
-            case THRESH_TRUNC:
-                Kernels::Device::trunc_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
-                                                                           GenericTensorWrapper<double>(thresh));
+            }
+            case THRESH_TRUNC: {
+                constexpr auto kernel = Kernels::Device::trunc_generic<ImageWrapper<T>, ImageWrapper<T>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, outputWrapper.batches(), block);
+                kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh));
                 break;
-            case THRESH_TOZERO:
-                Kernels::Device::tozero_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
-                                                                            GenericTensorWrapper<double>(thresh));
+            }
+            case THRESH_TOZERO: {
+                constexpr auto kernel = Kernels::Device::tozero_generic<ImageWrapper<T>, ImageWrapper<T>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, outputWrapper.batches(), block);
+                kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh));
                 break;
-            case THRESH_TOZERO_INV:
-                Kernels::Device::tozeroinv_generic<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper,
-                                                                               GenericTensorWrapper<double>(thresh));
+            }
+            case THRESH_TOZERO_INV: {
+                constexpr auto kernel = Kernels::Device::tozeroinv_generic<ImageWrapper<T>, ImageWrapper<T>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, outputWrapper.batches(), block);
+                kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, GenericTensorWrapper<double>(thresh));
                 break;
+            }
         }
-
     } else if (device == eDeviceType::CPU) {
         switch (m_threshType) {
             case THRESH_BINARY:

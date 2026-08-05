@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bilateral_filter_device.hpp"
@@ -61,21 +62,20 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         sigmaSpace = 1.0f;
     }
 
-    const int radius =
-        (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
+    const int radius = (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
 
     float spaceCoeff = -1 / (2 * sigmaSpace * sigmaSpace);
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
 
     if (device == eDeviceType::GPU) {
-        dim3 block(8, 8);
+        constexpr auto kernel = Kernels::Device::bilateral_filter<T, BorderWrapper<T, B>, ImageWrapper<T>>;
+        dim3 block = detail::GetBlockSize2D<kernel>();
         uint32_t xGridSize = (outputWrapper.width() + (block.x * 2) - 1) / (block.x * 2);
         uint32_t yGridSize = (outputWrapper.height() + (block.y * 2) - 1) / (block.y * 2);
         uint32_t zGridSize = outputWrapper.batches();
         dim3 grid(xGridSize, yGridSize, zGridSize);
 
-        Kernels::Device::bilateral_filter<T>
-            <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, radius, spaceCoeff, colorCoeff);
+        kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, radius, spaceCoeff, colorCoeff);
     } else if (device == eDeviceType::CPU) {
         int divisor = std::gcd(4, outputWrapper.height());  // greatest common divisor
         int dividend = std::gcd((numThreads / divisor), outputWrapper.width());

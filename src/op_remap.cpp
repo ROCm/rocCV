@@ -23,12 +23,10 @@ THE SOFTWARE.
 
 #include <functional>
 
-#include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/detail/internal_structs.hpp"
-#include "core/detail/math/math.hpp"
-#include "core/detail/type_traits.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/remap_device.hpp"
@@ -91,11 +89,12 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
     // Launch CPU/GPU kernel depending on requested device type.
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(64, 16);
-            dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                      outputWrapper.batches());
-            Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor,
-                                                               mapBatchSize, params);
+            constexpr auto kernel = Kernels::Device::remap<
+                InterpolationWrapper<T, B, I>, ImageWrapper<T>, InterpolationWrapper<float2, B, M>>;
+            dim3 block = detail::GetBlockSize2D<kernel>();
+            dim3 grid =
+                detail::GetGridSize2D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
+            kernel<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor, mapBatchSize, params);
             break;
         }
 

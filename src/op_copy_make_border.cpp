@@ -24,9 +24,10 @@
 #include <functional>
 
 #include "common/validation_helpers.hpp"
+#include "core/detail/casting.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
-#include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/copy_make_border_device.hpp"
 #include "kernels/host/copy_make_border_host.hpp"
 
@@ -43,10 +44,11 @@ void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& inp
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block_dim(64, 16);
-            dim3 grid_dim((out_desc.width() + block_dim.x - 1) / block_dim.x,
-                          (out_desc.height() + block_dim.y - 1) / block_dim.y, out_desc.batches());
-            Kernels::Device::copy_make_border<<<grid_dim, block_dim, 0, stream>>>(in_desc, out_desc, top, left);
+            constexpr auto kernel =
+                Kernels::Device::copy_make_border<BorderWrapper<T, BorderMode>, ImageWrapper<T>>;
+            dim3 block = detail::GetBlockSize1D<kernel>();
+            dim3 grid = detail::GetGridSize1D(out_desc.width(), out_desc.height(), out_desc.batches(), block);
+            kernel<<<grid, block, 0, stream>>>(in_desc, out_desc, top, left);
             break;
         }
         case eDeviceType::CPU: {

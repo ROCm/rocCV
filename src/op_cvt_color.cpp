@@ -23,9 +23,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
-#include <iostream>
-
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/cvt_color_device.hpp"
@@ -81,45 +80,70 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
     if (device == eDeviceType::GPU) {
         // Dispatch appropriate device kernel based on given conversion code
 
-        dim3 blockSize(32, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, samples);
-
         switch (conversionCode) {
-            case eColorConversionCode::COLOR_BGR2GRAY:
-                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+            case eColorConversionCode::COLOR_BGR2GRAY: {
+                constexpr auto kernel = Kernels::Device::rgb_or_bgr_to_grayscale<
+                    uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>, ImageWrapper<uchar1>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
                 break;
+            }
 
-            case eColorConversionCode::COLOR_RGB2GRAY:
-                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
+            case eColorConversionCode::COLOR_RGB2GRAY: {
+                constexpr auto kernel = Kernels::Device::rgb_or_bgr_to_grayscale<
+                    uchar3, eSwizzle::XYZW, ImageWrapper<uchar3>, ImageWrapper<uchar1>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
                 break;
+            }
 
             case eColorConversionCode::COLOR_BGR2RGB:
-            case eColorConversionCode::COLOR_RGB2BGR:
-                Kernels::Device::reorder<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output));
+            case eColorConversionCode::COLOR_RGB2BGR: {
+                constexpr auto kernel = Kernels::Device::reorder<
+                    uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>, ImageWrapper<uchar3>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output));
                 break;
+            }
 
-            case eColorConversionCode::COLOR_BGR2YUV:
-                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+            case eColorConversionCode::COLOR_BGR2YUV: {
+                constexpr auto kernel = Kernels::Device::rgb_or_bgr_to_yuv<
+                    uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>, ImageWrapper<uchar3>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
                 break;
+            }
 
-            case eColorConversionCode::COLOR_RGB2YUV:
-                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+            case eColorConversionCode::COLOR_RGB2YUV: {
+                constexpr auto kernel = Kernels::Device::rgb_or_bgr_to_yuv<
+                    uchar3, eSwizzle::XYZW, ImageWrapper<uchar3>, ImageWrapper<uchar3>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
                 break;
+            }
 
-            case eColorConversionCode::COLOR_YUV2BGR:
-                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+            case eColorConversionCode::COLOR_YUV2BGR: {
+                constexpr auto kernel = Kernels::Device::yuv_to_rgb_or_bgr<
+                    uchar3, eSwizzle::ZYXW, ImageWrapper<uchar3>, ImageWrapper<uchar3>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
                 break;
+            }
 
-            case eColorConversionCode::COLOR_YUV2RGB:
-                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
+            case eColorConversionCode::COLOR_YUV2RGB: {
+                constexpr auto kernel = Kernels::Device::yuv_to_rgb_or_bgr<
+                    uchar3, eSwizzle::XYZW, ImageWrapper<uchar3>, ImageWrapper<uchar3>>;
+                dim3 block = detail::GetBlockSize1D<kernel>();
+                dim3 grid = detail::GetGridSize1D(width, height, samples, block);
+                kernel<<<grid, block, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
                 break;
+            }
 
             default:
                 throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);

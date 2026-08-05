@@ -24,6 +24,7 @@
 #include <functional>
 
 #include "common/validation_helpers.hpp"
+#include "core/detail/hip_utils.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/composite_device.hpp"
 #include "kernels/host/composite_host.hpp"
@@ -40,10 +41,12 @@ void dispatch_composite_masktype(hipStream_t stream, const Tensor& foreground, c
 
     switch (device) {
         case eDeviceType::GPU: {
-            dim3 block(64, 16);
-            dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
-                      outputWrapper.batches());
-            Kernels::Device::composite<<<grid, block, 0, stream>>>(fgWrapper, bgWrapper, maskWrapper, outputWrapper);
+            constexpr auto kernel = Kernels::Device::composite<ImageWrapper<SrcType>, ImageWrapper<MaskType>,
+                                                                ImageWrapper<DstType>>;
+            dim3 block = detail::GetBlockSize1D<kernel>();
+            dim3 grid =
+                detail::GetGridSize1D(outputWrapper.width(), outputWrapper.height(), outputWrapper.batches(), block);
+            kernel<<<grid, block, 0, stream>>>(fgWrapper, bgWrapper, maskWrapper, outputWrapper);
             break;
         }
 
