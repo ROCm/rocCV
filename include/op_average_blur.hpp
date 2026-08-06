@@ -54,7 +54,8 @@ class AverageBlur : public IOperator {
 
     /**
      * @brief Executes the Average Blur operation on the given HIP stream.
-     *
+     * Note that the Average Blur operator is stateful, and has concurrency control such that back-to-back calls on the
+     * same AverageBlur operator object will be serialized.
      *
      * Limitations:
      *
