@@ -80,7 +80,6 @@ class Gaussian final : public IOperator {
      *                     Inferred kernel size is calculated as: round(sigmaY × (U8 ? 6 : 8) + 1) | 1
      *                     Must not exceed m_maxKernelHeight after inference.
      *
-     *
      * Input/Output dependency:
      *
      *       Property      |  Input == Output
