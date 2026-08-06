@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "op_cvt_color.hpp"
 #include "op_flip.hpp"
 #include "op_gamma_contrast.hpp"
+#include "op_gaussian.hpp"
 #include "op_histogram.hpp"
 #include "op_non_max_suppression.hpp"
 #include "op_normalize.hpp"

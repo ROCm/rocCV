@@ -23,8 +23,11 @@
 
 #include <hip/hip_runtime.h>
 
+#include <cstdint>
+
 #include "core/exception.hpp"
 #include "core/hip_assert.h"
+#include "core/utils.hpp"
 
 namespace roccv {
 void* DefaultAllocator::allocHostMem(size_t size, int32_t alignment) const {
@@ -35,12 +38,12 @@ void* DefaultAllocator::allocHostMem(size_t size, int32_t alignment) const {
         return ptr;
     }
 
-    // Otherwise, do an aligned allocation
-    size_t alignedSize = (size / alignment + 1) * alignment;
-
     // Ensure alignment is a power of 2
     if ((alignment & (alignment - 1)) != 0)
         throw Exception("Specified alignment for host allocation is not a power of 2", eStatusType::INVALID_VALUE);
+
+    // std::aligned_alloc requires the allocation size to be an integral multiple of the alignment.
+    size_t alignedSize = detail::AlignUp(size, alignment);
 
     void* ptr = std::aligned_alloc(alignment, alignedSize);
     if (ptr == nullptr) throw Exception("Failure when allocating host memory", eStatusType::OUT_OF_MEMORY);
@@ -62,9 +65,20 @@ void DefaultAllocator::freeHostPinnedMem(void* ptr) const noexcept {
     }
 }
 
-void* DefaultAllocator::allocHipMem(size_t size) const {
+void* DefaultAllocator::allocHipMem(size_t size, int32_t alignment) const {
     void* ptr;
     HIP_VALIDATE_NO_ERRORS(hipMalloc(&ptr, size));
+
+    // hipMalloc does not accept an explicit alignment, but provides a baseline alignment (at least 256 bytes) which
+    // satisfies the texture alignment requirements used by the default alignment strategy. If a stricter alignment was
+    // requested and the returned pointer does not meet it, surface the error rather than silently handing back
+    // misaligned memory.
+    if (alignment != 0 && (reinterpret_cast<uintptr_t>(ptr) % static_cast<uintptr_t>(alignment)) != 0) {
+        static_cast<void>(hipFree(ptr));
+        throw Exception("Unable to satisfy the requested base address alignment for device memory.",
+                        eStatusType::INVALID_VALUE);
+    }
+
     return ptr;
 }
 

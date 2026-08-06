@@ -51,9 +51,10 @@ class TensorStorage {
      *
      * @param bytes Number of bytes to allocate.
      * @param device The device to allocate the memory on.
+     * @param alignment The required base address alignment in bytes. A value of 0 uses the default alignment.
      */
-    explicit TensorStorage(size_t bytes, eDeviceType device);
-    explicit TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc);
+    explicit TensorStorage(size_t bytes, eDeviceType device, int32_t alignment = 0);
+    explicit TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc, int32_t alignment = 0);
 
     ~TensorStorage();
 
@@ -71,11 +72,17 @@ class TensorStorage {
      */
     eDeviceType device() const;
 
+    /**
+     * @brief Returns the allocation strategy being used.
+     *
+     * @return The allocation strategy being used.
+     */
+    const IAllocator& allocator() const;
+
    private:
     eDeviceType m_device;
     eOwnership m_ownership;
     void* m_data;
     const IAllocator& m_allocator;
 };
-
 }  // namespace roccv

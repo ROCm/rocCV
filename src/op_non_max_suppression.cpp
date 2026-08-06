@@ -100,12 +100,12 @@ void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, 
     // but typically involve going from non-vectorized to vectorized shapes. These shapes should be validated
     // beforehand. For example: an input tensor with shape and datatype [NWC, <batches, boxes, 4>, S16] will be
     // reinterpreted as [NW, <batches, boxes, 4S16>]. In any case, the underlying data is structured the same.
-    Tensor inputReshaped =
-        input.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {numBatches, numBoxes}), DataType(DATA_TYPE_4S16));
+    Tensor inputReshaped = input.reshape(DataType(DATA_TYPE_4S16),
+                                          TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {numBatches, numBoxes}));
     Tensor outputReshaped =
-        output.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {numBatches, numBoxes}), DataType(DATA_TYPE_U8));
-    Tensor scoresReshaped =
-        scores.reshape(TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {numBatches, numBoxes}), DataType(DATA_TYPE_F32));
+        output.reshape(DataType(DATA_TYPE_U8), TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {numBatches, numBoxes}));
+    Tensor scoresReshaped = scores.reshape(DataType(DATA_TYPE_F32),
+                                           TensorShape(TensorLayout(TENSOR_LAYOUT_NW), {numBatches, numBoxes}));
 
     // Launch nms kernel
     switch (device) {

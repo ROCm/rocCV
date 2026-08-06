@@ -21,144 +21,122 @@ THE SOFTWARE.
 */
 
 #include <core/hip_assert.h>
+#include <getopt.h>
+
 #include <core/tensor.hpp>
 #include <iostream>
 #include <op_custom_crop.hpp>
 #include <opencv2/opencv.hpp>
 
+#include "common/utils.hpp"
+
 using namespace roccv;
+
+struct Config {
+    std::string inputPath;
+    std::string outputPath = "output";
+    Box_t cropRect = {0, 0, 1, 1};
+    eDeviceType device = eDeviceType::GPU;
+    int deviceId = 0;
+};
+
+void PrintUsage(const char* programName) {
+    // clang-format off
+    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-crop <x,y,w,h>] [-d <device_id>] [-c]" << std::endl;
+    std::cout << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
+    std::cout << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
+    std::cout << "  -c, --crop <x,y,w,h>                Crop rectangle as comma separated values (optional, default: 0,0,1,1)" << std::endl;
+    std::cout << "  -d, --device <device_id>            Device ID to use for execution when using GPU (optional, default: 0)" << std::endl;
+    std::cout << "  -C, --cpu                           Use CPU for execution (optional, default: GPU)" << std::endl;
+    std::cout << "  -h, --help                          Show this help message" << std::endl;
+    // clang-format on
+}
+
+bool ParseCropRectangle(const std::string& cropStr, Box_t& cropRect) {
+    std::istringstream iss(cropStr);
+    std::string token;
+    getline(iss, token, ',');
+    cropRect.x = std::stoi(token);
+    getline(iss, token, ',');
+    cropRect.y = std::stoi(token);
+    getline(iss, token, ',');
+    cropRect.width = std::stoi(token);
+    getline(iss, token, ',');
+    cropRect.height = std::stoi(token);
+    return true;
+}
 
 /**
  * @brief Custom crop operation example.
  */
-
-void ShowHelpAndExit(const char *option = NULL) {
-    std::cout << "Options: " << option << std::endl
-    << "-i Input File Path - required" << std::endl
-    << "-o Output File Path - optional; default: output.bmp" << std::endl
-    << "-cpu Select CPU instead of GPU to perform operation - optional; default choice is GPU path" << std::endl
-    << "-d GPU device ID (0 for the first device, 1 for the second, etc.) - optional; default: 0" << std::endl
-    << "-crop Crop rectangle (top_left_corner_x, top_left_corner_y, width, height)- optional; default: use the set value in the app" << std::endl;
-    exit(0);
-}
-
 int main(int argc, char** argv) {
-    std::string input_file_path;
-    std::string output_file_path = "output.bmp";
-    bool gpuPath = true; // use GPU by default
-    eDeviceType device = eDeviceType::GPU;
-    int deviceId = 0;
-    Box_t cropRect = {0, 0, 1, 1};
-    bool cropSet = false;
-
-    if(argc < 3) {
-        ShowHelpAndExit("-h");
-    }
-    for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "-h")) {
-            ShowHelpAndExit("-h");
-        }
-        if (!strcmp(argv[i], "-i")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-i");
-            }
-            input_file_path = argv[i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-o")) {
-            if (++i == argc) {
-                ShowHelpAndExit("-o");
-            }
-            output_file_path = argv[i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-crop")) {
-            i++;
-            if (i + 4 > argc) {
-                ShowHelpAndExit("-crop");
-            }
-            cropRect.x = atoi(argv[i++]);
-            cropRect.y = atoi(argv[i++]);
-            cropRect.width = atoi(argv[i++]);
-            cropRect.height = atoi(argv[i]);
-            cropSet = true;
-            continue;
-        }
-        if (!strcmp(argv[i], "-cpu")) {
-            gpuPath = false;
-            continue;
+    Config config;
+    static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
+                                          {"output", required_argument, nullptr, 'o'},
+                                          {"crop", required_argument, nullptr, 'c'},
+                                          {"device", required_argument, nullptr, 'd'},
+                                          {"cpu", no_argument, nullptr, 'C'},
+                                          {"help", no_argument, nullptr, 'h'},
+                                          {nullptr, 0, nullptr, 0}};
+    int opt;
+    while ((opt = getopt_long(argc, argv, "i:o:c:d:h:C", longOptions, nullptr)) != -1) {
+        switch (opt) {
+            case 'i':
+                config.inputPath = optarg;
+                break;
+            case 'o':
+                config.outputPath = optarg;
+                break;
+            case 'c':
+                if (!ParseCropRectangle(optarg, config.cropRect)) {
+                    std::cerr << "Invalid crop rectangle format. Use: x,y,w,h (e.g., 0,0,1,1)\n";
+                    return EXIT_FAILURE;
+                }
+                break;
+            case 'd':
+                config.deviceId = std::stoi(optarg);
+                break;
+            case 'C':
+                config.device = eDeviceType::CPU;
+                break;
+            case 'h':
+                PrintUsage(argv[0]);
+                return EXIT_SUCCESS;
+            default:
+                PrintUsage(argv[0]);
+                return EXIT_FAILURE;
         }
     }
 
-    if (gpuPath) {
-        device = eDeviceType::GPU;
-        HIP_VALIDATE_NO_ERRORS(hipSetDevice(deviceId));
-    } else {
-        device = eDeviceType::CPU;
+    if (config.inputPath.empty()) {
+        std::cerr << "Error: Input path is required.\n\n";
+        PrintUsage(argv[0]);
+        return EXIT_FAILURE;
     }
 
-    cv::Mat imageData = cv::imread(input_file_path);
-    if (imageData.empty()) {
-        std::cerr << "Failed to read the input image file" << std::endl;
-        exit(1);
-    }
-    if (!cropSet) {
-        // Set a safe crop area if no user input
-        cropRect = {(imageData.cols / 4), (imageData.rows / 4), (imageData.cols / 2), (imageData.rows / 2)};
-    }
+    CHECK_HIP_ERROR(hipSetDevice(config.deviceId));
 
-    // Create input/output tensors for the image.
-    TensorShape inputShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, imageData.rows, imageData.cols, imageData.channels()});
-    DataType dtype(eDataType::DATA_TYPE_U8);
-    Tensor input(inputShape, dtype, device);
+    hipStream_t stream;
+    CHECK_HIP_ERROR(hipStreamCreate(&stream));
 
-    TensorShape outShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, cropRect.height, cropRect.width, imageData.channels()});
-    Tensor output(outShape, dtype, device);
+    // Load input images
+    Tensor input = LoadImages(stream, config.inputPath, config.device);
 
-    hipStream_t stream = nullptr;
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-    }
+    int64_t batchSize = input.shape(input.layout().batch_index());
+    int64_t channels = input.shape(input.layout().channels_index());
 
-    // Move image data to input tensor
-    size_t imageSizeInByte = input.shape().size() * input.dtype().size();
-    auto input_data = input.exportData<TensorDataStrided>();
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(input_data.basePtr(), imageData.data, imageSizeInByte, hipMemcpyHostToDevice, stream));
-    } else {
-        memcpy(input_data.basePtr(), imageData.data, imageSizeInByte);
-    }
+    // Create output tensor
+    Tensor output(TensorShape(input.layout(), {batchSize, config.cropRect.height, config.cropRect.width, channels}),
+                  input.dtype(), config.device);
 
+    // Run custom crop operation
     CustomCrop op;
-    op(stream, input, output, cropRect, device);
-
-    // Move image data back to host
-    size_t outputSize = output.shape().size() * output.dtype().size();
-    auto outData = output.exportData<TensorDataStrided>();
-    std::vector<uint8_t> h_output(outputSize);
-    if (gpuPath) {
-        HIP_VALIDATE_NO_ERRORS(hipMemcpyAsync(h_output.data(), outData.basePtr(), outputSize, hipMemcpyDeviceToHost, stream));
-        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
-    } else {
-        memcpy(h_output.data(), outData.basePtr(), outputSize);
-    }
+    op(stream, input, output, config.cropRect, config.device);
 
     // Write output image to disk
-    cv::Mat output_imageData(cropRect.height, cropRect.width, imageData.type(), h_output.data());
-    bool ret = cv::imwrite(output_file_path, output_imageData);
-    if (!ret) {
-        std::cerr << "Faild to save output image to the file" << std::endl;
-    }
+    WriteImages(stream, output, config.outputPath);
 
-    std::cout << "Input image file: " << input_file_path << std::endl;
-    std::cout << "Output image file: " << output_file_path << std::endl;
-    if (gpuPath) {
-        std::cout << "Operation on GPU device " << deviceId << std::endl;
-    } else {
-        std::cout << "Operation on CPU" << std::endl;
-    }
-    std::cout << "Input image size: width = " << imageData.cols << ", height = " << imageData.rows << std::endl;
-    std::cout << "Cropping area: top-left corner = (" << cropRect.x << ", " << cropRect.y << "), width = " << cropRect.width << ", height = " << cropRect.height << std::endl;
+    CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
 }
