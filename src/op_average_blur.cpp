@@ -188,6 +188,7 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
         if (device == eDeviceType::GPU) {
             func(stream, input, output, m_deviceKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode,
                  device);
+            HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
         } else if (device == eDeviceType::CPU) {
             func(stream, input, output, m_hostKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode,
                  device);
@@ -211,11 +212,11 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
         if (device == eDeviceType::GPU) {
             func(stream, input, output, m_deviceKernelMemH, m_deviceKernelMemV, kernelWidth, kernelHeight, anchorX,
                  anchorY, borderMode, device);
+            HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
         } else if (device == eDeviceType::CPU) {
             func(stream, input, output, m_hostKernelMemH, m_hostKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY,
                  borderMode, device);
         }
     }
-    HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
 }
 }  // namespace roccv
