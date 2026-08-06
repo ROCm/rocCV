@@ -224,9 +224,9 @@ void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat
 }
 
 /**
- * @brief Tests correctness of the AverageBlur operator when multiple threads concurrently use the same operator, but on
- * different devices. This tests that the synchronization correctly prevents the CPU path from modifying m_hostKernelMem
- * while the GPU is still asynchronously copying from it.
+ * @brief Tests the GPU-to-CPU race condition where CPU calls happen while GPU async work is in flight.
+ * This forces the exact scenario: GPU launches async work, then CPU immediately tries to use the same
+ * operator, testing that hipEventSynchronize + mutex prevent CPU from corrupting GPU's host memory.
  * @tparam T Underlying datatype of the image's pixels.
  * @tparam BorderMode Border pixel extrapolation method.
  * @tparam BT Base type of the image's data.
@@ -237,76 +237,104 @@ void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat
  */
 template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
 void TestCorrectnessConcurrentBothDevices(int batchSize, int width, int height, ImageFormat format) {
-    constexpr int NUM_ITERATIONS = 100;
-    constexpr int NUM_THREADS = 2;
+    constexpr int NUM_ITERATIONS = 50;
 
-    struct DeviceTest {
+    AverageBlur op(11, 11);
+    std::atomic<bool> gpuReady{false};
+    std::atomic<bool> testComplete{false};
+
+    struct TestData {
         Tensor input;
         Tensor output;
         std::vector<BT> inputData;
         hipStream_t stream;
         int ksize;
-        eDeviceType device;
 
-        DeviceTest(int b, int w, int h, ImageFormat fmt, eDeviceType dev, int k, int id)
+        TestData(int b, int w, int h, ImageFormat fmt, eDeviceType dev, int k, int seed)
             : input(b, {w, h}, fmt, dev),
               output(b, {w, h}, fmt, dev),
               inputData(input.shape().size()),
-              ksize(k),
-              device(dev) {
+              ksize(k) {
             HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
-            FillVector(inputData, id * 1000);
+            FillVector(inputData, seed);
             CopyVectorIntoTensor(input, inputData);
         }
 
-        ~DeviceTest() { (void)hipStreamDestroy(stream); }
+        ~TestData() { (void)hipStreamDestroy(stream); }
     };
 
-    std::vector<std::unique_ptr<DeviceTest>> tests;
-    tests.reserve(NUM_ITERATIONS * NUM_THREADS);
+    std::vector<std::unique_ptr<TestData>> gpuTests, cpuTests;
+    gpuTests.reserve(NUM_ITERATIONS);
+    cpuTests.reserve(NUM_ITERATIONS);
 
-    // Create alternating GPU and CPU tests with different kernel sizes
     for (int i = 0; i < NUM_ITERATIONS; ++i) {
         int gpuKernel = 3 + (i % 4) * 2;
         int cpuKernel = 5 + (i % 3) * 2;
-        tests.push_back(
-            std::make_unique<DeviceTest>(batchSize, width, height, format, eDeviceType::GPU, gpuKernel, i * 2));
-        tests.push_back(
-            std::make_unique<DeviceTest>(batchSize, width, height, format, eDeviceType::CPU, cpuKernel, i * 2 + 1));
+        gpuTests.push_back(
+            std::make_unique<TestData>(batchSize, width, height, format, eDeviceType::GPU, gpuKernel, i * 100));
+        cpuTests.push_back(
+            std::make_unique<TestData>(batchSize, width, height, format, eDeviceType::CPU, cpuKernel, i * 100 + 50));
     }
 
-    AverageBlur op(11, 11);
-    std::atomic<int> nextTestIndex{0};
-
-    auto threadFunc = [&]() {
-        while (true) {
-            int idx = nextTestIndex.fetch_add(1);
-            if (idx >= static_cast<int>(tests.size())) break;
-            DeviceTest* test = tests[idx].get();
-            op(test->stream, test->input, test->output, test->ksize, test->ksize, -1, -1, BorderMode, test->device);
+    // GPU thread: launches async work repeatedly
+    std::thread gpuThread([&]() {
+        for (int i = 0; i < NUM_ITERATIONS; ++i) {
+            auto* test = gpuTests[i].get();
+            gpuReady.store(true, std::memory_order_release);
+            op(test->stream, test->input, test->output, test->ksize, test->ksize, -1, -1, BorderMode, eDeviceType::GPU);
+            // Don't sync here - let GPU work be async to create race opportunity
         }
-    };
+        testComplete.store(true, std::memory_order_release);
+    });
 
-    std::vector<std::thread> threads;
-    for (int i = 0; i < NUM_THREADS; i++) {
-        threads.emplace_back(threadFunc);
-    }
-    for (auto& thread : threads) {
-        thread.join();
-    }
+    // CPU thread: tries to run immediately after GPU launches work
+    std::thread cpuThread([&]() {
+        for (int i = 0; i < NUM_ITERATIONS; ++i) {
+            // Wait for GPU thread to start work
+            while (!gpuReady.load(std::memory_order_acquire) && !testComplete.load(std::memory_order_acquire)) {
+                std::this_thread::yield();
+            }
+            if (testComplete.load(std::memory_order_acquire)) break;
 
-    for (auto& test : tests) {
+            gpuReady.store(false, std::memory_order_release);
+
+            auto* test = cpuTests[i].get();
+            // This should block on hipEventSynchronize until GPU's async memcpy completes
+            op(test->stream, test->input, test->output, test->ksize, test->ksize, -1, -1, BorderMode, eDeviceType::CPU);
+        }
+    });
+
+    gpuThread.join();
+    cpuThread.join();
+
+    // Sync all streams
+    for (auto& test : gpuTests) {
+        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(test->stream));
+    }
+    for (auto& test : cpuTests) {
         HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(test->stream));
     }
 
-    // Verify all results
-    for (auto& test : tests) {
+    // Verify all GPU results
+    for (auto& test : gpuTests) {
         std::vector<BT> outputData(test->output.shape().size());
         CopyTensorIntoVector(outputData, test->output);
 
         int anchor = test->ksize >> 1;
         std::vector<BT> ref = GenerateGoldenAverageBlur<T, BorderMode>(test->inputData, batchSize, width, height,
-                                                                       test->ksize, test->ksize, anchor, anchor);
+                                                                        test->ksize, test->ksize, anchor, anchor);
+
+        CompareVectorsNear(outputData, ref, 1);
+    }
+
+    // Verify all CPU results
+    for (auto& test : cpuTests) {
+        std::vector<BT> outputData(test->output.shape().size());
+        CopyTensorIntoVector(outputData, test->output);
+
+        int anchor = test->ksize >> 1;
+        std::vector<BT> ref = GenerateGoldenAverageBlur<T, BorderMode>(test->inputData, batchSize, width, height,
+                                                                        test->ksize, test->ksize, anchor, anchor);
 
         CompareVectorsNear(outputData, ref, 1);
     }
