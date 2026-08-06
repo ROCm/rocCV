@@ -223,6 +223,95 @@ void TestCorrectnessConcurrent(int batchSize, int width, int height, ImageFormat
     }
 }
 
+/**
+ * @brief Tests correctness of the AverageBlur operator when multiple threads concurrently use the same operator, but on
+ * different devices. This tests that the synchronization correctly prevents the CPU path from modifying m_hostKernelMem
+ * while the GPU is still asynchronously copying from it.
+ * @tparam T Underlying datatype of the image's pixels.
+ * @tparam BorderMode Border pixel extrapolation method.
+ * @tparam BT Base type of the image's data.
+ * @param[in] batchSize Number of images in the batch.
+ * @param[in] width Width of each image in the batch.
+ * @param[in] height Height of each image in the batch.
+ * @param[in] format Image format.
+ */
+template <typename T, eBorderType BorderMode, typename BT = detail::BaseType<T>>
+void TestCorrectnessConcurrentBothDevices(int batchSize, int width, int height, ImageFormat format) {
+    constexpr int NUM_ITERATIONS = 100;
+    constexpr int NUM_THREADS = 2;
+
+    struct DeviceTest {
+        Tensor input;
+        Tensor output;
+        std::vector<BT> inputData;
+        hipStream_t stream;
+        int ksize;
+        eDeviceType device;
+
+        DeviceTest(int b, int w, int h, ImageFormat fmt, eDeviceType dev, int k, int id)
+            : input(b, {w, h}, fmt, dev),
+              output(b, {w, h}, fmt, dev),
+              inputData(input.shape().size()),
+              ksize(k),
+              device(dev) {
+            HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+            FillVector(inputData, id * 1000);
+            CopyVectorIntoTensor(input, inputData);
+        }
+
+        ~DeviceTest() { (void)hipStreamDestroy(stream); }
+    };
+
+    std::vector<std::unique_ptr<DeviceTest>> tests;
+    tests.reserve(NUM_ITERATIONS * NUM_THREADS);
+
+    // Create alternating GPU and CPU tests with different kernel sizes
+    for (int i = 0; i < NUM_ITERATIONS; ++i) {
+        int gpuKernel = 3 + (i % 4) * 2;
+        int cpuKernel = 5 + (i % 3) * 2;
+        tests.push_back(
+            std::make_unique<DeviceTest>(batchSize, width, height, format, eDeviceType::GPU, gpuKernel, i * 2));
+        tests.push_back(
+            std::make_unique<DeviceTest>(batchSize, width, height, format, eDeviceType::CPU, cpuKernel, i * 2 + 1));
+    }
+
+    AverageBlur op(11, 11);
+    std::atomic<int> nextTestIndex{0};
+
+    auto threadFunc = [&]() {
+        while (true) {
+            int idx = nextTestIndex.fetch_add(1);
+            if (idx >= static_cast<int>(tests.size())) break;
+            DeviceTest* test = tests[idx].get();
+            op(test->stream, test->input, test->output, test->ksize, test->ksize, -1, -1, BorderMode, test->device);
+        }
+    };
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < NUM_THREADS; i++) {
+        threads.emplace_back(threadFunc);
+    }
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    for (auto& test : tests) {
+        HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(test->stream));
+    }
+
+    // Verify all results
+    for (auto& test : tests) {
+        std::vector<BT> outputData(test->output.shape().size());
+        CopyTensorIntoVector(outputData, test->output);
+
+        int anchor = test->ksize >> 1;
+        std::vector<BT> ref = GenerateGoldenAverageBlur<T, BorderMode>(test->inputData, batchSize, width, height,
+                                                                       test->ksize, test->ksize, anchor, anchor);
+
+        CompareVectorsNear(outputData, ref, 1);
+    }
+}
+
 void TestNegativeAverageBlur() {
     TensorShape validShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 1, 1, 1});
     Tensor validGPUTensor(validShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
@@ -333,9 +422,10 @@ int main(int argc, char** argv) {
     // Test negative operator cases
     TEST_CASE(TestNegativeAverageBlur());
 
-    // Test concurrency on GPU and CPU
+    // Test concurrency control
     TEST_CASE((TestCorrectnessConcurrent<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32, eDeviceType::GPU)));
     TEST_CASE((TestCorrectnessConcurrent<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32, eDeviceType::CPU)));
+    TEST_CASE((TestCorrectnessConcurrentBothDevices<float1, BORDER_TYPE_REFLECT>(1, 64, 64, FMT_F32)));
 
     // GPU correctness tests
     TEST_CASE((TestCorrectness<uchar1, BORDER_TYPE_CONSTANT>(1, 20, 20, FMT_U8, 3, 3, -1, -1, eDeviceType::GPU)));
