@@ -127,9 +127,7 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
     processAnchor(anchorX, anchorY, kernelWidth, kernelHeight);
 
     std::lock_guard<std::mutex> lock(m_bufferMutex);
-    if (device == eDeviceType::GPU) {
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_completionEvent));
-    }
+    HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_completionEvent));
 
     // Compute the kernel
     if (m_use2D) {
@@ -190,7 +188,6 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
         if (device == eDeviceType::GPU) {
             func(stream, input, output, m_deviceKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode,
                  device);
-            HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
         } else if (device == eDeviceType::CPU) {
             func(stream, input, output, m_hostKernelMem, kernelWidth, kernelHeight, anchorX, anchorY, borderMode,
                  device);
@@ -214,11 +211,11 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
         if (device == eDeviceType::GPU) {
             func(stream, input, output, m_deviceKernelMemH, m_deviceKernelMemV, kernelWidth, kernelHeight, anchorX,
                  anchorY, borderMode, device);
-            HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
         } else if (device == eDeviceType::CPU) {
             func(stream, input, output, m_hostKernelMemH, m_hostKernelMemV, kernelWidth, kernelHeight, anchorX, anchorY,
                  borderMode, device);
         }
     }
+    HIP_VALIDATE_NO_ERRORS(hipEventRecord(m_completionEvent, stream));
 }
 }  // namespace roccv
