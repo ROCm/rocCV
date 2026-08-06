@@ -55,7 +55,8 @@ class Gaussian final : public IOperator {
 
     /**
      * @brief Executes the Gaussian operation on the given HIP stream.
-     *
+     * Note that the Gaussian operator is stateful, and has concurrency control such that back-to-back calls on the same
+     * Gaussian operator object will be serialized.
      *
      * Limitations:
      *
@@ -78,6 +79,7 @@ class Gaussian final : public IOperator {
      *       kernelHeight: Must be odd and positive, or non-positive (<= 0) in which case it is inferred from sigmaY.
      *                     Inferred kernel size is calculated as: round(sigmaY × (U8 ? 6 : 8) + 1) | 1
      *                     Must not exceed m_maxKernelHeight after inference.
+     *
      *
      * Input/Output dependency:
      *
