@@ -79,8 +79,7 @@ void DispatchReformatType(hipStream_t stream, const Tensor& input, const Tensor&
 }
 }  // namespace
 
-void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                          eDeviceType device) const {
+void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device) const {
     // clang-format off
 
     // Validate the input and output tensors
@@ -106,6 +105,9 @@ void Reformat::operator()(hipStream_t stream, const Tensor& input, const Tensor&
     CHECK_TENSOR_COMPARISON(inputShape["C"] == outputShape["C"]);
     CHECK_TENSOR_COMPARISON(inputShape["W"] == outputShape["W"]);
     CHECK_TENSOR_COMPARISON(inputShape["H"] == outputShape["H"]);
+
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // Select kernel dispatcher based on the input and output datatypes.
     static const std::unordered_map<eDataType, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,

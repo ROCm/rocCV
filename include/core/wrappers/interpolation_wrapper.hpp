@@ -37,8 +37,9 @@ namespace roccv {
  * @tparam C Number of channels in data type.
  * @tparam B Border type to use for interpolation.
  * @tparam I Interpolation type to use.
+ * @tparam IndexT The datatype to use for indexing/stride calculations (int32_t or int64_t)
  */
-template <typename T, eBorderType B, eInterpolationType I>
+template <typename T, eBorderType B, eInterpolationType I, typename IndexT = int32_t>
 class InterpolationWrapper {
    public:
     /**
@@ -77,13 +78,14 @@ class InterpolationWrapper {
      * @brief Retrieves an interpolated value at given image batch coordinates.
      *
      * @param n Batch index.
-     * @param h Height coordinates.
-     * @param w Width coordinates.
+     * @param h Height coordinates (sub-pixel, floating point).
+     * @param w Width coordinates (sub-pixel, floating point).
+     * @param c Channel index.
      * @return An interpolated value.
      */
-    inline __device__ __host__ const T at(int64_t n, float h, float w, int64_t c) const {
+    inline __device__ __host__ const T at(IndexT n, float h, float w, IndexT c) const {
         if constexpr (I == eInterpolationType::INTERP_TYPE_NEAREST) {
-            return m_desc.at(n, detail::interp_nearest_i64(h), detail::interp_nearest_i64(w), c);
+            return m_desc.at(n, detail::interp_nearest<IndexT>(h), detail::interp_nearest<IndexT>(w), c);
         } else if constexpr (I == eInterpolationType::INTERP_TYPE_LINEAR) {
             // Bilinear interpolation implementation
             // v1 -- v2
@@ -92,10 +94,10 @@ class InterpolationWrapper {
 
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            const int64_t x0 = detail::interp_floor_i64(w);
-            const int64_t y0 = detail::interp_floor_i64(h);
-            const int64_t x1 = x0 + 1;
-            const int64_t y1 = y0 + 1;
+            const IndexT x0 = detail::interp_floor<IndexT>(w);
+            const IndexT y0 = detail::interp_floor<IndexT>(h);
+            const IndexT x1 = x0 + 1;
+            const IndexT y1 = y0 + 1;
             const float fx = w - static_cast<float>(x0);
             const float fy = h - static_cast<float>(y0);
             const float omfx = 1.f - fx;
@@ -126,8 +128,8 @@ class InterpolationWrapper {
             using namespace roccv::detail;
             using WorkType = detail::MakeType<float, detail::NumElements<T>>;
 
-            const int64_t int_x = detail::interp_floor_i64(w);
-            const int64_t int_y = detail::interp_floor_i64(h);
+            const IndexT int_x = detail::interp_floor<IndexT>(w);
+            const IndexT int_y = detail::interp_floor<IndexT>(h);
 
             float weight_x[4], weight_y[4];
             CalBicubicWeights(w - static_cast<float>(int_x), weight_x);
@@ -172,10 +174,10 @@ class InterpolationWrapper {
         }
     }
 
-    __device__ __host__ inline int64_t height() const { return m_desc.height(); }
-    __device__ __host__ inline int64_t width() const { return m_desc.width(); }
-    __device__ __host__ inline int64_t batches() const { return m_desc.batches(); }
-    __device__ __host__ inline int64_t channels() const { return m_desc.channels(); }
+    __device__ __host__ inline IndexT height() const { return m_desc.height(); }
+    __device__ __host__ inline IndexT width() const { return m_desc.width(); }
+    __device__ __host__ inline IndexT batches() const { return m_desc.batches(); }
+    __device__ __host__ inline IndexT channels() const { return m_desc.channels(); }
 
    private:
     BorderWrapper<T, B> m_desc;

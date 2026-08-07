@@ -282,6 +282,8 @@ DataType Tensor::dtype() const { return DataType(m_requirements.dtype); }
 
 TensorLayout Tensor::layout() const { return TensorLayout(m_requirements.layout); }
 
+int64_t Tensor::stride(int d) const { return m_requirements.strides[d]; }
+
 TensorData Tensor::exportData() const {
     TensorBufferStrided buffer;
     buffer.basePtr = m_data->data();

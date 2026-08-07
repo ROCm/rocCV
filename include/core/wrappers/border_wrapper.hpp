@@ -30,59 +30,78 @@ namespace roccv {
 namespace detail {
 /**
  * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT (edge pixels duplicated; not @c BORDER_REFLECT101).
+ * @tparam IndexT Index type (int32_t or int64_t).
  * @param coord Possibly out-of-bounds coordinate along the axis (width or height index space).
  * @param extent Positive extent of the axis (number of samples, e.g. image width or height).
  * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
  * @note Period is <tt>2 * extent</tt>. Implementation uses Euclidean modulo then
  *       <tt>min(val, 2*extent - 1 - val)</tt>, which matches comparing @c val to @c extent with a ternary, without a
- *       separate branch on @p extent alone. On device, a 32-bit remainder path is used when @p extent and @p coord are
- *       in a safe range.
+ *       separate branch on @p extent alone. For int64_t on device, a 32-bit remainder path is used when @p extent
+ *       and @p coord are in a safe range.
  */
-__device__ __host__ inline int64_t reflect_border_coord_i64(int64_t coord, int64_t extent) {
-#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    constexpr int64_t kLim = int64_t{1} << 30;
-    if (extent > 0 && extent < kLim && coord > -kLim && coord < kLim) {
-        const int32_t e = static_cast<int32_t>(extent);
-        const int32_t scale = e * 2;
-        int32_t val = static_cast<int32_t>(coord) % scale;
-        if (val < 0) val += scale;
+template <typename IndexT>
+__device__ __host__ inline IndexT reflect_border_coord(IndexT coord, IndexT extent) {
+    if constexpr (std::is_same_v<IndexT, int32_t>) {
+        const int32_t scale = extent * 2;
+        int32_t val = euclid_mod_i32(coord, scale);
         const int32_t inv = scale - 1 - val;
-        return static_cast<int64_t>(min_i32(val, inv));
-    }
+        return min_i32(val, inv);
+    } else {
+#if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
+        constexpr int64_t kLim = int64_t{1} << 30;
+        if (extent > 0 && extent < kLim && coord > -kLim && coord < kLim) {
+            const int32_t e = static_cast<int32_t>(extent);
+            const int32_t scale = e * 2;
+            int32_t val = static_cast<int32_t>(coord) % scale;
+            if (val < 0) val += scale;
+            const int32_t inv = scale - 1 - val;
+            return static_cast<int64_t>(min_i32(val, inv));
+        }
 #endif
-    const int64_t scale = extent * 2;
-    const int64_t val = euclid_mod_i64(coord, scale);
-    const int64_t inv = scale - 1 - val;
-    return min_i64(val, inv);
+        const int64_t scale = extent * 2;
+        const int64_t val = euclid_mod_i64(coord, scale);
+        const int64_t inv = scale - 1 - val;
+        return min_i64(val, inv);
+    }
 }
 
 /**
  * @brief Map one axis coordinate for OpenCV-style @c BORDER_REFLECT101 (endpoints are not repeated in the reflection).
+ * @tparam IndexT Index type (int32_t or int64_t).
  * @param coord Possibly out-of-bounds coordinate along the axis.
  * @param extent Positive extent of the axis (number of samples). If @p extent is at most 1, returns @c 0.
  * @return In-bounds index in <tt>[0, extent)</tt> after reflection.
  * @note Period is <tt>2 * extent - 2</tt> when @p extent is greater than 1. Uses Euclidean modulo then folds with
- *       <tt>(extent - 1) - abs((extent - 1) - v)</tt>. On device, a 32-bit path applies when values fit a fixed bound.
+ *       <tt>(extent - 1) - abs((extent - 1) - v)</tt>. For int64_t on device, a 32-bit path applies when values
+ *       fit a fixed bound.
  */
-__device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, int64_t extent) {
+template <typename IndexT>
+__device__ __host__ inline IndexT reflect101_border_coord(IndexT coord, IndexT extent) {
     if (extent <= 1) {
         return 0;
     }
-    const int64_t scale = 2 * extent - 2;
+    if constexpr (std::is_same_v<IndexT, int32_t>) {
+        const int32_t scale = 2 * extent - 2;
+        int32_t v = euclid_mod_i32(coord, scale);
+        const int32_t inner = (extent - 1) - v;
+        return (extent - 1) - abs_i32(inner);
+    } else {
+        const int64_t scale = 2 * extent - 2;
 #if defined(__HIP_DEVICE_COMPILE__) || defined(__CUDA_ARCH__)
-    constexpr int64_t kLim = int64_t{1} << 30;
-    if (extent < kLim && coord > -kLim && coord < kLim && scale > 0 && scale < kLim) {
-        const int32_t e = static_cast<int32_t>(extent);
-        const int32_t s = e * 2 - 2;
-        int32_t v = euclid_mod_i32(static_cast<int32_t>(coord), s);
-        const int32_t inner = (e - 1) - v;
-        const int32_t a = abs_i32(inner);
-        return static_cast<int64_t>((e - 1) - a);
-    }
+        constexpr int64_t kLim = int64_t{1} << 30;
+        if (extent < kLim && coord > -kLim && coord < kLim && scale > 0 && scale < kLim) {
+            const int32_t e = static_cast<int32_t>(extent);
+            const int32_t s = e * 2 - 2;
+            int32_t v = euclid_mod_i32(static_cast<int32_t>(coord), s);
+            const int32_t inner = (e - 1) - v;
+            const int32_t a = abs_i32(inner);
+            return static_cast<int64_t>((e - 1) - a);
+        }
 #endif
-    const int64_t v = euclid_mod_i64_fast(coord, scale);
-    const int64_t inner = (extent - 1) - v;
-    return (extent - 1) - abs_i64(inner);
+        const int64_t v = euclid_mod_i64_fast(coord, scale);
+        const int64_t inner = (extent - 1) - v;
+        return (extent - 1) - abs_i64(inner);
+    }
 }
 }  // namespace detail
 
@@ -92,8 +111,9 @@ __device__ __host__ inline int64_t reflect101_border_coord_i64(int64_t coord, in
  *
  * @tparam T The underlying data type of the tensor.
  * @tparam BorderType The border type to use when coordinates are out of bounds.
+ * @tparam IndexT The datatype to use for indexing/stride calculations (int32_t or int64_t)
  */
-template <typename T, eBorderType BorderType>
+template <typename T, eBorderType BorderType, typename IndexT = int32_t>
 class BorderWrapper {
    public:
     /**
@@ -111,13 +131,13 @@ class BorderWrapper {
      * @param image_wrapper The ImageWrapper to wrap around the BorderWrapper.
      * @param border_value The fallback border color to use when using a constant border mode.
      */
-    BorderWrapper(ImageWrapper<T> image_wrapper, T border_value)
+    BorderWrapper(ImageWrapper<T, IndexT> image_wrapper, T border_value)
         : m_desc(image_wrapper), m_border_value(border_value) {}
 
     /**
      * @brief Sample the underlying image with no border logic. Caller must ensure coordinates are in-range.
      */
-    __device__ __host__ inline const T at_inbounds(int64_t n, int64_t h, int64_t w, int64_t c) const {
+    __device__ __host__ inline const T at_inbounds(IndexT n, IndexT h, IndexT w, IndexT c) const {
         return m_desc.at(n, h, w, c);
     }
 
@@ -131,7 +151,7 @@ class BorderWrapper {
      * @param c The channel index.
      * @return A reference to the underlying data or a fallback border value of type T.
      */
-    __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
+    __device__ __host__ const T at(IndexT n, IndexT h, IndexT w, IndexT c) const {
         // Constant border type implementation. This is a special case which doesn't remap values, but rather returns
         // the provided constant value.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_CONSTANT) {
@@ -150,35 +170,40 @@ class BorderWrapper {
         }
 
         // Otherwise, do some additional calculations to map the provided x and y coordinates to be within bounds.
-        int64_t x = w, y = h;
-        int64_t imgWidth = width(), imgHeight = height();
+        IndexT x = w, y = h;
+        IndexT imgWidth = width(), imgHeight = height();
 
         // Reflect border type implementation. (Note: This is NOT REFLECT101, pixels at the border will be duplicated as
         // is the intended behavior for this border mode.)
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT) {
             if (w < 0 || w >= imgWidth) {
-                x = detail::reflect_border_coord_i64(w, imgWidth);
+                x = detail::reflect_border_coord<IndexT>(w, imgWidth);
             }
             if (h < 0 || h >= imgHeight) {
-                y = detail::reflect_border_coord_i64(h, imgHeight);
+                y = detail::reflect_border_coord<IndexT>(h, imgHeight);
             }
         }
 
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REFLECT101) {
-            x = detail::reflect101_border_coord_i64(w, imgWidth);
-            y = detail::reflect101_border_coord_i64(h, imgHeight);
+            x = detail::reflect101_border_coord<IndexT>(w, imgWidth);
+            y = detail::reflect101_border_coord<IndexT>(h, imgHeight);
         }
 
         // Replicate: clamp to edge. Equivalent to per-axis OOB snap; min/max maps cleanly to GPU integer ops.
         if constexpr (BorderType == eBorderType::BORDER_TYPE_REPLICATE) {
-            x = detail::clamp_i64(w, 0, imgWidth - 1);
-            y = detail::clamp_i64(h, 0, imgHeight - 1);
+            x = detail::clamp<IndexT>(w, 0, imgWidth - 1);
+            y = detail::clamp<IndexT>(h, 0, imgHeight - 1);
         }
 
         // Wrap border type implementation
         if constexpr (BorderType == eBorderType::BORDER_TYPE_WRAP) {
-            x = detail::euclid_mod_i64_fast(w, imgWidth);
-            y = detail::euclid_mod_i64_fast(h, imgHeight);
+            if constexpr (std::is_same_v<IndexT, int32_t>) {
+                x = detail::euclid_mod_i32(w, imgWidth);
+                y = detail::euclid_mod_i32(h, imgHeight);
+            } else {
+                x = detail::euclid_mod_i64_fast(w, imgWidth);
+                y = detail::euclid_mod_i64_fast(h, imgHeight);
+            }
         }
 
         return m_desc.at(n, y, x, c);
@@ -189,31 +214,31 @@ class BorderWrapper {
      *
      * @return Image height.
      */
-    __device__ __host__ inline int64_t height() const { return m_desc.height(); }
+    __device__ __host__ inline IndexT height() const { return m_desc.height(); }
 
     /**
      * @brief Retrieves the width of the image.
      *
      * @return Image width.
      */
-    __device__ __host__ inline int64_t width() const { return m_desc.width(); }
+    __device__ __host__ inline IndexT width() const { return m_desc.width(); }
 
     /**
      * @brief Retrieves the number of batches in the image tensor.
      *
      * @return Number of batches.
      */
-    __device__ __host__ inline int64_t batches() const { return m_desc.batches(); }
+    __device__ __host__ inline IndexT batches() const { return m_desc.batches(); }
 
     /**
      * @brief Retrieves the number of channels in the image.
      *
      * @return Image channels.
      */
-    __device__ __host__ inline int64_t channels() const { return m_desc.channels(); }
+    __device__ __host__ inline IndexT channels() const { return m_desc.channels(); }
 
    private:
-    ImageWrapper<T> m_desc;
+    ImageWrapper<T, IndexT> m_desc;
     T m_border_value;
 };
 }  // namespace roccv

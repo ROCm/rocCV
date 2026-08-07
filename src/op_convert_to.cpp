@@ -21,22 +21,22 @@ THE SOFTWARE.
 */
 #include "op_convert_to.hpp"
 
+#include <hip/hip_runtime.h>
+
 #include <functional>
 
-#include <hip/hip_runtime.h>
-#include "core/wrappers/image_wrapper.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/convert_to_device.hpp"
 #include "kernels/host/convert_to_host.hpp"
 
 namespace roccv {
 
 template <typename SRC_DT, typename DST_DT, int NC>
-void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                       double alpha, double beta, eDeviceType device) {
-    
+void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const Tensor &output, double alpha,
+                                  double beta, eDeviceType device) {
     using SRC_DT_NC = detail::MakeType<SRC_DT, NC>;
     using DST_DT_NC = detail::MakeType<DST_DT, NC>;
 
@@ -47,7 +47,7 @@ void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const
     using DST_BT = detail::BaseType<DST_DT>;
 
     using DT_AB = decltype(float() * SRC_BT() * DST_BT());
-    
+
     DT_AB alpha_ab = detail::SaturateCast<DT_AB>(alpha);
     DT_AB beta_ab = detail::SaturateCast<DT_AB>(beta);
 
@@ -68,16 +68,14 @@ void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const
 }
 
 template <typename SRC_DT, typename DST_DT>
-void dispatch_convert_to_output_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                       double alpha, double beta, eDeviceType device) {
-
+void dispatch_convert_to_output_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, double alpha,
+                                      double beta, eDeviceType device) {
     int64_t channels = output.shape(output.layout().channels_index());
     // Select kernel dispatcher based on number of channels.
     // clang-format off
     static const std::array<std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>, 4>
         funcs = {dispatch_convert_to_channels<SRC_DT, DST_DT, 1>, dispatch_convert_to_channels<SRC_DT, DST_DT, 2>, dispatch_convert_to_channels<SRC_DT, DST_DT, 3>, dispatch_convert_to_channels<SRC_DT, DST_DT, 4>};
-        
-            
+
     // clang-format on
 
     auto func = funcs.at(channels - 1);
@@ -86,11 +84,10 @@ void dispatch_convert_to_output_dtype(hipStream_t stream, const Tensor &input, c
 }
 
 template <typename SRC_DT>
-void dispatch_convert_to_input_dtype(hipStream_t stream, const Tensor &input, const Tensor &output,
-                                       double alpha, double beta, eDeviceType device) {
-    
+void dispatch_convert_to_input_dtype(hipStream_t stream, const Tensor &input, const Tensor &output, double alpha,
+                                     double beta, eDeviceType device) {
     eDataType output_dtype = output.dtype().etype();
-    
+
     // Select kernel dispatcher based on a base input datatype.
     // clang-format off
     static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>>
@@ -127,6 +124,9 @@ void ConvertTo::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+    
     // Select kernel dispatcher based on a base input datatype.
     // clang-format off
     static const std::unordered_map<eDataType, std::function<void(hipStream_t, const Tensor &, const Tensor &, double, double, eDeviceType)>>

@@ -132,6 +132,9 @@ void Threshold::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_COMPARISON(thresh.shape("N") == input.shape("N"));
     CHECK_TENSOR_COMPARISON(maxVal.shape("N") == input.shape("N"));
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<

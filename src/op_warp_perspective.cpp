@@ -125,6 +125,9 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
                                 input.shape(input.layout().batch_index()));
     }
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     PerspectiveTransform invertedTransform;
 
     // Ensure the input perspective transform matrix is inverted before passing into the kernel.

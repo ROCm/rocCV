@@ -29,15 +29,15 @@ THE SOFTWARE.
 namespace Kernels {
 namespace Device {
 
-template<typename T, typename SrcWrapper>
+template <typename T, typename SrcWrapper>
 __global__ void histogram_kernel(SrcWrapper input, roccv::GenericTensorWrapper<T> histogram) {
     extern __shared__ __align__(sizeof(T)) unsigned char smem[];
     T *local_histogram = reinterpret_cast<T *>(smem);
 
-    const auto z_idx = blockIdx.z;
-    const auto gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const auto x_idx = gid % input.width();
-    const auto y_idx = gid / input.width();
+    const int z_idx = blockIdx.z;
+    const int gid = blockIdx.x * blockDim.x + threadIdx.x;
+    const int x_idx = gid % input.width();
+    const int y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
@@ -64,10 +64,10 @@ __global__ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::Gene
     extern __shared__ __align__(sizeof(T)) unsigned char smem[];
     T *local_histogram = reinterpret_cast<T *>(smem);
 
-    const auto z_idx = blockIdx.z;
-    const auto gid = blockIdx.x * blockDim.x + threadIdx.x;
-    const auto x_idx = gid % input.width();
-    const auto y_idx = gid / input.width();
+    const int z_idx = blockIdx.z;
+    const int gid = blockIdx.x * blockDim.x + threadIdx.x;
+    const int x_idx = gid % input.width();
+    const int y_idx = gid / input.width();
 
     // thread index in block
     const auto tid = threadIdx.x;  // histogram index
@@ -78,9 +78,7 @@ __global__ void histogram_kernel(SrcWrapper input, MaskWrapper mask, roccv::Gene
 
     if (gid < input.height() * input.width()) {
         if (mask.at(z_idx, y_idx, x_idx, 0) != 0) {
-            atomicAdd(
-                &local_histogram[input.at(z_idx, y_idx, x_idx, 0).x],
-                1);
+            atomicAdd(&local_histogram[input.at(z_idx, y_idx, x_idx, 0).x], 1);
         }
     }
     __syncthreads();  // wait for all of the threads in this block to finish

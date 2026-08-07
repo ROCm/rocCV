@@ -61,8 +61,7 @@ void dispatch_bilateral_filter_border_mode(hipStream_t stream, const Tensor &inp
         sigmaSpace = 1.0f;
     }
 
-    const int radius =
-        (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
+    const int radius = (diameter <= 0) ? static_cast<int>(std::roundf(sigmaSpace * 1.5f)) : (diameter >> 1);
 
     float spaceCoeff = -1 / (2 * sigmaSpace * sigmaSpace);
     float colorCoeff = -1 / (2 * sigmaColor * sigmaColor);
@@ -155,6 +154,9 @@ void BilateralFilter::operator()(hipStream_t stream, const roccv::Tensor &input,
     // Ensure the layout and shapes for the input/output tensor match
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
+
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off

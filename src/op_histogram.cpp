@@ -140,6 +140,9 @@ void Histogram::operator()(hipStream_t stream, const Tensor& input,
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_LAYOUT(histogram, eTensorLayout::TENSOR_LAYOUT_HWC);
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(histogram);
+
     // Create kernel dispatching table based on histogram datatype.
     // clang-format off
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, std::optional<std::reference_wrapper<const Tensor>>, const Tensor&, eDeviceType)>, 1>>
