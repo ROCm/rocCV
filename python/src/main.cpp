@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "operators/py_op_gamma_contrast.hpp"
 #include "operators/py_op_gaussian.hpp"
 #include "operators/py_op_histogram.hpp"
+#include "operators/py_op_laplacian.hpp"
 #include "operators/py_op_non_max_suppression.hpp"
 #include "operators/py_op_normalize.hpp"
 #include "operators/py_op_reformat.hpp"
@@ -80,6 +81,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpBrightnessContrast::Export(m);
     PyOpGammaContrast::Export(m);
     PyOpGaussian::Export(m);
+    PyOpLaplacian::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
     PyOpCenterCrop::Export(m);

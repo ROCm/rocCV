@@ -18,6 +18,7 @@ See below for a list of Computer Vision operators rocCV supports.
 |GammaContrast|Adjusts the gamma contrast of an image.|U8, U16, U32, F32|NHWC, HWC|Both|
 |Gaussian|Applies a Gaussian filter for image smoothing.|U8, U16, S16, S32, F32|NHWC, HWC|Both|
 |Histogram|Calculates a histogram of values from a grayscale image.|U8|NHWC, HWC|Both|
+|Laplacian|Applies a Laplacian filter.|U8, U16, F32|NHWC, HWC|Both|
 |NonMaximumSuppression|Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.|S16, 4S16|NW, NWC|Both|
 |Normalize|Normalizes image pixels' range using the provided shift and scale parameters.|U8, S8, U16, S16, U32, S32, F32|NHWC, HWC|Both|
 |Reformat|Converts a tensor between different memory layouts (e.g., NHWC, NCHW, HWC, CHW).|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, NCHW, HWC, CHW|Both|
