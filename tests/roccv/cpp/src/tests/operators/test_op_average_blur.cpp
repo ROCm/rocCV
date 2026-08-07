@@ -303,6 +303,20 @@ void TestNegativeAverageBlur() {
         EXPECT_EXCEPTION(
             op(nullptr, validGPUTensor, validGPUTensor, 2, -1, -1, -1, BORDER_TYPE_CONSTANT, eDeviceType::GPU),
             eStatusType::INVALID_VALUE);
+        // too large for LDS
+        hipError_t hipErr;
+        int deviceId;
+        hipErr = hipGetDevice(&deviceId);
+        if (hipErr != hipSuccess) return;  // not testing for hip err
+        int maxSharedMem;
+        hipErr = hipDeviceGetAttribute(&maxSharedMem, hipDeviceAttributeMaxSharedMemoryPerBlock, deviceId);
+        if (hipErr != hipSuccess) return;  // not testing for hip err
+        constexpr int BLOCK_DIM = 128;
+        int maxKernelDim = (maxSharedMem / validGPUTensor.dtype().size()) - BLOCK_DIM + 1;
+        AverageBlur op(maxKernelDim + 2, 1);
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, (maxKernelDim + 1 | 1), 1, -1, -1,
+                            BORDER_TYPE_CONSTANT, eDeviceType::GPU),
+                         eStatusType::INVALID_VALUE);
     }
 
     {

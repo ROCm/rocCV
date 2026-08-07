@@ -115,6 +115,24 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
                                eStatusType::INVALID_VALUE);
     }
 
+    // Validate will fit in shared mem
+    if (device == eDeviceType::GPU && !m_use2D) {
+        int deviceId;
+        HIP_VALIDATE_NO_ERRORS(hipGetDevice(&deviceId));
+        int maxSharedMem;
+        HIP_VALIDATE_NO_ERRORS(
+            hipDeviceGetAttribute(&maxSharedMem, hipDeviceAttributeMaxSharedMemoryPerBlock, deviceId));
+        constexpr int BLOCK_DIM = 128;
+        int smem = (BLOCK_DIM - 1 + std::max(kernelWidth, kernelHeight)) * input.dtype().size();
+        if (smem > maxSharedMem) {
+            throw roccv::Exception("Invalid kernel size = " + std::to_string(kernelWidth) + ", " +
+                                       std::to_string(kernelHeight) + " requires " + std::to_string(smem) +
+                                       " bytes for shared memory but device only supports " +
+                                       std::to_string(maxSharedMem) + " bytes per block.",
+                                   eStatusType::INVALID_VALUE);
+        }
+    }
+
     // Validate anchor
     if (!((anchorX == -1 || (anchorX >= 0 && anchorX < kernelWidth)) &&
           (anchorY == -1 || (anchorY >= 0 && anchorY < kernelHeight)))) {
