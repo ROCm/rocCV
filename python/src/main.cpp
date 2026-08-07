@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <pybind11/stl.h>
 
 #include "operators/py_op_adv_cvt_color.hpp"
+#include "operators/py_op_average_blur.hpp"
 #include "operators/py_op_bilateral_filter.hpp"
 #include "operators/py_op_bnd_box.hpp"
 #include "operators/py_op_brightness_contrast.hpp"
@@ -64,6 +65,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyStructs::Export(m);
     PyStream::Export(m);
     PyTensor::Export(m);
+    PyOpAverageBlur::Export(m);
     PyOpCustomCrop::Export(m);
     PyOpNonMaxSuppression::Export(m);
     PyOpNormalize::Export(m);
