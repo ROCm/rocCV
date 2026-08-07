@@ -21,12 +21,16 @@ THE SOFTWARE.
 */
 #include "op_center_crop.hpp"
 
+#include "common/validation_helpers.hpp"
 #include "op_custom_crop.hpp"
 #include "operator_types.h"
 
 namespace roccv {
 void CenterCrop::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, Size2D cropSize,
                             eDeviceType device) const {
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     auto i_height = input.shape()[input.shape().layout().height_index()];
     auto i_width = input.shape()[input.shape().layout().width_index()];
 

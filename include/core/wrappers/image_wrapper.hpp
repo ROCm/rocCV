@@ -35,8 +35,9 @@ namespace roccv {
  * methods for accessing the underlying data within HIP kernels.
  *
  * @tparam T The datatype of the underlying tensor data.
+ * @tparam IndexT The datatype to use for indexing/stride calculations (int32_t or int64_t)
  */
-template <typename T>
+template <typename T, typename IndexT = int32_t>
 class ImageWrapper {
    public:
     using ValueType = T;
@@ -62,11 +63,13 @@ class ImageWrapper {
 
         // Handle HWC/CHW layout, which doesn't have shapes/strides for the batch dimension. We set the batch shape to 1
         // and the strides to 0.
-        int64_t num_batches = indexes.n == -1 ? 1 : tensor.shape(indexes.n);
-        int64_t batch_stride = indexes.n == -1 ? 0 : tdata.stride(indexes.n);
+        IndexT num_batches = indexes.n == -1 ? 1 : static_cast<IndexT>(tensor.shape(indexes.n));
+        IndexT batch_stride = indexes.n == -1 ? 0 : static_cast<IndexT>(tdata.stride(indexes.n));
 
-        shape = {num_batches, tdata.shape(indexes.h), tdata.shape(indexes.w), tdata.shape(indexes.c)};
-        stride = {batch_stride, tdata.stride(indexes.h), tdata.stride(indexes.w), tdata.stride(indexes.c)};
+        shape = {num_batches, static_cast<IndexT>(tdata.shape(indexes.h)), static_cast<IndexT>(tdata.shape(indexes.w)),
+                 static_cast<IndexT>(tdata.shape(indexes.c))};
+        stride = {batch_stride, static_cast<IndexT>(tdata.stride(indexes.h)),
+                  static_cast<IndexT>(tdata.stride(indexes.w)), static_cast<IndexT>(tdata.stride(indexes.c))};
         data = static_cast<unsigned char*>(tdata.basePtr());
     }
 
@@ -78,7 +81,7 @@ class ImageWrapper {
      * @param width The width of each image within the batch.
      * @param height The height of each image within the batch.
      */
-    ImageWrapper(std::vector<BaseType>& input, int32_t batchSize, int32_t width, int32_t height) {
+    ImageWrapper(std::vector<BaseType>& input, IndexT batchSize, IndexT width, IndexT height) {
         // Calculate strides based on input (byte-wise strides)
         stride.c = sizeof(BaseType);
         stride.w = stride.c * detail::NumElements<T>;
@@ -103,7 +106,7 @@ class ImageWrapper {
      * @param width The width of each image within the batch.
      * @param height The height of each image within the batch.
      */
-    ImageWrapper(void* input, int32_t batchSize, int32_t width, int32_t height) {
+    ImageWrapper(void* input, IndexT batchSize, IndexT width, IndexT height) {
         // Calculate strides based on input (byte-wise strides)
         stride.c = sizeof(BaseType);
         stride.w = stride.c * detail::NumElements<T>;
@@ -128,11 +131,11 @@ class ImageWrapper {
      * @param c Channel coordinates.
      * @return A reference to the underlying data at given coordinates.
      */
-    __device__ __host__ T& at(int64_t n, int64_t h, int64_t w, int64_t c) {
+    __device__ __host__ T& at(IndexT n, IndexT h, IndexT w, IndexT c) {
         return *(reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c)));
     }
 
-    __device__ __host__ const T at(int64_t n, int64_t h, int64_t w, int64_t c) const {
+    __device__ __host__ const T at(IndexT n, IndexT h, IndexT w, IndexT c) const {
         return *(reinterpret_cast<T*>(data + (stride.n * n) + (stride.h * h) + (stride.w * w) + (stride.c * c)));
     }
 
@@ -141,32 +144,32 @@ class ImageWrapper {
      *
      * @return Image height.
      */
-    __device__ __host__ inline int64_t height() const { return shape.h; }
+    __device__ __host__ inline IndexT height() const { return shape.h; }
 
     /**
      * @brief Retrieves the width of the image.
      *
      * @return Image width.
      */
-    __device__ __host__ inline int64_t width() const { return shape.w; }
+    __device__ __host__ inline IndexT width() const { return shape.w; }
 
     /**
      * @brief Retrieves the number of batches in the image tensor.
      *
      * @return Number of batches.
      */
-    __device__ __host__ inline int64_t batches() const { return shape.n; }
+    __device__ __host__ inline IndexT batches() const { return shape.n; }
 
     /**
-     * @brief Retries the number of channels in the image.
+     * @brief Retrieves the number of channels in the image.
      *
      * @return Image channels.
      */
-    __device__ __host__ inline int64_t channels() const { return shape.c; }
+    __device__ __host__ inline IndexT channels() const { return shape.c; }
 
    private:
     struct ImageShape {
-        int64_t n, h, w, c;
+        IndexT n, h, w, c;
     };
 
     ImageShape shape;

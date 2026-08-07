@@ -93,6 +93,9 @@ void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, 
     CHECK_TENSOR_COMPARISON(scores.shape(1) == numBoxes);
     CHECK_TENSOR_COMPARISON(scores.shape(0) == numBatches);
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Create tensor views to conform to the expected data types of the NMS kernel. These shapes should be validated,
     // but typically involve going from non-vectorized to vectorized shapes. These shapes should be validated
     // beforehand. For example: an input tensor with shape and datatype [NWC, <batches, boxes, 4>, S16] will be

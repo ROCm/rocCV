@@ -24,6 +24,7 @@ The rocCV is a collection of the following computer vision operators that are su
     "GammaContrast","Adjusts the gamma contrast on images in a tensor.","U8","NHWC, HWC"
     "Gaussian","Applies a Gaussian filter.","U8, U16, S16, S32, F32", "NHWC, HWC"
     "Histogram","Calculates a histogram of values from a grayscale image.","U8","NHWC, HWC"
+    "Laplacian", "Applies a Laplacian filter","U8, U16, F32", "NHWC, HWC"
     "NonMaximumSuppression","Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.","S16, 4S16","NW, NWC"
     "Normalize","Normalizes an input tensor using a provided mean and standard deviation.","U8, S8, F32","NHWC, HWC"
     "Remap","Maps pixels in an image from one projection to another projection in a new image.","U8","NHWC, HWC"

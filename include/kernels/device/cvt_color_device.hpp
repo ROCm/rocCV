@@ -39,9 +39,9 @@ __global__ void rgb_or_bgr_to_yuv(SrcWrapper input, DstWrapper output, float del
 
     using work_type_t = MakeType<float, NumElements<T>>;
 
-    const auto x_idx = threadIdx.x + blockIdx.x * blockDim.x;
-    const auto y_idx = threadIdx.y + blockIdx.y * blockDim.y;
-    const auto z_idx = blockIdx.z;
+    const int x_idx = threadIdx.x + blockIdx.x * blockDim.x;
+    const int y_idx = threadIdx.y + blockIdx.y * blockDim.y;
+    const int z_idx = blockIdx.z;
 
     if (x_idx >= output.width() || y_idx >= output.height()) return;
 

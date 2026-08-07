@@ -55,7 +55,8 @@ class Gaussian final : public IOperator {
 
     /**
      * @brief Executes the Gaussian operation on the given HIP stream.
-     *
+     * Note that the Gaussian operator is stateful, and has concurrency control such that back-to-back calls on the same
+     * Gaussian operator object will be serialized.
      *
      * Limitations:
      *

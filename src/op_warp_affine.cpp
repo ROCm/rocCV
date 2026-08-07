@@ -119,6 +119,9 @@ void WarpAffine::operator()(hipStream_t stream, const Tensor &input, const Tenso
                                 input.shape(input.layout().batch_index()));
     }
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     PerspectiveTransform full{};
 #pragma unroll
     for (int i = 0; i < 6; i++) {
