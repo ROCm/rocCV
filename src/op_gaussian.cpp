@@ -135,9 +135,7 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     }
 
     std::lock_guard<std::mutex> lock(m_bufferMutex);
-    if (device == eDeviceType::GPU) {
-        HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_completionEvent));
-    }
+    HIP_VALIDATE_NO_ERRORS(hipEventSynchronize(m_completionEvent));
 
     // compute the kernel
     int halfW = kernelWidth / 2;
