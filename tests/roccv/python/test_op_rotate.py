@@ -46,7 +46,7 @@ def calc_center_shift(center_x, center_y, angle) -> tuple[float, float]:
 ])
 def test_op_rotate(samples, width, height, channels, angle, dtype, interp, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     center_x = (width - 1) / 2
     center_y = (height - 1) / 2

@@ -41,7 +41,7 @@ from test_helpers import generate_tensor, compare_tensors
 ])
 def test_op_warp_perspective(samples, width, height, channels, dtype, mat, inverted, interp, border_mode, border_val, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
     print(output_golden.shape())
 
     stream = rocpycv.Stream()

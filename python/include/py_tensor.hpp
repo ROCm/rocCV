@@ -49,11 +49,11 @@ class PyTensor : public std::enable_shared_from_this<PyTensor> {
      * wrap.
      *
      * @param shape The shape of the tensor.
-     * @param layout The layout of the tensor.
      * @param dtype The data type of the tensor.
+     * @param layout The layout of the tensor.
      * @param device The device of the tensor.
      */
-    PyTensor(std::vector<int64_t> shape, eTensorLayout layout, eDataType dtype, eDeviceType device);
+    PyTensor(std::vector<int64_t> shape, eDataType dtype, eTensorLayout layout, eDeviceType device);
 
     /**
      * @brief Wraps an existing roccv::Tensor inside of a newly constructed PyTensor.
@@ -177,6 +177,22 @@ class PyTensor : public std::enable_shared_from_this<PyTensor> {
      * @return eDeviceType
      */
     eDeviceType getDevice();
+
+    /**
+     * @brief Returns the address of the tensor's underlying data buffer as an
+     * unsigned integer. For GPU tensors this is a HIP device address; for CPU
+     * tensors it is a host address. Use ``device()`` to disambiguate.
+     *
+     * The pointer is non-owning. The caller is responsible for ensuring this
+     * PyTensor remains alive for as long as the pointer is used; otherwise the
+     * underlying buffer may be freed and the pointer left dangling.
+     *
+     * Intended for zero-copy interop with frameworks that accept a raw
+     * pointer + shape + dtype (e.g. ``migraphx.argument_from_pointer``).
+     *
+     * @return uintptr_t
+     */
+    uintptr_t getDataPtr();
 
     /**
      * @brief Gets the underlying roccv::Tensor that this tensor container wraps.

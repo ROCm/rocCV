@@ -56,6 +56,18 @@ class PyStream {
     void synchronize();
 
     /**
+     * @brief Returns the wrapped HIP stream handle as an unsigned integer.
+     *
+     * Intended for zero-copy interop with frameworks that accept a raw HIP
+     * stream handle (e.g. ``migraphx.run_async`` with stream type
+     * ``"ihipStream_t"``). The handle is non-owning -- keep this PyStream alive
+     * for as long as the handle is in use.
+     *
+     * @return uintptr_t
+     */
+    uintptr_t getHandle();
+
+    /**
      * @brief Exports the PyStream object to the specified python module.
      *
      * @param m The python module to export this object to.
