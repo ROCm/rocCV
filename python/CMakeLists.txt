@@ -122,26 +122,43 @@ endif()
 include(FetchContent)
 
 # --- pybind11 ---
+# Allow super-projects (e.g. TheRock) to provide pinned versions via -Dpybind11_DIR=.
+# Only fall back to fetching from the network when no external package is provided,
+# so that hermetic/offline build environments can be supported.
 set(FETCHCONTENT_QUIET OFF)
-message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching pybind11 v3.0.2${ColorReset}")
-FetchContent_Declare(
-    pybind11
-    URL https://github.com/pybind/pybind11/archive/refs/tags/v3.0.2.tar.gz
-    URL_HASH SHA256=2f20a0af0b921815e0e169ea7fec63909869323581b89d7de1553468553f6a2d
-    EXCLUDE_FROM_ALL
-)
-FetchContent_MakeAvailable(pybind11)
+find_package(pybind11 3.0 QUIET)
+if(pybind11_FOUND)
+    message("-- ${Green}${PROJECT_NAME} -- Found pybind11 version: ${pybind11_VERSION}${ColorReset}")
+else()
+    message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching pybind11 v3.0.2${ColorReset}")
+    FetchContent_Declare(
+        pybind11
+        URL https://github.com/pybind/pybind11/archive/refs/tags/v3.0.2.tar.gz
+        URL_HASH SHA256=2f20a0af0b921815e0e169ea7fec63909869323581b89d7de1553468553f6a2d
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(pybind11)
+endif()
 
 # --- dlpack ---
-message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching dlpack v1.3${ColorReset}")
-FetchContent_Declare(
-    dlpack
-    URL https://github.com/dmlc/dlpack/archive/refs/tags/v1.3.tar.gz
-    URL_HASH SHA256=f3d567f885f6c142183afc91a58873b31d0e0b36faa2e45c232b98c74596404f
-    CMAKE_ARGS -DBUILD_MOCK=OFF
-    EXCLUDE_FROM_ALL
-)
-FetchContent_MakeAvailable(dlpack)
+# Allow super-projects (e.g. TheRock) to provide pinned versions via -Ddlpack_DIR=.
+# NOTE: no version is requested here; upstream dlpack still declares project version
+#       0.6 in its CMakeLists as of the v1.3 tag, so a version constraint would never
+#       be satisfied and would always fall through to FetchContent.
+find_package(dlpack QUIET CONFIG)
+if(dlpack_FOUND)
+    message("-- ${Green}${PROJECT_NAME} -- Found dlpack version: ${dlpack_VERSION}${ColorReset}")
+else()
+    message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching dlpack v1.3${ColorReset}")
+    FetchContent_Declare(
+        dlpack
+        URL https://github.com/dmlc/dlpack/archive/refs/tags/v1.3.tar.gz
+        URL_HASH SHA256=f3d567f885f6c142183afc91a58873b31d0e0b36faa2e45c232b98c74596404f
+        CMAKE_ARGS -DBUILD_MOCK=OFF
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(dlpack)
+endif()
 set(FETCHCONTENT_QUIET ON)
 
 if (NOT TARGET roccv::roccv)
