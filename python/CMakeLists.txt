@@ -122,13 +122,20 @@ endif()
 include(FetchContent)
 
 # --- pybind11 ---
-# Allow super-projects (e.g. TheRock) to provide pinned versions via -Dpybind11_DIR=.
-# Only fall back to fetching from the network when no external package is provided,
-# so that hermetic/offline build environments can be supported.
+# A super-project (e.g. TheRock) can supply its own pinned pybind11 by pointing us at
+# it explicitly with -Dpybind11_DIR= (or -Dpybind11_ROOT=), which keeps hermetic build
+# environments from needing network access at configure time.
+#
+# This is deliberately opt-in rather than an unconditional find_package: an
+# unconditional search would also pick up whatever happens to sit on CMAKE_PREFIX_PATH
+# or in the system prefixes, so an unrelated install could silently replace the pinned
+# version below. When nothing is passed, we always build against the pinned version.
 set(FETCHCONTENT_QUIET OFF)
-find_package(pybind11 3.0 QUIET)
-if(pybind11_FOUND)
-    message("-- ${Green}${PROJECT_NAME} -- Found pybind11 version: ${pybind11_VERSION}${ColorReset}")
+if(pybind11_DIR OR pybind11_ROOT OR DEFINED ENV{pybind11_ROOT})
+    # Externally provided: REQUIRED so a bad path fails loudly instead of quietly
+    # falling back to the network.
+    find_package(pybind11 3.0 REQUIRED CONFIG)
+    message("-- ${Green}${PROJECT_NAME} -- Using external pybind11 version: ${pybind11_VERSION} (${pybind11_DIR})${ColorReset}")
 else()
     message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching pybind11 v3.0.2${ColorReset}")
     FetchContent_Declare(
@@ -141,13 +148,16 @@ else()
 endif()
 
 # --- dlpack ---
-# Allow super-projects (e.g. TheRock) to provide pinned versions via -Ddlpack_DIR=.
+# Same opt-in scheme as pybind11 above: -Ddlpack_DIR= / -Ddlpack_ROOT= to override,
+# otherwise the pinned version is used.
+#
 # NOTE: no version is requested here; upstream dlpack still declares project version
-#       0.6 in its CMakeLists as of the v1.3 tag, so a version constraint would never
-#       be satisfied and would always fall through to FetchContent.
-find_package(dlpack QUIET CONFIG)
-if(dlpack_FOUND)
-    message("-- ${Green}${PROJECT_NAME} -- Found dlpack version: ${dlpack_VERSION}${ColorReset}")
+#       0.6 in its CMakeLists as of the v1.3 tag, so a version constraint could never
+#       be satisfied. That makes the opt-in gate the only thing standing between us
+#       and an arbitrary dlpack found on the search path -- do not relax it.
+if(dlpack_DIR OR dlpack_ROOT OR DEFINED ENV{dlpack_ROOT})
+    find_package(dlpack REQUIRED CONFIG)
+    message("-- ${Green}${PROJECT_NAME} -- Using external dlpack version: ${dlpack_VERSION} (${dlpack_DIR})${ColorReset}")
 else()
     message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching dlpack v1.3${ColorReset}")
     FetchContent_Declare(
