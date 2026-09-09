@@ -4,7 +4,7 @@ This directory holds third-party sources checked directly into the rocCV tree.
 
 These are **not** git submodules. rocCV is consumed by a superbuild that neither permits submodules nor has network access at configure/build time, so the dependencies previously pulled by `FetchContent` in `python/CMakeLists.txt` are vendored here instead.
 
-Each subdirectory is pristine, unmodified upstream content — either a release tarball with its top-level `<name>-<version>/` prefix stripped, or the release assets themselves. No rocCV-local patches have been applied. If a patch ever becomes necessary, record it in this file.
+Each subdirectory is unmodified upstream content — either a release tarball with its top-level `<name>-<version>/` prefix stripped, or the release assets themselves. No rocCV-local patches have been applied to any file. Some directories are pruned wholesale after extraction; those are listed per dependency below, and nothing else is altered.
 
 ## Updating
 
@@ -12,8 +12,11 @@ Do not hand-edit these trees. To move to a new upstream version:
 
 1. Download the release tarball from the URL below (with the new tag).
 2. Verify its SHA256 against the checksum published by upstream.
-3. Replace the subdirectory wholesale with the extracted contents.
-4. Update the version, URL, SHA256, and commit fields in this file.
+3. Apply that dependency's **Pruned** step, if it has one.
+4. Replace the subdirectory wholesale with the extracted contents.
+5. Update the version, URL, SHA256, and commit fields in this file.
+
+The same sequence verifies an existing tree: extract, prune, then `diff -r` against the checked-in directory. It should report no differences.
 
 ---
 
@@ -28,8 +31,11 @@ Do not hand-edit these trees. To move to a new upstream version:
 | Tag commit | `ed5057ded698e305210269dafa57574ecf964483` |
 | License | BSD 3-Clause (`pybind11/LICENSE`) |
 | Retrieved | 2026-09-09 |
+| Pruned | `rm -rf pybind11-3.0.0/{tests,docs}` |
 
 Provides the `pybind11::headers` target and the `pybind11_add_module()` helper used to build the `rocpycv` Python extension module.
+
+`tests/` and `docs/` are removed after extraction. GitHub push protection flags `tests/test_class_sh_disowning.cpp` as containing secrets — a false positive on ordinary C++ template code — which blocks any push carrying the unpruned tree. Neither directory is reachable from our build: every `add_subdirectory(tests)` in pybind11's `CMakeLists.txt` sits behind `PYBIND11_MASTER_PROJECT` or `PYBIND11_TEST`, both of which are off here, and there is no `add_subdirectory(docs)` at all.
 
 ## dlpack
 
