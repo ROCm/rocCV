@@ -1,5 +1,0 @@
-# Vendored trees are checked in verbatim. Negate the repo-root ignore rules
-# (e.g. `_static/`, build artifact patterns) so that upstream sources are never
-# silently dropped from the tree. See ORIGIN.md.
-!*
-!*/
