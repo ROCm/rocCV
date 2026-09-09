@@ -123,7 +123,9 @@ if(NOT DEFINED ROCCV_SOURCE_DIR)
     # Set by the root project; derive it when python/ is configured standalone.
     get_filename_component(ROCCV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 endif()
-set(ROCCV_VENDOR_DIR "${ROCCV_SOURCE_DIR}/vendor")
+if(NOT DEFINED ROCCV_VENDOR_DIR)
+    set(ROCCV_VENDOR_DIR "${ROCCV_SOURCE_DIR}/vendor")
+endif()
 
 # --- pybind11 ---
 message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored pybind11 from ${ROCCV_VENDOR_DIR}/pybind11${ColorReset}")

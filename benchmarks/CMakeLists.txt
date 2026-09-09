@@ -85,9 +85,15 @@ message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
 message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColorReset}")
 
+# Checked-in third-party sources; set by the root project, derived when
+# benchmarks/ is configured standalone. See vendor/ORIGIN.md.
+if(NOT DEFINED ROCCV_VENDOR_DIR)
+    get_filename_component(ROCCV_VENDOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../vendor" ABSOLUTE)
+endif()
+
 add_subdirectory(roccvbench)
 
-set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${CMAKE_CURRENT_SOURCE_DIR}/vendor")
+set(BENCHMARK_INCLUDES ${BENCHMARK_INCLUDES} "${ROCCV_VENDOR_DIR}/nlohmann_json/include")
 set(BENCHMARK_LIBS ${BENCHMARK_LIBS} roccvbench-utils)
 
 # Include roccv benchmark units
