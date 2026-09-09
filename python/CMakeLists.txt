@@ -127,25 +127,14 @@ if(NOT DEFINED ROCCV_VENDOR_DIR)
     set(ROCCV_VENDOR_DIR "${ROCCV_SOURCE_DIR}/vendor")
 endif()
 
-# --- pybind11 ---
+# Both are header-only; only their headers are vendored, so they are consumed as
+# plain include directories rather than through their upstream CMake projects.
 message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored pybind11 from ${ROCCV_VENDOR_DIR}/pybind11${ColorReset}")
-set(PYBIND11_INSTALL OFF)
-set(PYBIND11_TEST OFF)
-add_subdirectory(
-    "${ROCCV_VENDOR_DIR}/pybind11"
-    "${CMAKE_CURRENT_BINARY_DIR}/vendor/pybind11"
-    EXCLUDE_FROM_ALL
-)
-
-# --- dlpack ---
 message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored dlpack from ${ROCCV_VENDOR_DIR}/dlpack${ColorReset}")
-set(BUILD_MOCK OFF)
-add_subdirectory(
-    "${ROCCV_VENDOR_DIR}/dlpack"
-    "${CMAKE_CURRENT_BINARY_DIR}/vendor/dlpack"
-    EXCLUDE_FROM_ALL
+set(ROCCV_VENDOR_INCLUDES
+    "${ROCCV_VENDOR_DIR}/pybind11/include"
+    "${ROCCV_VENDOR_DIR}/dlpack/include"
 )
-unset(BUILD_MOCK)
 
 if (NOT TARGET roccv::roccv)
     find_package(roccv QUIET)
@@ -186,15 +175,17 @@ if(NOT BUILD_ROCCV_PYPACKAGE)
 endif()
 
 file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-pybind11_add_module(${PROJECT_NAME} MODULE ${sources} WITH_SOABI)
-target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
+Python3_add_library(${PROJECT_NAME} MODULE WITH_SOABI ${sources})
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        ${ROCCV_VENDOR_INCLUDES}
+)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         roccv::roccv
-        dlpack::dlpack
-        pybind11::headers
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_VISIBILITY_PRESET "hidden"
