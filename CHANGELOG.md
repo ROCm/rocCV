@@ -13,7 +13,7 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 - Dockerfile support for running rocCV in a container environment.
 
 ### Changed
-- Switched from submodules to CMake's `FetchContent()` for DLPack and Pybind11 dependencies.
+- Switched from FetchContent to vendored sources under `vendor/` for DLPack (v1.3) and Pybind11 (v3.0.0) dependencies; building no longer requires network access. See `vendor/ORIGIN.md` for provenance.
 - Benchmarking suite now uses `rocRAND` for random data generation on the device.
 - OpenMP moved from public -> private dependency for roccv.
 

@@ -37,9 +37,6 @@ Do not hand-edit these trees. To move to a new upstream version:
 Provides the `pybind11::headers` target and the `pybind11_add_module()` helper
 used to build the `rocpycv` Python extension module.
 
-Pinned to the 3.0.0 release exactly; do not float to 3.0.x patch releases
-without an explicit decision to move the pin.
-
 ## dlpack
 
 | | |
