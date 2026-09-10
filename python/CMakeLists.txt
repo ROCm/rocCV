@@ -118,31 +118,30 @@ else()
     find_package(Python3 QUIET COMPONENTS Interpreter Development)
 endif()
 
-# --- Fetch content ---
-include(FetchContent)
+# --- Vendored dependencies ---
+if(NOT DEFINED ROCCV_SOURCE_DIR)
+    # Set by the root project; derive it when python/ is configured standalone.
+    get_filename_component(ROCCV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+endif()
+if(NOT DEFINED ROCCV_THIRD_PARTY_DIR)
+    set(ROCCV_THIRD_PARTY_DIR "${ROCCV_SOURCE_DIR}/third_party")
+endif()
 
 # --- pybind11 ---
-set(FETCHCONTENT_QUIET OFF)
-message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching pybind11 v3.0.2${ColorReset}")
-FetchContent_Declare(
-    pybind11
-    URL https://github.com/pybind/pybind11/archive/refs/tags/v3.0.2.tar.gz
-    URL_HASH SHA256=2f20a0af0b921815e0e169ea7fec63909869323581b89d7de1553468553f6a2d
+message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored pybind11 from ${ROCCV_THIRD_PARTY_DIR}/pybind11${ColorReset}")
+set(PYBIND11_INSTALL OFF)
+set(PYBIND11_TEST OFF)
+add_subdirectory(
+    "${ROCCV_THIRD_PARTY_DIR}/pybind11"
+    "${CMAKE_CURRENT_BINARY_DIR}/third_party/pybind11"
     EXCLUDE_FROM_ALL
 )
-FetchContent_MakeAvailable(pybind11)
 
 # --- dlpack ---
-message("-- ${BoldBlue}${PROJECT_NAME} -- Fetching dlpack v1.3${ColorReset}")
-FetchContent_Declare(
-    dlpack
-    URL https://github.com/dmlc/dlpack/archive/refs/tags/v1.3.tar.gz
-    URL_HASH SHA256=f3d567f885f6c142183afc91a58873b31d0e0b36faa2e45c232b98c74596404f
-    CMAKE_ARGS -DBUILD_MOCK=OFF
-    EXCLUDE_FROM_ALL
-)
-FetchContent_MakeAvailable(dlpack)
-set(FETCHCONTENT_QUIET ON)
+# Header-only; only the header is vendored, so it is consumed as a plain include
+# directory rather than through its upstream CMake project.
+message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored dlpack from ${ROCCV_THIRD_PARTY_DIR}/dlpack${ColorReset}")
+set(DLPACK_INCLUDE_DIR "${ROCCV_THIRD_PARTY_DIR}/dlpack/include")
 
 if (NOT TARGET roccv::roccv)
     find_package(roccv QUIET)
@@ -184,13 +183,16 @@ endif()
 
 file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 pybind11_add_module(${PROJECT_NAME} MODULE ${sources} WITH_SOABI)
-target_include_directories(${PROJECT_NAME} PRIVATE ${pybind11_INCLUDE_DIRS} "${CMAKE_CURRENT_SOURCE_DIR}/include")
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${DLPACK_INCLUDE_DIR}"
+)
 target_compile_definitions(${PROJECT_NAME} PRIVATE __HIP_PLATFORM_AMD__)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         roccv::roccv
-        dlpack::dlpack
         pybind11::headers
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
