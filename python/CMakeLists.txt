@@ -123,25 +123,25 @@ if(NOT DEFINED ROCCV_SOURCE_DIR)
     # Set by the root project; derive it when python/ is configured standalone.
     get_filename_component(ROCCV_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
 endif()
-if(NOT DEFINED ROCCV_VENDOR_DIR)
-    set(ROCCV_VENDOR_DIR "${ROCCV_SOURCE_DIR}/vendor")
+if(NOT DEFINED ROCCV_THIRD_PARTY_DIR)
+    set(ROCCV_THIRD_PARTY_DIR "${ROCCV_SOURCE_DIR}/third_party")
 endif()
 
 # --- pybind11 ---
-message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored pybind11 from ${ROCCV_VENDOR_DIR}/pybind11${ColorReset}")
+message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored pybind11 from ${ROCCV_THIRD_PARTY_DIR}/pybind11${ColorReset}")
 set(PYBIND11_INSTALL OFF)
 set(PYBIND11_TEST OFF)
 add_subdirectory(
-    "${ROCCV_VENDOR_DIR}/pybind11"
-    "${CMAKE_CURRENT_BINARY_DIR}/vendor/pybind11"
+    "${ROCCV_THIRD_PARTY_DIR}/pybind11"
+    "${CMAKE_CURRENT_BINARY_DIR}/third_party/pybind11"
     EXCLUDE_FROM_ALL
 )
 
 # --- dlpack ---
 # Header-only; only the header is vendored, so it is consumed as a plain include
 # directory rather than through its upstream CMake project.
-message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored dlpack from ${ROCCV_VENDOR_DIR}/dlpack${ColorReset}")
-set(DLPACK_INCLUDE_DIR "${ROCCV_VENDOR_DIR}/dlpack/include")
+message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored dlpack from ${ROCCV_THIRD_PARTY_DIR}/dlpack${ColorReset}")
+set(DLPACK_INCLUDE_DIR "${ROCCV_THIRD_PARTY_DIR}/dlpack/include")
 
 if (NOT TARGET roccv::roccv)
     find_package(roccv QUIET)

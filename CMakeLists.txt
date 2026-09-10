@@ -235,8 +235,8 @@ if(NOT BUILD_ROCCV)
 endif()
 
 set(ROCCV_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-# Checked-in third-party sources. See vendor/ORIGIN.md.
-set(ROCCV_VENDOR_DIR "${ROCCV_SOURCE_DIR}/vendor")
+# Checked-in third-party sources. See third_party/ORIGIN.md.
+set(ROCCV_THIRD_PARTY_DIR "${ROCCV_SOURCE_DIR}/third_party")
 
 # --- Source code ---
 add_subdirectory(src)

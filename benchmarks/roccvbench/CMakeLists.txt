@@ -26,9 +26,9 @@ cmake_minimum_required(VERSION 3.24)
 project(roccvbench-utils)
 
 # Checked-in third-party sources; set by the root project, derived when this
-# directory is configured standalone. See vendor/ORIGIN.md.
-if(NOT DEFINED ROCCV_VENDOR_DIR)
-    get_filename_component(ROCCV_VENDOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../vendor" ABSOLUTE)
+# directory is configured standalone. See third_party/ORIGIN.md.
+if(NOT DEFINED ROCCV_THIRD_PARTY_DIR)
+    get_filename_component(ROCCV_THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party" ABSOLUTE)
 endif()
 
 file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -36,5 +36,5 @@ add_library(${PROJECT_NAME} STATIC ${SOURCES})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
-        "${ROCCV_VENDOR_DIR}/nlohmann_json/include"
+        "${ROCCV_THIRD_PARTY_DIR}/nlohmann_json/include"
 )

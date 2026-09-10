@@ -111,7 +111,7 @@ Operator `.cpp` files do: validate inputs → build typed wrappers → dispatch 
 | `src/op_*.cpp` | Operator implementations |
 | `src/core/` | Core type implementations |
 | `python/src/` | pybind11 binding code (builds against the vendored pybind11 / dlpack) |
-| `vendor/` | Checked-in third-party sources (pybind11 v3.0.0, dlpack v1.3, nlohmann/json v3.12.0) — no submodules, no network fetch; see `vendor/ORIGIN.md` |
+| `third_party/` | Checked-in third-party sources (pybind11 v3.0.0, dlpack v1.3, nlohmann/json v3.12.0) — no submodules, no network fetch; see `third_party/ORIGIN.md` |
 | `tests/roccv/cpp/` | C++ tests — one executable per operator, custom test framework with `EXPECT_TEST_STATUS` macro |
 | `tests/roccv/python/` | Python pytest tests — one file per operator |
 | `benchmarks/` | `roccv_bench` executable and `config.json` |
