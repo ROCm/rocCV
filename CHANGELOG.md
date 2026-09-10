@@ -13,7 +13,7 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 - Dockerfile support for running rocCV in a container environment.
 
 ### Changed
-- Switched from FetchContent to vendored sources under `third_party/` for DLPack (v1.3) and Pybind11 (v3.0.0) dependencies; building no longer requires network access. See `third_party/ORIGIN.md` for provenance.
+- Switched from FetchContent to vendored sources under `third_party/` for DLPack (v1.3) and Pybind11 (v3.1.0) dependencies; building no longer requires network access. See `third_party/ORIGIN.md` for provenance.
 - Moved the benchmark suite's nlohmann/json copy from `benchmarks/vendor/` to `third_party/` and pinned it to the v3.12.0 release; the previous copy was an unpinned post-3.12.0 `develop` snapshot that reported itself as 3.12.0, and it shipped without its license file. See `third_party/ORIGIN.md` for provenance.
 - Benchmarking suite now uses `rocRAND` for random data generation on the device.
 - OpenMP moved from public -> private dependency for roccv.

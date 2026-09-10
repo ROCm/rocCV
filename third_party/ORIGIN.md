@@ -21,7 +21,7 @@ To verify an existing tree, extract the pinned release and `diff -r` it against 
 
 | | |
 |---|---|
-| Release | v3.0.0 |
+| Release | v3.1.0 |
 | Upstream | https://github.com/pybind/pybind11 |
 | Vendored | `include/pybind11/`, `tools/`, `CMakeLists.txt`, `LICENSE` |
 | License | BSD 3-Clause |
