@@ -112,10 +112,10 @@ if(NOT Python3_EXECUTABLE AND NOT Python3_ROOT_DIR AND NOT PYTHON_VERSION_SUGGES
 endif()
 
 if(PYTHON_VERSION_SUGGESTED)
-    find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development)
+    find_package(Python3 "${PYTHON_VERSION_SUGGESTED}" EXACT QUIET COMPONENTS Interpreter Development.Module)
 else()
     set(Python3_FIND_VIRTUALENV FIRST)
-    find_package(Python3 QUIET COMPONENTS Interpreter Development)
+    find_package(Python3 QUIET COMPONENTS Interpreter Development.Module)
 endif()
 
 # --- Vendored dependencies ---
@@ -168,8 +168,8 @@ else()
     message("-- ${Green}${PROJECT_NAME} -- Found python${PYTHON_VERSION_SUGGESTED} interpreter: ${Python3_EXECUTABLE}${ColorReset}")
 endif()
 
-# Python3 Development
-if(NOT Python3_Development_FOUND)
+# Python3 Development.Module
+if(NOT Python3_Development.Module_FOUND)
     set(BUILD_ROCCV_PYPACKAGE OFF)
     message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColorReset}")
 else()
