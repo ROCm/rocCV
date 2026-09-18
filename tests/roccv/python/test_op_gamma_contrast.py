@@ -38,7 +38,7 @@ from test_helpers import generate_tensor
 ])
 def test_op_gamma_contrast(samples, height, width, channels, gamma, dtype, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.gamma_contrast(input, gamma, stream, device)

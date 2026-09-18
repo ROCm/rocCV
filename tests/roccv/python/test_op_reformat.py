@@ -54,7 +54,7 @@ def test_op_reformat(samples, height, width, channels, inLayout, outLayout, devi
     input_shape = create_tensor_shape(inLayout, samples, channels, height, width)
     output_shape = create_tensor_shape(outLayout, samples, channels, height, width)
     input_tensor = generate_tensor_generic(input_shape, inLayout, dtype, device)
-    output_golden = rocpycv.Tensor(output_shape, outLayout, dtype, device)
+    output_golden = rocpycv.Tensor(output_shape, dtype, outLayout, device)
 
     stream = rocpycv.Stream()
     rocpycv.reformat_into(input_tensor, output_golden, stream, device)
