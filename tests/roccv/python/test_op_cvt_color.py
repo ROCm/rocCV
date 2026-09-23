@@ -51,7 +51,7 @@ def test_op_cvtcolor(samples, height, width, code, dtype, device):
         out_channels = 1
 
     input = generate_tensor(samples, width, height, in_channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, out_channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, out_channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.cvtcolor(input, code, stream, device)
