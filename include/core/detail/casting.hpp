@@ -99,7 +99,7 @@ __device__ __host__ T ScalarSaturateCast(U v) {
                        smallToBig) {
         // Signed -> unsigned, small to big: clamp negative to 0
         // Branchless: max(v, 0) handles negative values
-        return static_cast<T>(max(v, U{0}));
+        return static_cast<T>(std::max(v, U{0}));
     }
 
     else if constexpr (std::is_integral_v<U> && std::is_integral_v<T> &&
@@ -109,20 +109,20 @@ __device__ __host__ T ScalarSaturateCast(U v) {
         // Same signedness, big -> small: clamp to [min, max]
         constexpr U minVal = static_cast<U>(std::numeric_limits<T>::min());
         constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
-        return static_cast<T>(min(max(v, minVal), maxVal));
+        return static_cast<T>(std::min(std::max(v, minVal), maxVal));
     }
 
     else if constexpr (std::is_integral_v<U> && std::is_unsigned_v<U> && std::is_integral_v<T> && std::is_signed_v<T>) {
         // Unsigned -> signed: clamp to max (can't exceed min since unsigned)
         constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
-        return static_cast<T>(min(v, maxVal));
+        return static_cast<T>(std::min(v, maxVal));
     }
 
     else if constexpr (std::is_integral_v<U> && std::is_signed_v<U> && std::is_integral_v<T> && std::is_unsigned_v<T> &&
                        bigToSmall) {
         // Signed -> unsigned, big -> small: clamp to [0, max]
         constexpr U maxVal = static_cast<U>(std::numeric_limits<T>::max());
-        return static_cast<T>(min(max(v, U{0}), maxVal));
+        return static_cast<T>(std::min(std::max(v, U{0}), maxVal));
     }
 
     else {
