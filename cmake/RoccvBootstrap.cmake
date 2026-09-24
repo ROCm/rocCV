@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c) 2025 Advanced Micro Devices, Inc.
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,15 @@
 #
 # ##############################################################################
 
-cmake_minimum_required(VERSION 3.24)
+# Setup shared by the rocCV CMake projects that are configured from the source
+# tree (the root project, python/ and benchmarks/). Include it before project()
+# so the compiler and build type defaults take effect.
+#
+# NOTE: samples/ and tests/roccv/cpp/ are also configured standalone from the
+#       install tree, where this file is not available, so they carry their own
+#       copy of this logic. Keep them in sync with this file.
 
-# --- Bootstrap ---
-# This project is installed and configured standalone from the install tree, so
-# it cannot include cmake/RoccvBootstrap.cmake. Keep this block in sync with it.
+include_guard(GLOBAL)
 
 # Colored status messages
 if(NOT DEFINED ENHANCED_MESSAGE OR ENHANCED_MESSAGE)
@@ -83,46 +87,3 @@ if(NOT DEFINED ENV{HIP_PLATFORM})
 endif()
 
 list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
-
-project(roccv-cpp-tests VERSION 1.0 LANGUAGES CXX)
-
-# Print test CMake configuration information
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
-message("-- ${BoldBlue}${PROJECT_NAME} Using The Rock -- ${USING_THE_ROCK}${ColorReset}")
-
-# Find rocCV
-if(NOT TARGET roccv::roccv)
-    find_package(roccv REQUIRED)
-endif()
-
-include(CTest)
-
-# Compile test helper library
-file(GLOB TEST_HELPER_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-add_library(roccv-test-helpers STATIC ${TEST_HELPER_SOURCES})
-target_link_libraries(roccv-test-helpers PUBLIC roccv::roccv)
-target_include_directories(roccv-test-helpers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-# Gather actual test sources
-file(GLOB_RECURSE CPP_ROCCV_TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/tests/*.cpp")
-
-# Build each test as a separate executable
-foreach(test_source ${CPP_ROCCV_TEST_SOURCES})
-    get_filename_component(test_name ${test_source} NAME_WE)
-
-    # Get relative path from src/tests/ to determine output directory structure
-    file(RELATIVE_PATH test_rel_path "${CMAKE_CURRENT_SOURCE_DIR}/src/tests" ${test_source})
-    get_filename_component(test_subdir ${test_rel_path} DIRECTORY)
-
-    add_executable(${test_name} ${test_source})
-    target_link_libraries(${test_name} PRIVATE roccv-test-helpers)
-
-    # Set output directory to match source structure: bin/tests/<subdir>/
-    set_target_properties(${test_name} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/tests/${test_subdir}"
-        BUILD_RPATH "$<TARGET_FILE_DIR:roccv::roccv>;${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
-    )
-
-    add_test(NAME ${test_name} COMMAND ${test_name})
-endforeach()

@@ -55,7 +55,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # Add export set
 
-# install rocCV libs -- {ROCM_PATH)/lib
+# install rocCV libs -- {ROCM_PATH}/lib
 install(TARGETS ${PROJECT_NAME}
     EXPORT roccvTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

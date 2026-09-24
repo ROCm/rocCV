@@ -35,7 +35,7 @@ rocCV is an efficient GPU-accelerated library for image pre- and post-processing
     > [!IMPORTANT]
     > `sudo amdgpu-install --usecase=rocm`
 
-- CMake Version `3.15` or later
+- CMake Version `3.24` or later
 
     ```shell
     sudo apt install cmake

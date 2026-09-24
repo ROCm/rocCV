@@ -21,7 +21,13 @@
 #
 # ##############################################################################
 
+# Reuses the interpreter already found by python/CMakeLists.txt.
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
 add_custom_target(test_python
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E env "PYTHONPATH=$<TARGET_FILE_DIR:rocpycv>"
+            ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS rocpycv
+    USES_TERMINAL
     COMMENT "Running rocpycv tests."
 )

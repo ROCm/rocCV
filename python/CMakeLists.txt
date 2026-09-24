@@ -21,84 +21,19 @@
 #
 # ##############################################################################
 
-# rocCV pybind wheel install
 cmake_minimum_required(VERSION 3.24)
 
-# Enhanced Message
-if(NOT DEFINED ENHANCED_MESSAGE)
-    string(ASCII 27 Esc)
-    set(ColorReset "${Esc}[m")
-    set(Red         "${Esc}[31m")
-    set(Green       "${Esc}[32m")
-    set(Yellow      "${Esc}[33m")
-    set(White       "${Esc}[37m")
-    set(Cyan        "${Esc}[36m")
-    set(BoldBlue    "${Esc}[1;34m")
-endif()
+# rocCV Python bindings. Built as part of the root project, or standalone
+# against an installed rocCV.
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/RoccvBootstrap.cmake)
 
-# ROCM Path
-if(DEFINED ENV{ROCM_PATH})
-    set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Default ROCm installation path")
-elseif(ROCM_PATH)
-    message("-- INFO:ROCM_PATH Set -- ${ROCM_PATH}")
-else()
-    set(ROCM_PATH /opt/rocm CACHE PATH "Default ROCm installation path")
-endif()
+project(rocpycv LANGUAGES CXX)
 
-# Set AMD Clang as default compiler
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED On)
-set(CMAKE_CXX_EXTENSIONS ON)
-if (NOT DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
-endif()
-if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang++")
-    set(CMAKE_C_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang)
-    set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
-endif()
-
-# Check if we are building using the TheRock install of ROCm.
-set(USING_THE_ROCK OFF)
-if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
-    set(USING_THE_ROCK ON)
-endif()
-
-# Set device library path for TheRock install of ROCm.
-if (USING_THE_ROCK)
-    if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
-        set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
-    endif()
-endif()
-
-# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
-if (NOT DEFINED ENV{HIP_PLATFORM})
-    set(ENV{HIP_PLATFORM} "amd")
-endif()
-
-# Ensure CMake can find the roccv library and headers.
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
-
-# pyVersion
-# NOTE: rocCV version updates requires updates in
-#       * rocCV source CMakeLists.txt
-#       * python CMakeLists.txt
-set(VERSION "0.4.0")
-project(rocpycv VERSION ${VERSION} LANGUAGES CXX)
-
-message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
 message("-- ${BoldBlue}${PROJECT_NAME} Compiler -- ${CMAKE_CXX_COMPILER}${ColorReset}")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
 include(GNUInstallDirs)
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
-
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
 # --- Find dependencies ---
 # Auto-detect Python3 executable if not specified
@@ -143,17 +78,17 @@ add_subdirectory(
 message("-- ${BoldBlue}${PROJECT_NAME} -- Using vendored dlpack from ${ROCCV_THIRD_PARTY_DIR}/dlpack${ColorReset}")
 set(DLPACK_INCLUDE_DIR "${ROCCV_THIRD_PARTY_DIR}/dlpack/include")
 
-if (NOT TARGET roccv::roccv)
+if(NOT TARGET roccv::roccv)
     find_package(roccv QUIET)
 else()
     set(roccv_FOUND TRUE)
 endif()
 
 # --- Dependency checks ---
-set(BUILD_ROCCV_PYPACKAGE true)
+set(BUILD_ROCCV_PYPACKAGE ON)
 
 # rocCV
-if (NOT roccv_FOUND)
+if(NOT roccv_FOUND)
     message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColorReset}")
     set(BUILD_ROCCV_PYPACKAGE OFF)
 else()
@@ -171,14 +106,14 @@ endif()
 # Python3 Development.Module
 if(NOT Python3_Development.Module_FOUND)
     set(BUILD_ROCCV_PYPACKAGE OFF)
-    message("-- ${Red}NOTE: rocpycv requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColorReset}")
+    message("-- ${Red}NOTE: ${PROJECT_NAME} requires the python${PYTHON_VERSION_SUGGESTED} development headers, Not Found${ColorReset}")
 else()
     message("-- ${Green}${PROJECT_NAME} -- Found python${PYTHON_VERSION_SUGGESTED} development headers: ${Python3_INCLUDE_DIRS}${ColorReset}")
 endif()
 
 # Check that all dependencies have been met
 if(NOT BUILD_ROCCV_PYPACKAGE)
-	message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColorReset}")
+    message(FATAL_ERROR "-- ${Red}${PROJECT_NAME} dependencies not satisfied${ColorReset}")
 endif()
 
 file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -197,17 +132,16 @@ target_link_libraries(${PROJECT_NAME}
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_VISIBILITY_PRESET "hidden"
-    CUDA_VISIBILITY_PRESET "hidden"
     POSITION_INDEPENDENT_CODE ON
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"
     BUILD_RPATH "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR};${ROCM_PATH}/lib;${ROCM_PATH}/lib/llvm/lib"
     INSTALL_RPATH "\$ORIGIN/..;\$ORIGIN;\$ORIGIN/../rocm_sysdeps/lib;\$ORIGIN/../llvm/lib"
 )
 
-# install rocpycv lib -- {ROCM_PATH)/lib
+# install rocpycv lib -- {ROCM_PATH}/lib
 install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/rocpycv.pyi DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT runtime)
-message("-- ${Green}rocCV Python Binding - rocpycv module added ${ColourReset}")
+message("-- ${Green}rocCV Python Binding - rocpycv module added${ColorReset}")
 
 # PyBind Test - Installed
 install(DIRECTORY ${ROCCV_SOURCE_DIR}/tests/pybind

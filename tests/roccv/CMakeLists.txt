@@ -23,6 +23,6 @@
 
 add_subdirectory(cpp)
 
-if (BUILD_PYPACKAGE)
+if(BUILD_PYPACKAGE)
     add_subdirectory(python)
 endif()

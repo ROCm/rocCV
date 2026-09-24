@@ -23,19 +23,25 @@
 
 cmake_minimum_required(VERSION 3.24)
 
-# Enable enhanced message
-if(NOT DEFINED ENHANCED_MESSAGE)
+# --- Bootstrap ---
+# This project is installed and configured standalone from the install tree, so
+# it cannot include cmake/RoccvBootstrap.cmake. Keep this block in sync with it.
+
+# Colored status messages
+if(NOT DEFINED ENHANCED_MESSAGE OR ENHANCED_MESSAGE)
     string(ASCII 27 Esc)
     set(ColorReset "${Esc}[m")
-    set(Red         "${Esc}[31m")
-    set(Green       "${Esc}[32m")
-    set(Yellow      "${Esc}[33m")
-    set(White       "${Esc}[37m")
-    set(Cyan        "${Esc}[36m")
-    set(BoldBlue    "${Esc}[1;34m")
+    set(Red        "${Esc}[31m")
+    set(Green      "${Esc}[32m")
+    set(Yellow     "${Esc}[33m")
+    set(Blue       "${Esc}[34m")
+    set(BoldBlue   "${Esc}[1;34m")
+    set(Magenta    "${Esc}[35m")
+    set(Cyan       "${Esc}[36m")
+    set(White      "${Esc}[37m")
 endif()
 
-# ROCM Path
+# ROCm installation path
 if(DEFINED ENV{ROCM_PATH})
     set(ROCM_PATH $ENV{ROCM_PATH} CACHE PATH "Default ROCm installation path")
 elseif(ROCM_PATH)
@@ -44,42 +50,41 @@ else()
     set(ROCM_PATH /opt/rocm CACHE PATH "Default ROCm installation path")
 endif()
 
-# Set AMD Clang as default compiler
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED On)
-set(CMAKE_CXX_EXTENSIONS ON)
-if (NOT DEFINED CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release")
+# Default to a Release build
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type [options: Debug/Release]" FORCE)
 endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+
+# C++20, with AMD Clang as the default compiler
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 if(NOT DEFINED CMAKE_CXX_COMPILER AND EXISTS "${ROCM_PATH}/lib/llvm/bin/amdclang++")
     set(CMAKE_C_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang)
     set(CMAKE_CXX_COMPILER ${ROCM_PATH}/lib/llvm/bin/amdclang++)
 endif()
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Check if we are building using the TheRock install of ROCm.
+# TheRock installs of ROCm keep the device libraries under lib/llvm.
 set(USING_THE_ROCK OFF)
-if (EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
+if(EXISTS "${ROCM_PATH}/lib/rocm_sysdeps/lib")
     set(USING_THE_ROCK ON)
 endif()
-
-# Set device library path for TheRock install of ROCm.
-if (USING_THE_ROCK)
-    if (NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
-        set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
-        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
-    endif()
+if(USING_THE_ROCK AND NOT DEFINED ENV{HIP_DEVICE_LIB_PATH})
+    set(ENV{HIP_DEVICE_LIB_PATH} ${ROCM_PATH}/lib/llvm/amdgcn/bitcode)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "HIP_DEVICE_LIB_PATH=${ROCM_PATH}/lib/llvm/amdgcn/bitcode")
 endif()
 
-# Set HIP_PLATFORM to amd if not set. This is required before finding HIP.
-if (NOT DEFINED ENV{HIP_PLATFORM})
+# HIP_PLATFORM must be set before finding HIP.
+if(NOT DEFINED ENV{HIP_PLATFORM})
     set(ENV{HIP_PLATFORM} "amd")
 endif()
 
-# Ensure CMake can find the roccv library and headers.
-list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH} ${ROCM_PATH}/hip)
 
-set(VERSION "1.0")
-project(roccv-samples VERSION ${VERSION} LANGUAGES CXX)
+project(roccv-samples VERSION 1.0 LANGUAGES CXX)
 
 message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")
 message("-- ${BoldBlue}${PROJECT_NAME} Build Type -- ${CMAKE_BUILD_TYPE}${ColorReset}")
@@ -96,7 +101,7 @@ function(define_sample_executable NAME)
     )
 endfunction()
 
-if (NOT TARGET roccv::roccv)
+if(NOT TARGET roccv::roccv)
     find_package(roccv QUIET)
 else()
     set(roccv_FOUND TRUE)
@@ -105,20 +110,20 @@ endif()
 find_package(OpenCV QUIET)
 
 set(BUILD_SAMPLES ON)
-if (NOT roccv_FOUND)
-    message("-- ${Red}roccv-samples -- require roccv, but it was not found${ColorReset}")
+if(NOT roccv_FOUND)
+    message("-- ${Red}${PROJECT_NAME} -- require roccv, but it was not found${ColorReset}")
     set(BUILD_SAMPLES OFF)
 else()
-    message("-- ${Green}roccv-samples -- found roccv version: ${roccv_VERSION}${ColorReset}")
+    message("-- ${Green}${PROJECT_NAME} -- found roccv version: ${roccv_VERSION}${ColorReset}")
 endif()
-if (NOT OpenCV_FOUND)
-    message("-- ${Red}roccv-samples -- require OpenCV, but it was not found${ColorReset}")
+if(NOT OpenCV_FOUND)
+    message("-- ${Red}${PROJECT_NAME} -- require OpenCV, but it was not found${ColorReset}")
     set(BUILD_SAMPLES OFF)
 else()
-    message("-- ${Green}roccv-samples -- found OpenCV version: ${OpenCV_VERSION}${ColorReset}")
+    message("-- ${Green}${PROJECT_NAME} -- found OpenCV version: ${OpenCV_VERSION}${ColorReset}")
 endif()
 
-if (BUILD_SAMPLES)
+if(BUILD_SAMPLES)
     define_sample_executable(bilateral_filter)
     define_sample_executable(custom_crop)
     define_sample_executable(center_crop)
@@ -130,5 +135,5 @@ if (BUILD_SAMPLES)
     define_sample_executable(gamma_contrast)
     add_subdirectory(cropandresize/cpp)
 else()
-    message("-- ${Yellow}roccv-samples -- missing required dependencies, will not be built${ColorReset}")
+    message("-- ${Yellow}${PROJECT_NAME} -- missing required dependencies, will not be built${ColorReset}")
 endif()

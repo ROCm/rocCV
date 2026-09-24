@@ -23,7 +23,7 @@
 
 cmake_minimum_required(VERSION 3.24)
 
-project(roccvbench-utils)
+project(roccvbench-utils LANGUAGES CXX)
 
 # Checked-in third-party sources; set by the root project, derived when this
 # directory is configured standalone. See third_party/ORIGIN.md.
@@ -38,3 +38,4 @@ target_include_directories(${PROJECT_NAME}
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${ROCCV_THIRD_PARTY_DIR}/nlohmann_json/include"
 )
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
