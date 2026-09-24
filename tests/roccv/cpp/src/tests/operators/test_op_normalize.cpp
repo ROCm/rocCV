@@ -221,8 +221,8 @@ int main(int argc, char** argv) {
     TEST_CASES_BEGIN();
 
     // GPU correctness tests
-    TEST_CASE(TestCorrectness<uchar>(1, {20, 23}, FMT_U8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
-    TEST_CASE(TestCorrectness<uchar>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f,
+    TEST_CASE(TestCorrectness<uint8_t>(1, {20, 23}, FMT_U8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
+    TEST_CASE(TestCorrectness<uint8_t>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f,
                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     TEST_CASE(TestCorrectness<uchar3>(1, {200, 200}, FMT_RGB8, false, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::GPU));
@@ -278,8 +278,8 @@ int main(int argc, char** argv) {
                                       ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::GPU));
 
     // CPU correctness tests
-    TEST_CASE(TestCorrectness<uchar>(1, {20, 23}, FMT_U8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
-    TEST_CASE(TestCorrectness<uchar>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f,
+    TEST_CASE(TestCorrectness<uint8_t>(1, {20, 23}, FMT_U8, true, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));
+    TEST_CASE(TestCorrectness<uint8_t>(3, {33, 23}, FMT_U8, false, false, 1.0f, 1.2f, 0.1f,
                                      ROCCV_NORMALIZE_SCALE_IS_STDDEV, eDeviceType::CPU));
 
     TEST_CASE(TestCorrectness<uchar3>(1, {200, 200}, FMT_RGB8, false, true, 1.0f, 1.2f, 0.1f, 0, eDeviceType::CPU));

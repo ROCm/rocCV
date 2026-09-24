@@ -33,8 +33,9 @@ target_compile_options(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        hip::device
+        hip::host
     PRIVATE
+        hip::device
         OpenMP::OpenMP_CXX
 )
 target_include_directories(${PROJECT_NAME}
