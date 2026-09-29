@@ -43,7 +43,7 @@ void dispatch_cvt_color_itype(hipStream_t stream, const Tensor &input, Tensor &o
 
     int64_t width = input.shape(input.layout().width_index());
     int64_t height = input.shape(input.layout().height_index());
-    int64_t samples = input.shape(input.layout().batch_index());
+    int64_t samples = input.shape().batchSize();
 
     if (device == eDeviceType::GPU) {
         // Dispatch appropriate device kernel based on given conversion code
@@ -162,11 +162,7 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
                                 output.shape(output.layout().width_index()));
         CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) ==
                                 output.shape(output.layout().height_index()));
-
-        if (input.layout().batch_index() >= 0) {
-            CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
-                                    output.shape(output.layout().batch_index()));
-        }
+        CHECK_TENSOR_COMPARISON(input.shape().batchSize() == output.shape().batchSize());
 
         CHECK_TENSOR_CHANNELS(output, 1);
     } else {
