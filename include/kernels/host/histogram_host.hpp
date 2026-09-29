@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include "core/wrappers/generic_tensor_wrapper.hpp"
 #include "operator_types.h"
 
 namespace Kernels {
