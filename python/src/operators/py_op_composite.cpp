@@ -36,10 +36,9 @@ PyTensor PyOpComposite::Execute(PyTensor& foreground, PyTensor& background, PyTe
 
     auto foregroundTensor = foreground.getTensor();
     // Out shape should match foreground shape but with the specified out_channels.
-    roccv::TensorShape out_shape(foregroundTensor->layout(),
-                                 {foregroundTensor->shape(foregroundTensor->layout().batch_index()),
-                                  foregroundTensor->shape(foregroundTensor->layout().height_index()),
-                                  foregroundTensor->shape(foregroundTensor->layout().width_index()), out_channels});
+    auto out_shape_data = foregroundTensor->shape().shape();
+    out_shape_data[foregroundTensor->layout().channels_index()] = out_channels;
+    roccv::TensorShape out_shape(out_shape_data, foregroundTensor->rank(), foregroundTensor->layout());
     auto output = std::make_shared<roccv::Tensor>(out_shape, foregroundTensor->dtype(), device);
 
     roccv::Composite op;

@@ -115,6 +115,17 @@ class TensorShape {
      */
     inline bool containsDim(std::string_view dim) const { return m_layout.containsDim(dim); }
 
+    /**
+     * @brief Returns the batch size of the tensor shape. Layouts without an N dimension (e.g. HWC) have a batch size
+     * of 1.
+     *
+     * @return The size of the N dimension, or 1 if the layout does not have a batch dimension.
+     */
+    inline int64_t batchSize() const {
+        int32_t batchIndex = m_layout.batch_index();
+        return batchIndex == -1 ? 1 : m_shape[batchIndex];
+    }
+
     // Operators
     int64_t operator[](int32_t i) const;
     int64_t operator[](std::string_view dimension) const;
