@@ -24,6 +24,7 @@
 #include <functional>
 
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
@@ -47,6 +48,7 @@ void dispatch_copy_make_border_border_mode(hipStream_t stream, const Tensor& inp
             dim3 grid_dim((out_desc.width() + block_dim.x - 1) / block_dim.x,
                           (out_desc.height() + block_dim.y - 1) / block_dim.y, out_desc.batches());
             Kernels::Device::copy_make_border<<<grid_dim, block_dim, 0, stream>>>(in_desc, out_desc, top, left);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
         case eDeviceType::CPU: {

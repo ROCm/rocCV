@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/brightness_contrast_device.hpp"
 #include "kernels/host/brightness_contrast_host.hpp"
@@ -98,6 +99,7 @@ void dispatch_brightness_contrast_channels(hipStream_t stream, const Tensor &inp
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
             Kernels::Device::brightness_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, bc_wrappers);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
         case eDeviceType::CPU: {
