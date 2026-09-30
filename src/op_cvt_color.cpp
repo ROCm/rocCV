@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <iostream>
 
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/cvt_color_device.hpp"
@@ -91,6 +92,7 @@ void dispatch_cvt_color_itype(hipStream_t stream, const Tensor &input, Tensor &o
             default:
                 throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
         }
+        HIP_CHECK_KERNEL_LAUNCH();
     } else {
         // Dispatch appropriate host kernel based on conversion code
 

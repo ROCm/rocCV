@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "common/math_vector.hpp"
 #include "common/validation_helpers.hpp"
 #include "core/detail/hip_utils.hpp"
+#include "core/hip_assert.h"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/bnd_box_device.hpp"
@@ -65,6 +66,8 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
             }
             Kernels::Device::bndbox_kernel<has_alpha, T>
                 <<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, rects_ptr, n_rects, batchSize, height, width);
+            // Defer reporting a failed launch until the rects buffer is released and kept alive for the pending copy.
+            const hipError_t launchStatus = hipGetLastError();
             if (n_rects > 0) {
                 HIP_VALIDATE_NO_ERRORS(hipFreeAsync(rects_ptr, stream));
             }
@@ -72,6 +75,7 @@ void dispatch_bnd_box_dtype(hipStream_t stream, const Tensor &input, const Tenso
             // Capture shared_ptr to rects in lambda to prolong lifetime up until all preceding stream work has been
             // finished
             detail::LaunchHostFuncAsync(stream, [rects] {});
+            HIP_VALIDATE_NO_ERRORS(launchStatus);
             break;
         }
 
