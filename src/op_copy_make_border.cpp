@@ -83,8 +83,7 @@ void dispatch_copy_make_border(hipStream_t stream, const Tensor& input, const Te
 }
 
 void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, int32_t top,
-                                int32_t left, eBorderType border_mode, float4 border_value,
-                                eDeviceType device) const {
+                                int32_t left, eBorderType border_mode, float4 border_value, eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_LAYOUT(input, eTensorLayout::TENSOR_LAYOUT_NHWC, eTensorLayout::TENSOR_LAYOUT_HWC);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,
@@ -103,6 +102,9 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
     }
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) ==
                             input.shape(input.layout().channels_index()));
+
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // clang-format off
     // Maps kernel dispatchers according to the underlying data type and number of channels.

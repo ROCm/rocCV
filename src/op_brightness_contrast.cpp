@@ -335,6 +335,9 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Validate brightness/contrast params
     eDataType input_dtype = input.dtype().etype();
     int64_t input_batch = input.shape(input.layout().batch_index());

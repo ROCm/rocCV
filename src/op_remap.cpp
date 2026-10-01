@@ -205,6 +205,9 @@ void Remap::operator()(hipStream_t stream, const Tensor &input, const Tensor &ou
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_CHANNELS(map, 2);
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     eDataType dtype = input.dtype().etype();
     int64_t channels = input.shape(input.layout().channels_index());
 

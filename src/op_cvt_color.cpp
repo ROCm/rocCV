@@ -36,6 +36,107 @@ CvtColor::CvtColor() {}
 
 CvtColor::~CvtColor() {}
 
+template <typename IndexT>
+void dispatch_cvt_color_itype(hipStream_t stream, const Tensor &input, Tensor &output,
+                              eColorConversionCode conversionCode, eDeviceType device) {
+    // Launch kernel
+
+    int64_t width = input.shape(input.layout().width_index());
+    int64_t height = input.shape(input.layout().height_index());
+    int64_t samples = input.shape(input.layout().batch_index());
+
+    if (device == eDeviceType::GPU) {
+        // Dispatch appropriate device kernel based on given conversion code
+
+        dim3 blockSize(32, 16);
+        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, samples);
+
+        switch (conversionCode) {
+            case eColorConversionCode::COLOR_BGR2GRAY:
+                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar1, IndexT>(output));
+                break;
+
+            case eColorConversionCode::COLOR_RGB2GRAY:
+                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar1, IndexT>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2RGB:
+            case eColorConversionCode::COLOR_RGB2BGR:
+                Kernels::Device::reorder<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2YUV:
+                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_RGB2YUV:
+                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2BGR:
+                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2RGB:
+                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                    ImageWrapper<uchar3, IndexT>(input), ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            default:
+                throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
+        }
+    } else {
+        // Dispatch appropriate host kernel based on conversion code
+
+        switch (conversionCode) {
+            case eColorConversionCode::COLOR_BGR2GRAY:
+                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3, IndexT>(input),
+                                                                               ImageWrapper<uchar1, IndexT>(output));
+                break;
+
+            case eColorConversionCode::COLOR_RGB2GRAY:
+                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3, IndexT>(input),
+                                                                               ImageWrapper<uchar1, IndexT>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2RGB:
+            case eColorConversionCode::COLOR_RGB2BGR:
+                Kernels::Host::reorder<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3, IndexT>(input),
+                                                               ImageWrapper<uchar3, IndexT>(output));
+                break;
+
+            case eColorConversionCode::COLOR_BGR2YUV:
+                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3, IndexT>(input),
+                                                                         ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_RGB2YUV:
+                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3, IndexT>(input),
+                                                                         ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2BGR:
+                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3, IndexT>(input),
+                                                                         ImageWrapper<uchar3>(output), 128.0f);
+                break;
+
+            case eColorConversionCode::COLOR_YUV2RGB:
+                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3, IndexT>(input),
+                                                                         ImageWrapper<uchar3, IndexT>(output), 128.0f);
+                break;
+
+            default:
+                throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
+        }
+    }
+}
+
 void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &output, eColorConversionCode conversionCode,
                           eDeviceType device) {
     // Verify that the tensors are located on the right device (CPU or GPU).
@@ -72,101 +173,11 @@ void CvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &outpu
         CHECK_TENSOR_CHANNELS(output, 3);
     }
 
-    // Launch kernel
-
-    int64_t width = input.shape(input.layout().width_index());
-    int64_t height = input.shape(input.layout().height_index());
-    int64_t samples = input.shape(input.layout().batch_index());
-
-    if (device == eDeviceType::GPU) {
-        // Dispatch appropriate device kernel based on given conversion code
-
-        dim3 blockSize(32, 16);
-        dim3 gridSize((width + blockSize.x - 1) / blockSize.x, (height + blockSize.y - 1) / blockSize.y, samples);
-
-        switch (conversionCode) {
-            case eColorConversionCode::COLOR_BGR2GRAY:
-                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
-                break;
-
-            case eColorConversionCode::COLOR_RGB2GRAY:
-                Kernels::Device::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output));
-                break;
-
-            case eColorConversionCode::COLOR_BGR2RGB:
-            case eColorConversionCode::COLOR_RGB2BGR:
-                Kernels::Device::reorder<uchar3, eSwizzle::ZYXW>
-                    <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output));
-                break;
-
-            case eColorConversionCode::COLOR_BGR2YUV:
-                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            case eColorConversionCode::COLOR_RGB2YUV:
-                Kernels::Device::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            case eColorConversionCode::COLOR_YUV2BGR:
-                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            case eColorConversionCode::COLOR_YUV2RGB:
-                Kernels::Device::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
-                    ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            default:
-                throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
-        }
+    // Check if tensors need int64 indexing (adaptive)
+    if (needsInt64Wrapper(input) || needsInt64Wrapper(output)) {
+        dispatch_cvt_color_itype<int64_t>(stream, input, output, conversionCode, device);
     } else {
-        // Dispatch appropriate host kernel based on conversion code
-
-        switch (conversionCode) {
-            case eColorConversionCode::COLOR_BGR2GRAY:
-                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                               ImageWrapper<uchar1>(output));
-                break;
-
-            case eColorConversionCode::COLOR_RGB2GRAY:
-                Kernels::Host::rgb_or_bgr_to_grayscale<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                               ImageWrapper<uchar1>(output));
-                break;
-
-            case eColorConversionCode::COLOR_BGR2RGB:
-            case eColorConversionCode::COLOR_RGB2BGR:
-                Kernels::Host::reorder<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                               ImageWrapper<uchar3>(output));
-                break;
-
-            case eColorConversionCode::COLOR_BGR2YUV:
-                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            case eColorConversionCode::COLOR_RGB2YUV:
-                Kernels::Host::rgb_or_bgr_to_yuv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            case eColorConversionCode::COLOR_YUV2BGR:
-                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            case eColorConversionCode::COLOR_YUV2RGB:
-                Kernels::Host::yuv_to_rgb_or_bgr<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                         ImageWrapper<uchar3>(output), 128.0f);
-                break;
-
-            default:
-                throw Exception("Not implemented", eStatusType::NOT_IMPLEMENTED);
-        }
+        dispatch_cvt_color_itype<int32_t>(stream, input, output, conversionCode, device);
     }
 }
 

@@ -112,8 +112,11 @@ void Normalize::operator()(hipStream_t stream, const Tensor& input, const Tensor
     // TODO: Need to support scalar base/scale tensors at some point. Will require some extra handling on the kernel
     // level. Once in place, this check can be removed.
     CHECK_TENSOR_COMPARISON(base.shape(base.layout().channels_index()) == input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) == input.shape(input.layout().channels_index()));
+    CHECK_TENSOR_COMPARISON(scale.shape(scale.layout().channels_index()) ==
+                            input.shape(input.layout().channels_index()));
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
     // Create kernel dispatching table based on input/output datatype and number of channels.
     // clang-format off
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, const Tensor&, const Tensor&, float, float, float, uint32_t, eDeviceType)>, 4>>

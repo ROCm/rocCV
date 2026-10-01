@@ -70,8 +70,8 @@ void dispatch_flip_dtype(hipStream_t stream, const Tensor& input, const Tensor& 
     }
 
     // Dispatch proper kernel based on provided flip type.
-    std::unordered_map<eAxis, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output,
-                                                 eDeviceType device)>>
+    std::unordered_map<
+        eAxis, std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device)>>
         funcs = {{eAxis::X, dispatch_flip_axis<T, eAxis::X>},
                  {eAxis::Y, dispatch_flip_axis<T, eAxis::Y>},
                  {eAxis::BOTH, dispatch_flip_axis<T, eAxis::BOTH>}};
@@ -92,6 +92,9 @@ void Flip::operator()(hipStream_t stream, const Tensor& input, const Tensor& out
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
+
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // clang-format off
     static const std::unordered_map<

@@ -74,8 +74,8 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
 }
 
 template <typename T>
-void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
-                          double2 shift, eInterpolationType interpolation, eDeviceType device) {
+void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg, double2 shift,
+                          eInterpolationType interpolation, eDeviceType device) {
     // clang-format off
     static const std::unordered_map<eInterpolationType,
                                     std::function<void(hipStream_t, const Tensor &, const Tensor &, double,
@@ -94,8 +94,8 @@ void dispatch_rotate_type(hipStream_t stream, const Tensor &input, const Tensor 
     func(stream, input, output, angleDeg, shift, device);
 }
 
-void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg,
-                        double2 shift, eInterpolationType interpolation, eDeviceType device) const {
+void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &output, double angleDeg, double2 shift,
+                        eInterpolationType interpolation, eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_CHANNELS(input, 1, 3, 4);
     CHECK_TENSOR_DATATYPES(input, eDataType::DATA_TYPE_U8, eDataType::DATA_TYPE_S8, eDataType::DATA_TYPE_U16,
@@ -107,6 +107,9 @@ void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
+
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
 
     // clang-format off
     static const std::unordered_map<

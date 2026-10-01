@@ -24,6 +24,7 @@ THE SOFTWARE.
 #include <pybind11/stl.h>
 
 #include "operators/py_op_adv_cvt_color.hpp"
+#include "operators/py_op_average_blur.hpp"
 #include "operators/py_op_bilateral_filter.hpp"
 #include "operators/py_op_bnd_box.hpp"
 #include "operators/py_op_brightness_contrast.hpp"
@@ -35,7 +36,9 @@ THE SOFTWARE.
 #include "operators/py_op_cvt_color.hpp"
 #include "operators/py_op_flip.hpp"
 #include "operators/py_op_gamma_contrast.hpp"
+#include "operators/py_op_gaussian.hpp"
 #include "operators/py_op_histogram.hpp"
+#include "operators/py_op_laplacian.hpp"
 #include "operators/py_op_non_max_suppression.hpp"
 #include "operators/py_op_normalize.hpp"
 #include "operators/py_op_reformat.hpp"
@@ -62,6 +65,7 @@ PYBIND11_MODULE(rocpycv, m) {
     PyStructs::Export(m);
     PyStream::Export(m);
     PyTensor::Export(m);
+    PyOpAverageBlur::Export(m);
     PyOpCustomCrop::Export(m);
     PyOpNonMaxSuppression::Export(m);
     PyOpNormalize::Export(m);
@@ -78,6 +82,8 @@ PYBIND11_MODULE(rocpycv, m) {
     PyOpBndBox::Export(m);
     PyOpBrightnessContrast::Export(m);
     PyOpGammaContrast::Export(m);
+    PyOpGaussian::Export(m);
+    PyOpLaplacian::Export(m);
     PyOpComposite::Export(m);
     PyOpCopyMakeBorder::Export(m);
     PyOpCenterCrop::Export(m);

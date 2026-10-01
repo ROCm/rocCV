@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/resize_device.hpp"
 #include "kernels/host/resize_host.hpp"
+#include "operator_types.h"
 
 namespace roccv {
 
@@ -62,13 +63,13 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
 template <typename T>
 void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor& output,
                            eInterpolationType interpolation, eDeviceType device) {
-    static const std::unordered_map<
-        eInterpolationType,
-        std::function<void(hipStream_t stream, const Tensor& input, const Tensor& output, eDeviceType device)>>
-        funcs = {{eInterpolationType::INTERP_TYPE_NEAREST, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
-                 {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
-                 {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}
-                };
+    static const std::unordered_map<eInterpolationType, std::function<void(hipStream_t stream, const Tensor& input,
+                                                                           const Tensor& output, eDeviceType device)>>
+        funcs = {
+            {eInterpolationType::INTERP_TYPE_NEAREST,
+             dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_NEAREST>},
+            {eInterpolationType::INTERP_TYPE_LINEAR, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_LINEAR>},
+            {eInterpolationType::INTERP_TYPE_CUBIC, dispatch_resize_interp<T, eInterpolationType::INTERP_TYPE_CUBIC>}};
 
     if (!funcs.contains(interpolation)) {
         throw Exception("Operation does not support the given interpolation mode.", eStatusType::NOT_IMPLEMENTED);
@@ -78,8 +79,8 @@ void dispatch_resize_dtype(hipStream_t stream, const Tensor& input, const Tensor
     func(stream, input, output, device);
 }
 
-void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& output,
-                        eInterpolationType interpolation, eDeviceType device) const {
+void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& output, eInterpolationType interpolation,
+                        eDeviceType device) const {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
 
@@ -94,6 +95,12 @@ void Resize::operator()(hipStream_t stream, const Tensor& input, const Tensor& o
     if (input.layout().batch_index() != -1) {
         CHECK_TENSOR_COMPARISON(input.shape(input.layout().batch_index()) ==
                                 output.shape(output.layout().batch_index()));
+    }
+
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+    if (hasDimExceedingInt32(input) || hasDimExceedingInt32(output)) {
+        throw Exception("Input or output tensor is too large for int32 indexing", eStatusType::INVALID_OPERATION);
     }
 
     // clang-format off

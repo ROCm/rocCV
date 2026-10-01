@@ -13,6 +13,7 @@ The rocCV is a collection of the following computer vision operators that are su
     :header: "Operator", "Description", "Datatypes", "Layouts"
     
     "AdvCvtColor","Converts color spaces with explicit BT601/BT709/BT2020 coefficients, including NV12/NV21 paths.","U8","NHWC, HWC"
+    "AverageBlur","Applies an average filter.","U8, U16, S16, S32, F32", "NHWC, HWC"
     "BilateralFilter", "Applies a bilateral filter.", "U8", "NHWC, HWC"
     "BndBox","Draws bounding boxes on the images in a tensor.","U8","NHWC, HWC"
     "BrightnessContrast", "Adjusts the brightness and contrast on images in a tensor.", "U8, U16, S16, S32, F32", "NHWC, HWC"
@@ -21,7 +22,9 @@ The rocCV is a collection of the following computer vision operators that are su
     "CopyMakeBorder","Generates a border using a specified border mode around the input tensor.","U8, S8, U32, S32, F32","NHWC"
     "CustomCrop","Crops a region of interest from an input tensor.","U8","NHWC, HWC"
     "GammaContrast","Adjusts the gamma contrast on images in a tensor.","U8","NHWC, HWC"
+    "Gaussian","Applies a Gaussian filter.","U8, U16, S16, S32, F32", "NHWC, HWC"
     "Histogram","Calculates a histogram of values from a grayscale image.","U8","NHWC, HWC"
+    "Laplacian", "Applies a Laplacian filter","U8, U16, F32", "NHWC, HWC"
     "NonMaximumSuppression","Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.","S16, 4S16","NW, NWC"
     "Normalize","Normalizes an input tensor using a provided mean and standard deviation.","U8, S8, F32","NHWC, HWC"
     "Remap","Maps pixels in an image from one projection to another projection in a new image.","U8","NHWC, HWC"

@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 
 #include "op_adv_cvt_color.hpp"
+#include "op_average_blur.hpp"
 #include "op_bilateral_filter.hpp"
 #include "op_bnd_box.hpp"
 #include "op_brightness_contrast.hpp"
@@ -32,7 +33,9 @@ THE SOFTWARE.
 #include "op_cvt_color.hpp"
 #include "op_flip.hpp"
 #include "op_gamma_contrast.hpp"
+#include "op_gaussian.hpp"
 #include "op_histogram.hpp"
+#include "op_laplacian.hpp"
 #include "op_non_max_suppression.hpp"
 #include "op_normalize.hpp"
 #include "op_remap.hpp"

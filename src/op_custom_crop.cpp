@@ -77,6 +77,9 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) >= (cropRect.x + cropRect.width));
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) >= (cropRect.y + cropRect.height));
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Select kernel dispatcher based on number of channels and a base datatype.
     // clang-format off
     static const std::unordered_map<

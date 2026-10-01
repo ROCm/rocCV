@@ -283,6 +283,8 @@ DataType Tensor::dtype() const { return DataType(m_requirements.dtype); }
 
 TensorLayout Tensor::layout() const { return TensorLayout(m_requirements.layout); }
 
+int64_t Tensor::stride(int d) const { return m_requirements.strides[d]; }
+
 TensorData Tensor::exportData() const {
     TensorBufferStrided buffer;
     buffer.basePtr = m_data->data();
@@ -387,6 +389,7 @@ void Tensor::copyToHostAsync(void* dst, hipStream_t stream) const {
 }
 
 void Tensor::copyToAsync(const Tensor& dst, hipStream_t stream) const {
+    // Source and destination must describe the same logical data; only their padding (row pitch) may differ.
     if (shape() != dst.shape() || dtype().size() != dst.dtype().size()) {
         throw Exception("Source and destination tensors must have the same shape and element size for a copy.",
                         eStatusType::INVALID_VALUE);

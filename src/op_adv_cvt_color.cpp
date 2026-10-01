@@ -40,25 +40,21 @@ inline int64_t GetBatch(const Tensor &tensor) {
     return batchIdx < 0 ? 1 : tensor.shape(batchIdx);
 }
 
-inline int64_t GetHeight(const Tensor &tensor) {
-    return tensor.shape(tensor.layout().height_index());
-}
+inline int64_t GetHeight(const Tensor &tensor) { return tensor.shape(tensor.layout().height_index()); }
 
-inline int64_t GetWidth(const Tensor &tensor) {
-    return tensor.shape(tensor.layout().width_index());
-}
+inline int64_t GetWidth(const Tensor &tensor) { return tensor.shape(tensor.layout().width_index()); }
 
-inline int64_t GetChannels(const Tensor &tensor) {
-    return tensor.shape(tensor.layout().channels_index());
-}
+inline int64_t GetChannels(const Tensor &tensor) { return tensor.shape(tensor.layout().channels_index()); }
 
 inline bool IsSemiPlanarToInterleaved(eColorConversionCode code) {
     switch (code) {
         case COLOR_YUV2RGB_NV12:
         case COLOR_YUV2BGR_NV12:
         case COLOR_YUV2RGB_NV21:
-        case COLOR_YUV2BGR_NV21: return true;
-        default: return false;
+        case COLOR_YUV2BGR_NV21:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -67,8 +63,10 @@ inline bool IsInterleavedToSemiPlanar(eColorConversionCode code) {
         case COLOR_RGB2YUV_NV12:
         case COLOR_BGR2YUV_NV12:
         case COLOR_RGB2YUV_NV21:
-        case COLOR_BGR2YUV_NV21: return true;
-        default: return false;
+        case COLOR_BGR2YUV_NV21:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -77,8 +75,10 @@ inline bool IsInterleaved444(eColorConversionCode code) {
         case COLOR_RGB2YUV:
         case COLOR_BGR2YUV:
         case COLOR_YUV2RGB:
-        case COLOR_YUV2BGR: return true;
-        default: return false;
+        case COLOR_YUV2BGR:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -93,8 +93,10 @@ inline bool IsBGRCode(eColorConversionCode code) {
         case COLOR_YUV2BGR_NV12:
         case COLOR_YUV2BGR_NV21:
         case COLOR_BGR2YUV_NV12:
-        case COLOR_BGR2YUV_NV21: return true;
-        default: return false;
+        case COLOR_BGR2YUV_NV21:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -103,8 +105,10 @@ inline bool IsNV12Code(eColorConversionCode code) {
         case COLOR_YUV2RGB_NV12:
         case COLOR_YUV2BGR_NV12:
         case COLOR_RGB2YUV_NV12:
-        case COLOR_BGR2YUV_NV12: return true;
-        default: return false;
+        case COLOR_BGR2YUV_NV12:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -121,9 +125,7 @@ inline Kernels::AdvCvtColorCoefficients GetCoefficients(eColorSpec spec) {
     }
 }
 
-inline int DivUp(int n, int d) {
-    return (n + d - 1) / d;
-}
+inline int DivUp(int n, int d) { return (n + d - 1) / d; }
 
 }  // namespace
 
@@ -131,8 +133,8 @@ AdvCvtColor::AdvCvtColor() {}
 
 AdvCvtColor::~AdvCvtColor() {}
 
-void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &output, eColorConversionCode conversionCode,
-                             eColorSpec colorSpec, eDeviceType device) {
+void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &output,
+                             eColorConversionCode conversionCode, eColorSpec colorSpec, eDeviceType device) {
     CHECK_TENSOR_DEVICE(input, device);
     CHECK_TENSOR_DEVICE(output, device);
 
@@ -175,6 +177,9 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
         CHECK_TENSOR_COMPARISON(outHeight == (inHeight * 3) / 2);
     }
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     Kernels::AdvCvtColorCoefficients coeff = GetCoefficients(colorSpec);
     const bool bgr = IsBGRCode(conversionCode);
     const int uidx = IsNV12Code(conversionCode) ? 0 : 1;
@@ -183,59 +188,56 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
         dim3 blockSize(32, 16);
 
         if (IsInterleaved444(conversionCode)) {
-            dim3 gridSize(DivUp(static_cast<int>(outWidth), blockSize.x), DivUp(static_cast<int>(outHeight), blockSize.y),
-                          static_cast<unsigned int>(outBatch));
+            dim3 gridSize(DivUp(static_cast<int>(outWidth), blockSize.x),
+                          DivUp(static_cast<int>(outHeight), blockSize.y), static_cast<unsigned int>(outBatch));
 
             switch (conversionCode) {
                 case COLOR_BGR2YUV:
-                    Kernels::Device::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
-                                                              coeff, kDelta);
+                    Kernels::Device::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
                 case COLOR_RGB2YUV:
-                    Kernels::Device::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
-                                                              coeff, kDelta);
+                    Kernels::Device::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
                 case COLOR_YUV2BGR:
-                    Kernels::Device::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
-                                                              coeff, kDelta);
+                    Kernels::Device::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW><<<gridSize, blockSize, 0, stream>>>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
                 case COLOR_YUV2RGB:
-                    Kernels::Device::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW>
-                        <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output),
-                                                              coeff, kDelta);
+                    Kernels::Device::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW><<<gridSize, blockSize, 0, stream>>>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
-                default: throw Exception("Unsupported conversion code.", eStatusType::INVALID_COMBINATION);
+                default:
+                    throw Exception("Unsupported conversion code.", eStatusType::INVALID_COMBINATION);
             }
         } else if (IsSemiPlanarToInterleaved(conversionCode)) {
-            dim3 gridSize(DivUp(static_cast<int>(outWidth), blockSize.x), DivUp(static_cast<int>(outHeight), blockSize.y),
-                          static_cast<unsigned int>(outBatch));
+            dim3 gridSize(DivUp(static_cast<int>(outWidth), blockSize.x),
+                          DivUp(static_cast<int>(outHeight), blockSize.y), static_cast<unsigned int>(outBatch));
 
             if (outChannels == 3) {
                 if (bgr) {
                     Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar3>, uchar3>
+                                                                    ImageWrapper<uchar3>, uchar3>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 } else {
                     Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar3>, uchar3>
+                                                                    ImageWrapper<uchar3>, uchar3>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
                     Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar4>, uchar4>
+                                                                    ImageWrapper<uchar4>, uchar4>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 } else {
                     Kernels::Device::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                     ImageWrapper<uchar4>, uchar4>
+                                                                    ImageWrapper<uchar4>, uchar4>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 }
             }
         } else {
@@ -246,21 +248,21 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
                 if (bgr) {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar3, eSwizzle::ZYXW>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 } else {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar3, eSwizzle::XYZW>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar3>(input), ImageWrapper<uchar1>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar4, eSwizzle::ZYXW>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar4>(input), ImageWrapper<uchar1>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 } else {
                     Kernels::Device::rgb_or_bgr_to_nv12_or_nv21_adv<uchar4, eSwizzle::XYZW>
                         <<<gridSize, blockSize, 0, stream>>>(ImageWrapper<uchar4>(input), ImageWrapper<uchar1>(output),
-                                                              coeff, kDelta, uidx);
+                                                             coeff, kDelta, uidx);
                 }
             }
         }
@@ -268,46 +270,43 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
         if (IsInterleaved444(conversionCode)) {
             switch (conversionCode) {
                 case COLOR_BGR2YUV:
-                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
-                                                                                  kDelta);
+                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::ZYXW>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
                 case COLOR_RGB2YUV:
-                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
-                                                                                  kDelta);
+                    Kernels::Host::rgb_or_bgr_to_yuv_adv<uchar3, eSwizzle::XYZW>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
                 case COLOR_YUV2BGR:
-                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
-                                                                                  kDelta);
+                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::ZYXW>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
                 case COLOR_YUV2RGB:
-                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW>(ImageWrapper<uchar3>(input),
-                                                                                  ImageWrapper<uchar3>(output), coeff,
-                                                                                  kDelta);
+                    Kernels::Host::yuv_to_rgb_or_bgr_adv<uchar3, eSwizzle::XYZW>(
+                        ImageWrapper<uchar3>(input), ImageWrapper<uchar3>(output), coeff, kDelta);
                     break;
-                default: throw Exception("Unsupported conversion code.", eStatusType::INVALID_COMBINATION);
+                default:
+                    throw Exception("Unsupported conversion code.", eStatusType::INVALID_COMBINATION);
             }
         } else if (IsSemiPlanarToInterleaved(conversionCode)) {
             if (outChannels == 3) {
                 if (bgr) {
                     Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar3>, uchar3>(
+                                                                  ImageWrapper<uchar3>, uchar3>(
                         ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output), coeff, kDelta, uidx);
                 } else {
                     Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar3>, uchar3>(
+                                                                  ImageWrapper<uchar3>, uchar3>(
                         ImageWrapper<uchar1>(input), ImageWrapper<uchar3>(output), coeff, kDelta, uidx);
                 }
             } else {
                 if (bgr) {
                     Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::ZYXW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar4>, uchar4>(
+                                                                  ImageWrapper<uchar4>, uchar4>(
                         ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output), coeff, kDelta, uidx);
                 } else {
                     Kernels::Host::nv12_or_nv21_to_rgb_or_bgr_adv<eSwizzle::XYZW, ImageWrapper<uchar1>,
-                                                                   ImageWrapper<uchar4>, uchar4>(
+                                                                  ImageWrapper<uchar4>, uchar4>(
                         ImageWrapper<uchar1>(input), ImageWrapper<uchar4>(output), coeff, kDelta, uidx);
                 }
             }

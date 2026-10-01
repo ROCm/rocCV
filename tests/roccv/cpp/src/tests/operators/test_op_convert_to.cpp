@@ -36,8 +36,10 @@ namespace {
 /**
  * @brief Verified golden C++ model for the ConvertTo operation.
  *
- * @tparam T Vectorized datatype of the image's pixels.
- * @tparam BT Base type of the image's data.
+ * @tparam SRC_DT Vectorized datatype of the input image's pixels.
+ * @tparam DEST_DT Vectorized datatype of the output image's pixels.
+ * @tparam BT_SRC Base type of the input image's data.
+ * @tparam BT_DEST Base type of the output image's data.
  * @param[in] input An input vector containing image data.
  * @param[in] batchSize The number of images in the batch.
  * @param[in] width Image width.

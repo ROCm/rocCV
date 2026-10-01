@@ -5,6 +5,7 @@ See below for a list of Computer Vision operators rocCV supports.
 |Name|Description|Datatypes|Layouts|CPU/GPU Support|
 |-|-|-|-|-|
 |AdvCvtColor|Converts color spaces using explicit BT601/BT709/BT2020 coefficients and supports NV12/NV21 paths.|U8|NHWC, HWC|Both|
+|AverageBlur|Applies an average filter for image smoothing.|U8, U16, S16, S32, F32|NHWC, HWC|Both|
 |BilateralFilter|Applies a bilateral filter to reduce image noise while preserving strong edges.|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, HWC|Both|
 |BndBox|Draws rectangular borders using the specified locations, dimensions and colors, in order to show the locations and sizes of objects in an image.|U8, S8|NHWC, HWC|Both|
 |BrightnessContrast|Adjusts the brightness and contrast of an image.|U8, U16, S16, S32, F32|NHWC, HWC|Both|
@@ -16,7 +17,9 @@ See below for a list of Computer Vision operators rocCV supports.
 |CvtColor|Converts the color space of the images in a tensor.|U8|NHWC, HWC|Both|
 |Flip|Flips the images in a tensor about the horizontal, vertical or both axes.|U8, S32, F32|NHWC, HWC|Both|
 |GammaContrast|Adjusts the gamma contrast of an image.|U8, U16, U32, F32|NHWC, HWC|Both|
+|Gaussian|Applies a Gaussian filter for image smoothing.|U8, U16, S16, S32, F32|NHWC, HWC|Both|
 |Histogram|Calculates a histogram of values from a grayscale image.|U8|NHWC, HWC|Both|
+|Laplacian|Applies a Laplacian filter.|U8, U16, F32|NHWC, HWC|Both|
 |NonMaximumSuppression|Performs non-maximum suppression on batches of bounding boxes based on a score and IoU threshold.|S16, 4S16|NW, NWC|Both|
 |Normalize|Normalizes image pixels' range using the provided shift and scale parameters.|U8, S8, U16, S16, U32, S32, F32|NHWC, HWC|Both|
 |Reformat|Converts a tensor between different memory layouts (e.g., NHWC, NCHW, HWC, CHW).|U8, S8, U16, S16, U32, S32, F32, F64|NHWC, NCHW, HWC, CHW|Both|
