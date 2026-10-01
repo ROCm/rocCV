@@ -23,6 +23,8 @@ THE SOFTWARE.
 #include "core/tensor_data.hpp"
 
 #include "core/data_type.hpp"
+#include "core/exception.hpp"
+#include "core/status_type.h"
 #include "core/tensor_buffer.hpp"
 #include "core/util_enums.h"
 
@@ -36,14 +38,21 @@ int64_t TensorData::shape(int d) const& { return m_shape[d]; }
 
 const DataType& TensorData::dtype() const { return m_dtype; }
 
-eDeviceType TensorData::device() const { return m_deviceType; }
+eDeviceType TensorData::device() const {
+    // Device is derived from the buffer type; there is no separate device field to keep in sync.
+    switch (m_bufferType) {
+        case TensorBufferType::TENSOR_BUFFER_STRIDED_HIP:
+            return eDeviceType::GPU;
+        case TensorBufferType::TENSOR_BUFFER_STRIDED_HOST:
+            return eDeviceType::CPU;
+        default:
+            throw Exception("TensorData has no associated device (buffer type is not set).",
+                            eStatusType::INVALID_VALUE);
+    }
+}
 
 TensorData::TensorData(const TensorShape& tshape, const DataType& dtype, const TensorBuffer& buffer)
-    : m_shape(tshape),
-      m_dtype(dtype),
-      m_deviceType(eDeviceType::GPU),
-      m_bufferType(TensorBufferType::TENSOR_BUFFER_NONE),
-      m_buffer(buffer) {}
+    : m_shape(tshape), m_dtype(dtype), m_bufferType(TensorBufferType::TENSOR_BUFFER_NONE), m_buffer(buffer) {}
 
 bool TensorData::IsCompatibleKind(TensorBufferType bufferType) {
     return bufferType != TensorBufferType::TENSOR_BUFFER_NONE;
@@ -64,7 +73,6 @@ int64_t TensorDataStrided::stride(int d) const { return m_buffer.strided.strides
 TensorDataStridedHip::TensorDataStridedHip(const TensorShape& shape, const DataType& dtype, const TensorBuffer& buffer)
     : TensorDataStrided(shape, dtype, buffer) {
     m_bufferType = TensorBufferType::TENSOR_BUFFER_STRIDED_HIP;
-    m_deviceType = eDeviceType::GPU;
 }
 
 TensorDataStridedHip::TensorDataStridedHip(const TensorShape& shape, const DataType& dtype,
@@ -79,7 +87,6 @@ TensorDataStridedHost::TensorDataStridedHost(const TensorShape& shape, const Dat
                                              const TensorBuffer& buffer)
     : TensorDataStrided(shape, dtype, buffer) {
     m_bufferType = TensorBufferType::TENSOR_BUFFER_STRIDED_HOST;
-    m_deviceType = eDeviceType::CPU;
 }
 
 TensorDataStridedHost::TensorDataStridedHost(const TensorShape& shape, const DataType& dtype, const Buffer& buffer)
