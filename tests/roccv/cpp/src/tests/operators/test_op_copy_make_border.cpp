@@ -21,7 +21,6 @@
 
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/border_wrapper.hpp>
-#include <limits>
 #include <op_copy_make_border.hpp>
 
 #include "core/detail/casting.hpp"
