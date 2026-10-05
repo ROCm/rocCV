@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 #include "op_warp_perspective.hpp"
 
+#include <cmath>
 #include <functional>
 
 #include "common/array_wrapper.hpp"
@@ -128,13 +129,21 @@ void WarpPerspective::operator()(hipStream_t stream, const Tensor &input, const 
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);
 
+    for (int i = 0; i < 9; i++) {
+        if (!std::isfinite(transMatrix[i])) {
+            throw Exception("Perspective transformation matrix must only contain finite values.",
+                            eStatusType::INVALID_VALUE);
+        }
+    }
+
     PerspectiveTransform invertedTransform;
 
     // Ensure the input perspective transform matrix is inverted before passing into the kernel.
     detail::math::Matrix<float, 3, 3> mat;
     mat.load(transMatrix);
-    if (!isInverted) {
-        detail::math::inv_inplace(mat);
+    if (!isInverted && !detail::math::inv_inplace(mat)) {
+        throw Exception("The given perspective transformation matrix could not be inverted.",
+                        eStatusType::INVALID_VALUE);
     }
     mat.store(invertedTransform);
 
