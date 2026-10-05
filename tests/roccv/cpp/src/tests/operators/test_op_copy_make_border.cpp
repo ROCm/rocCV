@@ -21,6 +21,7 @@
 
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/border_wrapper.hpp>
+#include <limits>
 #include <op_copy_make_border.hpp>
 
 #include "core/detail/casting.hpp"
@@ -123,12 +124,41 @@ void TestCorrectness(int batchSize, Size2D inputSize, Size2D outputSize, ImageFo
     // Compare actual results with golden results
     CompareVectors(actualOutput, goldenOutput);
 }
+/**
+ * @brief Tests that invalid border sizes are rejected rather than silently cropping the input.
+ */
+void TestNegative() {
+    for (eDeviceType device : {eDeviceType::GPU, eDeviceType::CPU}) {
+        Tensor input(1, {16, 16}, FMT_RGB8, device);
+        Tensor cropped(1, {14, 15}, FMT_RGB8, device);
+        Tensor padded(1, {20, 20}, FMT_RGB8, device);
+        float4 borderValue = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+        CopyMakeBorder op;
+
+        // Negative top/left border sizes
+        EXPECT_EXCEPTION(op(nullptr, input, cropped, -1, -2, eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(op(nullptr, input, padded, -1, 2, eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_VALUE);
+
+        // Output too small to hold the input at the given offset (negative bottom/right border)
+        EXPECT_EXCEPTION(op(nullptr, input, cropped, 0, 0, eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_COMBINATION);
+        EXPECT_EXCEPTION(op(nullptr, input, padded, 5, 0, eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_COMBINATION);
+        EXPECT_EXCEPTION(op(nullptr, input, padded, 0, 5, eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_COMBINATION);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
+
+    TEST_CASE(TestNegative());
 
     // clang-format off
 
