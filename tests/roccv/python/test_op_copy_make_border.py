@@ -54,3 +54,29 @@ def test_op_copy_make_border(samples, height, width, channels, top, right, botto
     stream.synchronize()
 
     compare_tensors(output, output_golden)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("top,bottom,left,right", [
+    [-1, 0, -2, 0],
+    [0, -1, 0, 0],
+    [0, 0, 0, -1],
+])
+def test_op_copy_make_border_negative_border(top, bottom, left, right, device):
+    input = generate_tensor(1, 16, 16, 3, rocpycv.eDataType.U8, device)
+    with pytest.raises(rocpycv.Exception):
+        rocpycv.copymakeborder(input, rocpycv.eBorderType.CONSTANT, [0, 0, 0, 0], top, bottom, left, right, None,
+                               device)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("out_height,out_width,top,left", [
+    [15, 14, -1, -2],  # Negative top/left
+    [15, 16, 0, 0],    # Output too small to hold the input
+    [20, 20, 5, 0],    # Output too small to hold the input at the given offset
+])
+def test_op_copy_make_border_into_invalid_border(out_height, out_width, top, left, device):
+    input = generate_tensor(1, 16, 16, 3, rocpycv.eDataType.U8, device)
+    output = rocpycv.Tensor([1, out_height, out_width, 3], rocpycv.eTensorLayout.NHWC, rocpycv.eDataType.U8, device)
+    with pytest.raises(rocpycv.Exception):
+        rocpycv.copymakeborder_into(output, input, rocpycv.eBorderType.CONSTANT, [0, 0, 0, 0], top, left, None, device)
