@@ -1,0 +1,56 @@
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# Floors on the number of result IDs per suite and group, so silently dropped
+# tests turn the night red (report/triage.py). `group` is a glob over the second
+# ID component (<suite>::<group>::<name>); `tiers` default to every tier the
+# suite runs in. Values come from the validation run of 27 Sep 2026 on
+# nightly-20260926. When upstream legitimately adds or removes tests, update the
+# floor in the same PR. Hardware-dependent groups (unsupported-GPU probes) and
+# environment-dependent ones (build.*, harness) are deliberately not guarded.
+#
+# The robustness and robustness-nogpu floors count only the rocCV checks of this
+# copy of those suites. robustness has no floor: its rocCV checks are all
+# unsupported-GPU probes, which depend on the hardware.
+schema: 1
+counts:
+  # ----------------------------------------------------------------- roccv
+  - {suite: roccv, group: ctest, min: 5, tiers: [quick]}
+  - {suite: roccv, group: pytest, min: 1152, tiers: [quick]}
+  - {suite: roccv, group: ctest, min: 40, tiers: [standard, comprehensive, full]}
+  - {suite: roccv, group: case.*, min: 1704, tiers: [standard, comprehensive, full], note: "1,656 TEST_CASE sites"}
+  - {suite: roccv, group: pybind-ctest, min: 20, tiers: [standard, comprehensive, full]}
+  - {suite: roccv, group: pytest, min: 12038, tiers: [standard, comprehensive, full], note: "all 25 files"}
+  - {suite: roccv, group: gpu-vs-cpu.*, min: 441, tiers: [comprehensive, full]}
+  - {suite: roccv, group: numpy-ref.*, min: 217, tiers: [comprehensive, full]}
+  - {suite: roccv, group: hwc.*, min: 100, tiers: [comprehensive, full]}
+  - {suite: roccv, group: strided-copy.*, min: 45, tiers: [comprehensive, full]}
+  - {suite: roccv, group: dlpack, min: 45, tiers: [comprehensive, full]}
+  - {suite: roccv, group: negative.*, min: 54, tiers: [comprehensive, full]}
+  - {suite: roccv, group: stub, min: 10, tiers: [comprehensive, full]}
+  - {suite: roccv, group: cpp-probe.*, min: 25, tiers: [comprehensive, full]}
+  - {suite: roccv, group: samples.cpp, min: 41, tiers: [comprehensive, full]}
+  - {suite: roccv, group: samples.compare, min: 18, tiers: [comprehensive, full]}
+  - {suite: roccv, group: perf, min: 54, tiers: [comprehensive, full]}
+
+  # ------------------------------------------------------------ robustness
+  - {suite: robustness-nogpu, group: env, min: 1}
+  - {suite: robustness-nogpu, group: import, min: 1}
+  - {suite: robustness-nogpu, group: roccv, min: 3}

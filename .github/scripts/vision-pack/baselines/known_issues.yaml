@@ -1,0 +1,238 @@
+# Copyright (c) 2026 Advanced Micro Devices, Inc. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+# Known findings: the only place a failing result becomes "known".
+#
+# This copy holds the entries for the rocCV vision-pack QA workflow: the roccv
+# suite and the rocCV checks of robustness and robustness-nogpu. Entries that
+# also cover other libraries keep only the globs for these result IDs; the IDs
+# are the same in every library's copy.
+#
+# Seeded from the manual QA report of 25 Sep 2026 (C1-C2 critical, H1-H19 high,
+# M1-M23 medium, low items L-*) and the provisional findings N1-N4; N5 onwards
+# were found while porting the suites (27 Sep 2026).
+#
+# Each entry:
+#   id, title, severity (critical|high|medium|low), owner
+#   kind:   xfail (expected to fail; a pass is reported as "fixed"),
+#           flaky, skip (expected to be blocked/skipped), quarantine (ignored)
+#   match:  shell-style globs over result IDs <suite>::<group>::<name>. Match
+#           only the failing tests: a glob that also covers passing tests turns
+#           them into "fixed" every night. "[" must be written "[[]".
+#   gfx:    optional globs over the tested GPU (default: every GPU, and nights
+#           without one); [none] scopes an entry to nights on a runner without
+#           a usable GPU, when only the needs_gpu: false suites run
+#   tiers:  optional; issue: upstream URL; added / review_by: YYYY-MM-DD
+#   strict: report the entry in the verdict reasons once all its tests pass
+# Once review_by has passed, re-verify the finding and extend review_by (with an
+# upstream issue link), or remove the entry. Findings tracked by ROCm/rocCV#195
+# link their sub-issue; where a finding was filed as several issues, issue: names
+# the first and a comment names the others.
+schema: 1
+issues:
+  # ---------------------------------------------------------------------- high
+  - id: H17
+    title: copy_to() of non-contiguous tensor views silently corrupts data
+    severity: high
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::strided-copy.h_crop::copy_to_*"
+      - "roccv::strided-copy.hw_roi::copy_to_*"
+      - "roccv::strided-copy.hw_roi_single::copy_to_*"
+      - "roccv::strided-copy.hw_transpose::copy_to_*"
+      - "roccv::strided-copy.w_step2::copy_to_*"
+      - "roccv::strided-copy.channel_slice::copy_to_*"
+      - "roccv::strided-copy.h_crop::flip_GPU"
+      - "roccv::strided-copy.hw_roi::flip_GPU"
+      - "roccv::strided-copy.hw_roi_single::flip_GPU"
+      - "roccv::strided-copy.hw_transpose::flip_GPU"
+      - "roccv::strided-copy.w_step2::flip_GPU"
+      - "roccv::dlpack::noncontig_*"
+    issue: https://github.com/ROCm/rocCV/issues/196
+    added: 2026-09-25
+    review_by: 2026-12-31
+    strict: true
+  - id: H18
+    title: custom_crop accepts a negative origin (GPU memory access fault, CPU garbage)
+    severity: high
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::negative.*::custom_crop_Box(-5,-5,4,4)"
+      - "roccv::negative.*::custom_crop_Box(-1000,0,4,4)"
+      - "roccv::negative.*::custom_crop_Box(0,-100000,4,4)"
+      - "roccv::oob.CPU::custom_crop_negative_origin_content"
+    issue: https://github.com/ROCm/rocCV/issues/197
+    added: 2026-09-25
+    review_by: 2026-12-31
+    strict: true
+  - id: H19
+    title: C++ TensorWrapData frees memory the caller owns; wrapped host memory reports device GPU
+    severity: high
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::cpp-probe.wrap::host_buffer_*"
+      - "roccv::cpp-probe.wrap::caller_owned_gpu_memory"
+      - "roccv::cpp-probe.strided::*"
+    issue: https://github.com/ROCm/rocCV/issues/198
+    added: 2026-09-25
+    review_by: 2026-12-31
+    strict: true
+
+  # -------------------------------------------------------------------- medium
+  - id: M20
+    title: Unbatched HWC layout crashes 7 operators
+    severity: medium
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::hwc.brightness_contrast::*"
+      - "roccv::hwc.center_crop::*"
+      - "roccv::hwc.custom_crop::*"
+      - "roccv::hwc.cvtcolor::*"
+      - "roccv::hwc.cvtcolor_gray::*"
+      - "roccv::hwc.gamma_contrast::*"
+      - "roccv::hwc.remap::*"
+      - "roccv::hwc.threshold::*"
+      - "roccv::hwc.composite::alloc.*"
+      - "roccv::cpp-probe.hwc::CvtColor.*"
+      - "roccv::cpp-probe.hwc::GammaContrast.*"
+      - "roccv::cpp-probe.hwc::CenterCrop.*"
+      - "roccv::cpp-probe.hwc::CustomCrop.*"
+      - "roccv::cpp-probe.hwc::BrightnessContrast.*"
+      - "roccv::cpp-probe.hwc::Threshold.*"
+      - "roccv::cpp-probe.hwc::Remap.*"
+      - "roccv::gpu-vs-cpu.cvtcolor::HWC_BGR2RGB"
+      - "roccv::numpy-ref.cvtcolor::HWC_BGR2RGB"
+    issue: https://github.com/ROCm/rocCV/issues/199
+    added: 2026-09-25
+    review_by: 2026-12-31
+  - id: M21
+    title: Kernel launch failures are never reported (no code object - success and zeros)
+    severity: medium
+    owner: rocCV
+    kind: xfail
+    match:
+      - "robustness::unsupported-gpu.gfx*::roccv-*"
+    issue: https://github.com/ROCm/rocCV/issues/200
+    added: 2026-09-25
+    review_by: 2026-12-31
+  - id: M22
+    title: Shipped rocpycv.pyi is not valid Python and misses several functions
+    severity: medium
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::stub::syntax"
+      - "roccv::stub::functions_declared"
+      - "roccv::stub::constants_declared"
+    issue: https://github.com/ROCm/rocCV/issues/201
+    added: 2026-09-25
+    review_by: 2026-12-31
+
+  # ----------------------------------------------------------------------- low
+  - id: L-roccv-accuracy
+    title: >-
+      rocCV WarpAffine NEAREST differs between GPU and CPU (FMA rounding); GammaContrast loses precision on U32;
+      Threshold header documents the wrong layout
+    severity: low
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::gpu-vs-cpu.warp_affine::U8_NEAREST_*"
+      - "roccv::gpu-vs-cpu.warp_affine::F32_NEAREST_*"
+      - "roccv::repro::warp_affine_nearest_source_pixels"
+      - "roccv::precision.gamma_contrast::*"
+      - "roccv::api-doc::threshold_NW_layout.*"
+    # Filed as three issues: #203 (WarpAffine and WarpPerspective NEAREST), #204 (GammaContrast U32),
+    # #205 (Threshold header).
+    issue: https://github.com/ROCm/rocCV/issues/203
+    added: 2026-09-25
+    review_by: 2026-12-31
+  - id: L-roccv-validation
+    title: rocCV accepts negative padding, singular warp matrices and a NaN rotation angle; copy_to needs a GPU even for CPU tensors
+    severity: low
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::negative.*::warp_affine_singular_matrix"
+      - "roccv::negative.*::warp_perspective_singular_matrix"
+      - "roccv::negative.*::copymakeborder_negative_top"
+      - "roccv::negative.*::rotate_NaN_angle"
+      - "robustness-nogpu::roccv::cpu-flip-copy-to"
+    # The copy_to part is filed as #207 (CPU backend needs a GPU for tensor copies).
+    issue: https://github.com/ROCm/rocCV/issues/206
+    added: 2026-09-25
+    review_by: 2026-12-31
+  - id: L-roccv-samples
+    title: rocCV samples - broken -h option, normalize ignores bad options, SIGABRT on bad input
+    severity: low
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::samples.help::bilateral_filter"
+      - "roccv::samples.help::bnd_box"
+      - "roccv::samples.help::center_crop"
+      - "roccv::samples.help::custom_crop"
+      - "roccv::samples.help::roccv_cropandresize_app"
+      - "roccv::samples.badinput::normalize_unknown_option"
+      - "roccv::samples.badinput::center_crop_missing_input"
+      - "roccv::samples.badinput::center_crop_crop_too_big"
+      - "roccv::samples.badinput::custom_crop_out_of_bounds"
+    issue: https://github.com/ROCm/rocCV/issues/208
+    added: 2026-09-25
+    review_by: 2026-12-31
+  - id: L-roccv-perf
+    title: rocCV Gaussian and AverageBlur about 3x slower than comparable operators; Rotate 2.3x slower than WarpAffine
+    severity: low
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::perf-audit::*"
+    # Filed as two issues: #209 (Gaussian and AverageBlur) and #210 (Rotate, now closed).
+    issue: https://github.com/ROCm/rocCV/issues/209
+    added: 2026-09-25
+    review_by: 2026-12-31
+  - id: L-roccv-tests
+    title: rocCV Python tests check tensor metadata only, and 6 of 25 files are not registered in the installed ctest
+    severity: low
+    owner: rocCV
+    kind: xfail
+    match:
+      - "roccv::audit::*"
+    # Filed as two issues: #211 (metadata-only tests, now closed) and #212 (files missing from the
+    # installed ctest).
+    issue: https://github.com/ROCm/rocCV/issues/212
+    added: 2026-09-25
+    review_by: 2026-12-31
+
+  # ------------------------------------------------ expected to be blocked
+  - id: L-extended-only
+    title: Checks that need ROCm torch, tensorflow or jax run only in the extended image
+    severity: low
+    owner: vision-pack QA
+    kind: skip
+    match:
+      - "roccv::dlpack.torch::*"
+      - "roccv::samples.torch::*"
+    added: 2026-09-27
+    review_by: 2026-12-31
