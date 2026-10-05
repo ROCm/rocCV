@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <cmath>
+
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename Mat>
