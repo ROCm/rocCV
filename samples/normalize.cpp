@@ -82,9 +82,6 @@ int main(int argc, char** argv) try {
     uint32_t flags = 0;
     float epsilon = 0.1f;
 
-    if(argc < 3) {
-        ShowHelpAndExit("-h");
-    }
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h")) {
             ShowHelpAndExit("-h");
@@ -160,6 +157,11 @@ int main(int argc, char** argv) try {
         }
         std::cerr << "Unknown option: " << argv[i] << std::endl;
         ShowHelpAndExit(argv[i], EXIT_FAILURE);
+    }
+
+    if (input_file_path.empty()) {
+        std::cerr << "Error: Input path is required." << std::endl;
+        ShowHelpAndExit("-i", EXIT_FAILURE);
     }
 
     if (gpuPath) {
