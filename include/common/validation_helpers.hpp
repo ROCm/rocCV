@@ -74,6 +74,18 @@ THE SOFTWARE.
     }
 
 /**
+ * @brief Generic validation check which throws an exception with the provided status on failure. For example:
+ * CHECK_CONDITION(cropRect.x >= 0, eStatusType::OUT_OF_BOUNDS).
+ *
+ */
+#define CHECK_CONDITION(condition, status)                                 \
+    do {                                                                   \
+        if (!(condition)) {                                                \
+            throw roccv::Exception("Check failed: " #condition, (status)); \
+        }                                                                  \
+    } while (0)
+
+/**
  * @brief Validates whether a tensor contains a supported number of channels.
  *
  */
