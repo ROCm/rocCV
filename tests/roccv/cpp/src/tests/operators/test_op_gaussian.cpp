@@ -306,7 +306,8 @@ void TestNegativeGaussian() {
     }
 
     {
-        // Test bad kernel size (exceeding max) and sigma X
+        // Test bad kernel / sigma
+        // Kernel exceeds max
         EXPECT_EXCEPTION(
             op(nullptr, validGPUTensor, validGPUTensor, 3, 5, 1, 1, BORDER_TYPE_CONSTANT, eDeviceType::GPU),
             eStatusType::INVALID_VALUE);
@@ -327,6 +328,20 @@ void TestNegativeGaussian() {
         EXPECT_EXCEPTION(
             op(nullptr, validGPUTensor, validGPUTensor, 3, 3, -0.1, 1, BORDER_TYPE_CONSTANT, eDeviceType::GPU),
             eStatusType::INVALID_VALUE);
+        // Too large for LDS
+        hipError_t hipErr;
+        int deviceId;
+        hipErr = hipGetDevice(&deviceId);
+        if (hipErr != hipSuccess) return;  // not testing for hip err
+        int maxSharedMem;
+        hipErr = hipDeviceGetAttribute(&maxSharedMem, hipDeviceAttributeMaxSharedMemoryPerBlock, deviceId);
+        if (hipErr != hipSuccess) return;  // not testing for hip err
+        constexpr int BLOCK_DIM = 128;
+        int maxKernelDim = (maxSharedMem / validGPUTensor.dtype().size()) - BLOCK_DIM + 1;
+        Gaussian op(maxKernelDim + 2, 1);
+        EXPECT_EXCEPTION(op(nullptr, validGPUTensor, validGPUTensor, (maxKernelDim + 1 | 1), 1, 1, 1,
+                            BORDER_TYPE_CONSTANT, eDeviceType::GPU),
+                         eStatusType::INVALID_VALUE);
     }
 }
 
