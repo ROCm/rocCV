@@ -48,7 +48,6 @@ void PyEnums::Export(py::module& m) {
         .value("S32", DATA_TYPE_S32)
         .value("F32", DATA_TYPE_F32)
         .value("F64", DATA_TYPE_F64)
-        .value("4S16", DATA_TYPE_4S16)
         .export_values();
 
     py::enum_<eDeviceType>(m, "eDeviceType")

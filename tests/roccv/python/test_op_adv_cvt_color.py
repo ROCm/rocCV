@@ -62,7 +62,7 @@ SPECS = [
 @pytest.mark.parametrize("samples,width,height", [[1, 64, 48], [2, 128, 72]])
 def test_op_advcvtcolor_interleaved444(samples, height, width, code, spec, dtype, device):
     input_tensor = generate_tensor(samples, width, height, 3, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, 3], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, 3], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.advcvtcolor(input_tensor, code, spec, stream, device)
@@ -79,7 +79,7 @@ def test_op_advcvtcolor_interleaved444(samples, height, width, code, spec, dtype
 @pytest.mark.parametrize("samples,width,height", [[1, 64, 48], [2, 128, 72]])
 def test_op_advcvtcolor_interleaved_to_semiplanar(samples, height, width, code, spec, dtype, device):
     input_tensor = generate_tensor(samples, width, height, 3, dtype, device)
-    output_golden = rocpycv.Tensor([samples, (height * 3) // 2, width, 1], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, (height * 3) // 2, width, 1], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.advcvtcolor(input_tensor, code, spec, stream, device)
@@ -96,7 +96,7 @@ def test_op_advcvtcolor_interleaved_to_semiplanar(samples, height, width, code, 
 @pytest.mark.parametrize("samples,width,height", [[1, 64, 48], [2, 128, 72]])
 def test_op_advcvtcolor_semiplanar_to_interleaved(samples, height, width, code, spec, dtype, device):
     input_tensor = generate_tensor(samples, width, (height * 3) // 2, 1, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, 3], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, 3], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.advcvtcolor(input_tensor, code, spec, stream, device)

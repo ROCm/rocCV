@@ -38,7 +38,7 @@ def test_op_resize(out_shape, in_shape, samples, channels, interp, dtype, device
     # Input/Output shapes are passed in as format [width, height]
     input = generate_tensor(samples, in_shape[0], in_shape[1], channels, dtype, device)
     output_shape = (samples, out_shape[1], out_shape[0], channels)
-    output_golden = rocpycv.Tensor(output_shape, rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor(output_shape, dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     rocpycv.resize_into(output_golden, input, interp, stream, device)

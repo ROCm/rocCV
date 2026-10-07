@@ -1,5 +1,5 @@
 # ##############################################################################
-# Copyright (c)  - 2025 Advanced Micro Devices, Inc.
+# Copyright (c)  - 2026 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,12 @@
 #
 # ##############################################################################
 
-import pytest
 import rocpycv
 
-from test_helpers import generate_tensor, compare_tensors
 
-
-@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
-@pytest.mark.parametrize("dtype", [rocpycv.eDataType.U8, rocpycv.eDataType.F32])
-@pytest.mark.parametrize("out_channels", [3, 4])
-@pytest.mark.parametrize("samples,height,width", [
-    (1, 45, 23),
-    (3, 67, 85),
-    (7, 25, 95)
-])
-def test_op_composite(samples, height, width, out_channels, dtype, device):
-    foreground = generate_tensor(samples, width, height, 3, dtype, device)
-    background = generate_tensor(samples, width, height, 3, dtype, device)
-    mask = generate_tensor(samples, width, height, 1, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, out_channels], dtype, rocpycv.eTensorLayout.NHWC, device)
-
+def test_stream_handle_returns_valid_pointer():
     stream = rocpycv.Stream()
-    output = rocpycv.composite(foreground, background, mask, out_channels, stream, device)
-    rocpycv.composite_into(output_golden, foreground, background, mask, stream, device)
-    stream.synchronize()
+    handle = stream.handle()
 
-    compare_tensors(output, output_golden)
+    assert isinstance(handle, int)
+    assert handle != 0

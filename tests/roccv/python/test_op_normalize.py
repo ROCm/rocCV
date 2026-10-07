@@ -39,7 +39,7 @@ def test_op_normalize(samples, height, width, channels, device, dtype):
     input = generate_tensor(samples, width, height, channels, dtype, device)
     base = generate_tensor(1, 1, 1, channels, rocpycv.eDataType.F32, device)
     scale = generate_tensor(1, 1, 1, channels, rocpycv.eDataType.F32, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     rocpycv.normalize_into(output_golden, input, base, scale, None, 1.0, 0.0, 0.0, stream, device)
