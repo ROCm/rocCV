@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <functional>
 
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/custom_crop_device.hpp"
 #include "kernels/host/custom_crop_host.hpp"
@@ -44,6 +45,7 @@ void dispatch_custom_crop_dtype(hipStream_t stream, const Tensor& input, const T
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
             Kernels::Device::custom_crop<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, cropRect);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

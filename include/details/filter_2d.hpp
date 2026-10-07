@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include "core/detail/vector_utils.hpp"
 #include "core/exception.hpp"
+#include "core/hip_assert.h"
 #include "core/tensor.hpp"
 #include "core/wrappers/border_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
@@ -57,6 +58,7 @@ void dispatch_filter_2d_bordertype(hipStream_t stream, const Tensor& input, cons
                       outputWrapper.batches());
             Kernels::Device::filter_2d<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, kernel, kernelWidth,
                                                                   kernelHeight, anchorX, anchorY);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
         case eDeviceType::CPU: {
@@ -98,6 +100,7 @@ void dispatch_filter_2d_bordertype_separable(hipStream_t stream, const Tensor& i
 
                 Kernels::Device::filter_2d_horizontal<DT, BLOCK_WIDTH, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
                     <<<grid, block, smemSize, stream>>>(inputWrapper, intermWrapper, kernelH, kernelWidth, anchorX);
+                HIP_CHECK_KERNEL_LAUNCH();
             }
 
             // Vertical pass
@@ -114,6 +117,7 @@ void dispatch_filter_2d_bordertype_separable(hipStream_t stream, const Tensor& i
                 Kernels::Device::filter_2d_vertical<DT, BLOCK_HEIGHT, BorderWrapper<DT, BT>, ImageWrapper<DT>, KT>
                     <<<grid, block, smemSize, stream>>>(intermWrapperWithBorder, outputWrapper, kernelV, kernelHeight,
                                                         anchorY);
+                HIP_CHECK_KERNEL_LAUNCH();
             }
             break;
         }

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <unordered_map>
 
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/reformat_device.hpp"
 #include "kernels/host/reformat_host.hpp"
@@ -44,6 +45,7 @@ void DispatchReformatChannels(hipStream_t stream, const Tensor& input, const Ten
             dim3 grid((outputWrap.width() + block.x - 1) / block.x, (outputWrap.height() + block.y - 1) / block.y,
                       outputWrap.batches());
             Kernels::Device::reformat<Channels, T><<<grid, block, 0, stream>>>(inputWrap, outputWrap);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 
