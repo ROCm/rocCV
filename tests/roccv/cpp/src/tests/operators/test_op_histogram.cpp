@@ -51,13 +51,13 @@ namespace {
  * @return Vector containing the results of the operation.
  */
 template <typename T, typename BT = detail::BaseType<T>>
-std::vector<BT> GoldenHistogram(std::vector<uchar>& input, int32_t batchSize, int32_t width, int32_t height) {
+std::vector<BT> GoldenHistogram(std::vector<uint8_t>& input, int32_t batchSize, int32_t width, int32_t height) {
     // Create an output vector for the histogram
     std::vector<BT> output;
     std::vector<BT> local_histogram(256);
 
     // Wrap the input vector for simplified data access
-    ImageWrapper<uchar> src(input, batchSize, width, height);
+    ImageWrapper<uint8_t> src(input, batchSize, width, height);
 
     for (int b = 0; b < batchSize; ++b) {
         std::fill(local_histogram.begin(), local_histogram.end(), 0);
@@ -87,15 +87,15 @@ std::vector<BT> GoldenHistogram(std::vector<uchar>& input, int32_t batchSize, in
  */
 
 template <typename T, typename BT = detail::BaseType<T>>
-std::vector<BT> GoldenHistogramMask(std::vector<uchar>& input, std::vector<uchar>& mask, int32_t batchSize,
+std::vector<BT> GoldenHistogramMask(std::vector<uint8_t>& input, std::vector<uint8_t>& mask, int32_t batchSize,
                                     int32_t width, int32_t height) {
     // Create an output vector for the histogram
     std::vector<BT> output;
     std::vector<BT> local_histogram(256);
 
     // Wrap input/mask vectors for simplified data access
-    ImageWrapper<uchar> src(input, batchSize, width, height);
-    ImageWrapper<uchar> maskWrap(mask, batchSize, width, height);
+    ImageWrapper<uint8_t> src(input, batchSize, width, height);
+    ImageWrapper<uint8_t> maskWrap(mask, batchSize, width, height);
 
     for (int b = 0; b < batchSize; ++b) {
         std::fill(local_histogram.begin(), local_histogram.end(), 0);
@@ -134,11 +134,11 @@ void TestCorrectness(int batchSize, int width, int height, ImageFormat format, e
                              DataType(eDataType::DATA_TYPE_S32), device);
 
     // Create a vector and fill it with random data.
-    std::vector<uchar> inputData(input.shape().size());
+    std::vector<uint8_t> inputData(input.shape().size());
     FillVector(inputData);
 
     // Create a mask vector and fill it with random data.
-    std::vector<uchar> maskData(mask.shape().size());
+    std::vector<uint8_t> maskData(mask.shape().size());
     FillVectorMask(maskData);
 
     // Copy generated input data into input tensor
