@@ -24,6 +24,9 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <cmath>
+#include <limits>
+
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename Mat>
@@ -31,10 +34,12 @@ void warp_perspective(SrcWrapper input, DstWrapper output, Mat mat) {
     for (int b = 0; b < output.batches(); b++) {
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
-                const float denom = mat[6] * x + mat[7] * y + mat[8];
-                const float coeff = denom == 0.0 ? std::numeric_limits<float>::max() : 1.0f / denom;
-                const float ox = (mat[0] * x + mat[1] * y + mat[2]) * coeff;
-                const float oy = (mat[3] * x + mat[4] * y + mat[5]) * coeff;
+                const float fx = static_cast<float>(x);
+                const float fy = static_cast<float>(y);
+                const float denom = fmaf(mat[6], fx, fmaf(mat[7], fy, mat[8]));
+                const float coeff = denom == 0.0f ? std::numeric_limits<float>::max() : 1.0f / denom;
+                const float ox = fmaf(mat[0], fx, fmaf(mat[1], fy, mat[2])) * coeff;
+                const float oy = fmaf(mat[3], fx, fmaf(mat[4], fy, mat[5])) * coeff;
                 output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
             }
         }
