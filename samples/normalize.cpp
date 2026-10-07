@@ -52,7 +52,7 @@ using namespace roccv;
  * 65.0 <-- scale for channel 2
  */
 
- void ShowHelpAndExit(const char *option = NULL) {
+void ShowHelpAndExit(const char *option = "", int exitCode = EXIT_SUCCESS) {
     std::cout << "Options: " << option << std::endl
     << "-i Input File Path - required" << std::endl
     << "-o Output File Path - optional; default: output.bmp" << std::endl
@@ -64,10 +64,10 @@ using namespace roccv;
     << "-scale_file Scaling parameter file - optional; default: use the set value in the app" << std::endl
     << "-stddev_scale Scaling parameter is standard deviation (0/1)- optional; default: 0 (false)" << std::endl
     << "-epsilon Epsilon parameter - optional; default: 0.1f" << std::endl;
-    exit(0);
+    exit(exitCode);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     std::string input_file_path;
     std::string base_file_path;
     std::string scale_file_path;
@@ -82,44 +82,41 @@ int main(int argc, char** argv) {
     uint32_t flags = 0;
     float epsilon = 0.1f;
 
-    if(argc < 3) {
-        ShowHelpAndExit("-h");
-    }
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-h")) {
             ShowHelpAndExit("-h");
         }
         if (!strcmp(argv[i], "-i")) {
             if (++i == argc) {
-                ShowHelpAndExit("-i");
+                ShowHelpAndExit("-i", EXIT_FAILURE);
             }
             input_file_path = argv[i];
             continue;
         }
         if (!strcmp(argv[i], "-o")) {
             if (++i == argc) {
-                ShowHelpAndExit("-o");
+                ShowHelpAndExit("-o", EXIT_FAILURE);
             }
             output_file_path = argv[i];
             continue;
         }
         if (!strcmp(argv[i], "-global_shift")) {
             if (++i == argc) {
-                ShowHelpAndExit("-global_shift");
+                ShowHelpAndExit("-global_shift", EXIT_FAILURE);
             }
             globalShift = std::atof(argv[i]);
             continue;
         }
         if (!strcmp(argv[i], "-global_scale")) {
             if (++i == argc) {
-                ShowHelpAndExit("-global_scale");
+                ShowHelpAndExit("-global_scale", EXIT_FAILURE);
             }
             globalScale = std::atof(argv[i]);
             continue;
         }
         if (!strcmp(argv[i], "-base_file")) {
             if (++i == argc) {
-                ShowHelpAndExit("-base_file");
+                ShowHelpAndExit("-base_file", EXIT_FAILURE);
             }
             base_file_path = argv[i];
             baseSet = true;
@@ -127,7 +124,7 @@ int main(int argc, char** argv) {
         }
         if (!strcmp(argv[i], "-scale_file")) {
             if (++i == argc) {
-                ShowHelpAndExit("-scale_file");
+                ShowHelpAndExit("-scale_file", EXIT_FAILURE);
             }
             scale_file_path = argv[i];
             scaleSet = true;
@@ -135,14 +132,14 @@ int main(int argc, char** argv) {
         }
         if (!strcmp(argv[i], "-stddev_scale")) {
             if (++i == argc) {
-                ShowHelpAndExit("-stddev_scale");
+                ShowHelpAndExit("-stddev_scale", EXIT_FAILURE);
             }
             flags = std::atoi(argv[i]) ? ROCCV_NORMALIZE_SCALE_IS_STDDEV : 0;
             continue;
         }
         if (!strcmp(argv[i], "-epsilon")) {
             if (++i == argc) {
-                ShowHelpAndExit("-epsilon");
+                ShowHelpAndExit("-epsilon", EXIT_FAILURE);
             }
             epsilon = std::atof(argv[i]);
             continue;
@@ -151,6 +148,20 @@ int main(int argc, char** argv) {
             gpuPath = false;
             continue;
         }
+        if (!strcmp(argv[i], "-d")) {
+            if (++i == argc) {
+                ShowHelpAndExit("-d", EXIT_FAILURE);
+            }
+            deviceId = std::atoi(argv[i]);
+            continue;
+        }
+        std::cerr << "Unknown option: " << argv[i] << std::endl;
+        ShowHelpAndExit(argv[i], EXIT_FAILURE);
+    }
+
+    if (input_file_path.empty()) {
+        std::cerr << "Error: Input path is required." << std::endl;
+        ShowHelpAndExit("-i", EXIT_FAILURE);
     }
 
     if (gpuPath) {
@@ -317,4 +328,7 @@ int main(int argc, char** argv) {
     std::cout << "Image size: width = " << imageData.cols << ", height = " << imageData.rows << std::endl;
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

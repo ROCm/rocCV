@@ -67,7 +67,7 @@ void PrintUsage(const char* programName) {
  * @param argv Command line arguments.
  * @return EXIT_SUCCESS if the operation completed successfully, EXIT_FAILURE otherwise.
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
     static struct option longOptions[] = {{"background", required_argument, nullptr, 'b'},
                                           {"foreground", required_argument, nullptr, 'f'},
@@ -131,4 +131,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

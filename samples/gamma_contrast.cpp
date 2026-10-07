@@ -51,7 +51,7 @@ void PrintUsage(const char* programName) {
 /**
  * @brief Gamma contrast operator sample app.
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
 
     static struct option longOptions[] = {
@@ -108,4 +108,7 @@ int main(int argc, char** argv) {
     WriteImages(stream, output, config.outputPath);
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }
