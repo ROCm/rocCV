@@ -78,8 +78,8 @@ class Rotate final : public IOperator {
      * @param[in] input Input tensor with image batch data
      * @param[out] output Output tensor for storing modified image batch data
      * @param[in] angle_deg The angle in degrees for which images are rotated
-     * by.
-     * @param[in] shift x and y coordinates to perform a shift after a rotation.
+     * by. Must be finite.
+     * @param[in] shift x and y coordinates to perform a shift after a rotation. Must be finite.
      * @param[in] interpolation The interpolation method to be applied to the
      * images.
      * @param[in] device The device to run this operation on. (Default: GPU)

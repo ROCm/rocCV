@@ -38,9 +38,10 @@ class CopyMakeBorder final : public IOperator {
 
     /**
      * @brief Executes the CopyMakeBorder operation on the given HIP stream and device. This operation will create a
-     * border around the images based on the given border mode. The output tensor's height must be of size (input.height
-     * + top * 2), the width must be of size (input.width + left * 2) to create a uniform border around the input
-     * images.
+     * border around the images based on the given border mode. The input images are placed at the (top, left) offset
+     * of the output images, so the output tensor's height must be at least (input.height + top) and its width must be
+     * at least (input.width + left). The remaining rows/columns form the bottom/right borders. For a uniform border,
+     * use an output height of (input.height + top * 2) and width of (input.width + left * 2).
      *
      * Limitations:
      *
@@ -68,8 +69,8 @@ class CopyMakeBorder final : public IOperator {
      * @param stream The HIP stream to execute this operation on.
      * @param input Tensor representing the input images.
      * @param output Tensor representing the output images.
-     * @param top The top-most pixel of the output images where the border should end.
-     * @param left The left-most pixel of the output images where the border should end.
+     * @param top The top-most pixel of the output images where the border should end. Must be non-negative.
+     * @param left The left-most pixel of the output images where the border should end. Must be non-negative.
      * @param border_mode The border mode used for creating the image border.
      * @param border_value The color of the border is a constant border type is used.
      * @param device The device to execute this operation on. Defaults to GPU.

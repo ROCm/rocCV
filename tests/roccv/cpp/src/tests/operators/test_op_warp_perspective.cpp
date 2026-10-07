@@ -22,6 +22,7 @@
 #include <core/detail/casting.hpp>
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
+#include <limits>
 #include <op_warp_perspective.hpp>
 
 #include "math_utils.hpp"
@@ -153,12 +154,39 @@ static const std::array<float, 9> MAT_VERTICAL_SHEAR =      {1, 0,    0,  0.7f, 
 static const std::array<float, 9> MAT_PERSPECTIVE_SKEW =    {1, 0,    0,  0,    1,    0,  0.001f, 0.001f, 1};
 // clang-format on
 
+/**
+ * @brief Tests that invalid transformation matrices are rejected rather than producing a plausible-looking output.
+ */
+void TestNegative() {
+    for (eDeviceType device : {eDeviceType::GPU, eDeviceType::CPU}) {
+        Tensor input(1, {16, 16}, FMT_RGB8, device);
+        Tensor output(1, {16, 16}, FMT_RGB8, device);
+        float4 borderValue = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+        WarpPerspective op;
+
+        // Singular matrix (determinant 0) cannot be inverted
+        PerspectiveTransform singular = {1.0f, 2.0f, 0.0f, 2.0f, 4.0f, 0.0f, 0.0f, 0.0f, 1.0f};
+        EXPECT_EXCEPTION(op(nullptr, input, output, singular, false, eInterpolationType::INTERP_TYPE_NEAREST,
+                            eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_VALUE);
+
+        // Non-finite matrix values
+        PerspectiveTransform nonFinite = {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, std::numeric_limits<float>::infinity(),
+                                          0.0f, 0.0f, 1.0f};
+        EXPECT_EXCEPTION(op(nullptr, input, output, nonFinite, true, eInterpolationType::INTERP_TYPE_NEAREST,
+                            eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_VALUE);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
+
+    TEST_CASE(TestNegative());
 
     // clang-format off
     
