@@ -30,6 +30,6 @@ The rocCV is a collection of the following computer vision operators that are su
     "Remap","Maps pixels in an image from one projection to another projection in a new image.","U8","NHWC, HWC"
     "Resize","Resizes an input tensor with interpolation.","U8, S8, F32","NHWC, HWC"
     "Rotate","Rotates (and optionally shifts) an input tensor by given angle in degrees clockwise.","U8, S8, F32","NHWC, HWC"
-    "Threshold","Clamps values in an image to a global threshold value.","U8","NHWC, HWC"
+    "Threshold","Clamps values in an image to a global threshold value.","U8, U16, S16, F32, F64","NHWC, HWC"
     "WarpAffine","Performs an affine warp on an input tensor.","U8, S8, F32","NHWC, HWC"
     "WarpPerspective","Performs a perspective warp on an input image.","U8, F32","NHWC, HWC"
