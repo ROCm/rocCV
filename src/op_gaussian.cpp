@@ -104,6 +104,9 @@ void Gaussian::operator()(hipStream_t stream, const Tensor& input, Tensor& outpu
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Validate sigma
     if (sigmaX <= 0) {
         throw roccv::Exception("Invalid sigmaX = " + std::to_string(sigmaX) + ": Ensure that sigmaX is positive.",
