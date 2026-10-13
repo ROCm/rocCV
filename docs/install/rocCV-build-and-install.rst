@@ -11,15 +11,7 @@ ROCm must be `installed <https://rocm.docs.amd.com/projects/install-on-linux/en/
 
 The rocCV source code is available from `https://github.com/ROCm/rocCV <https://github.com/ROCm/rocCV>`_. Use the rocCV version that corresponds to the installed version of ROCm.
 
-You can use the |setup| setup script to install most :doc:`prerequisites <./rocCV-prerequisites>`:
-
-.. code:: shell
-
-  python3 rocCV-setup.py [-h] [--rocm_path ROCM_PATH; default /opt/rocm]
-
-.. note::
-  
-  OpenCv and DLPack must be installed manually on SLES and RHEL.
+Install the :doc:`prerequisites <./rocCV-prerequisites>` before building rocCV.
 
 To build and install rocCV, create the ``build`` directory under the ``rocCV`` root directory:
 
@@ -54,6 +46,3 @@ You can optionally create deb, rpm, and gzip packages for distribution:
   sudo make package
 
 Run ``ctest`` in the ``build`` directory to verify the installation.
-
-.. |setup| replace:: ``rocCV-setup.py``
-.. _setup: https://github.com/ROCm/rocCV/blob/develop/rocCV-setup.py
