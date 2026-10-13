@@ -85,14 +85,6 @@ To be able to build/run the samples and tests for both the rocCV C++ library and
 > [!NOTE]
 > All package installs are shown with the `apt` package manager. Use the appropriate package manager for your operating system.
 
-### Prerequisites setup script
-
-For your convenience, we provide the setup script,[roccv-setup.py](roccv-setup.py), which installs all required dependencies. Run this script only once.
-
-```shell
-python roccv-setup.py --rocm_path [ROCm Installation Path - optional (default:/opt/rocm)]
-```
-
 ## Installation instructions
 
 The installation process uses the following steps:
@@ -147,13 +139,6 @@ To build rocCV from source and install, follow the steps below:
 git clone https://github.com/ROCm/rocCV.git
 cd rocCV
 ```
-
-> [!NOTE]
-> To ensure all dependencies are installed, a python script for setup is included for your convenience.
->
-> ```shell
-> python3 roccv-setup.py
-> ```
 
 #### Build the project using CMake
 

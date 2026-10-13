@@ -14,13 +14,7 @@ rocCV can be installed on the following Linux environments:
 * RedHat 9
 * SLES 15-SP5
 
-When :doc:`building rocCV from source <./rocCV-build-and-install>`, the |setup| setup script can be used to install prerequisites:
-
-.. code:: shell
-  
-  rocCV-setup.py [-h] [--rocm_path ROCM_PATH; default /opt/rocm]
-
-The following prerequisites are required and are installed with both the package installer and the setup script:
+The following prerequisites are required when :doc:`building rocCV from source <./rocCV-build-and-install>`:
 
 * `HIP runtime <https://rocm.docs.amd.com/projects/HIP/en/latest/index.html>`_ 
 * `PyBind11 <https://github.com/pybind/pybind11/releases/tag/v2.11.1>`_ version 2.10.4
@@ -31,6 +25,3 @@ The following prerequisites are required and are installed with both the package
 * Python-opencv, Pytest, and numpy for testing
 
 rocCV requires C++20.
-
-.. |setup| replace:: ``rocCV-setup.py``
-.. _setup: https://github.com/ROCm/rocCV/blob/develop/rocCV-setup.py
