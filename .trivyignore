@@ -1,0 +1,21 @@
+# Trivy suppressions for rocCV.
+# Reference: https://trivy.dev/latest/docs/configuration/filtering/#trivyignore
+#
+# Picked up from the repository root by the shared security-baseline
+# workflow (ROCm/rocm-security-gh) and passed to trivy via --ignorefile.
+# Every entry needs a reason and a condition for removing it.
+
+# lxml 5.2.1 (docs/sphinx/requirements.txt): local file read via external
+# entities when parsing untrusted XML, fixed in lxml 6.1.0.
+#
+# Cannot be bumped: doxysphinx 3.3.14, the latest release, pins
+# lxml<=5.2.1. The bound was relaxed upstream in boschglobal/doxysphinx#182
+# but has not been released yet (tracked in boschglobal/doxysphinx#188).
+#
+# Not exploitable here: lxml is only used by doxysphinx during the docs
+# build, to parse Doxygen XML generated from this repository's own headers.
+# No untrusted XML is ever parsed, and nothing ships in libroccv or rocpycv.
+#
+# Remove once a doxysphinx release allows lxml>=6.1.0, and bump both in
+# docs/sphinx/requirements.txt.
+CVE-2026-41066
