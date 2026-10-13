@@ -58,13 +58,15 @@ docker build -t roccv:${SUFFIX}-$(date +%Y%m%d) \
 
 Use a tag that matches your build (e.g. `roccv:dev-ubuntu-24.04-20260211` or the output of `build.sh`).
 
+The container runs as the unprivileged `roccv` user. GPU access requires membership in the host's `video` and `render` groups, which own `/dev/kfd` and `/dev/dri`; the `render` group is passed by numeric GID because its ID varies between hosts and it may not exist in the image. Use `--user root` if you need root inside the container.
+
 ### Interactive shell (with GPU)
 
 ```bash
 docker run -it --rm \
   --device=/dev/kfd --device=/dev/dri \
   --security-opt seccomp=unconfined \
-  --group-add=video \
+  --group-add=video --group-add=$(getent group render | cut -d: -f3) \
   roccv:dev-ubuntu-24.04-$(date +%Y%m%d)
 ```
 
@@ -74,6 +76,7 @@ docker run -it --rm \
 docker run --rm \
   --device=/dev/kfd --device=/dev/dri \
   --security-opt seccomp=unconfined \
+  --group-add=video --group-add=$(getent group render | cut -d: -f3) \
   roccv:dev-ubuntu-24.04-$(date +%Y%m%d) \
   ctest -R '^test_' --output-on-failure -V
 ```
@@ -86,7 +89,7 @@ Python tests use pytest and need GPU access so `rocpycv` can run on the device:
 docker run --rm \
   --device=/dev/kfd --device=/dev/dri \
   --security-opt seccomp=unconfined \
-  --group-add=video \
+  --group-add=video --group-add=$(getent group render | cut -d: -f3) \
   -w /workspace/roccv/tests/roccv/python \
   roccv:dev-ubuntu-24.04-$(date +%Y%m%d) \
   python3 -m pytest -v
@@ -98,6 +101,7 @@ Run a single test file:
 docker run --rm \
   --device=/dev/kfd --device=/dev/dri \
   --security-opt seccomp=unconfined \
+  --group-add=video --group-add=$(getent group render | cut -d: -f3) \
   -w /workspace/roccv/tests/roccv/python \
   roccv:dev-ubuntu-24.04-$(date +%Y%m%d) \
   python3 -m pytest -v test_op_resize.py
@@ -114,7 +118,7 @@ mkdir -p results
 docker run --rm \
   --device=/dev/kfd --device=/dev/dri \
   --security-opt seccomp=unconfined \
-  --group-add=video \
+  --group-add=video --group-add=$(getent group render | cut -d: -f3) \
   -v $(pwd)/results:/workspace/roccv/build \
   -w /workspace/roccv/build \
   roccv:dev-ubuntu-24.04-$(date +%Y%m%d) \
@@ -132,6 +136,7 @@ docker run --rm roccv:dev-ubuntu-24.04-$(date +%Y%m%d) ./bin/roccv_bench --help
 - rocCV built from the repository in the build context, with tests, samples, benchmarks, and Python bindings.
 - Installed under `/opt/rocm`; `PYTHONPATH` includes the rocCV Python module path.
 - Working directory in the container: `/workspace/roccv/build` (for `ctest` or `roccv_bench`).
+- Runs as the non-root `roccv` user, which owns `/workspace/roccv`.
 
 ## See also
 

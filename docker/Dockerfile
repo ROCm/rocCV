@@ -58,10 +58,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-opencv \
     && rm -rf /var/lib/apt/lists/*
 
+# Unprivileged user that owns the source/build tree and runs the container.
+# GPU device nodes are owned by the host's video/render groups, so pass
+# --group-add at `docker run` time (see docker/README.md).
+RUN useradd --create-home --groups video roccv
+
 WORKDIR /workspace
 
 # Copy repo from build context (build from repo root: docker build -f docker/Dockerfile .)
-COPY . roccv/
+COPY --chown=roccv:roccv . roccv/
+
+USER roccv
 
 # Initialize submodules (pybind11, dlpack)
 RUN cd roccv && git submodule update --init --recursive
@@ -81,8 +88,10 @@ RUN mkdir -p build && cd build \
         $( [ -n "${GPU_ARCH}" ] && echo "-D GPU_TARGETS=${GPU_ARCH}" ) \
     && cmake --build . --parallel $(nproc)
 
-# Install into image (optional; tests can run from build dir)
+# Install into image (optional; tests can run from build dir). /opt/rocm is root-owned.
+USER root
 RUN cd build && cmake --install . --prefix /opt/rocm
+USER roccv
 
 # For runtime: ensure Python can find rocpycv
 ENV PYTHONPATH="${ROCM_PATH}/lib:${PYTHONPATH}"
