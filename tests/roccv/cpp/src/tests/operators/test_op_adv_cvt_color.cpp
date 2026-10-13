@@ -129,11 +129,11 @@ std::vector<uint8_t> GoldenInterleaved444(const std::vector<uint8_t> &input, int
     const Coeff coeff = GetCoeff(spec);
 
     for (int n = 0; n < samples; n++) {
-        int batchOffset = n * width * height * 3;
+        size_t batchOffset = static_cast<size_t>(n) * width * height * 3;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int i = batchOffset + idx3(x, y, width, 0);
+                size_t i = batchOffset + idx3(x, y, width, 0);
 
                 switch (code) {
                     case COLOR_RGB2YUV:
@@ -178,18 +178,18 @@ std::vector<uint8_t> GoldenInterleaved444(const std::vector<uint8_t> &input, int
 
 std::vector<uint8_t> GoldenInterleavedToSemiPlanar(const std::vector<uint8_t> &input, int samples, int width,
                                                    int height, eColorConversionCode code, eColorSpec spec) {
-    std::vector<uint8_t> output(samples * width * height * 3 / 2, 0);
+    std::vector<uint8_t> output(static_cast<size_t>(samples) * width * height * 3 / 2, 0);
     const Coeff coeff = GetCoeff(spec);
     const bool bgr = IsBGRCode(code);
     const int uidx = IsNV12Code(code) ? 0 : 1;
 
     for (int n = 0; n < samples; n++) {
-        int rgbBase = n * width * height * 3;
-        int nvBase = n * width * height * 3 / 2;
+        size_t rgbBase = static_cast<size_t>(n) * width * height * 3;
+        size_t nvBase = static_cast<size_t>(n) * width * height * 3 / 2;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int src = rgbBase + idx3(x, y, width, 0);
+                size_t src = rgbBase + idx3(x, y, width, 0);
                 float r = input[src + (bgr ? 2 : 0)];
                 float g = input[src + 1];
                 float b = input[src + (bgr ? 0 : 2)];
@@ -206,7 +206,7 @@ std::vector<uint8_t> GoldenInterleavedToSemiPlanar(const std::vector<uint8_t> &i
 
                 for (int yy = 0; yy < 2; yy++) {
                     for (int xx = 0; xx < 2; xx++) {
-                        int src = rgbBase + idx3(x + xx, y + yy, width, 0);
+                        size_t src = rgbBase + idx3(x + xx, y + yy, width, 0);
                         float r = input[src + (bgr ? 2 : 0)];
                         float g = input[src + 1];
                         float b = input[src + (bgr ? 0 : 2)];
@@ -232,14 +232,14 @@ std::vector<uint8_t> GoldenInterleavedToSemiPlanar(const std::vector<uint8_t> &i
 
 std::vector<uint8_t> GoldenSemiPlanarToInterleaved(const std::vector<uint8_t> &input, int samples, int width,
                                                    int height, eColorConversionCode code, eColorSpec spec) {
-    std::vector<uint8_t> output(samples * width * height * 3, 0);
+    std::vector<uint8_t> output(static_cast<size_t>(samples) * width * height * 3, 0);
     const Coeff coeff = GetCoeff(spec);
     const bool bgr = IsBGRCode(code);
     const int uidx = IsNV12Code(code) ? 0 : 1;
 
     for (int n = 0; n < samples; n++) {
-        int rgbBase = n * width * height * 3;
-        int nvBase = n * width * height * 3 / 2;
+        size_t rgbBase = static_cast<size_t>(n) * width * height * 3;
+        size_t nvBase = static_cast<size_t>(n) * width * height * 3 / 2;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -253,7 +253,7 @@ std::vector<uint8_t> GoldenSemiPlanarToInterleaved(const std::vector<uint8_t> &i
                 float g = yv + (u - 128.0f) * coeff.u2g + (v - 128.0f) * coeff.v2g;
                 float b = yv + (u - 128.0f) * coeff.u2b;
 
-                int dst = rgbBase + idx3(x, y, width, 0);
+                size_t dst = rgbBase + idx3(x, y, width, 0);
                 output[dst + (bgr ? 0 : 2)] = roccv::detail::SaturateCast<uint8_t>(b);
                 output[dst + 1] = roccv::detail::SaturateCast<uint8_t>(g);
                 output[dst + (bgr ? 2 : 0)] = roccv::detail::SaturateCast<uint8_t>(r);
