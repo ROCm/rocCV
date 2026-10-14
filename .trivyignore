@@ -19,3 +19,20 @@
 # Remove once a doxysphinx release allows lxml>=6.1.0, and bump both in
 # docs/sphinx/requirements.txt.
 CVE-2026-41066
+
+# DS-0002 (docker/Dockerfile): image runs as root, with no USER instruction.
+#
+# Cannot be fixed cleanly: a non-root user needs the host's video and render
+# groups to open /dev/kfd and /dev/dri, and those GIDs vary between hosts
+# (render in particular is assigned dynamically). Matching them means
+# host-specific --group-add flags on every `docker run`. ROCm's own runtime
+# image (ROCm/TheRock dockerfiles/rocm_runtime.Dockerfile) stays root for the
+# same reason.
+#
+# Low risk here: the image is a development and test environment for building
+# rocCV and running its tests and benchmarks, not a deployed service or a
+# release artifact.
+#
+# Remove if the image becomes a deployed runtime image, or if ROCm images adopt
+# a standard non-root user with GPU access that rocCV can inherit.
+DS-0002
