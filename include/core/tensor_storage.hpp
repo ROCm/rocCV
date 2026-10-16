@@ -23,31 +23,40 @@
 
 #include <stdlib.h>
 
+#include <functional>
+
 #include "core/detail/allocators/i_allocator.hpp"
 #include "core/util_enums.h"
 
 namespace roccv {
+
 /**
- * @brief Stores the underlying data of a tensor and is responsible for allocation/freeing of tensor memory. Agnostic to
- * the tensor's metadata (shape, datatype, etc.)
+ * @brief Cleanup function invoked on the raw data pointer when the owning TensorStorage is destroyed. Used to delegate
+ * how (and whether) the underlying memory is freed.
+ */
+using TensorStorageCleanupFunc = std::function<void(void*)>;
+
+/**
+ * @brief Stores the underlying data of a tensor and is responsible for freeing of tensor memory when a cleanup function
+ * is provided. Agnostic to the tensor's metadata (shape, datatype, etc.)
  *
  */
 class TensorStorage {
    public:
     /**
-     * @brief Creates a new TensorStorage object and takes ownership of the data pointer.
+     * @brief Creates a new TensorStorage object wrapping an existing data pointer. Whether the memory is freed on
+     * destruction is determined entirely by the provided cleanup function. If no cleanup function is provided, this
+     * storage is a non-owning view and the underlying memory is left untouched on destruction.
      *
-     * @param data A pointer to allocated memory.
-     * @param device The device which the allocated memory is on.
-     * @param ownership Whether this object should own <data> (responsible for freeing it once it goes out of scope).
-     * Default is eOwnership::OWNING.
+     * @param data A pointer to existing memory.
+     * @param cleanup An optional cleanup function invoked with <data> when this object is destroyed. Defaults to an
+     * empty function (non-owning view).
      */
-    explicit TensorStorage(void* data, eDeviceType device, eOwnership ownership = eOwnership::OWNING);
-    explicit TensorStorage(void* data, eDeviceType device, const IAllocator& alloc,
-                           eOwnership ownership = eOwnership::OWNING);
+    explicit TensorStorage(void* data, TensorStorageCleanupFunc cleanup = {});
 
     /**
-     * @brief Creates a new TensorStorage object and allocates the requested number of bytes.
+     * @brief Creates a new TensorStorage object and allocates the requested number of bytes. The allocated memory is
+     * owned by this object and freed on destruction.
      *
      * @param bytes Number of bytes to allocate.
      * @param device The device to allocate the memory on.
@@ -65,24 +74,8 @@ class TensorStorage {
      */
     void* data() const;
 
-    /**
-     * @brief Retrieves the device that the tensor data is allocated on.
-     *
-     * @return eDeviceType
-     */
-    eDeviceType device() const;
-
-    /**
-     * @brief Returns the allocation strategy being used.
-     *
-     * @return The allocation strategy being used.
-     */
-    const IAllocator& allocator() const;
-
    private:
-    eDeviceType m_device;
-    eOwnership m_ownership;
     void* m_data;
-    const IAllocator& m_allocator;
+    TensorStorageCleanupFunc m_cleanup;
 };
 }  // namespace roccv

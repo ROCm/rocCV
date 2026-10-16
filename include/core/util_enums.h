@@ -68,9 +68,3 @@ typedef enum eChannelType {
  *
  */
 enum class eDeviceType { GPU = 0, CPU = 1 };
-
-/**
- * @brief Describes whether a container should own a resource or only be a view for a resource.
- *
- */
-enum class eOwnership { OWNING = 0, VIEW = 1 };

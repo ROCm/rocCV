@@ -21,48 +21,40 @@
 
 #include "core/tensor_storage.hpp"
 
+#include <iostream>
+
 #include "core/detail/context.hpp"
-#include "core/hip_assert.h"
 
 namespace roccv {
-TensorStorage::TensorStorage(void* data, eDeviceType device, eOwnership ownership)
-    : TensorStorage(data, device, GlobalContext().getDefaultAllocator(), ownership) {}
-
-TensorStorage::TensorStorage(void* data, eDeviceType device, const IAllocator& alloc, eOwnership ownership)
-    : m_device(device), m_ownership(ownership), m_data(data), m_allocator(alloc) {}
+TensorStorage::TensorStorage(void* data, TensorStorageCleanupFunc cleanup)
+    : m_data(data), m_cleanup(std::move(cleanup)) {}
 
 TensorStorage::TensorStorage(size_t bytes, eDeviceType device, int32_t alignment)
     : TensorStorage(bytes, device, GlobalContext().getDefaultAllocator(), alignment) {}
 
-TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc, int32_t alignment)
-    : m_device(device), m_ownership(eOwnership::OWNING), m_allocator(alloc) {
-    switch (m_device) {
+TensorStorage::TensorStorage(size_t bytes, eDeviceType device, const IAllocator& alloc, int32_t alignment) {
+    switch (device) {
         case eDeviceType::GPU:
-            m_data = m_allocator.allocHipMem(bytes, alignment);
+            m_data = alloc.allocHipMem(bytes, alignment);
+            m_cleanup = [&alloc](void* data) { alloc.freeHipMem(data); };
             break;
         case eDeviceType::CPU:
-            m_data = m_allocator.allocHostMem(bytes, alignment);
+            m_data = alloc.allocHostMem(bytes, alignment);
+            m_cleanup = [&alloc](void* data) { alloc.freeHostMem(data); };
             break;
     }
 }
 
 TensorStorage::~TensorStorage() {
-    if (m_ownership != eOwnership::OWNING) return;
-
-    switch (m_device) {
-        case eDeviceType::GPU:
-            m_allocator.freeHipMem(m_data);
-            break;
-        case eDeviceType::CPU:
-            m_allocator.freeHostMem(m_data);
-            break;
+    if (!m_cleanup) return;
+    try {
+        m_cleanup(m_data);
+    } catch (const std::exception& e) {
+        std::cerr << "Warning: TensorStorage cleanup function threw an exception: " << e.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Warning: TensorStorage cleanup function threw an unknown exception." << std::endl;
     }
 }
 
 void* TensorStorage::data() const { return m_data; }
-
-eDeviceType TensorStorage::device() const { return m_device; }
-
-const IAllocator& TensorStorage::allocator() const { return m_allocator; }
-
 }  // namespace roccv
