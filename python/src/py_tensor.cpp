@@ -80,10 +80,10 @@ std::shared_ptr<PyTensor> PyTensor::copyTo(eDeviceType device) {
     std::shared_ptr<roccv::Tensor> copiedTensor =
         std::make_shared<roccv::Tensor>(m_tensor->shape(), m_tensor->dtype(), device);
 
-    // The source and destination tensors share the same logical shape but may have different padding (row alignment
-    // differs per device, and externally-wrapped tensors may be fully packed). Tensor::copyToAsync performs the
-    // copy row-by-row using each tensor's own pitch to account for this. Synchronize so the returned tensor is
-    // immediately usable from Python.
+    // The source and destination tensors share the same logical shape but may have different strides (row alignment
+    // differs per device, and tensors wrapped via DLPack may be arbitrary strided views). Tensor::copyToAsync uses
+    // each tensor's own strides to account for this. Synchronize so the returned tensor is immediately usable from
+    // Python.
     m_tensor->copyToAsync(*copiedTensor);
     HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(nullptr));
 

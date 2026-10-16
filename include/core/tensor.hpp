@@ -265,9 +265,10 @@ class Tensor {
     void copyToHostAsync(void *dst, hipStream_t stream = nullptr) const;
 
     /**
-     * @brief Copies this tensor's data into another tensor, accounting for differing row padding between the two
+     * @brief Copies this tensor's data into another tensor, accounting for differing strides between the two
      * tensors. Both tensors must have the same shape and element size, but may reside on different devices and use
-     * different row alignments. This is a non-blocking operation.
+     * different strides (e.g. different row alignments, or a strided view such as a crop or transpose). This is a
+     * non-blocking operation.
      *
      * @param[out] dst The destination tensor.
      * @param[in] stream The stream to use for the copy.
@@ -352,8 +353,10 @@ class Tensor {
 
    private:
     /**
-     * @brief Performs a padding-aware, stream-ordered 2D copy between a source and destination buffer that share
-     * this tensor's shape but may use different row pitches. Backs the host and tensor-to-tensor copy methods.
+     * @brief Performs a stream-ordered copy between a source and destination buffer that share this tensor's shape
+     * but may use arbitrary (including padded, permuted or negative) byte strides. Dimensions that are contiguous in
+     * both layouts are merged and copied with as few 2D copies as possible. Backs the host and tensor-to-tensor copy
+     * methods.
      *
      * @param[out] dstData Destination base pointer.
      * @param[in] dstStrides Byte-wise strides of the destination layout.
@@ -363,7 +366,7 @@ class Tensor {
      * @param[in] srcDevice Device the source resides on.
      * @param[in] stream The stream to use for the copy.
      */
-    void copyPitchedAsync(void *dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &dstStrides,
+    void copyStridedAsync(void *dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &dstStrides,
                           eDeviceType dstDevice, const void *srcData,
                           const std::array<int64_t, ROCCV_TENSOR_MAX_RANK> &srcStrides, eDeviceType srcDevice,
                           hipStream_t stream) const;

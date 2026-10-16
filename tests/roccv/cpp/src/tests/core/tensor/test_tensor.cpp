@@ -246,6 +246,99 @@ void TestTensorCopyToCorrectness(const TensorShape& srcShape, const DataType& dt
 }
 
 /**
+ * @brief Describes a strided view into a packed NHWC tensor of shape {2, 10, 12, 3}.
+ */
+struct StridedView {
+    std::array<int64_t, 4> shape;
+    std::array<int64_t, 4> strides;  // Element-wise strides. May be negative.
+    int64_t offset;                  // Element offset from the base buffer to element [0, 0, 0, 0] of the view.
+};
+
+/**
+ * @brief Tests copies to and from arbitrarily strided tensors (crops, channel slices, steps, transposes and flips).
+ *
+ * Regression coverage for strided views such as those produced by wrapping non-contiguous NumPy arrays via DLPack.
+ * The view is read with copyToAsync/copyToHostAsync and written with copyFromHostAsync, and all results are compared
+ * against a golden model that indexes the base buffer directly.
+ *
+ * @param[in] view The strided view to test.
+ * @param[in] srcDevice Device the base tensor (and thus the view) is allocated on.
+ * @param[in] dstDevice Device the packed destination tensor is allocated on.
+ */
+void TestTensorCopyStridedViewCorrectness(const StridedView& view, eDeviceType srcDevice, eDeviceType dstDevice) {
+    // Use 16-bit elements so that every element in the base tensor holds a distinct value.
+    const DataType dtype(DATA_TYPE_U16);
+    const int64_t elemSize = dtype.size();
+    const TensorShape baseShape({2, 10, 12, 3}, "NHWC");
+    Tensor base(Tensor::CalcRequirements(baseShape, dtype, Tensor::CalcStrides(baseShape, dtype, 0), 0, srcDevice));
+
+    std::vector<uint16_t> baseHost(baseShape.size());
+    for (size_t i = 0; i < baseHost.size(); i++) {
+        baseHost[i] = static_cast<uint16_t>(i);
+    }
+
+    // Wrap a non-owning, strided view of the base tensor's memory.
+    const TensorShape viewShape(view.shape, "NHWC");
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> viewStrides{};
+    for (int i = 0; i < 4; i++) {
+        viewStrides[i] = view.strides[i] * elemSize;
+    }
+    uint8_t* viewPtr = static_cast<uint8_t*>(base.exportData<TensorDataStrided>().basePtr()) + view.offset * elemSize;
+    Tensor viewTensor(Tensor::CalcRequirements(viewShape, dtype, viewStrides, 0, srcDevice),
+                      std::make_shared<TensorStorage>(viewPtr, srcDevice, eOwnership::VIEW));
+
+    // Golden model: gather the view's elements from the base buffer in packed NHWC order.
+    std::vector<uint16_t> expected;
+    std::vector<bool> inView(baseHost.size(), false);
+    for (int64_t n = 0; n < view.shape[0]; n++) {
+        for (int64_t h = 0; h < view.shape[1]; h++) {
+            for (int64_t w = 0; w < view.shape[2]; w++) {
+                for (int64_t c = 0; c < view.shape[3]; c++) {
+                    int64_t idx = view.offset + n * view.strides[0] + h * view.strides[1] + w * view.strides[2] +
+                                  c * view.strides[3];
+                    expected.push_back(baseHost[idx]);
+                    inView[idx] = true;
+                }
+            }
+        }
+    }
+
+    hipStream_t stream;
+    HIP_VALIDATE_NO_ERRORS(hipStreamCreate(&stream));
+
+    base.copyFromHostAsync(baseHost.data(), stream);
+
+    // Strided view -> (padded) destination tensor -> host.
+    Tensor dest(viewShape, dtype, dstDevice);
+    viewTensor.copyToAsync(dest, stream);
+    std::vector<uint16_t> copyToResult(expected.size());
+    dest.copyToHostAsync(copyToResult.data(), stream);
+
+    // Strided view -> host.
+    std::vector<uint16_t> copyToHostResult(expected.size());
+    viewTensor.copyToHostAsync(copyToHostResult.data(), stream);
+
+    // Host -> strided view. Elements of the base tensor outside of the view must remain untouched (zero).
+    std::vector<uint16_t> zeros(baseHost.size(), 0);
+    std::vector<uint16_t> copyFromHostResult(baseHost.size());
+    base.copyFromHostAsync(zeros.data(), stream);
+    viewTensor.copyFromHostAsync(expected.data(), stream);
+    base.copyToHostAsync(copyFromHostResult.data(), stream);
+
+    HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(stream));
+    HIP_VALIDATE_NO_ERRORS(hipStreamDestroy(stream));
+
+    EXPECT_VECTOR_EQ(copyToResult, expected);
+    EXPECT_VECTOR_EQ(copyToHostResult, expected);
+
+    std::vector<uint16_t> expectedBase(baseHost.size());
+    for (size_t i = 0; i < baseHost.size(); i++) {
+        expectedBase[i] = inView[i] ? baseHost[i] : 0;
+    }
+    EXPECT_VECTOR_EQ(copyFromHostResult, expectedBase);
+}
+
+/**
  * @brief Negative tests for Tensor::copyToAsync, verifying mismatched source/destination are rejected.
  */
 void TestNegativeTensorCopyTo() {
@@ -312,6 +405,30 @@ int main(int argc, char** argv) {
                                           eDeviceType::GPU));
     TEST_CASE(TestTensorCopyToCorrectness(TensorShape({4, 100}, "NW"), DataType(DATA_TYPE_F32), eDeviceType::CPU,
                                           eDeviceType::GPU));
+
+    // Strided view copy tests. Views index a packed {2, 10, 12, 3} NHWC base with strides {360, 36, 3, 1}.
+    // clang-format off
+    const std::vector<StridedView> stridedViews = {
+        {{2, 10, 12, 3}, {360, 36, 3, 1},   0},    // Contiguous
+        {{2, 10, 6, 3},  {360, 36, 3, 1},   9},    // W crop
+        {{2, 5, 12, 3},  {360, 36, 3, 1},   72},   // H crop
+        {{2, 5, 6, 3},   {360, 36, 3, 1},   81},   // H+W ROI
+        {{2, 10, 12, 2}, {360, 36, 3, 1},   0},    // Channel slice
+        {{2, 10, 12, 1}, {360, 36, 3, 1},   1},    // Single channel
+        {{2, 10, 6, 3},  {360, 36, 6, 1},   0},    // W step
+        {{1, 10, 12, 3}, {720, 36, 3, 1},   0},    // N step
+        {{2, 12, 10, 3}, {360, 3, 36, 1},   0},    // H/W transpose
+        {{2, 10, 12, 3}, {360, 36, -3, 1},  33},   // W flip
+        {{2, 10, 12, 3}, {360, 36, 3, -1},  2},    // Channel flip (RGB <-> BGR)
+        {{2, 10, 12, 3}, {-360, -36, -3, -1}, 719}, // Fully reversed
+    };
+    // clang-format on
+    for (const auto& view : stridedViews) {
+        TEST_CASE(TestTensorCopyStridedViewCorrectness(view, eDeviceType::GPU, eDeviceType::GPU));
+        TEST_CASE(TestTensorCopyStridedViewCorrectness(view, eDeviceType::GPU, eDeviceType::CPU));
+        TEST_CASE(TestTensorCopyStridedViewCorrectness(view, eDeviceType::CPU, eDeviceType::GPU));
+        TEST_CASE(TestTensorCopyStridedViewCorrectness(view, eDeviceType::CPU, eDeviceType::CPU));
+    }
 
     // Stride calculation tests
     // clang-format off
