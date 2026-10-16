@@ -84,12 +84,12 @@ float GoldenIoU(const short4 &a, const short4 &b) {
 std::vector<unsigned char> GoldenNonMaximumSuppression(std::vector<short4> input, std::vector<float> scores,
                                                        float scoreThreshold, float iouThreshold, int batchSize,
                                                        int numBoxes) {
-    std::vector<unsigned char> output(batchSize * numBoxes);
+    std::vector<unsigned char> output(static_cast<size_t>(batchSize) * numBoxes);
 
     for (int batchIdx = 0; batchIdx < batchSize; batchIdx++) {
         for (int a = 0; a < numBoxes; a++) {
             // Starting index for this particular sample
-            size_t beginIdx = batchIdx * numBoxes;
+            size_t beginIdx = static_cast<size_t>(batchIdx) * numBoxes;
 
             const float &scoreA = scores.at(beginIdx + a);
             unsigned char &dst = output.at(beginIdx + a);
@@ -142,7 +142,7 @@ std::vector<unsigned char> GoldenNonMaximumSuppression(std::vector<short4> input
  */
 std::vector<short4> GenerateBoxes(int batchSize, int numBoxes, int seed = 12345) {
     std::vector<short4> output;
-    output.reserve(batchSize * numBoxes);
+    output.reserve(static_cast<size_t>(batchSize) * numBoxes);
 
     std::mt19937 eng(seed);
     std::uniform_int_distribution<short> pos(0, 300);
@@ -169,7 +169,7 @@ void TestCorrectness(int batchSize, int numBoxes, float scoreThreshold, float io
 
     // Generate data for input boxes and their associated scores
     std::vector<short4> boxes = GenerateBoxes(batchSize, numBoxes);
-    std::vector<float> scores(batchSize * numBoxes);
+    std::vector<float> scores(static_cast<size_t>(batchSize) * numBoxes);
     FillVector(scores);
 
     // Copy host-allocated vectors into tensors
