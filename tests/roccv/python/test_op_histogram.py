@@ -37,7 +37,7 @@ from test_helpers import generate_tensor
 ])
 def test_op_histogram(samples, height, width, in_dtype, out_dtype, device):
     input = generate_tensor(samples, width, height, 1, in_dtype, device)
-    output_golden = rocpycv.Tensor([samples, 256, 1], rocpycv.eTensorLayout.HWC, out_dtype, device)
+    output_golden = rocpycv.Tensor([samples, 256, 1], out_dtype, rocpycv.eTensorLayout.HWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.histogram(input, None, stream, device)

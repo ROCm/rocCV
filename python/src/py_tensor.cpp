@@ -59,7 +59,7 @@ DLManagedTensor* createDLManagedTensor(std::shared_ptr<roccv::Tensor> tensor, st
     return dlTensor;
 }
 
-PyTensor::PyTensor(std::vector<int64_t> shape, eTensorLayout layout, eDataType dtype, eDeviceType device) {
+PyTensor::PyTensor(std::vector<int64_t> shape, eDataType dtype, eTensorLayout layout, eDeviceType device) {
     roccv::TensorShape tShape(roccv::TensorShape(roccv::TensorLayout(layout), shape));
     m_tensor = std::make_shared<roccv::Tensor>(tShape, roccv::DataType(dtype), device);
 }
@@ -193,6 +193,11 @@ eTensorLayout PyTensor::getLayout() { return m_tensor->layout().elayout(); }
 
 eDeviceType PyTensor::getDevice() { return m_tensor->device(); }
 
+uintptr_t PyTensor::getDataPtr() {
+    auto tensorData = m_tensor->exportData<roccv::TensorDataStrided>();
+    return reinterpret_cast<uintptr_t>(tensorData.basePtr());
+}
+
 std::shared_ptr<roccv::Tensor> PyTensor::getTensor() { return m_tensor; }
 
 py::tuple PyTensor::getDLDevice() {
@@ -212,8 +217,15 @@ void PyTensor::Export(pybind11::module& m) {
 
     pybind11::class_<PyTensor, std::shared_ptr<PyTensor>> tensor(m, "Tensor");
     tensor
-        .def(pybind11::init<std::vector<int64_t>, eTensorLayout, eDataType, eDeviceType>(), "shape"_a, "layout"_a,
-             "dtype"_a, "device"_a = eDeviceType::GPU, "Constructs a tensor object.")
+        .def(pybind11::init([](std::vector<int64_t> shape, py::object dtype, py::object layout, eDeviceType device) {
+                 return std::make_shared<PyTensor>(shape, DataTypeFromPyObject(dtype), LayoutFromPyObject(layout),
+                                                   device);
+             }),
+             "shape"_a, "dtype"_a, "layout"_a, "device"_a = eDeviceType::GPU,
+             "Constructs a tensor object. ``dtype`` may be an ``rocpycv.eDataType`` (e.g. "
+             "``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``). ``layout`` "
+             "may be an ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NHWC``) or a layout string "
+             "(``\"NHWC\"``).")
         .def("copy_to", &PyTensor::copyTo, "device"_a,
              "Returns a deep copy of the tensor with data copied to a specified device type.")
         .def("__dlpack__", &PyTensor::toDLPack, "stream"_a = py::none(),
@@ -222,12 +234,27 @@ void PyTensor::Export(pybind11::module& m) {
         .def("shape", &PyTensor::getShape, "Returns a list representing the tensor shape.")
         .def("layout", &PyTensor::getLayout, "Returns the layout for this tensor.")
         .def("device", &PyTensor::getDevice, "Returns the device this tensor is on.")
+        .def("data_ptr", &PyTensor::getDataPtr,
+             "Returns the address of the tensor's underlying buffer as an integer. "
+             "For GPU tensors this is a HIP device address; for CPU tensors a host address. "
+             "The pointer is non-owning -- keep the tensor alive for as long as the pointer is used. "
+             "Intended for zero-copy interop with frameworks like MIGraphX.")
         .def("ndim", &PyTensor::getRank, "Returns the number of dimensions of the tensor.")
         .def("dtype", &PyTensor::getDataType, "Returns the data type of the tensor.")
         .def("__dlpack_device__", &PyTensor::getDLDevice,
              "Returns a tuple containing the DLPack device and device id for the tensor.")
-        .def("reshape", &PyTensor::reshape, "new_shape"_a, "layout"_a,
-             "Creates a new tensor with the specified shape.");
-    m.def("from_dlpack", &PyTensor::fromDLPack, "buffer"_a, "layout"_a,
-          "Wraps a DLPack supported tensor in a rocpycv tensor.");
+        .def(
+            "reshape",
+            [](PyTensor& self, std::vector<int64_t> newShape, py::object layout) {
+                return self.reshape(newShape, LayoutFromPyObject(layout));
+            },
+            "new_shape"_a, "layout"_a,
+            "Creates a new tensor with the specified shape. ``layout`` may be an "
+            "``rocpycv.eTensorLayout`` or a layout string (e.g. ``\"NHWC\"``).");
+    m.def(
+        "from_dlpack",
+        [](pybind11::object src, py::object layout) { return PyTensor::fromDLPack(src, LayoutFromPyObject(layout)); },
+        "buffer"_a, "layout"_a,
+        "Wraps a DLPack supported tensor in a rocpycv tensor. ``layout`` may be an "
+        "``rocpycv.eTensorLayout`` or a layout string (e.g. ``\"NHWC\"``).");
 }

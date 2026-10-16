@@ -22,6 +22,8 @@ THE SOFTWARE.
 
 #include "operators/py_op_reformat.hpp"
 
+#include "py_helpers.hpp"
+
 void PyOpReformat::ExecuteInto(PyTensor& output, PyTensor& input,
                                std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
@@ -46,8 +48,12 @@ PyTensor PyOpReformat::Execute(PyTensor& input, eTensorLayout outLayout,
 void PyOpReformat::Export(py::module& m) {
     using namespace py::literals;
 
-    m.def("reformat", &PyOpReformat::Execute, "input"_a, "out_layout"_a, "stream"_a = nullptr,
-          "device"_a = eDeviceType::GPU, R"pbdoc(
+    m.def("reformat",
+          [](PyTensor& input, py::object outLayout,
+             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
+              return PyOpReformat::Execute(input, LayoutFromPyObject(outLayout), stream, device);
+          },
+          "input"_a, "out_layout"_a, "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
             Executes the Reformat operation and returns the result as a new tensor.
 
             See also:
@@ -55,7 +61,8 @@ void PyOpReformat::Export(py::module& m) {
 
             Args:
                 input (rocpycv.Tensor): Input tensor to reformat.
-                out_layout (rocpycv.eTensorLayout): The layout to reformat the input tensor to.
+                out_layout: The layout to reformat the input tensor to. Either an
+                    ``rocpycv.eTensorLayout`` (e.g. ``rocpycv.NCHW``) or a layout string (``"NCHW"``).
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
 

@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <op_convert_to.hpp>
 
+#include "py_helpers.hpp"
+
 PyTensor PyOpConvertTo::Execute(PyTensor& input, eDataType dtype, double alpha, double beta,
                                         std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
@@ -44,17 +46,23 @@ void PyOpConvertTo::ExecuteInto(PyTensor& output, PyTensor& input, double alpha,
 
 void PyOpConvertTo::Export(py::module& m) {
     using namespace py::literals;
-    m.def("convert_to", &PyOpConvertTo::Execute, "src"_a, "dtype"_a, "alpha"_a = 1.0, "beta"_a = 0.0, 
-                                                    "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
-            
+    m.def("convert_to",
+          [](PyTensor& input, py::object dtype, double alpha, double beta,
+             std::optional<std::reference_wrapper<PyStream>> stream, eDeviceType device) {
+              return PyOpConvertTo::Execute(input, DataTypeFromPyObject(dtype), alpha, beta, stream, device);
+          },
+          "src"_a, "dtype"_a, "alpha"_a = 1.0, "beta"_a = 0.0, "stream"_a = nullptr,
+          "device"_a = eDeviceType::GPU, R"pbdoc(
+
             Executes the Convert To operation on the given HIP stream.
 
             See also:
                 Refer to the rocCV C++ API reference for more information on this operation.
-            
+
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                dtype (eDataType): Datatype of the output tensor.
+                dtype: Datatype of the output tensor. Either an ``rocpycv.eDataType``
+                    (e.g. ``rocpycv.F32``) or a NumPy dtype/scalar type (e.g. ``np.float32``).
                 alpha (double, optional): Scalar for output data. Defaults to 1.0.
                 beta (double, optional): Offset for the data. Defaults to 0.0.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.

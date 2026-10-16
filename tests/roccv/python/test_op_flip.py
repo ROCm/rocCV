@@ -40,7 +40,7 @@ from test_helpers import generate_tensor, compare_tensors
 def test_op_flip(samples, width, height, channels, dtype, flip_code, device):
     input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
     stream = rocpycv.Stream()
-    output_tensor_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_tensor_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
     rocpycv.flip_into(output_tensor_golden, input_tensor, flip_code, stream, device)
     output_tensor = rocpycv.flip(input_tensor, flip_code, stream, device)
     stream.synchronize()

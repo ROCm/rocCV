@@ -46,7 +46,7 @@ from test_helpers import generate_tensor, compare_tensors
 def test_op_copy_make_border(samples, height, width, channels, top, right, bottom, left, border_mode, border_value, dtype, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
     output_golden = rocpycv.Tensor([samples, height + top + bottom, width + right + left,
-                                   channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+                                   channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.copymakeborder(input, border_mode, border_value, top, bottom, left, right, stream, device)

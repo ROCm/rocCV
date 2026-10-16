@@ -44,7 +44,7 @@ from test_helpers import compare_tensors, generate_tensor
 ])
 def test_op_bilateral_filter(samples, height, width, channels, border_mode, border_val, diameter, sigma_color, sigma_space, dtype, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     rocpycv.bilateral_filter_into(output_golden, input, diameter, sigma_color,
