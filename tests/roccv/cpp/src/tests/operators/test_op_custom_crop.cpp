@@ -142,6 +142,17 @@ void TestNegative() {
     EXPECT_EXCEPTION(op(nullptr, validGPUTensor, output, invalidCropRect_2, eDeviceType::GPU),
                      eStatusType::INVALID_COMBINATION);
 
+    // Test negative crop origin
+    Box_t invalidCropRect_3 = {-2, -2, 5, 5};
+    EXPECT_EXCEPTION(op(nullptr, validGPUTensor, output, invalidCropRect_3, eDeviceType::GPU),
+                     eStatusType::OUT_OF_BOUNDS);
+    Box_t invalidCropRect_4 = {-1, 0, 5, 5};
+    EXPECT_EXCEPTION(op(nullptr, validGPUTensor, output, invalidCropRect_4, eDeviceType::GPU),
+                     eStatusType::OUT_OF_BOUNDS);
+    Box_t invalidCropRect_5 = {0, -1, 5, 5};
+    EXPECT_EXCEPTION(op(nullptr, validGPUTensor, output, invalidCropRect_5, eDeviceType::GPU),
+                     eStatusType::OUT_OF_BOUNDS);
+
     // Test invalid output shape
     TensorShape invalidOutputShape(TensorLayout(eTensorLayout::TENSOR_LAYOUT_NHWC), {1, 55, 55, 1});
     Tensor invalidOutput(invalidOutputShape, DataType(eDataType::DATA_TYPE_U8), eDeviceType::GPU);
