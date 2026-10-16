@@ -340,7 +340,7 @@ void BrightnessContrast::operator()(hipStream_t stream, const roccv::Tensor &inp
 
     // Validate brightness/contrast params
     eDataType input_dtype = input.dtype().etype();
-    int64_t input_batch = input.shape(input.layout().batch_index());
+    int64_t input_batch = input.shape().batchSize();
     eDataType output_dtype = output.dtype().etype();
     eDataType bc_dtype = (input_dtype == eDataType::DATA_TYPE_S32 || output_dtype == eDataType::DATA_TYPE_S32)
                              ? eDataType::DATA_TYPE_F64

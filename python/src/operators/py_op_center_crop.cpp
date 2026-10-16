@@ -40,13 +40,12 @@ PyTensor PyOpCenterCrop::Execute(PyTensor& input, py::tuple crop_size,
     cropSize.h = cropHeight;
 
     auto inputTensor = input.getTensor();
-    std::vector<int64_t> outputShape(inputTensor->rank());
-    outputShape[inputTensor->layout().batch_index()] = inputTensor->shape(inputTensor->layout().batch_index());
-    outputShape[inputTensor->layout().height_index()] = cropHeight;
-    outputShape[inputTensor->layout().width_index()] = cropWidth;
-    outputShape[inputTensor->layout().channels_index()] = inputTensor->shape(inputTensor->layout().channels_index());
+    auto inputShape = inputTensor->shape();
+    auto outputShape = inputShape.shape();
+    outputShape[inputShape.layout().height_index()] = cropHeight;
+    outputShape[inputShape.layout().width_index()] = cropWidth;
 
-    auto outputTensor = std::make_shared<roccv::Tensor>(roccv::TensorShape(inputTensor->layout(), outputShape),
+    auto outputTensor = std::make_shared<roccv::Tensor>(roccv::TensorShape(outputShape, inputTensor->rank(), inputShape.layout()),
                                                         inputTensor->dtype(), inputTensor->device());
 
     roccv::CenterCrop op;

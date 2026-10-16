@@ -129,8 +129,9 @@ void Threshold::operator()(hipStream_t stream, const Tensor &input, const Tensor
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
 
     // Ensure the threshold and max value tensors have the same batch size as the input tensor.
-    CHECK_TENSOR_COMPARISON(thresh.shape("N") == input.shape("N"));
-    CHECK_TENSOR_COMPARISON(maxVal.shape("N") == input.shape("N"));
+    int64_t batchSize = input.shape().batchSize();
+    CHECK_TENSOR_COMPARISON(thresh.shape("N") == batchSize);
+    CHECK_TENSOR_COMPARISON(maxVal.shape("N") == batchSize);
 
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);

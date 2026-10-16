@@ -39,13 +39,12 @@ PyTensor PyOpCustomCrop::Execute(PyTensor& input, roccv::Box_t cropRect,
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
 
     auto inputTensor = input.getTensor();
-    std::vector<int64_t> outputShape(inputTensor->rank());
-    outputShape[inputTensor->layout().batch_index()] = inputTensor->shape(inputTensor->layout().batch_index());
-    outputShape[inputTensor->layout().height_index()] = cropRect.height;
-    outputShape[inputTensor->layout().width_index()] = cropRect.width;
-    outputShape[inputTensor->layout().channels_index()] = inputTensor->shape(inputTensor->layout().channels_index());
+    auto inputShape = inputTensor->shape();
+    auto outputShape = inputShape.shape();
+    outputShape[inputShape.layout().height_index()] = cropRect.height;
+    outputShape[inputShape.layout().width_index()] = cropRect.width;
 
-    auto outputTensor = std::make_shared<roccv::Tensor>(roccv::TensorShape(inputTensor->layout(), outputShape),
+    auto outputTensor = std::make_shared<roccv::Tensor>(roccv::TensorShape(outputShape, inputTensor->rank(), inputShape.layout()),
                                                         inputTensor->dtype(), inputTensor->device());
 
     roccv::CustomCrop op;
