@@ -48,21 +48,21 @@ class Threshold final : public IOperator {
      */
     ~Threshold();
     /**
-     * @brief Construct a new Threshold object.
-     * The object can be used to choose a global threshold value that is the same
-     * for all pixels across the image.
+     * @brief Executes the Threshold operation.
+     * Applies a global threshold value that is the same for all pixels across
+     * each image.
      *
      * Limitations:
      *
      * Input:
      *       Supported TensorLayout(s): [HWC, NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [U8]
+     *       Supported DataType(s):     [U8, U16, S16, F32, F64]
      *
      * Output:
      *       Supported TensorLayout(s): [HWC, NHWC]
      *                        Channels: [1, 3, 4]
-     *       Supported DataType(s):     [U8]
+     *       Supported DataType(s):     [U8, U16, S16, F32, F64]
      *
      * Input/Output dependency
      *
@@ -75,17 +75,20 @@ class Threshold final : public IOperator {
      *       Width         | Yes
      *       Height        | Yes
      *
-     * threshold Tensor
+     * thresh Tensor
      *
-     *      Must be of layout type 'NW' (dim = 2) with N = maxBatchSize
-     *      and W = 1 Data Type must be an 8bit unsigned integer (DATA_TYPE_U8).
+     *      Must be of layout type 'N' (dim = 1) with N equal to the number of
+     *      images in the input tensor. Data Type must be a 64bit float (DATA_TYPE_F64).
      *
-     * maxval Tensor
+     * maxVal Tensor
      *
-     *      Must be of layout type 'NW' (dim = 2) with N = maxBatchSize and
-     *      W = 1 Data Type must be 8bit unsigned integer (DATA_TYPE_U8).
+     *      Must be of layout type 'N' (dim = 1) with N equal to the number of
+     *      images in the input tensor. Data Type must be a 64bit float (DATA_TYPE_F64).
+     *      Required for all threshold types, but only used by THRESH_BINARY and
+     *      THRESH_BINARY_INV.
      *
-     * thresh and maxVal are expected to be contiguous in memory.
+     * thresh and maxVal are expected to be contiguous in memory and located on
+     * the device this operation runs on.
      *
      * Current Supported Threshold Types (threshType)
      * - THRESH_BINARY
@@ -98,10 +101,10 @@ class Threshold final : public IOperator {
      * @param[in] stream The HIP stream to run this operation on.
      * @param[in] input Input tensor with image batch data
      * @param[out] output Output tensor for storing modified image batch data
-     * @param[in] thresh thresh an array of size maxBatch that gives the
-     * threshold value of each image.
-     * @param[in] maxVal maxval an array of size maxBatch that gives the maxval
-     * value of each image, used with the THRESH_BINARY and THRESH_BINARY_INV thresholding types.
+     * @param[in] thresh An F64 tensor of layout N with one threshold value per
+     * image in the input tensor.
+     * @param[in] maxVal An F64 tensor of layout N with one maximum value per
+     * image in the input tensor, used with the THRESH_BINARY and THRESH_BINARY_INV thresholding types.
      * @param[in] device The device which this operation should run on.
      * (Default: eDeviceType::GPU)
      */
