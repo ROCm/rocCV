@@ -17,6 +17,11 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 - Moved the benchmark suite's nlohmann/json copy from `benchmarks/vendor/` to `third_party/` and pinned it to the v3.12.0 release; the previous copy was an unpinned post-3.12.0 `develop` snapshot that reported itself as 3.12.0, and it shipped without its license file. See `third_party/ORIGIN.md` for provenance.
 - Benchmarking suite now uses `rocRAND` for random data generation on the device.
 - OpenMP moved from public -> private dependency for roccv.
+- Python: renamed `eDataType.4S16` to `eDataType.S16x4` (also exported as `rocpycv.S16x4`) so it is a valid Python identifier.
+- Python: `copymakeborder` / `copymakeborder_into` border sizes (`top`, `bottom`, `left`, `right`) now default to 0.
+
+### Resolved issues
+- Fixed the installed `rocpycv.pyi` type stub failing to parse and missing the `averageblur`, `brightness_contrast`, `gaussian` and `laplacian` operators.
 
 ### Known issues
 - Python bindings are installed improperly, causing double import issues when importing it into a project.

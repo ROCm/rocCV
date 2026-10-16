@@ -64,8 +64,8 @@ PyTensor PyOpCopyMakeBorder::Execute(PyTensor& input, eBorderType borderMode, py
 void PyOpCopyMakeBorder::Export(py::module& m) {
     using namespace py::literals;
     m.def("copymakeborder", &PyOpCopyMakeBorder::Execute, "src"_a, "border_mode"_a = eBorderType::BORDER_TYPE_CONSTANT,
-          "border_value"_a = std::vector<float>(4), "top"_a, "bottom"_a, "left"_a, "right"_a, "stream"_a = nullptr,
-          "device"_a = eDeviceType::GPU, R"pbdoc(
+          "border_value"_a = std::vector<float>(4), "top"_a = 0, "bottom"_a = 0, "left"_a = 0, "right"_a = 0,
+          "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
           
             Executes the CopyMakeBorder operation on the given HIP stream.
 
@@ -76,10 +76,10 @@ void PyOpCopyMakeBorder::Export(py::module& m) {
                 src (rocpycv.Tensor): Input image tensor.
                 border_mode (rocpycv.eBorderType): Border type.
                 border_value (List[float]): Border values to use when using constant border type.
-                top (int): Top border height in pixels.
-                bottom (int): Bottom border height in pixels.
-                left (int): Left border width in pixels.
-                right (int): Right border width in pixels.
+                top (int): Top border height in pixels. Defaults to 0.
+                bottom (int): Bottom border height in pixels. Defaults to 0.
+                left (int): Left border width in pixels. Defaults to 0.
+                right (int): Right border width in pixels. Defaults to 0.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
@@ -88,8 +88,8 @@ void PyOpCopyMakeBorder::Export(py::module& m) {
           )pbdoc");
 
     m.def("copymakeborder_into", &PyOpCopyMakeBorder::ExecuteInto, "dst"_a, "src"_a,
-          "border_mode"_a = eBorderType::BORDER_TYPE_CONSTANT, "border_value"_a = std::vector<float>(4), "top"_a,
-          "left"_a, "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
+          "border_mode"_a = eBorderType::BORDER_TYPE_CONSTANT, "border_value"_a = std::vector<float>(4), "top"_a = 0,
+          "left"_a = 0, "stream"_a = nullptr, "device"_a = eDeviceType::GPU, R"pbdoc(
           
             Executes the CopyMakeBorder operation on the given HIP stream.
 
@@ -101,8 +101,8 @@ void PyOpCopyMakeBorder::Export(py::module& m) {
                 src (rocpycv.Tensor): Input image tensor.
                 border_mode (rocpycv.eBorderType): Border type.
                 border_value (List[float]): Border values to use when using constant border type.
-                top (int): Top border height in pixels.
-                left (int): Left border width in pixels.
+                top (int): Top border height in pixels. Defaults to 0.
+                left (int): Left border width in pixels. Defaults to 0.
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                 device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
             
