@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 #include <core/detail/casting.hpp>
 #include "core/detail/type_traits.hpp"
+#include "core/exception.hpp"
 #include "operator_types.h"
 
 using namespace roccv;
