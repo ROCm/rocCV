@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/hip_assert.h"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/normalize_device.hpp"
@@ -54,6 +55,7 @@ void dispatch_normalize_stddev(hipStream_t stream, const Tensor& input, const Te
                       outputWrap.batches());
             Kernels::Device::normalize<ScaleStddev>
                 <<<grid, block, 0, stream>>>(inputWrap, baseWrap, scaleWrap, outputWrap, global_scale, shift, epsilon);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
         case eDeviceType::CPU: {

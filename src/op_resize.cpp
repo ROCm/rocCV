@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/exception.hpp"
+#include "core/hip_assert.h"
 #include "core/status_type.h"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/resize_device.hpp"
@@ -50,6 +51,7 @@ void dispatch_resize_interp(hipStream_t stream, const Tensor& input, const Tenso
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
             Kernels::Device::resize<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, scaleX, scaleY);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

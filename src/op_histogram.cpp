@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/histogram_device.hpp"
@@ -98,6 +99,7 @@ void dispatch_histogram_dtype(hipStream_t stream, const Tensor& input,
                 Kernels::Device::histogram_kernel<T><<<grid_size, threads_block, shared_mem_size, stream>>>(
                     inputWrapper, GenericTensorWrapper<T>(histogram));
             }
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
         case eDeviceType::CPU: {

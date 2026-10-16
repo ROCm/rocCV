@@ -115,6 +115,7 @@ void NonMaximumSuppression::operator()(hipStream_t stream, const Tensor& input, 
             Kernels::Device::non_maximum_suppression<<<grid, block, 0, stream>>>(
                 GenericTensorWrapper<short4>(inputReshaped), GenericTensorWrapper<uint8_t>(outputReshaped),
                 GenericTensorWrapper<float>(scoresReshaped), numBoxes, scoreThreshold, iouThreshold);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

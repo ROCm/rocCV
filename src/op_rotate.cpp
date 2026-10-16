@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include "common/array_wrapper.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/rotate_device.hpp"
 #include "kernels/host/rotate_host.hpp"
@@ -63,6 +64,7 @@ void dispatch_rotate_interp(hipStream_t stream, const Tensor &input, const Tenso
             dim3 grid((outputWrap.width() + block.x - 1) / block.x, (outputWrap.height() + block.y - 1) / block.y,
                       outputWrap.batches());
             Kernels::Device::rotate<<<grid, block, 0, stream>>>(inputWrap, outputWrap, matWrap);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

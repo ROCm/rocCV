@@ -8,6 +8,7 @@
 
 #include "common/validation_helpers.hpp"
 #include "core/exception.hpp"
+#include "core/hip_assert.h"
 #include "core/status_type.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/{{OP_SNAKE}}_device.hpp"
@@ -31,6 +32,7 @@ void dispatch_{{OP_SNAKE}}(hipStream_t stream, const Tensor& input, const Tensor
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x,
                       (outputWrapper.height() + block.y - 1) / block.y, outputWrapper.batches());
             Kernels::Device::{{OP_SNAKE}}<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper{{PARAMS_CPP_FWD}});
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include <functional>
 
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/generic_tensor_wrapper.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/thresholding_device.hpp"
@@ -77,6 +78,7 @@ void dispatch_threshold_dtype(hipStream_t stream, const Tensor &input, const Ten
                                                                                GenericTensorWrapper<double>(thresh));
                 break;
         }
+        HIP_CHECK_KERNEL_LAUNCH();
 
     } else if (device == eDeviceType::CPU) {
         switch (m_threshType) {

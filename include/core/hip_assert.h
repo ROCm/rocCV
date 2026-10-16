@@ -37,4 +37,8 @@ THE SOFTWARE.
         }                                                                          \
     }
 
+// Throws if the preceding kernel launch failed (e.g. no code object for the current device, invalid launch
+// configuration). Does not synchronize, so errors raised while the kernel executes are not caught here.
+#define HIP_CHECK_KERNEL_LAUNCH() HIP_VALIDATE_NO_ERRORS(hipGetLastError())
+
 #define assertm(exp, msg) assert(((void)msg, exp))
