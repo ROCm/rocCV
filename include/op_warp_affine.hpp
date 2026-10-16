@@ -79,9 +79,9 @@ class WarpAffine final : public IOperator {
      * @param[in] stream The HIP stream to run this operator on.
      * @param[in] input Input tensor with image data.
      * @param[out] output Output tensor for storing modified image data.
-     * @param[in] xform Affine transformation matrix in row-major order.
+     * @param[in] xform Affine transformation matrix in row-major order. All values must be finite.
      * @param[in] isInverted Flag defining whether the xform (transformation matrix) is the inverted transformation or
-     * not.
+     * not. If false, xform must be invertible.
      * @param[in] interp Interpolation method used for warp affine.
      * @param[in] borderMode The border mode to use for the affine transformation.
      * @param[in] borderValue The border value to use in the case of a CONSTANT border mode.

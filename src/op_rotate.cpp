@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 #include "op_rotate.hpp"
 
+#include <cmath>
 #include <functional>
 #include <unordered_map>
 
@@ -110,6 +111,13 @@ void Rotate::operator()(hipStream_t stream, const Tensor &input, const Tensor &o
 
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);
+
+    if (!std::isfinite(angleDeg)) {
+        throw Exception("Rotation angle must be a finite value.", eStatusType::INVALID_VALUE);
+    }
+    if (!std::isfinite(shift.x) || !std::isfinite(shift.y)) {
+        throw Exception("Rotation shift must contain finite values.", eStatusType::INVALID_VALUE);
+    }
 
     // clang-format off
     static const std::unordered_map<

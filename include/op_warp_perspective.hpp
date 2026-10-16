@@ -64,8 +64,9 @@ class WarpPerspective final : public IOperator {
      * @param[in] input Input tensor with image data.
      * @param[out] output  Output tensor for storing modified image data.
      * @param[in] transMatrix A 3x3 transformation matrix for the
-     * perspective transformation.
-     * @param[in] isInverted Marks whether transMatrix is the inverted transformation matrix or not.
+     * perspective transformation. All values must be finite.
+     * @param[in] isInverted Marks whether transMatrix is the inverted transformation matrix or not. If false,
+     * transMatrix must be invertible.
      * @param[in] interpolation Interpolation type (e.g. Nearest neigbour,
      * linear).
      * @param[in] borderType A border type to identify the pixel extrapolation

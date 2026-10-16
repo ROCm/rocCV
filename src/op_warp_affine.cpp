@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 #include "op_warp_affine.hpp"
 
+#include <cmath>
 #include <functional>
 
 #include "common/array_wrapper.hpp"
@@ -131,10 +132,17 @@ void WarpAffine::operator()(hipStream_t stream, const Tensor &input, const Tenso
     full[7] = 0.0f;
     full[8] = 1.0f;
 
+    for (int i = 0; i < 6; i++) {
+        if (!std::isfinite(xform[i])) {
+            throw Exception("Affine transformation matrix must only contain finite values.",
+                            eStatusType::INVALID_VALUE);
+        }
+    }
+
     detail::math::Matrix<float, 3, 3> mat;
     mat.load(full);
-    if (!isInverted) {
-        detail::math::inv_inplace(mat);
+    if (!isInverted && !detail::math::inv_inplace(mat)) {
+        throw Exception("The given affine transformation matrix could not be inverted.", eStatusType::INVALID_VALUE);
     }
     mat.store(full);
 

@@ -106,6 +106,17 @@ void CopyMakeBorder::operator()(hipStream_t stream, const Tensor& input, const T
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);
 
+    if (top < 0 || left < 0) {
+        throw Exception("Border sizes top and left must be non-negative.", eStatusType::INVALID_VALUE);
+    }
+
+    // The output must be large enough to hold the input image at the (top, left) offset, otherwise the bottom/right
+    // borders would be negative and the input would be cropped.
+    CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) >=
+                            input.shape(input.layout().height_index()) + top);
+    CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) >=
+                            input.shape(input.layout().width_index()) + left);
+
     // clang-format off
     // Maps kernel dispatchers according to the underlying data type and number of channels.
     static const std::unordered_map<eDataType, std::array<std::function<void(hipStream_t, const Tensor&, const Tensor&, int32_t, int32_t, eBorderType, float4, eDeviceType)>, 4>>

@@ -22,6 +22,7 @@ THE SOFTWARE.
 
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
+#include <limits>
 #include <op_warp_affine.hpp>
 
 #include "core/detail/casting.hpp"
@@ -157,12 +158,38 @@ static const std::array<float, 6> MAT_TRANSLATE =   {1,     0, 10.0f, 0, 1, -30.
 static const std::array<float, 6> MAT_SCALE =       {2.0f,  0, 0,     0, 1, 0};
 // clang-format on
 
+/**
+ * @brief Tests that invalid transformation matrices are rejected rather than producing a plausible-looking output.
+ */
+void TestNegative() {
+    for (eDeviceType device : {eDeviceType::GPU, eDeviceType::CPU}) {
+        Tensor input(1, {16, 16}, FMT_RGB8, device);
+        Tensor output(1, {16, 16}, FMT_RGB8, device);
+        float4 borderValue = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+        WarpAffine op;
+
+        // Singular matrix (determinant 0) cannot be inverted
+        AffineTransform singular = {1.0f, 2.0f, 0.0f, 2.0f, 4.0f, 0.0f};
+        EXPECT_EXCEPTION(op(nullptr, input, output, singular, false, eInterpolationType::INTERP_TYPE_NEAREST,
+                            eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_VALUE);
+
+        // Non-finite matrix values
+        AffineTransform nonFinite = {1.0f, 0.0f, std::numeric_limits<float>::quiet_NaN(), 0.0f, 1.0f, 0.0f};
+        EXPECT_EXCEPTION(op(nullptr, input, output, nonFinite, true, eInterpolationType::INTERP_TYPE_NEAREST,
+                            eBorderType::BORDER_TYPE_CONSTANT, borderValue, device),
+                         eStatusType::INVALID_VALUE);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
+
+    TEST_CASE(TestNegative());
 
     // clang-format off
     // GPU Tests

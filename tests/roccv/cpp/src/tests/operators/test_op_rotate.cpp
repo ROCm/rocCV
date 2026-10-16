@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 #include <core/detail/type_traits.hpp>
 #include <core/wrappers/interpolation_wrapper.hpp>
+#include <limits>
 #include <op_rotate.hpp>
 
 #include "core/detail/casting.hpp"
@@ -150,12 +151,35 @@ void TestCorrectness(int batchSize, Size2D imageSize, ImageFormat format, double
     CompareVectorsNear(actualResults, goldenResults, 1.0E-6);
 }
 
+/**
+ * @brief Tests that non-finite rotation parameters are rejected rather than producing a plausible-looking output.
+ */
+void TestNegative() {
+    for (eDeviceType device : {eDeviceType::GPU, eDeviceType::CPU}) {
+        Tensor input(1, {16, 16}, FMT_RGB8, device);
+        Tensor output(1, {16, 16}, FMT_RGB8, device);
+        Rotate op;
+
+        EXPECT_EXCEPTION(op(nullptr, input, output, std::numeric_limits<double>::quiet_NaN(), make_double2(0.0, 0.0),
+                            eInterpolationType::INTERP_TYPE_NEAREST, device),
+                         eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(op(nullptr, input, output, std::numeric_limits<double>::infinity(), make_double2(0.0, 0.0),
+                            eInterpolationType::INTERP_TYPE_NEAREST, device),
+                         eStatusType::INVALID_VALUE);
+        EXPECT_EXCEPTION(op(nullptr, input, output, 45.0, make_double2(std::numeric_limits<double>::quiet_NaN(), 0.0),
+                            eInterpolationType::INTERP_TYPE_NEAREST, device),
+                         eStatusType::INVALID_VALUE);
+    }
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
     (void)argc;
     (void)argv;
     TEST_CASES_BEGIN();
+
+    TEST_CASE(TestNegative());
 
     // clang-format off
 
