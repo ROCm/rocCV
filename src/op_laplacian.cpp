@@ -80,6 +80,9 @@ void Laplacian::operator()(hipStream_t stream, const roccv::Tensor& input, const
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Validate ksize
     if (!(ksize == 1 || ksize == 3)) {
         throw roccv::Exception("Invalid ksize = " + std::to_string(ksize) + ": Must be 1 or 3.",
