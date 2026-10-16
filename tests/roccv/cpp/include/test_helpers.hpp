@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <cstdlib>
 #include <iostream>
 #include <random>
+#include <sstream>
 #include <span>
 
 #include "core/tensor_layout.hpp"
