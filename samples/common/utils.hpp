@@ -100,7 +100,7 @@ inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_pat
             if (!std::filesystem::is_directory(file.path()) && ContainsExtension(file.path(), supportedExtensions)) {
                 cv::Mat image = cv::imread(file.path(), openCVFlags);
                 if (image.empty()) {
-                    throw std::runtime_error("Cannot decode " + file.path().string() + ". File type not supported.\n");
+                    throw std::runtime_error("Cannot decode " + file.path().string() + ". File type not supported.");
                 }
                 images.push_back(image);
 
@@ -117,14 +117,14 @@ inline roccv::Tensor LoadImages(hipStream_t stream, const std::string &image_pat
     } else if (std::filesystem::is_regular_file(image_path) && ContainsExtension(image_path, supportedExtensions)) {
         cv::Mat image = cv::imread(image_path, openCVFlags);
         if (image.empty()) {
-            throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.\n");
+            throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.");
         }
         images.push_back(image);
         width = image.cols;
         height = image.rows;
         channels = image.channels();
     } else {
-        throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.\n");
+        throw std::runtime_error("Cannot decode " + image_path + ". File type not supported.");
     }
 
     if (images.empty()) {
