@@ -37,8 +37,10 @@ __global__ void warp_affine(SrcWrapper input, DstWrapper output, Mat mat) {
 
     if (x >= output.width() || y >= output.height()) return;
 
-    const float ox = mat[0] * static_cast<float>(x) + mat[1] * static_cast<float>(y) + mat[2];
-    const float oy = mat[3] * static_cast<float>(x) + mat[4] * static_cast<float>(y) + mat[5];
+    const float fx = static_cast<float>(x);
+    const float fy = static_cast<float>(y);
+    const float ox = fmaf(mat[0], fx, fmaf(mat[1], fy, mat[2]));
+    const float oy = fmaf(mat[3], fx, fmaf(mat[4], fy, mat[5]));
     output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
 }
 }  // namespace Device

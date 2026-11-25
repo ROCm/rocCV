@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include <hip/hip_runtime.h>
 
+#include <cmath>
+
 namespace Kernels {
 namespace Host {
 template <typename SrcWrapper, typename DstWrapper, typename Mat>
@@ -31,8 +33,10 @@ void warp_affine(SrcWrapper input, DstWrapper output, Mat mat) {
     for (int b = 0; b < output.batches(); b++) {
         for (int y = 0; y < output.height(); y++) {
             for (int x = 0; x < output.width(); x++) {
-                const float ox = mat[0] * static_cast<float>(x) + mat[1] * static_cast<float>(y) + mat[2];
-                const float oy = mat[3] * static_cast<float>(x) + mat[4] * static_cast<float>(y) + mat[5];
+                const float fx = static_cast<float>(x);
+                const float fy = static_cast<float>(y);
+                const float ox = fmaf(mat[0], fx, fmaf(mat[1], fy, mat[2]));
+                const float oy = fmaf(mat[3], fx, fmaf(mat[4], fy, mat[5]));
                 output.at(b, y, x, 0) = input.at(b, oy, ox, 0);
             }
         }
