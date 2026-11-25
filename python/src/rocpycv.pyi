@@ -8,7 +8,7 @@
 from __future__ import annotations
 import collections.abc
 import typing
-__all__: list[str] = ['BGR', 'BINARY', 'BINARY_INV', 'BOTH', 'BT2020', 'BT601', 'BT709', 'BndBox', 'BndBoxes', 'Box', 'CHW', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB', 'COLOR_BGR2YUV', 'COLOR_BGR2YUV_NV12', 'COLOR_BGR2YUV_NV21', 'COLOR_RGB2BGR', 'COLOR_RGB2GRAY', 'COLOR_RGB2YUV', 'COLOR_RGB2YUV_NV12', 'COLOR_RGB2YUV_NV21', 'COLOR_YUV2BGR', 'COLOR_YUV2BGR_NV12', 'COLOR_YUV2BGR_NV21', 'COLOR_YUV2RGB', 'COLOR_YUV2RGB_NV12', 'COLOR_YUV2RGB_NV21', 'CONSTANT', 'CPU', 'CUBIC', 'ColorRGBA', 'Exception', 'F32', 'F64', 'GPU', 'Grayscale', 'HWC', 'LINEAR', 'N', 'NC', 'NCHW', 'NEAREST', 'NHWC', 'NW', 'NWC', 'NormalizeFlags', 'REFLECT', 'REFLECT101', 'REMAP_ABSOLUTE', 'REMAP_ABSOLUTE_NORMALIZED', 'REMAP_RELATIVE_NORMALIZED', 'REPLICATE', 'RGB', 'S16', 'S32', 'S8', 'Size2D', 'Stream', 'TOZERO', 'TOZERO_INV', 'TRUNC', 'Tensor', 'U16', 'U32', 'U8', 'WRAP', 'X', 'Y', 'YUV', 'YVU', 'advcvtcolor', 'advcvtcolor_into', 'bilateral_filter', 'bilateral_filter_into', 'bndbox', 'bndbox_into', 'center_crop', 'center_crop_into', 'composite', 'composite_into', 'convert_to', 'convert_to_into', 'copymakeborder', 'copymakeborder_into', 'custom_crop', 'custom_crop_into', 'cvtcolor', 'cvtcolor_into', 'eAxis', 'eBorderType', 'eChannelType', 'eColorConversionCode', 'eColorSpec', 'eDataType', 'eDeviceType', 'eInterpolationType', 'eRemapType', 'eTensorLayout', 'eThresholdType', 'flip', 'flip_into', 'from_dlpack', 'gamma_contrast', 'gamma_contrast_into', 'histogram', 'histogram_into', 'nms', 'nms_into', 'normalize', 'normalize_into', 'reformat', 'reformat_into', 'remap', 'remap_into', 'resize', 'resize_into', 'rotate', 'rotate_into', 'threshold', 'threshold_into', 'warp_affine', 'warp_affine_into', 'warp_perspective', 'warp_perspective_into']
+__all__: list[str] = ['BGR', 'BINARY', 'BINARY_INV', 'BOTH', 'BT2020', 'BT601', 'BT709', 'BndBox', 'BndBoxes', 'Box', 'CHW', 'COLOR_BGR2GRAY', 'COLOR_BGR2RGB', 'COLOR_BGR2YUV', 'COLOR_BGR2YUV_NV12', 'COLOR_BGR2YUV_NV21', 'COLOR_RGB2BGR', 'COLOR_RGB2GRAY', 'COLOR_RGB2YUV', 'COLOR_RGB2YUV_NV12', 'COLOR_RGB2YUV_NV21', 'COLOR_YUV2BGR', 'COLOR_YUV2BGR_NV12', 'COLOR_YUV2BGR_NV21', 'COLOR_YUV2RGB', 'COLOR_YUV2RGB_NV12', 'COLOR_YUV2RGB_NV21', 'CONSTANT', 'CPU', 'CUBIC', 'ColorRGBA', 'Exception', 'F32', 'F64', 'GPU', 'Grayscale', 'HWC', 'LINEAR', 'N', 'NC', 'NCHW', 'NEAREST', 'NHWC', 'NW', 'NWC', 'NormalizeFlags', 'REFLECT', 'REFLECT101', 'REMAP_ABSOLUTE', 'REMAP_ABSOLUTE_NORMALIZED', 'REMAP_RELATIVE_NORMALIZED', 'REPLICATE', 'RGB', 'S16', 'S16x4', 'S32', 'S8', 'Size2D', 'Stream', 'TOZERO', 'TOZERO_INV', 'TRUNC', 'Tensor', 'U16', 'U32', 'U8', 'WRAP', 'X', 'Y', 'YUV', 'YVU', 'advcvtcolor', 'advcvtcolor_into', 'averageblur', 'averageblur_into', 'bilateral_filter', 'bilateral_filter_into', 'bndbox', 'bndbox_into', 'brightness_contrast', 'brightness_contrast_into', 'center_crop', 'center_crop_into', 'composite', 'composite_into', 'convert_to', 'convert_to_into', 'copymakeborder', 'copymakeborder_into', 'custom_crop', 'custom_crop_into', 'cvtcolor', 'cvtcolor_into', 'eAxis', 'eBorderType', 'eChannelType', 'eColorConversionCode', 'eColorSpec', 'eDataType', 'eDeviceType', 'eInterpolationType', 'eRemapType', 'eTensorLayout', 'eThresholdType', 'flip', 'flip_into', 'from_dlpack', 'gamma_contrast', 'gamma_contrast_into', 'gaussian', 'gaussian_into', 'histogram', 'histogram_into', 'laplacian', 'laplacian_into', 'nms', 'nms_into', 'normalize', 'normalize_into', 'reformat', 'reformat_into', 'remap', 'remap_into', 'resize', 'resize_into', 'rotate', 'rotate_into', 'threshold', 'threshold_into', 'warp_affine', 'warp_affine_into', 'warp_perspective', 'warp_perspective_into']
 class BndBox:
     borderColor: ColorRGBA
     box: Box
@@ -473,17 +473,18 @@ class eDataType:
     
       F64
     
-      4S16
+      S16x4
     """
     F32: typing.ClassVar[eDataType]  # value = <eDataType.F32: 6>
     F64: typing.ClassVar[eDataType]  # value = <eDataType.F64: 7>
     S16: typing.ClassVar[eDataType]  # value = <eDataType.S16: 3>
+    S16x4: typing.ClassVar[eDataType]  # value = <eDataType.S16x4: 8>
     S32: typing.ClassVar[eDataType]  # value = <eDataType.S32: 5>
     S8: typing.ClassVar[eDataType]  # value = <eDataType.S8: 1>
     U16: typing.ClassVar[eDataType]  # value = <eDataType.U16: 2>
     U32: typing.ClassVar[eDataType]  # value = <eDataType.U32: 4>
     U8: typing.ClassVar[eDataType]  # value = <eDataType.U8: 0>
-    __members__: typing.ClassVar[dict[str, eDataType]]  # value = {'U8': <eDataType.U8: 0>, 'S8': <eDataType.S8: 1>, 'U16': <eDataType.U16: 2>, 'S16': <eDataType.S16: 3>, 'U32': <eDataType.U32: 4>, 'S32': <eDataType.S32: 5>, 'F32': <eDataType.F32: 6>, 'F64': <eDataType.F64: 7>, '4S16': <eDataType.4S16: 8>}
+    __members__: typing.ClassVar[dict[str, eDataType]]  # value = {'U8': <eDataType.U8: 0>, 'S8': <eDataType.S8: 1>, 'U16': <eDataType.U16: 2>, 'S16': <eDataType.S16: 3>, 'U32': <eDataType.U32: 4>, 'S32': <eDataType.S32: 5>, 'F32': <eDataType.F32: 6>, 'F64': <eDataType.F64: 7>, 'S16x4': <eDataType.S16x4: 8>}
     def __eq__(self, other: typing.Any) -> bool:
         ...
     def __getstate__(self) -> int:
@@ -763,6 +764,43 @@ def advcvtcolor_into(dst: Tensor, src: Tensor, conversion_code: eColorConversion
                 Returns:
                     None
     """
+def averageblur(src: Tensor, kernelSize: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], kernelAnchor: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex] = (-1, -1), borderMode: eBorderType = ..., *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the AverageBlur operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    kernelSize (Tuple[int, int]): AverageBlur kernel width, height. Both kernel width and height must be odd and positive.
+                    kernelAnchor (Tuple[int, int]): AverageBlur kernel anchor in X,Y directions. Must be positive and less than kernelSize, or -1 to indicate kernel center. Defaults to (-1, -1).
+                    borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+    """
+def averageblur_into(dst: Tensor, src: Tensor, kernelSize: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], kernelAnchor: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex] = (-1, -1), borderMode: eBorderType = ..., *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the AverageBlur operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    dst (rocpycv.Tensor): The output tensor which results are written to.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    kernelSize (Tuple[int, int]): AverageBlur kernel width, height. Both kernel width and height must be odd and positive.
+                    kernelAnchor (Tuple[int, int]): AverageBlur kernel anchor in X,Y directions. Must each be positive and less than kernelSize, or -1 to indicate kernel center. Defaults to (-1, -1).
+                    borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    None
+    """
 def bilateral_filter(src: Tensor, diameter: typing.SupportsInt | typing.SupportsIndex, sigmaColor: typing.SupportsFloat | typing.SupportsIndex, sigmaSpace: typing.SupportsFloat | typing.SupportsIndex, borderMode: eBorderType, borderValue: list, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Bilateral Filter operation on the given HIP stream.
@@ -834,6 +872,45 @@ def bndbox_into(dst: Tensor, src: Tensor, bnd_boxes: BndBoxes, stream: rocpycv.S
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
                 
+                Returns:
+                    None
+    """
+def brightness_contrast(src: Tensor, brightness: rocpycv.Tensor | None = None, contrast: rocpycv.Tensor | None = None, brightness_shift: rocpycv.Tensor | None = None, contrast_center: rocpycv.Tensor | None = None, *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the Brightness Contrast operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                    contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                    brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default: 0.0.
+                    contrast_center (rocpycv.Tensor, optional): Contrast centers. Can contain 1 or N values where N is the number of input images. Default: midpoint of input data type range.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+    """
+def brightness_contrast_into(dst: Tensor, src: Tensor, brightness: rocpycv.Tensor | None = None, contrast: rocpycv.Tensor | None = None, brightness_shift: rocpycv.Tensor | None = None, contrast_center: rocpycv.Tensor | None = None, *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the  Brightness Contrast operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    dst (rocpycv.Tensor): The output tensor which results are written to.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    brightness (rocpycv.Tensor, optional): Brightness multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                    contrast (rocpycv.Tensor, optional): Contrast multipliers. Can contain 1 or N values where N is the number of input images. Default: 1.0.
+                    brightness_shift (rocpycv.Tensor, optional): Brightness shifts. Can contain 1 or N values where N is the number of input images. Default: 0.0.
+                    contrast_center (rocpycv.Tensor, optional): Contrast centers. Can contain 1 or N values where N is the number of input images. Default: midpoint of input data type range.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
                 Returns:
                     None
     """
@@ -943,7 +1020,7 @@ def convert_to_into(dst: Tensor, src: Tensor, alpha: typing.SupportsFloat | typi
                 Returns:
                     None
     """
-def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, bottom: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, right: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex = 0, bottom: typing.SupportsInt | typing.SupportsIndex = 0, left: typing.SupportsInt | typing.SupportsIndex = 0, right: typing.SupportsInt | typing.SupportsIndex = 0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the CopyMakeBorder operation on the given HIP stream.
     
@@ -954,17 +1031,17 @@ def copymakeborder(src: Tensor, border_mode: eBorderType = ..., border_value: li
                     src (rocpycv.Tensor): Input image tensor.
                     border_mode (rocpycv.eBorderType): Border type.
                     border_value (List[float]): Border values to use when using constant border type.
-                    top (int): Top border height in pixels.
-                    bottom (int): Bottom border height in pixels.
-                    left (int): Left border width in pixels.
-                    right (int): Right border width in pixels.
+                    top (int): Top border height in pixels. Defaults to 0.
+                    bottom (int): Bottom border height in pixels. Defaults to 0.
+                    left (int): Left border width in pixels. Defaults to 0.
+                    right (int): Right border width in pixels. Defaults to 0.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
                 
                 Returns:
                     rocpycv.Tensor: The output tensor.
     """
-def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex, left: typing.SupportsInt | typing.SupportsIndex, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ..., border_value: list = [0.0, 0.0, 0.0, 0.0], top: typing.SupportsInt | typing.SupportsIndex = 0, left: typing.SupportsInt | typing.SupportsIndex = 0, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
     """
                 Executes the CopyMakeBorder operation on the given HIP stream.
     
@@ -976,8 +1053,8 @@ def copymakeborder_into(dst: Tensor, src: Tensor, border_mode: eBorderType = ...
                     src (rocpycv.Tensor): Input image tensor.
                     border_mode (rocpycv.eBorderType): Border type.
                     border_value (List[float]): Border values to use when using constant border type.
-                    top (int): Top border height in pixels.
-                    left (int): Left border width in pixels.
+                    top (int): Top border height in pixels. Defaults to 0.
+                    left (int): Left border width in pixels. Defaults to 0.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
                 
@@ -1120,6 +1197,43 @@ def gamma_contrast_into(dst: Tensor, src: Tensor, gamma: typing.SupportsFloat | 
                 Returns:
                     None
     """
+def gaussian(src: Tensor, kernelSize: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], sigma: tuple[typing.SupportsFloat | typing.SupportsIndex, typing.SupportsFloat | typing.SupportsIndex], borderMode: eBorderType = ..., *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the Gaussian operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    kernelSize (Tuple[int, int]): Gaussian kernel width, height. Both kernel width and height must be odd and positive (inference from sigma not supported in Python API).
+                    sigma (Tuple[double, double]): Gaussian kernel standard deviation in X,Y directions. Sigma X must be positive. If sigma Y <= 0, it will be set to sigma X.
+                    borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+    """
+def gaussian_into(dst: Tensor, src: Tensor, kernelSize: tuple[typing.SupportsInt | typing.SupportsIndex, typing.SupportsInt | typing.SupportsIndex], sigma: tuple[typing.SupportsFloat | typing.SupportsIndex, typing.SupportsFloat | typing.SupportsIndex], borderMode: eBorderType = ..., *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the Gaussian operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    dst (rocpycv.Tensor): The output tensor which results are written to.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    kernelSize (Tuple[int, int]): Gaussian kernel width, height. Both kernel width and height must be odd and positive (inference from sigma not supported in Python API).
+                    sigma (Tuple[double, double]): Gaussian kernel standard deviation in X,Y directions. Sigma X must be positive. If sigma Y <= 0, it will be set to sigma X.
+                    borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    None
+    """
 def histogram(src: Tensor, mask: rocpycv.Tensor | None, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
     """
                 Executes the Histogram operation on the given HIP stream.
@@ -1147,6 +1261,43 @@ def histogram_into(dst: Tensor, src: Tensor, mask: rocpycv.Tensor | None, stream
                     dst (rocpycv.Tensor): Output tensor with width of 256 and a height equal to the batch size of input (1 if HWC input).
                     src (rocpycv.Tensor): Input tensor containing one or more images.
                     mask (rocpycv.Tensor): (Optional) Mask tensor with shape equal to the input tensor shape and any value not equal 0 will be counted in histogram.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    None
+    """
+def laplacian(src: Tensor, ksize: typing.SupportsInt | typing.SupportsIndex, scale: typing.SupportsFloat | typing.SupportsIndex = 1.0, borderMode: eBorderType = ..., *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> Tensor:
+    """
+                Executes the Laplacian operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    ksize (int): Aperture size used to compute the second-derivative filters. Must be 1 or 3.
+                    scale (float, optional): Scale factor for the Laplacian values. Defaults to 1 (no scale).
+                    borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
+                    stream (rocpycv.Stream, optional): HIP stream to run this operation on.
+                    device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
+    
+                Returns:
+                    rocpycv.Tensor: The output tensor.
+    """
+def laplacian_into(dst: Tensor, src: Tensor, ksize: typing.SupportsInt | typing.SupportsIndex, scale: typing.SupportsFloat | typing.SupportsIndex = 1.0, borderMode: eBorderType = ..., *, stream: rocpycv.Stream | None = None, device: eDeviceType = ...) -> None:
+    """
+                Executes the Laplacian operation on the given HIP stream.
+    
+                See also:
+                    Refer to the rocCV C++ API reference for more information on this operation.
+                
+                Args:
+                    dst (rocpycv.Tensor): The output tensor which results are written to.
+                    src (rocpycv.Tensor): Input tensor containing one or more images.
+                    ksize (int): Aperture size used to compute the second-derivative filters. Must be 1 or 3.
+                    scale (float, optional): Scale factor for the Laplacian values. Defaults to 1 (no scale).
+                    borderMode (rocpycv.eBorderType, optional): The border type to identify the pixel extrapolation method. Defaults to BORDER_TYPE_CONSTANT.
                     stream (rocpycv.Stream, optional): HIP stream to run this operation on.
                     device (rocpycv.Device, optional): The device to run this operation on. Defaults to GPU.
     
@@ -1544,6 +1695,7 @@ REMAP_RELATIVE_NORMALIZED: eRemapType  # value = <eRemapType.REMAP_RELATIVE_NORM
 REPLICATE: eBorderType  # value = <eBorderType.REPLICATE: 1>
 RGB: eChannelType  # value = <eChannelType.RGB: 1>
 S16: eDataType  # value = <eDataType.S16: 3>
+S16x4: eDataType  # value = <eDataType.S16x4: 8>
 S32: eDataType  # value = <eDataType.S32: 5>
 S8: eDataType  # value = <eDataType.S8: 1>
 TOZERO: eThresholdType  # value = <eThresholdType.TOZERO: 8>
