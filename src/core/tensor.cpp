@@ -22,8 +22,10 @@ THE SOFTWARE.
 
 #include "core/tensor.hpp"
 
+#include <algorithm>
 #include <array>
 #include <numeric>
+#include <vector>
 
 #include "core/data_type.hpp"
 #include "core/detail/context.hpp"
@@ -131,56 +133,46 @@ static int Simplify(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& 
 }
 
 /**
- * @brief Finds the outermost dimension at which either of the provided byte-stride layouts is padded.
- *
- * A dimension is considered padded when its stride exceeds the tightly-packed stride implied by the inner
- * dimensions. The source and destination of a copy may pad differently, so the first dimension at which *either*
- * is padded is returned, ensuring everything below it forms a single contiguous row shared by both layouts.
- * Returns 0 if neither layout is padded.
- *
- * @param[in] rank The rank of the tensor.
- * @param[in] shape The shape of the tensor.
- * @param[in] a The first byte-stride layout to inspect.
- * @param[in] b The second byte-stride layout to inspect.
- * @return The index of the outermost padded dimension.
+ * @brief A single dimension of a strided copy, holding its extent and the byte strides of both buffers.
  */
-static int FindPaddedDim(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
-                         const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& a,
-                         const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& b) {
-    for (int i = 0; i < rank - 1; ++i) {
-        if (a[i] != shape[i + 1] * a[i + 1] || b[i] != shape[i + 1] * b[i + 1]) {
-            return i;
-        }
-    }
-    return 0;
-}
+struct CopyDim {
+    int64_t extent;
+    int64_t srcStride;
+    int64_t dstStride;
+};
 
 /**
- * @brief Computes the contiguous row width (in bytes) and row count for a pitched 2D copy split at paddedDim.
+ * @brief Reduces a strided copy to its minimal set of dimensions.
  *
- * Everything strictly below paddedDim forms a single contiguous row; everything up to and including paddedDim
- * counts towards the number of rows. The per-tensor pitch is supplied separately by the caller via its stride at
- * paddedDim.
+ * Size-1 dimensions are dropped (their strides never contribute to an address), and each dimension is merged into
+ * its inner neighbour whenever *both* the source and destination strides allow it, i.e. when the outer stride equals
+ * the inner extent times the inner stride in both layouts. The resulting dimensions are ordered outermost first.
  *
  * @param[in] rank The rank of the tensor.
  * @param[in] shape The shape of the tensor.
- * @param[in] paddedDim The dimension at which the copy is split into rows.
- * @param[in] dtypeSize The size of a single element in bytes.
- * @return A pair containing (row_width_bytes, num_rows).
+ * @param[in] srcStrides Byte-wise strides of the source layout.
+ * @param[in] dstStrides Byte-wise strides of the destination layout.
+ * @return The simplified copy dimensions, outermost first. Empty if the tensor holds a single element.
  */
-static std::pair<size_t, size_t> ComputeRowExtents(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
-                                                   int paddedDim, size_t dtypeSize) {
-    size_t rowWidth = dtypeSize;
-    for (int i = paddedDim + 1; i < rank; ++i) {
-        rowWidth *= static_cast<size_t>(shape[i]);
+static std::vector<CopyDim> SimplifyCopyDims(int rank, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& shape,
+                                             const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& srcStrides,
+                                             const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& dstStrides) {
+    std::vector<CopyDim> dims;
+    for (int i = rank - 1; i >= 0; --i) {
+        if (shape[i] == 1) continue;
+
+        if (!dims.empty()) {
+            CopyDim& inner = dims.back();
+            if (srcStrides[i] == inner.extent * inner.srcStride && dstStrides[i] == inner.extent * inner.dstStride) {
+                inner.extent *= shape[i];
+                continue;
+            }
+        }
+        dims.push_back({shape[i], srcStrides[i], dstStrides[i]});
     }
 
-    size_t numRows = 1;
-    for (int i = 0; i <= paddedDim; ++i) {
-        numRows *= static_cast<size_t>(shape[i]);
-    }
-
-    return {rowWidth, numRows};
+    std::reverse(dims.begin(), dims.end());
+    return dims;
 }
 
 /**
@@ -359,32 +351,80 @@ size_t Tensor::dataSize() const { return m_requirements.strides[0] * m_requireme
 
 bool Tensor::isContiguous() const { return dataSize() == shape().size() * dtype().size(); }
 
-void Tensor::copyPitchedAsync(void* dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& dstStrides,
+void Tensor::copyStridedAsync(void* dstData, const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& dstStrides,
                               eDeviceType dstDevice, const void* srcData,
                               const std::array<int64_t, ROCCV_TENSOR_MAX_RANK>& srcStrides, eDeviceType srcDevice,
                               hipStream_t stream) const {
-    // Split at the outermost dimension where either layout is padded so that the contiguous row width and row count
-    // are common to both; each side then supplies its own pitch via its stride at that dimension.
-    const int paddedDim = FindPaddedDim(m_requirements.rank, m_requirements.shape, srcStrides, dstStrides);
-    auto [rowWidth, numRows] = ComputeRowExtents(m_requirements.rank, m_requirements.shape, paddedDim, dtype().size());
+    const int rank = m_requirements.rank;
+    for (int i = 0; i < rank; ++i) {
+        if (m_requirements.shape[i] == 0) return;
+    }
 
-    const size_t srcPitch = static_cast<size_t>(srcStrides[paddedDim]);
-    const size_t dstPitch = static_cast<size_t>(dstStrides[paddedDim]);
-    hipMemcpyKind kind = MemcpyKindFor(srcDevice, dstDevice);
+    std::vector<CopyDim> dims = SimplifyCopyDims(rank, m_requirements.shape, srcStrides, dstStrides);
 
-    HIP_VALIDATE_NO_ERRORS(hipMemcpy2DAsync(dstData, dstPitch, srcData, srcPitch, rowWidth, numRows, kind, stream));
+    // The innermost dimension forms a contiguous row only if it is element-packed in both layouts. Otherwise each
+    // row is a single element.
+    const int64_t elemSize = dtype().size();
+    size_t rowWidth = static_cast<size_t>(elemSize);
+    if (!dims.empty() && dims.back().srcStride == elemSize && dims.back().dstStride == elemSize) {
+        rowWidth *= static_cast<size_t>(dims.back().extent);
+        dims.pop_back();
+    }
+
+    // Copy rows with a 2D copy along the largest remaining dimension whose strides form valid (non-negative,
+    // non-overlapping) pitches in both layouts. Any other dimensions are iterated over, issuing one 2D copy each.
+    int pitchedDim = -1;
+    for (int i = 0; i < static_cast<int>(dims.size()); ++i) {
+        const int64_t width = static_cast<int64_t>(rowWidth);
+        if (dims[i].srcStride >= width && dims[i].dstStride >= width &&
+            (pitchedDim < 0 || dims[i].extent > dims[pitchedDim].extent)) {
+            pitchedDim = i;
+        }
+    }
+
+    size_t srcPitch = rowWidth, dstPitch = rowWidth, numRows = 1;
+    if (pitchedDim >= 0) {
+        srcPitch = static_cast<size_t>(dims[pitchedDim].srcStride);
+        dstPitch = static_cast<size_t>(dims[pitchedDim].dstStride);
+        numRows = static_cast<size_t>(dims[pitchedDim].extent);
+        dims.erase(dims.begin() + pitchedDim);
+    }
+
+    const hipMemcpyKind kind = MemcpyKindFor(srcDevice, dstDevice);
+    const uint8_t* srcBase = static_cast<const uint8_t*>(srcData);
+    uint8_t* dstBase = static_cast<uint8_t*>(dstData);
+
+    // Walk the remaining outer dimensions as an odometer, accumulating byte offsets into each buffer.
+    std::vector<int64_t> index(dims.size(), 0);
+    int64_t srcOffset = 0, dstOffset = 0;
+    while (true) {
+        HIP_VALIDATE_NO_ERRORS(hipMemcpy2DAsync(dstBase + dstOffset, dstPitch, srcBase + srcOffset, srcPitch, rowWidth,
+                                                numRows, kind, stream));
+
+        int d = static_cast<int>(dims.size()) - 1;
+        for (; d >= 0; --d) {
+            srcOffset += dims[d].srcStride;
+            dstOffset += dims[d].dstStride;
+            if (++index[d] < dims[d].extent) break;
+
+            srcOffset -= dims[d].extent * dims[d].srcStride;
+            dstOffset -= dims[d].extent * dims[d].dstStride;
+            index[d] = 0;
+        }
+        if (d < 0) break;
+    }
 }
 
 void Tensor::copyFromHostAsync(const void* src, hipStream_t stream) const {
     // The host buffer is contiguous; represent it with packed strides so only the tensor's padding matters.
     const auto hostStrides = CalcStrides(shape(), dtype(), 0);
-    copyPitchedAsync(m_data->data(), m_requirements.strides, device(), src, hostStrides, eDeviceType::CPU, stream);
+    copyStridedAsync(m_data->data(), m_requirements.strides, device(), src, hostStrides, eDeviceType::CPU, stream);
 }
 
 void Tensor::copyToHostAsync(void* dst, hipStream_t stream) const {
     // The host buffer is contiguous; represent it with packed strides so only the tensor's padding matters.
     const auto hostStrides = CalcStrides(shape(), dtype(), 0);
-    copyPitchedAsync(dst, hostStrides, eDeviceType::CPU, m_data->data(), m_requirements.strides, device(), stream);
+    copyStridedAsync(dst, hostStrides, eDeviceType::CPU, m_data->data(), m_requirements.strides, device(), stream);
 }
 
 void Tensor::copyToAsync(const Tensor& dst, hipStream_t stream) const {
@@ -394,7 +434,7 @@ void Tensor::copyToAsync(const Tensor& dst, hipStream_t stream) const {
                         eStatusType::INVALID_VALUE);
     }
 
-    copyPitchedAsync(dst.m_data->data(), dst.m_requirements.strides, dst.device(), m_data->data(),
+    copyStridedAsync(dst.m_data->data(), dst.m_requirements.strides, dst.device(), m_data->data(),
                      m_requirements.strides, device(), stream);
 }
 
