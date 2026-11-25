@@ -21,6 +21,7 @@
 
 #include "operators/py_op_copy_make_border.hpp"
 
+#include <core/exception.hpp>
 #include <op_copy_make_border.hpp>
 
 #include "py_helpers.hpp"
@@ -38,6 +39,11 @@ PyTensor PyOpCopyMakeBorder::Execute(PyTensor& input, eBorderType borderMode, py
                                      int left, int right, std::optional<std::reference_wrapper<PyStream>> stream,
                                      eDeviceType device) {
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
+
+    if (top < 0 || bottom < 0 || left < 0 || right < 0) {
+        throw roccv::Exception("Border sizes top, bottom, left and right must be non-negative.",
+                               roccv::eStatusType::INVALID_VALUE);
+    }
 
     // Create output tensor shape
     roccv::TensorShape inputShape = input.getTensor()->shape();

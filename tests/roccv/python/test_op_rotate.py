@@ -59,3 +59,15 @@ def test_op_rotate(samples, width, height, channels, angle, dtype, interp, devic
     stream.synchronize()
 
     compare_tensors(output, output_golden)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("angle,shift", [
+    (float("nan"), (0.0, 0.0)),
+    (float("inf"), (0.0, 0.0)),
+    (45.0, (float("nan"), 0.0)),
+])
+def test_op_rotate_non_finite(angle, shift, device):
+    input = generate_tensor(1, 16, 16, 3, rocpycv.eDataType.U8, device)
+    with pytest.raises(rocpycv.Exception):
+        rocpycv.rotate(input, angle, shift, rocpycv.eInterpolationType.NEAREST, None, device)

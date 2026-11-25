@@ -49,3 +49,15 @@ def test_op_warp_affine(samples, width, height, channels, dtype, mat, inverted, 
     stream.synchronize()
 
     compare_tensors(output, output_golden)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("mat,inverted", [
+    ([1, 2, 0, 2, 4, 0], False),             # Singular matrix, cannot be inverted
+    ([1, 0, float("nan"), 0, 1, 0], True),   # Non-finite matrix value
+])
+def test_op_warp_affine_invalid_matrix(mat, inverted, device):
+    input = generate_tensor(1, 16, 16, 3, rocpycv.eDataType.U8, device)
+    with pytest.raises(rocpycv.Exception):
+        rocpycv.warp_affine(input, mat, inverted, rocpycv.eInterpolationType.NEAREST, rocpycv.eBorderType.CONSTANT,
+                            [0, 0, 0, 0], None, device)

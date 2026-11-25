@@ -50,3 +50,15 @@ def test_op_warp_perspective(samples, width, height, channels, dtype, mat, inver
     stream.synchronize()
 
     compare_tensors(output, output_golden)
+
+
+@pytest.mark.parametrize("device", [rocpycv.eDeviceType.GPU, rocpycv.eDeviceType.CPU])
+@pytest.mark.parametrize("mat,inverted", [
+    ([1, 2, 0, 2, 4, 0, 0, 0, 1], False),            # Singular matrix, cannot be inverted
+    ([1, 0, 0, 0, 1, float("inf"), 0, 0, 1], True),  # Non-finite matrix value
+])
+def test_op_warp_perspective_invalid_matrix(mat, inverted, device):
+    input = generate_tensor(1, 16, 16, 3, rocpycv.eDataType.U8, device)
+    with pytest.raises(rocpycv.Exception):
+        rocpycv.warp_perspective(input, mat, inverted, rocpycv.eInterpolationType.NEAREST,
+                                 rocpycv.eBorderType.CONSTANT, [0, 0, 0, 0], None, device)
