@@ -66,138 +66,17 @@ if(Python3_FOUND AND ROCCV_PYBIND_SCRIPTS)
   )
   set_property(TEST roccv_pybind_test_functions PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
 
-  # 2 - Test:OP -- Thresholding
-  add_test(NAME roccv_pybind_test_op_thresholding
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_thresholding.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_thresholding PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 3 - Test:OP -- Bilateral Filter
-  add_test(NAME roccv_pybind_test_op_bilateral_filter
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_bilateral_filter.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_bilateral_filter PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 4 - Test:OP -- Bounding Box
-  add_test(NAME roccv_pybind_test_op_bnd_box
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_bnd_box.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_bnd_box PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 5 - Test:OP -- Histogram
-  add_test(NAME roccv_pybind_test_op_histogram
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_histogram.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_histogram PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 6 - Test:OP -- Warp Perspective
-  add_test(NAME roccv_pybind_test_op_warp_perspective
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_warp_perspective.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_warp_perspective PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 7 - Test:OP -- Non Max Suppression
-  add_test(NAME roccv_pybind_test_op_non_max_suppression
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_non_max_suppression.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_non_max_suppression PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 8 - Test:OP -- Rotate
-  add_test(NAME roccv_pybind_test_op_rotate
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_rotate.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_rotate PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 9 - Test:OP -- Normalize
-  add_test(NAME roccv_pybind_test_op_normalize
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_normalize.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_normalize PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 10 - Test:OP -- Color Convert
-  add_test(NAME roccv_pybind_test_op_cvt_color
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_cvt_color.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_cvt_color PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 11 - Test:OP -- Advanced Color Convert
-  add_test(NAME roccv_pybind_test_op_adv_cvt_color
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_adv_cvt_color.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_adv_cvt_color PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 12 - Test:OP -- Composite
-  add_test(NAME roccv_pybind_test_op_composite
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_composite.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_composite PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 13 - Test:OP -- Custom Crop
-  add_test(NAME roccv_pybind_test_op_custom_crop
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_custom_crop.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_custom_crop PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 14 - Test:OP -- Flip
-  add_test(NAME roccv_pybind_test_op_flip
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_flip.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_flip PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 15 - Test:OP -- Gamma Contrast
-  add_test(NAME roccv_pybind_test_op_gamma_contrast
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_gamma_contrast.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_gamma_contrast PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 16 - Test:OP -- Remap
-  add_test(NAME roccv_pybind_test_op_remap
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_remap.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_remap PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 17 - Test:OP -- Resize
-  add_test(NAME roccv_pybind_test_op_resize
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_resize.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_resize PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 18 - Test:OP -- Warp Affine
-  add_test(NAME roccv_pybind_test_op_warp_affine
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_warp_affine.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_warp_affine PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 19 - Test:OP -- CopyMakeBorder
-  add_test(NAME roccv_pybind_test_op_copy_make_border
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_copy_make_border.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_copy_make_border PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
-
-  # 20 - Test:OP -- Center Crop
-  add_test(NAME roccv_pybind_test_op_center_crop
-    COMMAND ${Python3_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_center_crop.py ${PYTEST_FLAGS}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  set_property(TEST roccv_pybind_test_op_center_crop PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
+  # 2 - Test:OP -- one ctest test per installed operator test file
+  file(GLOB ROCCV_PYBIND_OP_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/python/test_op_*.py")
+  list(SORT ROCCV_PYBIND_OP_TESTS)
+  foreach(TEST_FILE ${ROCCV_PYBIND_OP_TESTS})
+    get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+    add_test(NAME roccv_pybind_${TEST_NAME}
+      COMMAND ${Python3_EXECUTABLE} -m pytest ${TEST_FILE} ${PYTEST_FLAGS}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+    set_property(TEST roccv_pybind_${TEST_NAME} PROPERTY ENVIRONMENT "PYTHONPATH=${ROCM_PATH}/lib:$PYTHONPATH")
+  endforeach()
 
 else()
   if(NOT Python3_FOUND)
