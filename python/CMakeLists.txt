@@ -83,7 +83,7 @@ list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/lib/cmake)
 # NOTE: rocCV version updates requires updates in
 #       * rocCV source CMakeLists.txt
 #       * python CMakeLists.txt
-set(VERSION "0.4.0")
+set(VERSION "0.5.0")
 project(rocpycv VERSION ${VERSION} LANGUAGES CXX)
 
 message("-- ${BoldBlue}${PROJECT_NAME} Version -- ${PROJECT_VERSION}${ColorReset}")

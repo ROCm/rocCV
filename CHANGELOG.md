@@ -2,7 +2,7 @@
 
 The full documentation for rocCV is available at [https://rocm.docs.amd.com/projects/rocCV/en/latest/index.html](https://rocm.docs.amd.com/projects/rocCV/en/latest/index.html)
 
-## (Unreleased) rocCV 0.5.0 for ROCm 7.12.0
+## rocCV 0.5.0 for ROCm 10.2.0
 
 ### Added
 - Added `Reformat` operator.
