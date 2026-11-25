@@ -41,7 +41,7 @@ from test_helpers import generate_tensor, compare_tensors
 
 def test_op_thresholding(samples, height, width, channels, dtype, thresh, mvdata, threshType, device):
     input_tensor = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], dtype, rocpycv.eTensorLayout.NHWC, device)
     
     thresh_array = np.full(samples, thresh, np.float64)
     maxval_array = np.full(samples, mvdata, np.float64)

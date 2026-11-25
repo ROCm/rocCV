@@ -41,8 +41,7 @@ from test_helpers import generate_tensor, compare_tensors
 ])
 def test_op_center_crop(samples, height, width, channels, dtype, box, device):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, box[1], box[0], channels],
-                                   rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, box[1], box[0], channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     if device == rocpycv.eDeviceType.GPU:
         stream = rocpycv.Stream()

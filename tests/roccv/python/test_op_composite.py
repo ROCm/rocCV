@@ -39,7 +39,7 @@ def test_op_composite(samples, height, width, out_channels, dtype, device):
     foreground = generate_tensor(samples, width, height, 3, dtype, device)
     background = generate_tensor(samples, width, height, 3, dtype, device)
     mask = generate_tensor(samples, width, height, 1, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, out_channels], rocpycv.eTensorLayout.NHWC, dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, out_channels], dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     output = rocpycv.composite(foreground, background, mask, out_channels, stream, device)

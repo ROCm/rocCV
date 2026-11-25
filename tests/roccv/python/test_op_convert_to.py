@@ -40,7 +40,7 @@ from test_helpers import generate_tensor, compare_tensors
 ])
 def test_op_convert_to(samples, height, width, channels, device, dtype, out_dtype, alpha, beta):
     input = generate_tensor(samples, width, height, channels, dtype, device)
-    output_golden = rocpycv.Tensor([samples, height, width, channels], rocpycv.eTensorLayout.NHWC, out_dtype, device)
+    output_golden = rocpycv.Tensor([samples, height, width, channels], out_dtype, rocpycv.eTensorLayout.NHWC, device)
 
     stream = rocpycv.Stream()
     rocpycv.convert_to_into(output_golden, input, alpha, beta, stream, device)

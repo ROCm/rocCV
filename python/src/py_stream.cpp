@@ -38,8 +38,15 @@ PyStream::~PyStream() {
 
 void PyStream::synchronize() { HIP_VALIDATE_NO_ERRORS(hipStreamSynchronize(m_stream)); }
 
+uintptr_t PyStream::getHandle() { return reinterpret_cast<uintptr_t>(m_stream); }
+
 void PyStream::Export(py::module& m) {
     py::class_<PyStream>(m, "Stream", "Python wrapper for HIP streams.")
         .def(py::init<>(), "Creates a HIP stream.")
-        .def("synchronize", &PyStream::synchronize, "Blocks until all worked queued on this stream is finished.");
+        .def("synchronize", &PyStream::synchronize, "Blocks until all worked queued on this stream is finished.")
+        .def("handle", &PyStream::getHandle,
+             "Returns the underlying HIP stream handle (hipStream_t) as an integer. "
+             "Intended for zero-copy interop with frameworks that accept a raw stream handle, "
+             "e.g. migraphx.run_async(..., stream_handle, \"ihipStream_t\"). "
+             "The handle is non-owning -- keep the Stream alive while the handle is in use.");
 }
