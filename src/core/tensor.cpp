@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "core/tensor_layout.hpp"
 #include "core/tensor_requirements.hpp"
 #include "core/tensor_shape.hpp"
+#include "core/tensor_storage.hpp"
 #include "core/util_enums.h"
 #include "core/utils.hpp"
 #include "operator_types.h"
@@ -479,23 +480,28 @@ std::array<int64_t, ROCCV_TENSOR_MAX_RANK> Tensor::CalcStrides(const TensorShape
     return strides;
 }
 
-Tensor TensorWrapData(const TensorData& tensor_data) {
+Tensor TensorWrapData(const TensorData& tensor_data, TensorDataCleanupFunc cleanup) {
     auto tensorDataStrided = tensor_data.cast<TensorDataStrided>();
     if (!tensorDataStrided.has_value()) {
         throw Exception("TensorData could not be cast to TensorDataStrided. Tensors can only wrap strided tensor data.",
                         eStatusType::INVALID_VALUE);
     }
 
-    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides;
+    std::array<int64_t, ROCCV_TENSOR_MAX_RANK> strides{};
     for (int i = 0; i < tensorDataStrided->rank(); i++) {
         strides[i] = tensorDataStrided->stride(i);
     }
-
     Tensor::Requirements reqs = Tensor::CalcRequirements(tensorDataStrided->shape(), tensorDataStrided->dtype(),
                                                          strides, 0, tensorDataStrided->device());
 
-    auto data =
-        std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), tensorDataStrided->device(), eOwnership::OWNING);
+    // By default the wrapped data is non-owning (empty cleanup). If a caller-provided cleanup function is given, adapt
+    // it to operate on the raw pointer by capturing a copy of the strided tensor data descriptor.
+    TensorStorageCleanupFunc storageCleanup;
+    if (cleanup) {
+        storageCleanup = [cleanup, data = tensorDataStrided.value()](void*) { cleanup(data); };
+    }
+
+    auto data = std::make_shared<TensorStorage>(tensorDataStrided->basePtr(), std::move(storageCleanup));
     return Tensor(reqs, data);
 }
 
