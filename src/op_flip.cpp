@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include "common/validation_helpers.hpp"
 #include "core/exception.hpp"
+#include "core/hip_assert.h"
 #include "core/status_type.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/flip_device.hpp"
@@ -46,6 +47,7 @@ void dispatch_flip_axis(hipStream_t stream, const Tensor& input, const Tensor& o
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
             Kernels::Device::flip<FlipType><<<grid, block, 0, stream>>>(inputWrapper, outputWrapper);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

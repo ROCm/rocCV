@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/common/adv_cvt_color_coefficients.hpp"
@@ -266,6 +267,7 @@ void AdvCvtColor::operator()(hipStream_t stream, const Tensor &input, Tensor &ou
                 }
             }
         }
+        HIP_CHECK_KERNEL_LAUNCH();
     } else {
         if (IsInterleaved444(conversionCode)) {
             switch (conversionCode) {

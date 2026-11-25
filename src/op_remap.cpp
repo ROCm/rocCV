@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "core/detail/internal_structs.hpp"
 #include "core/detail/math/math.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "core/wrappers/interpolation_wrapper.hpp"
 #include "kernels/device/remap_device.hpp"
@@ -96,6 +97,7 @@ void dispatch_remap_mapInterp(hipStream_t stream, const Tensor &input, const Ten
                       outputWrapper.batches());
             Kernels::Device::remap<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, wrappedMapTensor,
                                                                mapBatchSize, params);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
 

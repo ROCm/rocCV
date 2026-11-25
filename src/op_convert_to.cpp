@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "common/validation_helpers.hpp"
 #include "core/detail/casting.hpp"
 #include "core/detail/type_traits.hpp"
+#include "core/hip_assert.h"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/convert_to_device.hpp"
 #include "kernels/host/convert_to_host.hpp"
@@ -58,6 +59,7 @@ void dispatch_convert_to_channels(hipStream_t stream, const Tensor &input, const
             dim3 grid((outputWrapper.width() + block.x - 1) / block.x, (outputWrapper.height() + block.y - 1) / block.y,
                       outputWrapper.batches());
             Kernels::Device::convert_to<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, alpha_ab, beta_ab);
+            HIP_CHECK_KERNEL_LAUNCH();
             break;
         }
         case eDeviceType::CPU: {

@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "common/array_wrapper.hpp"
 #include "common/math_vector.hpp"
 #include "common/validation_helpers.hpp"
+#include "core/hip_assert.h"
 #include "core/tensor.hpp"
 #include "core/wrappers/image_wrapper.hpp"
 #include "kernels/device/gamma_contrast_device.hpp"
@@ -52,6 +53,7 @@ void dispatch_gamma_contrast_dtype(hipStream_t stream, const Tensor &input, cons
                   outputWrapper.batches());
 
         Kernels::Device::gamma_contrast<<<grid, block, 0, stream>>>(inputWrapper, outputWrapper, gamma);
+        HIP_CHECK_KERNEL_LAUNCH();
     } else if (device == eDeviceType::CPU) {
         Kernels::Host::gamma_contrast(inputWrapper, outputWrapper, gamma);
     }
