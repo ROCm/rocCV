@@ -105,6 +105,9 @@ void AverageBlur::operator()(hipStream_t stream, const Tensor& input, Tensor& ou
     CHECK_TENSOR_COMPARISON(input.device() == output.device());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
 
+    CHECK_TENSOR_INT32_INDEXING(input);
+    CHECK_TENSOR_INT32_INDEXING(output);
+
     // Validate kernel size
     if (!(kernelWidth > 0 && kernelWidth % 2 == 1 && kernelWidth <= m_maxKernelWidth && kernelHeight > 0 &&
           kernelHeight % 2 == 1 && kernelHeight <= m_maxKernelHeight)) {
