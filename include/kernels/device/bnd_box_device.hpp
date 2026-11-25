@@ -25,7 +25,9 @@ THE SOFTWARE.
 #include <hip/hip_runtime.h>
 
 #include <core/detail/type_traits.hpp>
+#include <limits>
 
+#include "common/math_vector.hpp"
 #include "kernels/kernel_helpers.hpp"
 #include "operator_types.h"
 
