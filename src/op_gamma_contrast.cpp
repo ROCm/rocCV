@@ -75,11 +75,6 @@ void GammaContrast::operator()(hipStream_t stream, const Tensor &input, const Te
     CHECK_TENSOR_COMPARISON(input.layout() == output.layout());
     CHECK_TENSOR_COMPARISON(input.shape() == output.shape());
     CHECK_TENSOR_COMPARISON(input.dtype() == output.dtype());
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().channels_index()) ==
-                            input.shape(input.layout().channels_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) == input.shape(input.layout().width_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) == input.shape(input.layout().height_index()));
-    CHECK_TENSOR_COMPARISON(output.shape(output.layout().batch_index()) == input.shape(input.layout().batch_index()));
 
     CHECK_TENSOR_INT32_INDEXING(input);
     CHECK_TENSOR_INT32_INDEXING(output);

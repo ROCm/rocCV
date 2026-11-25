@@ -29,15 +29,16 @@ PyTensor PyOpCvtColor::Execute(PyTensor& input, eColorConversionCode conversionC
     
     hipStream_t hipStream = stream.has_value() ? stream.value().get().getStream() : nullptr;
     auto inputTensor = input.getTensor();
-    int64_t batchSize = inputTensor->shape(inputTensor->layout().batch_index());
-    int64_t height = inputTensor->shape(inputTensor->layout().height_index());
-    int64_t width = inputTensor->shape(inputTensor->layout().width_index());
     int64_t channels = inputTensor->shape(inputTensor->layout().channels_index());
-    
+
     if (conversionCode == COLOR_RGB2GRAY || conversionCode == COLOR_BGR2GRAY) {
         channels = 1;
     }
-    roccv::TensorShape outputShape(inputTensor->layout(), {batchSize, height, width, channels});
+
+    // Output shape matches the input shape except for channels.
+    auto outputShapeData = inputTensor->shape().shape();
+    outputShapeData[inputTensor->layout().channels_index()] = channels;
+    roccv::TensorShape outputShape(outputShapeData, inputTensor->rank(), inputTensor->layout());
     auto outputTensor = std::make_shared<roccv::Tensor>(outputShape, inputTensor->dtype(), device);
 
     roccv::CvtColor op;
