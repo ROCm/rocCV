@@ -42,7 +42,7 @@ struct Config {
 
 void PrintUsage(const char* programName) {
     // clang-format off
-    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-crop <x,y,w,h>] [-d <device_id>] [-c]" << std::endl;
+    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-c <x,y,w,h>] [-d <device_id>] [-C]" << std::endl;
     std::cout << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
     std::cout << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
     std::cout << "  -c, --crop <x,y,w,h>                Crop rectangle as comma separated values (optional, default: 0,0,1,1)" << std::endl;
@@ -69,7 +69,7 @@ bool ParseCropRectangle(const std::string& cropStr, Box_t& cropRect) {
 /**
  * @brief Custom crop operation example.
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
                                           {"output", required_argument, nullptr, 'o'},
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
                                           {"help", no_argument, nullptr, 'h'},
                                           {nullptr, 0, nullptr, 0}};
     int opt;
-    while ((opt = getopt_long(argc, argv, "i:o:c:d:h:C", longOptions, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "i:o:c:d:hC", longOptions, nullptr)) != -1) {
         switch (opt) {
             case 'i':
                 config.inputPath = optarg;
@@ -139,4 +139,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

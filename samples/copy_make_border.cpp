@@ -75,7 +75,7 @@ bool ParseColor(const std::string& colorStr, float& r, float& g, float& b, float
  * If <image_or_directory> is a directory, a batch operation will occur on every image in the directory.
  * If <output_file_or_directory> is a directory, the output images will be written into that directory.
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
 
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
@@ -155,4 +155,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

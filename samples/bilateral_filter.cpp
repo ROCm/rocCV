@@ -69,7 +69,7 @@ bool ParseBorderColor(const std::string& borderColorStr, float4& borderColor) {
                   &borderColor.w) == 4;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
 
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
                                           {nullptr, 0, nullptr, 0}};
 
     int opt;
-    while ((opt = getopt_long(argc, argv, "i:o:d:D:s:c:b:B:h:C", longOptions, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "i:o:d:D:s:c:b:B:hC", longOptions, nullptr)) != -1) {
         switch (opt) {
             case 'i':
                 config.inputPath = optarg;
@@ -156,4 +156,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

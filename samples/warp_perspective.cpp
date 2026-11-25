@@ -42,19 +42,20 @@ struct Config {
 
 void PrintUsage(const char* programName) {
     // clang-format off
-    std::cerr << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-p <interpolation>] [-b <border>] [-d <device_id>]" << std::endl;
+    std::cerr << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-I <interpolation>] [-b <border>] [-d <device_id>] [-h]" << std::endl;
     std::cerr << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
     std::cerr << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
     std::cerr << "  -I, --interpolation <interpolation> Interpolation type to use for output images [0: NEAREST, 1: LINEAR, 2: CUBIC] (optional, default: 1 (LINEAR))" << std::endl;
     std::cerr << "  -b, --border <border>               Border type for output images [0: CONSTANT, 1: REPLICATE, 2: REFLECT, 3: REFLECT101, 4: WRAP] (optional, default: 0 (CONSTANT))" << std::endl;
     std::cerr << "  -d, --device <device_id>            Device ID to use for execution (optional, default: 0)" << std::endl;
+    std::cerr << "  -h, --help                          Show this help message" << std::endl;
     // clang-format on
 }
 
 /**
  * @brief Warp perspective operation example.
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
 
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
@@ -118,4 +119,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

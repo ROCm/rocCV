@@ -56,7 +56,7 @@ bool ParseCropArea(const std::string& cropStr, Size2D& cropArea) {
 
 void PrintUsage(const char* programName) {
     // clang-format off
-    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-d <device_id>] [-crop <width,height>] [-C]" << std::endl;
+    std::cout << "Usage: " << programName << " -i <input_image> [-o <output_image>] [-d <device_id>] [-c <width,height>] [-C]" << std::endl;
     std::cout << "  -i, --input <input_image>           Input image or directory containing images (required)" << std::endl;
     std::cout << "  -o, --output <output_image>         Output image or directory to save the results (optional, default: output)" << std::endl;
     std::cout << "  -d, --device <device_id>            Device ID to use for execution (optional, default: 0)" << std::endl;
@@ -65,7 +65,7 @@ void PrintUsage(const char* programName) {
     std::cout << "  -h, --help                          Show this help message" << std::endl;
     // clang-format on
 }
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
                                           {"output", required_argument, nullptr, 'o'},
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
                                           {"help", no_argument, nullptr, 'h'},
                                           {nullptr, 0, nullptr, 0}};
     int opt;
-    while ((opt = getopt_long(argc, argv, "i:o:d:c:h:C", longOptions, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "i:o:d:c:hC", longOptions, nullptr)) != -1) {
         switch (opt) {
             case 'i':
                 config.inputPath = optarg;
@@ -137,4 +137,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }

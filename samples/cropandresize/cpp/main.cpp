@@ -101,7 +101,7 @@ void ParseResizeShape(const std::string& resizeStr, Size2D& resizeShape) {
     resizeShape.h = std::stoi(token);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) try {
     Config config;
     static struct option longOptions[] = {{"input", required_argument, nullptr, 'i'},
                                           {"output", required_argument, nullptr, 'o'},
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 
     // Parse command line arguments
     int opt;
-    while ((opt = getopt_long(argc, argv, "i:o:r:c:I:d:h:C", longOptions, nullptr)) != -1) {
+    while ((opt = getopt_long(argc, argv, "i:o:r:c:I:d:hC", longOptions, nullptr)) != -1) {
         switch (opt) {
             case 'i':
                 config.inputPath = optarg;
@@ -203,4 +203,7 @@ int main(int argc, char** argv) {
     CHECK_HIP_ERROR(hipStreamDestroy(stream));
 
     return EXIT_SUCCESS;
+} catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
 }
