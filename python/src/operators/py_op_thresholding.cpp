@@ -56,8 +56,8 @@ void PyOpThreshold::Export(py::module& m) {
             
             Args:
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                thresh (rocpycv.Tensor): thresh an array of size maxBatch that gives the threshold value of each image.
-                maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, used with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
+                thresh (rocpycv.Tensor): F64 tensor of layout N with one threshold value per image in src.
+                maxVal (rocpycv.Tensor): F64 tensor of layout N with one maximum value per image in src. Required for all threshold types, but only used by the BINARY and BINARY_INV threshold types.
                 maxBatchSize (uint32_t): The maximum batch size.
                 threshType (eThresholdType): Threshold type
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
@@ -76,8 +76,8 @@ void PyOpThreshold::Export(py::module& m) {
             Args:
                 dst (rocpycv.Tensor): The output tensor which results are written to.
                 src (rocpycv.Tensor): Input tensor containing one or more images.
-                thresh (rocpycv.Tensor): thresh an array of size maxBatch that gives the threshold value of each image.
-                maxVal (rocpycv.Tensor): maxval an array of size maxBatch that gives the maxval value of each image, used with the NVCV_THRESH_BINARY and NVCV_THRESH_BINARY_INV thresholding types.
+                thresh (rocpycv.Tensor): F64 tensor of layout N with one threshold value per image in src.
+                maxVal (rocpycv.Tensor): F64 tensor of layout N with one maximum value per image in src. Required for all threshold types, but only used by the BINARY and BINARY_INV threshold types.
                 maxBatchSize (uint32_t): The maximum batch size.
                 threshType (eThresholdType): Threshold type
                 stream (rocpycv.Stream, optional): HIP stream to run this operation on.
