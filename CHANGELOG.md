@@ -11,6 +11,7 @@ The full documentation for rocCV is available at [https://rocm.docs.amd.com/proj
 - Added `AverageBlur` operator.
 - Added `Laplacian` operator.
 - Dockerfile support for running rocCV in a container environment.
+- Support for `gfx1250-strict` and `gfx1251`
 
 ### Changed
 - Switched from FetchContent to vendored sources under `third_party/` for DLPack (v1.3) and Pybind11 (v3.1.0) dependencies; building no longer requires network access. See `third_party/ORIGIN.md` for provenance.
