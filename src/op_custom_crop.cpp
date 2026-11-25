@@ -74,6 +74,8 @@ void CustomCrop::operator()(hipStream_t stream, const Tensor& input, const Tenso
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) <= input.shape(input.layout().height_index()));
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().width_index()) == cropRect.width);
     CHECK_TENSOR_COMPARISON(output.shape(output.layout().height_index()) == cropRect.height);
+    CHECK_CONDITION(cropRect.x >= 0, eStatusType::OUT_OF_BOUNDS);
+    CHECK_CONDITION(cropRect.y >= 0, eStatusType::OUT_OF_BOUNDS);
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().width_index()) >= (cropRect.x + cropRect.width));
     CHECK_TENSOR_COMPARISON(input.shape(input.layout().height_index()) >= (cropRect.y + cropRect.height));
 
